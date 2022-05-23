@@ -10,3 +10,6 @@ vendor
 
 # phpunit
 .phpunit.result.cache
+
+#php_cs_fixer
+.php-cs-fixer.cache
