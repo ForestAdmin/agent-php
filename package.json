@@ -1,0 +1,29 @@
+{
+  "name": "agent-php",
+  "version": "0.0.1",
+  "description": "The official agent PHP for Forest.",
+  "scripts": {
+    "prepare": "husky install",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ForestAdmin/agent-php.git"
+  },
+  "author": "",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/ForestAdmin/agent-php/issues"
+  },
+  "homepage": "https://github.com/ForestAdmin/agent-php#readme",
+  "devDependencies": {
+    "@commitlint/cli": "11.0.0",
+    "@commitlint/config-conventional": "11.0.0",
+    "@semantic-release/changelog": "6.0.1",
+    "@semantic-release/exec": "6.0.3",
+    "@semantic-release/git": "10.0.1",
+    "husky": "7.0.0",
+    "semantic-release": "19.0.2",
+    "semantic-release-slack-bot": "3.5.2"
+  }
+}
