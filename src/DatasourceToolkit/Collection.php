@@ -63,6 +63,7 @@ class Collection implements CollectionContract
     public function setFields(array $fields): Collection
     {
         $this->fields = $fields;
+
         return $this;
     }
 
@@ -93,6 +94,7 @@ class Collection implements CollectionContract
     public function setActions(array $actions): Collection
     {
         $this->actions = $actions;
+
         return $this;
     }
 
@@ -104,7 +106,13 @@ class Collection implements CollectionContract
     public function setSearchable(bool $searchable): Collection
     {
         $this->searchable = $searchable;
+
         return $this;
+    }
+
+    public function addSegments(array $segments): void
+    {
+        $this->segments = [...$this->segments, ...$segments];
     }
 
     public function getSegments(): array
@@ -115,6 +123,7 @@ class Collection implements CollectionContract
     public function setSegments(array $segments): Collection
     {
         $this->segments = $segments;
+
         return $this;
     }
 }
