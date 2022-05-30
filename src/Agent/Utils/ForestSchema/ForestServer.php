@@ -20,7 +20,7 @@ class ForestServer
           'segments' => Array<ForestServerSegment>,
     ];
     */
-    public const action =  [
+    public const action = [
         //    id => string;
         //    name => string;
         //    type => 'single' | 'bulk' | 'global';

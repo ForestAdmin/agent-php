@@ -22,27 +22,24 @@ class SchemaEmitter
     private function meta(): array
     {
         return [
-            'liana'         => self::LIANA_NAME,
+            'liana' => self::LIANA_NAME,
             'liana_version' => self::LIANA_VERSION,
-            'stack'         => [
-                'engine'         => 'php',
+            'stack' => [
+                'engine' => 'php',
                 'engine_version' => '', /* TODO */
-                'database_type'  => '',  /* TODO */
-                'orm_version'    => '',  /* TODO */
+                'database_type' => '',  /* TODO */
+                'orm_version' => '',  /* TODO */
             ],
         ];
     }
 
     private function loadFromDisk()
     {
-
     }
 
     private function generate()
     {
-
     }
-
 }
 //
 //static async getSerializedSchema(

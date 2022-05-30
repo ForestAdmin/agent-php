@@ -2,8 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Schema;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\ActionScope;
-
 class DataSourceSchema
 {
     /**
@@ -13,6 +11,4 @@ class DataSourceSchema
         protected array $charts = []
     ) {
     }
-
-
 }

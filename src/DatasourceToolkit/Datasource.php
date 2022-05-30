@@ -13,7 +13,8 @@ class Datasource implements DatasourceContract
 
     protected DataSourceSchema $schema;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->schema = new DataSourceSchema();
         $this->collections = new IlluminateCollection();
     }
@@ -37,7 +38,6 @@ class Datasource implements DatasourceContract
     {
         $this->collections->push($collection);
     }
-
 }
 
 /*
