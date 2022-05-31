@@ -10,9 +10,9 @@ class OneToOneSchema extends SingleRelationSchema
     {
         return [
             'foreignCollection' => $this->foreignCollection,
-            'originKey' => $this->originKey,
-            'originKeyTarget' => $this->originKeyTarget,
-            'type' => $this->type,
+            'originKey'         => $this->originKey,
+            'originKeyTarget'   => $this->originKeyTarget,
+            'type'              => $this->type,
         ];
     }
 }

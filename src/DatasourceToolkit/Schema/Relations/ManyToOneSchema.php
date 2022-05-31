@@ -10,9 +10,9 @@ class ManyToOneSchema extends ManyRelationSchema
     {
         return [
             'foreignCollection' => $this->foreignCollection,
-            'foreignKey' => $this->foreignKey,
-            'foreignKeyTarget' => $this->foreignKeyTarget,
-            'type' => $this->type,
+            'foreignKey'        => $this->foreignKey,
+            'foreignKeyTarget'  => $this->foreignKeyTarget,
+            'type'              => $this->type,
         ];
     }
 }

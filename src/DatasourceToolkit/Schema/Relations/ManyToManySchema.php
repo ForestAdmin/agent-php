@@ -17,11 +17,11 @@ class ManyToManySchema extends ManyRelationSchema
         return [
             'throughCollection' => $this->throughCollection,
             'foreignCollection' => $this->foreignCollection,
-            'foreignKey' => $this->foreignKey,
-            'foreignKeyTarget' => $this->foreignKeyTarget,
-            'originKey' => $this->originKey,
-            'originKeyTarget' => $this->originKeyTarget,
-            'type' => $this->type,
+            'foreignKey'        => $this->foreignKey,
+            'foreignKeyTarget'  => $this->foreignKeyTarget,
+            'originKey'         => $this->originKey,
+            'originKeyTarget'   => $this->originKeyTarget,
+            'type'              => $this->type,
         ];
     }
 }
