@@ -4,24 +4,14 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations;
 
 class ManyToManySchema extends ManyRelationSchema
 {
-    protected string $type = 'ManyToMany';
-
-    private string $throughCollection;
-
-    private string $originKey;
-
-    private string $originKeyTarget;
-
-    public function getFormat(): array
-    {
-        return [
-            'throughCollection' => $this->throughCollection,
-            'foreignCollection' => $this->foreignCollection,
-            'foreignKey'        => $this->foreignKey,
-            'foreignKeyTarget'  => $this->foreignKeyTarget,
-            'originKey'         => $this->originKey,
-            'originKeyTarget'   => $this->originKeyTarget,
-            'type'              => $this->type,
-        ];
+    public function __construct(
+        protected string $foreignKey,
+        protected string $foreignKeyTarget,
+        protected string $throughCollection,
+        protected string $originKey,
+        protected string $originKeyTarget,
+        protected string $type = 'ManyToMany',
+    ) {
+        parent::__construct($foreignKey, $foreignKeyTarget);
     }
 }

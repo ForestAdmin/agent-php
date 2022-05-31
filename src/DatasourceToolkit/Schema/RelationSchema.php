@@ -6,5 +6,8 @@ abstract class RelationSchema
 {
     protected string $type;
 
-    abstract public function getFormat(): array;
+    public function getType(): string
+    {
+        return $this->type;
+    }
 }

@@ -7,6 +7,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ActionSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\ActionScope;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 
 class Book extends BaseCollection
 {
@@ -24,9 +25,10 @@ class Book extends BaseCollection
             'publication' => new ColumnSchema(
                 columnType: PrimitiveType::Date(),
             ),
-            'authorId' => new ColumnSchema(
-                columnType: PrimitiveType::Number(),
-                defaultValue: 35
+            'authorId' => new ManyToOneSchema( // TODO CHECK IT'S GOOD ?
+                foreignKey: 'authorId',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'Person'
             ),
         ];
         parent::__construct($dataSource, 'Book', $fields);

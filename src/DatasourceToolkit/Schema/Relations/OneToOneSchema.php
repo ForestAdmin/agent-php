@@ -4,15 +4,12 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations;
 
 class OneToOneSchema extends SingleRelationSchema
 {
-    protected string $type = 'OneToOne';
-
-    public function getFormat(): array
-    {
-        return [
-            'foreignCollection' => $this->foreignCollection,
-            'originKey'         => $this->originKey,
-            'originKeyTarget'   => $this->originKeyTarget,
-            'type'              => $this->type,
-        ];
+    public function __construct(
+        protected string $originKey,
+        protected string $originKeyTarget,
+        protected string $foreignCollection,
+        protected string $type = 'OneToOne',
+    ) {
+        parent::__construct($originKey, $originKeyTarget);
     }
 }

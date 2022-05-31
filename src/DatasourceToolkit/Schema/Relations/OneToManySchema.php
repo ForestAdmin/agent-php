@@ -1,18 +1,15 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\DatasourceToolkit;
+namespace ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations;
 
-class OneToManySchema extends SingleRelation
+class OneToManySchema extends SingleRelationSchema
 {
-    protected string $type = 'OneToMany';
-
-    public function getFormat(): array
-    {
-        return [
-            'foreignCollection' => $this->foreignCollection,
-            'originKey'         => $this->originKey,
-            'originKeyTarget'   => $this->originKeyTarget,
-            'type'              => $this->type,
-        ];
+    public function __construct(
+        protected string $originKey,
+        protected string $originKeyTarget,
+        protected string $foreignCollection,
+        protected string $type = 'OneToMany',
+    ) {
+        parent::__construct($originKey, $originKeyTarget);
     }
 }
