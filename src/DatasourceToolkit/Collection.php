@@ -114,7 +114,7 @@ class Collection implements CollectionContract
 
     public function addSegments(array $segments): void
     {
-        $this->segments->merge($segments);
+        $this->segments = $this->segments->merge($segments);
     }
 
     public function getSegments(): IlluminateCollection
