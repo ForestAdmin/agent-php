@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent;
 
+use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\GeneratorCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 class SchemaEmitter
@@ -14,6 +15,8 @@ class SchemaEmitter
     {
         //return self::me;
         $schema = $options['isProduction'] ? $this->loadFromDisk($options['schemaPath']) : $this->generate($options['prefix'], $datasource);
+
+        return $schema;
     }
 
     /**
@@ -22,13 +25,13 @@ class SchemaEmitter
     private function meta(): array
     {
         return [
-            'liana' => self::LIANA_NAME,
+            'liana'         => self::LIANA_NAME,
             'liana_version' => self::LIANA_VERSION,
-            'stack' => [
-                'engine' => 'php',
+            'stack'         => [
+                'engine'         => 'php',
                 'engine_version' => '', /* TODO */
-                'database_type' => '',  /* TODO */
-                'orm_version' => '',  /* TODO */
+                'database_type'  => '',  /* TODO */
+                'orm_version'    => '',  /* TODO */
             ],
         ];
     }
@@ -37,10 +40,32 @@ class SchemaEmitter
     {
     }
 
-    private function generate()
+    private function generate(string $prefix, Datasource $datasource)
     {
+        $allCollectionSchemas = [];
+        $collectionSchemas = $datasource->getCollections()->map(
+            fn ($collection) => GeneratorCollection::buildSchema($prefix, $collection)
+        );
+
+        dd($collectionSchemas->toArray());
     }
 }
+
+//private static async generate(prefix: string, dataSource: DataSource): Promise<RawSchema> {
+//    const allCollectionSchemas = [];
+//
+//    const dataSourceCollectionSchemas = dataSource.collections.map(collection =>
+//      SchemaGeneratorCollection.buildSchema(prefix, collection),
+//    );
+//    allCollectionSchemas.push(...dataSourceCollectionSchemas);
+//
+//    return Promise.all(allCollectionSchemas);
+//  }
+
+
+
+
+
 //
 //static async getSerializedSchema(
 //    options: Options,

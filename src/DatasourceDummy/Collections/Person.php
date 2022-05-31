@@ -23,7 +23,7 @@ class Person extends BaseCollection
             ),
         ];
 
-        parent::__construct($dataSource, 'Library', $fields);
+        parent::__construct($dataSource, 'Person', $fields);
         $this->dataSource = $dataSource;
     }
 }

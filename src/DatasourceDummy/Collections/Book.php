@@ -29,14 +29,14 @@ class Book extends BaseCollection
                 defaultValue: 35
             ),
         ];
+        parent::__construct($dataSource, 'Book', $fields);
+
+        $this->dataSource = $dataSource;
 
         $this->addAction('Mark as live', new ActionSchema(scope: ActionScope::single(), staticForm: true));
 
         $this->addSegments(['Active books', 'Deleted books']);
 
         $this->setSearchable(true);
-
-        parent::__construct($dataSource, 'Book', $fields);
-        $this->dataSource = $dataSource;
     }
 }

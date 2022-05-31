@@ -7,23 +7,25 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ActionSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
+use Illuminate\Support\Collection as IlluminateCollection;
 
 class Collection implements CollectionContract
 {
-    /** @var ColumnSchema[]|RelationSchema[] */
-    protected array $fields = [];
+    protected IlluminateCollection $fields;
 
-    /** @var ActionSchema[] */
-    protected array $actions = [];
+    protected IlluminateCollection $actions;
 
     protected bool $searchable = false;
 
-    protected array $segments = [];
+    protected IlluminateCollection $segments;
 
     public function __construct(
         protected DatasourceContract $dataSource,
         protected string $name,
     ) {
+        $this->fields = new IlluminateCollection();
+        $this->actions = new IlluminateCollection();
+        $this->segments = new IlluminateCollection();
     }
 
     public function getDataSource(): DatasourceContract
@@ -48,14 +50,14 @@ class Collection implements CollectionContract
      */
     public function addField(string $name, ColumnSchema|RelationSchema $field): void
     {
-        if (isset($this->fields[$name])) {
+        if ($this->fields->has($name)) {
             throw new \Exception('Field ' . $name . ' already defined in collection');
         }
 
-        $this->fields[$name] = $field;
+        $this->fields->put($name, $field);
     }
 
-    public function getFields(): array
+    public function getFields(): IlluminateCollection
     {
         return $this->fields;
     }
@@ -79,14 +81,14 @@ class Collection implements CollectionContract
      */
     public function addAction(string $name, ActionSchema $action): void
     {
-        if (isset($this->actions[$name])) {
+        if ($this->actions->has($name)) {
             throw new \Exception('Action ' . $name . ' already defined in collection');
         }
 
-        $this->actions[$name] = $action;
+        $this->actions->put($name, $action);
     }
 
-    public function getActions(): array
+    public function getActions(): IlluminateCollection
     {
         return $this->actions;
     }
@@ -112,10 +114,10 @@ class Collection implements CollectionContract
 
     public function addSegments(array $segments): void
     {
-        $this->segments = [...$this->segments, ...$segments];
+        $this->segments->merge($segments);
     }
 
-    public function getSegments(): array
+    public function getSegments(): IlluminateCollection
     {
         return $this->segments;
     }

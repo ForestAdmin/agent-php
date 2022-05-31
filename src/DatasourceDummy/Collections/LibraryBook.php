@@ -21,7 +21,7 @@ class LibraryBook extends BaseCollection
             ),
         ];
 
-        parent::__construct($dataSource, 'Library', $fields);
+        parent::__construct($dataSource, 'LibraryBook', $fields);
         $this->dataSource = $dataSource;
     }
 };
