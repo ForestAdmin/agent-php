@@ -32,7 +32,7 @@ class GeneratorAction
         $index = $collection->getActions()->keys()->search($name);
         $slug = preg_replace('/[^a-z0-9-]+/', '-', gstrtolower($name));
 
-        $fields = null;
+        $fields = self::buildFields($collection, $name, $action);
         // todo => const fields = await SchemaGeneratorActions.buildFields(collection, name, schema);
 
         return [
@@ -48,7 +48,7 @@ class GeneratorAction
             'hooks'      => [
                 'load'   => ! $action->isStaticForm(),
                 // Always registering the change hook has no consequences, even if we don't use it.
-                'change' => ['changeHook'],
+                'change' => ['changeHook'],// todo question to devXP
             ],
         ];
     }
@@ -64,7 +64,7 @@ class GeneratorAction
         ];
 
         if ($field->isWatchChanges()) {
-            $output['hook'] = 'changeHook';
+            $output['hook'] = 'changeHook'; // todo how it's work
         }
 
         if ($field->getType() === ActionFieldType::Collection()) {
@@ -81,7 +81,7 @@ class GeneratorAction
                 true
             )
         ) {
-            $output['type'] = [substr($field->getType(),  0, strlen($field->getType()) - 4)];
+            $output['type'] = '[' . substr($field->getType(),  0, strlen($field->getType()) - 4) . ']';
         } else {
             $output['type'] = $field->getType();
         }

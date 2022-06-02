@@ -14,16 +14,6 @@ class ForestActionValueConverter
     public static function valueToForest(ActionField $field)
     {
         $value = $field->getValue();
-        if ($field->getType() === ActionFieldType::Enum()) {
-            return in_array($value, $field->getEnumValues(), true) ? $value : null;
-        }
-
-        if ($field->getType() === ActionFieldType::EnumList()) {
-            return array_filter(
-                (array) $value,
-                static fn ($item) => in_array($item, $field->getEnumValues(), true)
-            );
-        }
 
         if ($field->getType() === ActionFieldType::Collection()) {
             return implode('|', (array) $value);
