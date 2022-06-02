@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Contracts;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Charts\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Caller;
 
 interface CollectionContract
 {

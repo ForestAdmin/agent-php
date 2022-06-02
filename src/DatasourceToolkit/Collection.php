@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Charts\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ActionSchema;

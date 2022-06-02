@@ -1,6 +1,6 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\DatasourceToolkit\Charts;
+namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
 class Caller
 {
