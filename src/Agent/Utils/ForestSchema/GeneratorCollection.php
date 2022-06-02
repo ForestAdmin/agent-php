@@ -10,7 +10,7 @@ class GeneratorCollection
     {
         return [
             'actions'              => [],
-            'fields'               => [],
+            'fields'               => $collection->getFields()->map(fn ($field, $name) => GeneratorField::buildSchema($collection, $name)),
             'icon'                 => null,
             'integration'          => null,
             'isReadOnly'           => $collection->getFields()->every(fn ($field) => $field->getType() === 'Column' && $field->isReadOnly()),
@@ -19,7 +19,7 @@ class GeneratorCollection
             'name'                 => $collection->getName(),
             'onlyForRelationships' => false,
             'paginationType'       => 'page',
-            'segments'             => $collection->getSegments()->map(fn ($segment) => GeneratorSegment::buildSchema($collection, $segment))->toArray(),
+            'segments'             => $collection->getSegments()->map(fn ($segment) => GeneratorSegment::buildSchema($collection, $segment))->sortBy('name')->toArray(),
         ];
     }
 
