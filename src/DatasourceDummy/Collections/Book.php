@@ -25,7 +25,10 @@ class Book extends BaseCollection
             'publication' => new ColumnSchema(
                 columnType: PrimitiveType::Date(),
             ),
-            'authorId' => new ManyToOneSchema( // TODO CHECK IT'S GOOD ?
+            'authorId' => new ColumnSchema(
+                columnType: PrimitiveType::Number(),
+            ),
+            'author' => new ManyToOneSchema( // TODO CHECK IT'S GOOD ?
                 foreignKey: 'authorId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person'
