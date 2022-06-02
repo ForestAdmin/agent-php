@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
+use ForestAdmin\AgentPHP\DatasourceToolkit\File;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ActionField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\ActionFieldType;
 
@@ -19,53 +20,53 @@ class ForestActionValueConverter
             return implode('|', (array) $value);
         }
 
-        if ($field->getType() === ActionFieldType::File()) {
-            //todo
-//            return this.makeDataUri(value as File);
+        if (is_a($value, File::class) && $field->getType() === ActionFieldType::File()) {
+            return self::makeDataUri($value);
         }
 
-        if ($field->getType() === ActionFieldType::FileList()) {
-            //todo
-//            return (value as File[])?.map(f => this.makeDataUri(f));
+        if (is_a($value, File::class) && $field->getType() === ActionFieldType::FileList()) {
+            return array_map(
+                static fn ($file) => self::makeDataUri($file)
+            );
         }
 
         return $value;
     }
 
+    private static function makeDataUri(File $file): ?string
+    {
+        $mimeType = $file->getMimeType();
+        $buffer = base64_encode($file->getBuffer());
+        unset($file[0], $file[1]);
 
-//    private static function makeDataUri($file): ?string
-//    {
-//        if (!$file) return null;
-//
-//        const [ $mimeType, $buffer, $rest ] = $file;
-//        const mediaTypes = Object.entries(rest)
-//            .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-//          .join(';');
-//
-//        return mediaTypes.length
-//            ? `data:${file.mimeType};${mediaTypes};base64,${buffer.toString('base64')}`
-//            : `data:${file.mimeType};base64,${buffer.toString('base64')}`;
-//    }
+        $mediaTypes = $file->getContent()
+                ->map(fn ($value, $key) => $key . '=' . urlencode($value))
+                ->join(';');
+
+        return $mediaTypes !== ''
+            ? "data:$mimeType;$mediaTypes;base64,$buffer"
+            : "data:$mimeType;base64,$buffer";
+    }
 
 
 
 //    private static function parseDataUri(string $dataUri): File
 //    {
-////        if (!dataUri) return null;
-////
-////        // Poor man's data uri parser (spec compliants one don't get the filename).
-////        // Hopefully this does not break.
-////        const [header, data] = dataUri.substring(5).split(',');
-////        const [mimeType, ...mediaTypes] = header.split(';');
-////        const result = { mimeType, buffer: Buffer.from(data, 'base64') };
-////
-////        for (const mediaType of mediaTypes) {
-////        const index = mediaType.indexOf('=');
-////        if (index !== -1)
-////            result[mediaType.substring(0, index)] = decodeURIComponent(mediaType.substring(index + 1));
-////        }
-////
-////        return result as File;
+    ////        if (!dataUri) return null;
+    ////
+    ////        // Poor man's data uri parser (spec compliants one don't get the filename).
+    ////        // Hopefully this does not break.
+    ////        const [header, data] = dataUri.substring(5).split(',');
+    ////        const [mimeType, ...mediaTypes] = header.split(';');
+    ////        const result = { mimeType, buffer: Buffer.from(data, 'base64') };
+    ////
+    ////        for (const mediaType of mediaTypes) {
+    ////        const index = mediaType.indexOf('=');
+    ////        if (index !== -1)
+    ////            result[mediaType.substring(0, index)] = decodeURIComponent(mediaType.substring(index + 1));
+    ////        }
+    ////
+    ////        return result as File;
 //    }
 
     private static function isDataUri($value): bool
