@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 use ForestAdmin\AgentPHP\Agent\Concerns\Relation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 
@@ -18,20 +19,13 @@ class GeneratorField
         $field = $collection->getFields()->get($name);
 
         $fieldSchema = match ($field->getType()) {
-            'Column'                                            => self::buildColumnSchema($collection, $name),
-            'ManyToOne', 'OneToMany', 'ManyToMany', 'OneToOne'  => self::buildRelationSchema($collection, $name),
-            default                                             => throw new \Exception('Invalid field type'),
+            'Column'                                           => self::buildColumnSchema($collection, $name),
+            'ManyToOne', 'OneToMany', 'ManyToMany', 'OneToOne' => self::buildRelationSchema($collection, $name),
+            default                                            => throw new \Exception('Invalid field type'),
         };
+        ksort($fieldSchema);
 
-        return [];
-
-//        return Object.entries(schema)
-//                .sort()
-//                .reduce((sortedSchema, [key, value]) => {
-//            sortedSchema[key] = value;
-//
-//            return sortedSchema;
-//        }, {});
+        return $fieldSchema;
     }
 
     public static function buildColumnSchema(Collection $collection, string $name)
@@ -62,7 +56,6 @@ class GeneratorField
         /** @var RelationSchema $relation */
         $relation = $collection->getFields()->get($name);
         $foreignCollection = $collection->getDataSource()->getCollections()->first(fn ($item) => $item->getName() === $relation->getForeignCollection());
-        //dd($foreignCollection->getName());
 
         $relationSchema = [
             'field'        => $name,
@@ -92,37 +85,72 @@ class GeneratorField
         }
     }
 
-    public static function buildToManyRelationSchema($relation, $collection, $foreignCollection, $relationSchema): array
+    public static function buildToManyRelationSchema(RelationSchema $relation, Collection $collection, Collection $foreignCollection, array $baseSchema): array
+    {
+        if (is_a($relation, OneToManySchema::class)) {
+            $key = $relation->getOriginKeyTarget();
+            /** @var ColumnSchema $keySchema */
+            $keySchema = $collection->getFields()->get($key);
+        } else {
+            $key = $relation->getForeignKeyTarget();
+            $keySchema = $foreignCollection->getFields()->get($key);
+        }
+
+        return array_merge(
+            $baseSchema,
+            [
+                'type'         => '[' . $keySchema->getColumnType()->value . ']',
+                'defaultValue' => null, // TODO QUESTION SEE buildManyToOneSchema DEFAULTVALUE
+                'isFilterable' => false,
+                'isPrimaryKey' => false,
+                'isRequired'   => false,
+                'isSortable'   => false,
+                'validations'  => [],
+                'reference'    => $foreignCollection->getName() . '.' . $key,
+            ],
+        );
+    }
+
+    public static function buildOneToOneSchema(RelationSchema $relation, Collection $collection, Collection $foreignCollection, array $baseSchema): array
+    {
+        $key = $relation->getOriginKeyTarget();
+        /** @var ColumnSchema $keySchema */
+        $keySchema = $collection->getFields()->get($key);
+
+        return array_merge(
+            $baseSchema,
+            [
+                'type'         => $keySchema->getColumnType()->value,
+                'defaultValue' => null, // TODO QUESTION SEE buildManyToOneSchema DEFAULTVALUE
+                'isFilterable' => false, // TODO SchemaGeneratorFields . isForeignCollectionFilterable(foreignCollection),
+                'isPrimaryKey' => false,
+                'isRequired'   => false,
+                'isSortable'   => $keySchema->isSortable(),
+                'validations'  => [],
+                'reference'    => $foreignCollection->getName() . '.' . $key,
+            ],
+        );
+    }
+
+    public static function buildManyToOneSchema(RelationSchema $relation, Collection $collection, Collection $foreignCollection, array $baseSchema): array
     {
         $key = $relation->getForeignKey();
+        /** @var ColumnSchema $keySchema */
+        $keySchema = $collection->getFields()->get($key);
 
-        dd(2,$relation);
-        /*
-         * const key = relation.foreignKey;
-            const keySchema = collection.schema.fields[key] as ColumnSchema;
+        return array_merge(
+            $baseSchema,
+            [
+                'type'         => $keySchema->getColumnType()->value,
+                'defaultValue' => null, // TODO QUESTION SEE buildManyToOneSchema DEFAULTVALUE
+                'isFilterable' => false, //  SchemaGeneratorFields.isForeignCollectionFilterable(foreignCollection),
+                'isPrimaryKey' => $keySchema->isPrimaryKey(),
+                'isRequired'   => false, // TODO  keySchema.validation?.some(v => v.operator === 'Present') ?? false,
+                'isSortable'   => $keySchema->isSortable(),
+                'validations'  => [], //  FrontendValidationUtils.convertValidationList(keySchema.validation),
+                'reference'    => $foreignCollection->getName() . '.' . $key,
+            ],
+        );
 
-            return {
-              type: keySchema.columnType as PrimitiveTypes,
-              defaultValue: keySchema.defaultValue ?? null,
-              isFilterable: SchemaGeneratorFields.isForeignCollectionFilterable(foreignCollection),
-              isPrimaryKey: Boolean(keySchema.isPrimaryKey),
-              isRequired: keySchema.validation?.some(v => v.operator === 'Present') ?? false,
-              isSortable: Boolean(keySchema.isSortable),
-              validations: FrontendValidationUtils.convertValidationList(keySchema.validation),
-              reference: `${foreignCollection.name}.${relation.foreignKeyTarget}`,
-              ...baseSchema,
-            };
-         */
-        return [];
-    }
-
-    public static function buildOneToOneSchema($relation, $collection, $foreignCollection, $relationSchema): array
-    {
-        return [];
-    }
-
-    public static function buildManyToOneSchema($relation, $collection, $foreignCollection, $relationSchema): array
-    {
-        return [];
     }
 }
