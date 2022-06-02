@@ -3,11 +3,13 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Schema;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use Illuminate\Support\Collection as IlluminateCollection;
 
 class ColumnSchema
 {
     /**
      * @param PrimitiveType|PrimitiveType[] $columnType
+     * @param array                         $filterOperators
      * @param bool                          $isPrimaryKey
      * @param bool                          $isReadOnly
      * @param bool                          $isSortable
@@ -18,6 +20,7 @@ class ColumnSchema
      */
     public function __construct(
         protected array|PrimitiveType $columnType,
+        protected array $filterOperators = [],
         protected bool $isPrimaryKey = false,
         protected bool $isReadOnly = false,
         protected bool $isSortable = false,
@@ -26,6 +29,7 @@ class ColumnSchema
         protected array $enumValues = [],
         protected array $validation = [],
     ) {
+
     }
 
     /**
@@ -34,6 +38,14 @@ class ColumnSchema
     public function getColumnType(): array|PrimitiveType
     {
         return $this->columnType;
+    }
+
+    /**
+     * @return array
+     */
+    public function getFilterOperators(): array
+    {
+        return $this->filterOperators;
     }
 
     /**
