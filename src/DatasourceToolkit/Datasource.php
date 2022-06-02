@@ -29,9 +29,9 @@ class Datasource implements DatasourceContract
         return $this->schema;
     }
 
-    public function getCollection(string $name): CollectionContract
+    public function getCollection(string $name): Collection
     {
-        // TODO: Implement getCollection() method.
+        return $this->collections->get($name);
     }
 
     public function addCollection(CollectionContract $collection): void

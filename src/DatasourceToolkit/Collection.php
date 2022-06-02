@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
+use ForestAdmin\AgentPHP\DatasourceToolkit\Charts\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ActionSchema;
@@ -127,5 +128,12 @@ class Collection implements CollectionContract
         $this->segments = $segments;
 
         return $this;
+    }
+
+    public function getForm(?Caller $caller, string $name, ?array $formValues = null, ?array $filter = null): array
+    {
+        // TODO: Implement getForm() method.
+
+        return [];
     }
 }

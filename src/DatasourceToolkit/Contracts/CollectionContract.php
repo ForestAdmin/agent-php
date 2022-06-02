@@ -2,17 +2,25 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Contracts;
 
+use ForestAdmin\AgentPHP\DatasourceToolkit\Charts\Caller;
+
 interface CollectionContract
 {
     public function getDataSource(): DatasourceContract;
 
     public function getName(): string;
 
-
+    /**
+     * @param Caller|null $caller
+     * @param string      $name
+     * @param array|null  $formValues
+     * @param array|null  $filter TODO create Filter CLASS
+     * @return array
+     */
+    public function getForm(?Caller $caller, string $name, ?array $formValues = null, ?array $filter = null): array;
 
     /* TODO getSchema(): CollectionSchema; */
     /* TODO execute */
-    /* TODO getForm */
 
 
 
