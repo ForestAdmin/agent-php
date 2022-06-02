@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceDummy;
 
+use ForestAdmin\AgentPHP\DatasourceDummy\Collections\Address;
 use ForestAdmin\AgentPHP\DatasourceDummy\Collections\Book;
 use ForestAdmin\AgentPHP\DatasourceDummy\Collections\Library;
 use ForestAdmin\AgentPHP\DatasourceDummy\Collections\LibraryBook;
@@ -17,5 +18,6 @@ class DummyDatasource extends Datasource
         $this->addCollection(new Library($this));
         $this->addCollection(new LibraryBook($this));
         $this->addCollection(new Person($this));
+        $this->addCollection(new Address($this));
     }
 }

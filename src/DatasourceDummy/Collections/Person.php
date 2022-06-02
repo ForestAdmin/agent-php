@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
 class Person extends BaseCollection
 {
@@ -22,10 +23,18 @@ class Person extends BaseCollection
             'lastName' => new ColumnSchema(
                 columnType: PrimitiveType::String(),
             ),
+            'addressId' => new ColumnSchema(
+                columnType: PrimitiveType::Number(),
+            ),
             'books' => new OneToManySchema(
                 originKey: 'authorId',
                 originKeyTarget: 'id',
                 foreignCollection: 'Book',
+            ),
+            'address' => new OneToOneSchema(
+                originKey: 'originKeyId',
+                originKeyTarget: 'id',
+                foreignCollection: 'Address',
             ),
         ];
 
