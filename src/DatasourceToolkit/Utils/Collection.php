@@ -72,38 +72,4 @@ class Collection
 
         return false;
     }
-
-    /*
-        static getInverseRelation(collection: Collection, relationName: string): string {
-            const relation = collection.schema.fields[relationName] as RelationSchema;
-            const foreignCollection = collection.dataSource.getCollection(relation.foreignCollection);
-            const inverse = Object.entries(foreignCollection.schema.fields).find(
-                ([, field]: [string, RelationSchema]) => {
-                const isManyToManyInverse =
-                    field.type === 'ManyToMany' &&
-                    relation.type === 'ManyToMany' &&
-                    field.originKey === relation.foreignKey &&
-                    field.throughCollection === relation.throughCollection &&
-                    field.foreignKey === relation.originKey;
-
-                const isManyToOneInverse =
-                    field.type === 'ManyToOne' &&
-                    (relation.type === 'OneToMany' || relation.type === 'OneToOne') &&
-                    field.foreignKey === relation.originKey;
-
-                const isOtherInverse =
-                    (field.type === 'OneToMany' || field.type === 'OneToOne') &&
-                    relation.type === 'ManyToOne' &&
-                    field.originKey === relation.foreignKey;
-
-                return (
-                  (isManyToManyInverse || isManyToOneInverse || isOtherInverse) &&
-                  field.foreignCollection === collection.name
-                );
-              },
-        ) as [string, RelationSchema];
-
-        return inverse ? inverse[0] : null;
-        }
-        */
 }
