@@ -39,15 +39,15 @@ class GeneratorField
             'field'        => $name,
             'integration'  => null,
             'inverseOf'    => null,
-            'isFilterable' => false, // TODO FrontendFilterableUtils . isFilterable(column . columnType, column . filterOperators),
+            'isFilterable' => FrontendFilterable::isFilterable($column->getColumnType(), $column->getFilterOperators()),
             'isPrimaryKey' => $column->isPrimaryKey(),
             'isReadOnly'   => $column->isReadOnly(),
-            'isRequired'   => true, // TODO column . validation ?.some(v => v . operator === 'Present') ?? false,
+            'isRequired'   => in_array('Present', $column->getValidation(), true),
             'isSortable'   => $column->isSortable(),
             'isVirtual'    => false,
             'reference'    => null,
             'type'         => self::convertColumnType($column->getColumnType()),
-            'validations'  => '', // TODO  FrontendValidationUtils . convertValidationList(column . validation),
+            'validations'  => FrontendValidation::convertValidationList($column->getValidation()),
         ];
     }
 
@@ -151,6 +151,5 @@ class GeneratorField
                 'reference'    => $foreignCollection->getName() . '.' . $key,
             ],
         );
-
     }
 }

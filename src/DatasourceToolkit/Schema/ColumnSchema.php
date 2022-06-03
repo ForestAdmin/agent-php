@@ -29,7 +29,6 @@ class ColumnSchema
         protected array $enumValues = [],
         protected array $validation = [],
     ) {
-
     }
 
     /**
