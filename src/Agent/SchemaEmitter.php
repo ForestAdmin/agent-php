@@ -11,12 +11,22 @@ class SchemaEmitter
 
     public const LIANA_VERSION = '1.0.0-beta.22';
 
+    /**
+     * @throws \JsonException
+     */
     public function getSerializedSchema(array $options, Datasource $datasource)
     {
-        //return self::me;
         $schema = $options['isProduction'] ? $this->loadFromDisk($options['schemaPath']) : $this->generate($options['prefix'], $datasource);
 
-        return $schema;
+        if (! $options['isProduction']) {
+            // todo create json file
+            $pretty = json_encode($schema, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
+            file_put_contents($options['schemaPath'], $pretty);
+            //  writeFile(options.schemaPath, pretty, { encoding: 'utf-8' });
+        }
+        $hash = sha1(json_encode($schema, JSON_THROW_ON_ERROR));
+
+        return self::serialize($schema, $hash);
     }
 
     /**
@@ -42,12 +52,51 @@ class SchemaEmitter
 
     private function generate(string $prefix, Datasource $datasource)
     {
-        $allCollectionSchemas = [];
-        $collectionSchemas = $datasource->getCollections()->map(
-            fn ($collection) => GeneratorCollection::buildSchema($prefix, $collection)
-        );
+        return $datasource
+            ->getCollections()
+            ->map(
+                fn ($collection) => GeneratorCollection::buildSchema($prefix, $collection)
+            )
+            ->sortBy('name')
+            ->values()
+            ->toArray();
+    }
 
-        dd($collectionSchemas->toArray());
+    /**
+     * @param array  $schema
+     * @param string $hash
+     * @return array
+     */
+    private function serialize(array $schema, string $hash): array
+    {
+        $data = [];
+        $meta = self::meta();
+        $meta['schemaFileHash'] = $hash;
+
+        foreach ($schema as $collection) {
+//            $collectionActions = $collection['actions'];
+//            $collectionSegments = $collection['segments'];
+            unset($collection['actions'], $collection['segments']);
+
+            $data[] = [
+                'id'            => $collection['name'],
+                'type'          => 'collections',
+                'attributes'    => $collection,
+                'relationships' => [
+                    'actions'  => [
+                        'data' => [],
+                    ],
+                    'segments' => [
+                        'data' => [],
+                    ],
+                ],
+            ];
+        }
+
+        return [
+            'data'     => $data,
+            'meta'     => $meta,
+        ];
     }
 }
 
