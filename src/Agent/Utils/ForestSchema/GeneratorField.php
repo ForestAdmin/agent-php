@@ -90,16 +90,16 @@ class GeneratorField
         if (is_a($relation, OneToManySchema::class)) {
             $key = $relation->getOriginKeyTarget();
             /** @var ColumnSchema $keySchema */
-            $keySchema = $collection->getFields()->get($key);
+            $column = $collection->getFields()->get($key);
         } else {
             $key = $relation->getForeignKeyTarget();
-            $keySchema = $foreignCollection->getFields()->get($key);
+            $column = $foreignCollection->getFields()->get($key);
         }
 
         return array_merge(
             $baseSchema,
             [
-                'type'         => '[' . $keySchema->getColumnType()->value . ']',
+                'type'         => '[' . $column->getColumnType()->value . ']',
                 'defaultValue' => null, // TODO QUESTION SEE buildManyToOneSchema DEFAULTVALUE
                 'isFilterable' => false,
                 'isPrimaryKey' => false,
@@ -114,18 +114,18 @@ class GeneratorField
     public static function buildOneToOneSchema(RelationSchema $relation, Collection $collection, Collection $foreignCollection, array $baseSchema): array
     {
         $key = $relation->getOriginKeyTarget();
-        /** @var ColumnSchema $keySchema */
-        $keySchema = $collection->getFields()->get($key);
+        /** @var ColumnSchema $column */
+        $column = $collection->getFields()->get($key);
 
         return array_merge(
             $baseSchema,
             [
-                'type'         => $keySchema->getColumnType()->value,
+                'type'         => $column->getColumnType()->value,
                 'defaultValue' => null, // TODO QUESTION SEE buildManyToOneSchema DEFAULTVALUE
-                'isFilterable' => false, // TODO SchemaGeneratorFields . isForeignCollectionFilterable(foreignCollection),
+                'isFilterable' => self::isForeignCollectionFilterable($foreignCollection),
                 'isPrimaryKey' => false,
                 'isRequired'   => false,
-                'isSortable'   => $keySchema->isSortable(),
+                'isSortable'   => $column->isSortable(),
                 'validations'  => [],
                 'reference'    => $foreignCollection->getName() . '.' . $key,
             ],
@@ -135,21 +135,28 @@ class GeneratorField
     public static function buildManyToOneSchema(RelationSchema $relation, Collection $collection, Collection $foreignCollection, array $baseSchema): array
     {
         $key = $relation->getForeignKey();
-        /** @var ColumnSchema $keySchema */
-        $keySchema = $collection->getFields()->get($key);
+        /** @var ColumnSchema $column */
+        $column = $collection->getFields()->get($key);
 
         return array_merge(
             $baseSchema,
             [
-                'type'         => $keySchema->getColumnType()->value,
+                'type'         => $column->getColumnType()->value,
                 'defaultValue' => null, // TODO QUESTION SEE buildManyToOneSchema DEFAULTVALUE
-                'isFilterable' => false, //  SchemaGeneratorFields.isForeignCollectionFilterable(foreignCollection),
-                'isPrimaryKey' => $keySchema->isPrimaryKey(),
-                'isRequired'   => false, // TODO  keySchema.validation?.some(v => v.operator === 'Present') ?? false,
-                'isSortable'   => $keySchema->isSortable(),
-                'validations'  => [], //  FrontendValidationUtils.convertValidationList(keySchema.validation),
+                'isFilterable' => self::isForeignCollectionFilterable($foreignCollection),
+                'isPrimaryKey' => $column->isPrimaryKey(),
+                'isRequired'   => in_array('Present', $column->getValidation(), true),
+                'isSortable'   => $column->isSortable(),
+                'validations'  => FrontendValidation::convertValidationList($column->getValidation()),
                 'reference'    => $foreignCollection->getName() . '.' . $key,
             ],
+        );
+    }
+
+    public static function isForeignCollectionFilterable(Collection $foreignCollection): bool
+    {
+        return $foreignCollection->getFields()->some(
+            fn ($column) => $column->getType() === 'Column' && FrontendFilterable::isFilterable($column->getColumnType(), $column->getFilterOperators())
         );
     }
 }

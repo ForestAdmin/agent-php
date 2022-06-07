@@ -46,10 +46,11 @@ final class FrontendFilterable
      */
     public static function isFilterable($type, array $operators = [])
     {
-        $neededOperators = new IlluminateCollection(self::getRequiredOperators($type));
+        $neededOperators = new IlluminateCollection(self::getRequiredOperators($type->value));
         $supportedOperators = new IlluminateCollection($operators);
 
-        return $neededOperators->isNotEmpty() && $neededOperators->every(fn ($operator) => $supportedOperators->has($operator));
+        // TODO SHOULD BE THE OPPOSITE ? CHECK SUPPORTED INTO NEEDED ?
+        return $neededOperators->isNotEmpty() && $neededOperators->every(fn ($operator) => $supportedOperators->contains($operator));
     }
 
     /**
