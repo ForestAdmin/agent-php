@@ -100,7 +100,7 @@ class GeneratorField
             $baseSchema,
             [
                 'type'         => '[' . $column->getColumnType()->value . ']',
-                'defaultValue' => null, // TODO QUESTION SEE buildManyToOneSchema DEFAULTVALUE
+                'defaultValue' => null,
                 'isFilterable' => false,
                 'isPrimaryKey' => false,
                 'isRequired'   => false,
@@ -121,7 +121,7 @@ class GeneratorField
             $baseSchema,
             [
                 'type'         => $column->getColumnType()->value,
-                'defaultValue' => null, // TODO QUESTION SEE buildManyToOneSchema DEFAULTVALUE
+                'defaultValue' => null,
                 'isFilterable' => self::isForeignCollectionFilterable($foreignCollection),
                 'isPrimaryKey' => false,
                 'isRequired'   => false,
@@ -142,7 +142,7 @@ class GeneratorField
             $baseSchema,
             [
                 'type'         => $column->getColumnType()->value,
-                'defaultValue' => null, // TODO QUESTION SEE buildManyToOneSchema DEFAULTVALUE
+                'defaultValue' => null,
                 'isFilterable' => self::isForeignCollectionFilterable($foreignCollection),
                 'isPrimaryKey' => $column->isPrimaryKey(),
                 'isRequired'   => in_array('Present', $column->getValidation(), true),
