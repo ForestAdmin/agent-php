@@ -4,7 +4,7 @@ namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ActionField;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ActionSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\ActionFieldType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;

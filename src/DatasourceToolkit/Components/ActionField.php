@@ -1,6 +1,6 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema;
+namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\ActionFieldType;
 
