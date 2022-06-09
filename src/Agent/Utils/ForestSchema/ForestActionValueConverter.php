@@ -4,7 +4,7 @@ namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\File;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\ActionFieldType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Concerns\ActionFieldType;
 
 /**
  * This utility class converts form values from our internal format to the format that is
