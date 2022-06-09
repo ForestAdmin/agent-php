@@ -1,6 +1,6 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns;
+namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Concerns;
 
 use Spatie\Enum\Enum;
 
