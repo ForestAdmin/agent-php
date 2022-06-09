@@ -2,7 +2,7 @@
 
 spl_autoload_register(function ($class) {
     $prefix = 'ForestAdmin\\AgentPHP\\';
-    $base_dir = __DIR__ . '/../';
+    $base_dir = __DIR__ . '/../../';
     $len = strlen($prefix);
 
     if (strncmp($prefix, $class, $len) !== 0) {

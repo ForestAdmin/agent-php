@@ -14,9 +14,9 @@ class SchemaEmitter
     /**
      * @throws \JsonException
      */
-    public function getSerializedSchema(array $options, Datasource $datasource)
+    public static function getSerializedSchema(array $options, Datasource $datasource)
     {
-        $schema = $options['isProduction'] ? $this->loadFromDisk($options['schemaPath']) : $this->generate($options['prefix'], $datasource);
+        $schema = $options['isProduction'] ? self::loadFromDisk($options['schemaPath']) : self::generate($options['prefix'], $datasource);
 
         if (! $options['isProduction']) {
             // todo create json file
@@ -32,7 +32,7 @@ class SchemaEmitter
     /**
      * @return array
      */
-    private function meta(): array
+    private static function meta(): array
     {
         return [
             'liana'         => self::LIANA_NAME,
@@ -46,11 +46,11 @@ class SchemaEmitter
         ];
     }
 
-    private function loadFromDisk()
+    private static function loadFromDisk()
     {
     }
 
-    private function generate(string $prefix, Datasource $datasource)
+    private static function generate(string $prefix, Datasource $datasource)
     {
         return $datasource
             ->getCollections()
@@ -67,7 +67,7 @@ class SchemaEmitter
      * @param string $hash
      * @return array
      */
-    private function serialize(array $schema, string $hash): array
+    private static function serialize(array $schema, string $hash): array
     {
         $data = [];
         $meta = self::meta();
@@ -99,37 +99,3 @@ class SchemaEmitter
         ];
     }
 }
-
-//private static async generate(prefix: string, dataSource: DataSource): Promise<RawSchema> {
-//    const allCollectionSchemas = [];
-//
-//    const dataSourceCollectionSchemas = dataSource.collections.map(collection =>
-//      SchemaGeneratorCollection.buildSchema(prefix, collection),
-//    );
-//    allCollectionSchemas.push(...dataSourceCollectionSchemas);
-//
-//    return Promise.all(allCollectionSchemas);
-//  }
-
-
-
-
-
-//
-//static async getSerializedSchema(
-//    options: Options,
-//    dataSource: DataSource,
-//): Promise<SerializedSchema> {
-//    const schema: RawSchema = options.isProduction
-//        ? await SchemaEmitter.loadFromDisk(options.schemaPath)
-//      : await SchemaEmitter.generate(options.prefix, dataSource);
-//
-//    if (!options.isProduction) {
-//        const pretty = stringify(schema, { maxLength: 80 });
-//      await writeFile(options.schemaPath, pretty, { encoding: 'utf-8' });
-//    }
-//
-//    const hash = crypto.createHash('sha1').update(JSON.stringify(schema)).digest('hex');
-//
-//    return SchemaEmitter.serialize(schema, hash);
-//  }
