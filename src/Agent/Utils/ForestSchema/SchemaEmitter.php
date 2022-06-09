@@ -1,8 +1,7 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\Agent;
+namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
-use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\GeneratorCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 class SchemaEmitter

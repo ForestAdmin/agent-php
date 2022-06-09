@@ -2,21 +2,28 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Builder;
 
-
+use DI\Bridge\Slim\Bridge;
+use DI\Container;
 use ForestAdmin\AgentPHP\Agent\ForestAdminHttpDriver;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use Slim\Factory\AppFactory;
+use Slim\App;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 class Agent
 {
+    protected static Container $container;
+
     protected Datasource $compositeDatasource;
+
+    public App $app;
 
     public function __construct(protected array $options)
     {
         $this->compositeDatasource = new Datasource();
+        $this->app = $this->initalizeApp();
     }
 
     public function addDatasource(DatasourceContract $datasource): self
@@ -31,23 +38,17 @@ class Agent
 
     public function mountOnStandaloneServer(): self
     {
-        $app = AppFactory::create();
-        $app->setBasePath('/forest');
-
-
-        $app->get('/test', function (Request $request, Response $response, $args) {
+        $this->app->get('/test', function (Request $request, Response $response) {
             $response->getBody()->write("Hello world! this is a test");
 
             return $response;
         });
 
-        $app->get('/test2', function (Request $request, Response $response, $args) {
+        $this->app->get('/test2', function (Request $request, Response $response) {
             $response->getBody()->write("Hello world! this is a test 2");
 
             return $response;
         });
-
-        $app->run();
 
         return $this;
     }
@@ -63,10 +64,38 @@ class Agent
 //            await writeFile(options.typingsPath, types, { encoding: 'utf-8' });
 //        }
 //        dd('ok');
-        $httpDriver = new ForestAdminHttpDriver($this->compositeDatasource, $this->options);
-        $httpDriver->sendSchema();
+//        $httpDriver = new ForestAdminHttpDriver($this->compositeDatasource, $this->options);
+//        $httpDriver->sendSchema();
 
 //        const router = await httpDriver.getRouter();
 //        for (const task of this.mounts) await task(router)
+        $this->app->run();
+    }
+
+    private function initalizeApp(): App
+    {
+        // Create Container using PHP-DI
+        $container = new Container();
+        $container->set(
+            'cache',
+            fn () => new FilesystemAdapter(directory: __DIR__. '/../cache')
+        );
+
+        $app = Bridge::create($container);
+        $app->setBasePath('/forest');
+
+        self::$container = $app->getContainer();
+
+        return $app;
+    }
+
+    /**
+     * Get the globally available instance of the container.
+     *
+     * @return static
+     */
+    public static function getContainer()
+    {
+        return static::$container;
     }
 }

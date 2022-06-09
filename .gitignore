@@ -2,9 +2,7 @@
 /.vscode
 .DS_Store
 
-
-/src/_example/src/.forestadmin-schema.json
-
+.forestadmin-schema.json
 
 # npm
 node_modules

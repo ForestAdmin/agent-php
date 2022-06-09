@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent;
 
 use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
+use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 class ForestAdminHttpDriver
