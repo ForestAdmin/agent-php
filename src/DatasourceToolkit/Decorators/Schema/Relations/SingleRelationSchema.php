@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 
 abstract class SingleRelationSchema extends RelationSchema
 {
