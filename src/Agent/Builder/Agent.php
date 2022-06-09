@@ -4,7 +4,7 @@ namespace ForestAdmin\AgentPHP\Agent\Builder;
 
 
 use ForestAdmin\AgentPHP\Agent\ForestAdminHttpDriver;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Contracts\DatasourceContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use Slim\Factory\AppFactory;
 use Slim\Psr7\Request;

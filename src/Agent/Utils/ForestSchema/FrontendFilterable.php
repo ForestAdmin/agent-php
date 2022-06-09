@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 final class FrontendFilterable

@@ -3,11 +3,11 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Caller;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Contracts\CollectionContract;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Contracts\DatasourceContract;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ActionSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ActionSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class Collection implements CollectionContract
