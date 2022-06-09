@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\DataSourceSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\DataSourceSchema;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 interface DatasourceContract

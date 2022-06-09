@@ -2,9 +2,9 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Contracts\CollectionContract;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Contracts\DatasourceContract;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\DataSourceSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\DataSourceSchema;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class Datasource implements DatasourceContract
