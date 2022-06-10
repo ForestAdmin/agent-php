@@ -14,7 +14,7 @@ abstract class AbstractCollectionRoute extends AbstractRoute
         protected DatasourceContract $datasource,
         protected string $collectionName
     ) {
-        parent::construct($services, $this->options);
+        parent::__construct($services, $this->options);
     }
 
     protected function getCollection(): Collection
