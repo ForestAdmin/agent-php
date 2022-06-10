@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results;
 
-class SuccessResult
+class SuccessResult extends ActionResult
 {
     protected string $invalidated;
 

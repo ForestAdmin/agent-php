@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results;
 
-class WebHookResult
+class WebHookResult extends ActionResult
 {
     public function __construct(
         protected string $type = 'Error',

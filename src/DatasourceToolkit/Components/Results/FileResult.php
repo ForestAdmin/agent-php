@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results;
 
-class FileResult
+class FileResult extends ActionResult
 {
     public function __construct(
         protected string $type = 'File',
