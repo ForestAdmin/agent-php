@@ -3,10 +3,10 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Utils;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection as MainCollection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 
 class Collection
 {

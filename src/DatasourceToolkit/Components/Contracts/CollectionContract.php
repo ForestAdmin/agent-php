@@ -3,6 +3,11 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results\ActionResult;
 
 interface CollectionContract
 {
@@ -10,54 +15,17 @@ interface CollectionContract
 
     public function getName(): string;
 
-    /**
-     * @param Caller|null $caller
-     * @param string      $name
-     * @param array|null  $formValues
-     * @param array|null  $filter TODO create Filter CLASS
-     * @return array
-     */
-    public function getForm(?Caller $caller, string $name, ?array $formValues = null, ?array $filter = null): array;
+    public function execute(Caller $caller, string $name, array $formValues, ?Filter $filter = null): ActionResult;
 
-    /* TODO getSchema(): CollectionSchema; */
-    /* TODO execute */
+    public function getForm(Caller $caller, string $name, ?array $formValues = null, ?Filter $filter = null): array;
 
+    public function create(Caller $caller, array $data): array;
 
+    public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array;
 
+    public function update(Caller $caller, Filter $filter, array $patch): void;
 
+    public function delete(Caller $caller, Filter $filter): void;
 
-    /*
-     *   get dataSource(): DataSource;
-  get name(): string;
-  get schema(): CollectionSchema;
-
-  execute(
-    caller: Caller,
-    name: string,
-    formValues: RecordData,
-    filter?: Filter,
-  ): Promise<ActionResult>;
-
-  getForm(
-    caller: Caller,
-    name: string,
-    formValues?: RecordData,
-    filter?: Filter,
-  ): Promise<ActionField[]>;
-
-  create(caller: Caller, data: RecordData[]): Promise<RecordData[]>;
-
-  list(caller: Caller, filter: PaginatedFilter, projection: Projection): Promise<RecordData[]>;
-
-  update(caller: Caller, filter: Filter, patch: RecordData): Promise<void>;
-
-  delete(caller: Caller, filter: Filter): Promise<void>;
-
-  aggregate(
-    caller: Caller,
-    filter: Filter,
-    aggregation: Aggregation,
-    limit?: number,
-  ): Promise<AggregateResult[]>;
-     */
+    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit): array;
 }

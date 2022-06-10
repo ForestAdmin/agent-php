@@ -2,9 +2,13 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results\ActionResult;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ActionSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
@@ -37,6 +41,46 @@ class Collection implements CollectionContract
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function execute(Caller $caller, string $name, array $formValues, ?Filter $filter = null): ActionResult
+    {
+        // TODO: Implement execute() method.
+        if (!$this->actions->get($name)) {
+            throw new \Exception("Action $name is not implemented.");
+        }
+
+        // TODO QUESTION HOW TO RETURN ACTIONRESULT + CHECK DUMMYDATA SOURCE PARAMETERS ARE MISSING ? (base.ts -> override async execute(): Promise<ActionResult>)
+    }
+
+    public function getForm(Caller $caller, string $name, ?array $formValues = null, ?Filter $filter = null): array
+    {
+        return [];
+    }
+
+    public function create(Caller $caller, array $data): array
+    {
+        // TODO: Implement create() method.
+    }
+
+    public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array
+    {
+        // TODO: Implement list() method.
+    }
+
+    public function update(Caller $caller, Filter $filter, array $patch): void
+    {
+        // TODO: Implement update() method.
+    }
+
+    public function delete(Caller $caller, Filter $filter): void
+    {
+        // TODO: Implement delete() method.
+    }
+
+    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit): array
+    {
+        // TODO: Implement aggregate() method.
     }
 
     public function addFields(array $fields): void
@@ -128,12 +172,5 @@ class Collection implements CollectionContract
         $this->segments = $segments;
 
         return $this;
-    }
-
-    public function getForm(?Caller $caller, string $name, ?array $formValues = null, ?array $filter = null): array
-    {
-        // TODO: Implement getForm() method.
-
-        return [];
     }
 }

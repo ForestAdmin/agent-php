@@ -2,6 +2,8 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts;
 
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\Chart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\DataSourceSchema;
 use Illuminate\Support\Collection as IlluminateCollection;
 
@@ -15,5 +17,5 @@ interface DatasourceContract
 
     public function addCollection(CollectionContract $collection): void;
 
-    /* TODO renderChart */
+    public function renderChart(Caller $caller, string $name): Chart;
 }
