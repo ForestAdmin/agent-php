@@ -38,18 +38,18 @@ class Agent
 
     public function mountOnStandaloneServer(): self
     {
-        $this->app->get('/test', function (Request $request, Response $response) {
-            $response->getBody()->write("Hello world! this is a test");
-
-            return $response;
-        });
-
-        $this->app->get('/test2', function (Request $request, Response $response) {
-            $response->getBody()->write("Hello world! this is a test 2");
-
-            return $response;
-        });
-
+//        $this->app->get('/test', function (Request $request, Response $response) {
+//            $response->getBody()->write("Hello world! this is a test");
+//
+//            return $response;
+//        });
+//
+//        $this->app->get('/test2', function (Request $request, Response $response) {
+//            $response->getBody()->write("Hello world! this is a test 2");
+//
+//            return $response;
+//        });
+//        dd($this->app);
         return $this;
     }
 
@@ -64,11 +64,14 @@ class Agent
 //            await writeFile(options.typingsPath, types, { encoding: 'utf-8' });
 //        }
 //        dd('ok');
-//        $httpDriver = new ForestAdminHttpDriver($this->compositeDatasource, $this->options);
-//        $httpDriver->sendSchema();
+        $httpDriver = new ForestAdminHttpDriver($this->compositeDatasource, $this->options);
+        $httpDriver->sendSchema();
 
-//        const router = await httpDriver.getRouter();
+        $routes = $httpDriver->getRoutes();
+        $this->setRoutes($routes);
 //        for (const task of this.mounts) await task(router)
+//        dd($this->app);
+//        $this->app->get('/', fn () => dd('oksdf'));
         $this->app->run();
     }
 
@@ -87,6 +90,14 @@ class Agent
         self::$container = $app->getContainer();
 
         return $app;
+    }
+
+    private function setRoutes(array $routes): void
+    {
+        foreach ($routes as $route) {
+            $route->setupRoutes($this->app->getRouteCollector());
+        }
+//        dd($this->app);
     }
 
     /**

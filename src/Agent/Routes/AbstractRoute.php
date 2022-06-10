@@ -2,12 +2,13 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes;
 
-use ForestAdmin\AgentPHP\Agent\ForestAdminHttpDriver;
-use Slim\Interfaces\RouteInterface;
+use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
+use Slim\Routing\RouteCollector;
+use Slim\Routing\RouteCollectorProxy;
 
 abstract class AbstractRoute
 {
-    public function __construct(protected ForestAdminHttpDriver $services, protected array $options)
+    public function __construct(protected ForestAdminHttpDriverServices $services, protected array $options)
     {
     }
 
@@ -16,7 +17,7 @@ abstract class AbstractRoute
         // Do nothing by default -> maybe this function is not necessary in PHP context
     }
 
-    abstract public function setupRoutes(RouteInterface $router): void;
+    abstract public function setupRoutes(RouteCollector $router): void;
 
-    abstract public function getType(RouteInterface $router);
+//    abstract public function getType(RouterType $type);
 }
