@@ -61,5 +61,5 @@ class Operators
         'Past',
     ];
 
-    public const allOperators = [...self::UNIQUE_OPERATORS, ...self::INTERVAL_OPERATORS, ...self::OTHER_OPERATORS];
+    public const ALL_OPERATORS = [...self::UNIQUE_OPERATORS, ...self::INTERVAL_OPERATORS, ...self::OTHER_OPERATORS];
 }
