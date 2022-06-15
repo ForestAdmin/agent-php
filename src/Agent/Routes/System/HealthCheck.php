@@ -29,8 +29,18 @@ class HealthCheck extends AbstractRoute
 
     public function handleRequest()
     {
-//        dd($_REQUEST);
+        /*dd($_SERVER);
+        $server = collect($_SERVER)->only('REQUEST_METHOD', 'HTTP_HOST', 'REQUEST_URI');
+        $server->put('QUERY_STRING', $_REQUEST);
+
+
+        dd($server);
         return 'ok';
-//        return forestResponse();
+//        return forestResponse();*/
+
+        return [
+            'status'  => 204,
+            'content' => null,
+        ];
     }
 }
