@@ -4,8 +4,6 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Security;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
-use Slim\Psr7\Request;
-use Slim\Psr7\Response;
 
 class Authentication extends AbstractRoute
 {
@@ -19,7 +17,7 @@ class Authentication extends AbstractRoute
         // Do nothing by default -> maybe this function is not necessary in PHP context
     }
 
-    public function setupRoutes(): array
+    public function setupRoutes(): self
     {
 //        $router->map(
 //            ['POST'],

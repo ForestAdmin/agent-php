@@ -2,14 +2,9 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Builder;
 
-use DI\Bridge\Slim\Bridge;
-use DI\Container;
 use ForestAdmin\AgentPHP\Agent\ForestAdminHttpDriver;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use Slim\App;
-use Slim\Routing\RouteCollectorProxy;
-use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 class AgentFactory
 {
@@ -17,7 +12,7 @@ class AgentFactory
 
     protected Datasource $compositeDatasource;
 
-    public App $app;
+    //public App $app;
 
     private ForestAdminHttpDriver $httpDriver;
 
