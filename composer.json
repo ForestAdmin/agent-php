@@ -19,7 +19,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Forestadmin\\AgentPHP\\": "src/"
+            "ForestAdmin\\AgentPHP\\": "src/"
         },
         "files": [
             "src/Agent/Utils/helpers.php"
@@ -31,10 +31,5 @@
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true,
-    "config": {
-        "allow-plugins": {
-            "pestphp/pest-plugin": true
-        }
-    }
+    "prefer-stable": true
 }

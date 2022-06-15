@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent;
 
+use ForestAdmin\AgentPHP\Agent\Http\Router;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
@@ -18,9 +19,8 @@ class ForestAdminHttpDriver
     public function getRoutes(): array
     {
         $services = new ForestAdminHttpDriverServices($this->options);
-        $routes = (new Router($this->dataSource, $this->options, $services))->makeRoutes();
 
-        return $routes;
+        return (new Router($this->dataSource, $this->options, $services))->makeRoutes();
     }
 
     public function sendSchema(): void

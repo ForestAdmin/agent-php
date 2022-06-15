@@ -6,7 +6,6 @@ use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
-use Slim\Routing\RouteCollector;
 
 class Authentication extends AbstractRoute
 {
@@ -20,27 +19,29 @@ class Authentication extends AbstractRoute
         // Do nothing by default -> maybe this function is not necessary in PHP context
     }
 
-    public function setupRoutes(RouteCollector $router): void
+    public function setupRoutes(): array
     {
-        $router->map(
-            ['POST'],
-            '/authentication',
-            fn (Request $request, Response $response) => $this->handleAuthentication($request, $response)
-        );
-
-        $router->map(
-            ['GET'],
-            '/authentication/callback',
-            fn (Request $request, Response $response) => $this->handleAuthenticationCallback($request, $response)
-        );
-
-////        router.use(jwt({ secret: this.options.authSecret, cookie: 'forest_session_token' }));
+//        $router->map(
+//            ['POST'],
+//            '/authentication',
+//            fn (Request $request, Response $response) => $this->handleAuthentication($request, $response)
+//        );
 //
-        $router->map(
-            ['POST'],
-            '/authentication/logout',
-            fn (Request $request, Response $response) => $this->handleAuthentication($request, $response)
-        );
+//        $router->map(
+//            ['GET'],
+//            '/authentication/callback',
+//            fn (Request $request, Response $response) => $this->handleAuthenticationCallback($request, $response)
+//        );
+//
+//////        router.use(jwt({ secret: this.options.authSecret, cookie: 'forest_session_token' }));
+//
+//        $router->map(
+//            ['POST'],
+//            '/authentication/logout',
+//            fn (Request $request, Response $response) => $this->handleAuthentication($request, $response)
+//        );
+
+        return [];
     }
 
     public function handleAuthentication(Request $request, Response $response)

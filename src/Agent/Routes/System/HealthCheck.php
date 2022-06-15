@@ -4,9 +4,6 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\System;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
-use Slim\Psr7\Request;
-use Slim\Psr7\Response;
-use Slim\Routing\RouteCollector;
 
 class HealthCheck extends AbstractRoute
 {
@@ -15,24 +12,25 @@ class HealthCheck extends AbstractRoute
         parent::__construct($services, $options);
     }
 
-    public function setupRoutes(RouteCollector $router): void
+    /**
+     * @return $this
+     */
+    public function setupRoutes(): self
     {
-        $router->map(
-            ['GET'],
-            '',
-            fn (Request $request, Response $response) => $this->handleRequest($request, $response)
+        $this->addRoute(
+            'forest',
+            'get',
+            '/',
+            fn () => $this->handleRequest()
         );
+
+        return $this;
     }
 
-    public function handleRequest(Request $request, Response $response)
+    public function handleRequest()
     {
-        $payload = json_encode([
-            'error'   => null,
-            'message' => 'Agent is running',
-        ], JSON_THROW_ON_ERROR);
-        $response->getBody()->write($payload);
-
-        return $response
-            ->withHeader('Content-Type', 'application/json');
+//        dd($_REQUEST);
+        return 'ok';
+//        return forestResponse();
     }
 }

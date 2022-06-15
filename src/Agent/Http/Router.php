@@ -1,6 +1,6 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\Agent;
+namespace ForestAdmin\AgentPHP\Agent\Http;
 
 use ForestAdmin\AgentPHP\Agent\Routes\Security\Authentication;
 use ForestAdmin\AgentPHP\Agent\Routes\System\HealthCheck;
@@ -18,21 +18,15 @@ class Router
 
     private function getRootRoutes(): array
     {
-
-//        return ROOT_ROUTES_CTOR.map(Route => new Route(services, options));
-        return [
-            new Authentication($this->services, $this->options),
-            new HealthCheck($this->services, $this->options),
-        ];
+        return array_merge(
+            HealthCheck::of($this->services, $this->options)->getRoutes(),
+        );
     }
-
 
     public function makeRoutes()
     {
-        $routes = [
-            ...$this->getRootRoutes()
-        ];
-
-        return $routes;
+        return array_merge(
+            $this->getRootRoutes()
+        );
     }
 }
