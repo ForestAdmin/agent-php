@@ -10,25 +10,22 @@ class FilterFactory
     public function getPreviousConditionTree(string $field, \DateTime $startPeriod, \DateTime $endPeriod)
     {
         $conditionTreeFactory = new ConditionTreeFactory();
-        $conditionTreeFactory.intersect(
+        $conditionTreeFactory->intersect(
             // TODO CHECK FORMAT DATE OK ???
             new ConditionTreeLeaf($field, 'GreaterThan', $startPeriod->format('Y-m-d H:i:s')),
             new ConditionTreeLeaf($field, 'LessThan', $endPeriod->format('Y-m-d H:i:s'))
         );
     }
 
+    public function getPreviousPeriodByUnit(string $field, \DateTime $now, int $interval = 2)
+    {
+        $dayBeforeYesterday = $now->sub(new \DateInterval('P' . $interval . 'D'));
+        $startPeriod = \DateTime::createFromFormat('Y-m-d', $dayBeforeYesterday->format('Y-m-d'))->setTime(0, 0);
+        $endPeriod = \DateTime::createFromFormat('Y-m-d', $dayBeforeYesterday->format('Y-m-d'))->setTime(23, 59, 59);
 
-//    private static getPreviousPeriodByUnit(
-//        field: string,
-//        now: DateTime,
-//        interval: string,
-//      ): ConditionTree {
-//        const dayBeforeYesterday = now.minus({ [interval]: 2 });
-//
-//    return this.getPreviousConditionTree(
-//            field,
-//            dayBeforeYesterday.startOf(interval as DateTimeUnit),
-//          dayBeforeYesterday.endOf(interval as DateTimeUnit),
-//        );
-//      }
+        return $this->getPreviousConditionTree($field, $startPeriod, $endPeriod);
+    }
+
+
+
 }
