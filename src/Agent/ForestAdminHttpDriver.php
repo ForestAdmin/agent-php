@@ -2,8 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\Agent;
 
-use ForestAdmin\AgentPHP\Agent\Http\Router;
-use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
@@ -16,18 +14,11 @@ class ForestAdminHttpDriver
     ) {
     }
 
-    public function getRoutes(): array
-    {
-        $services = new ForestAdminHttpDriverServices($this->options);
-
-        return (new Router($this->dataSource, $this->options, $services))->makeRoutes();
-    }
-
     public function sendSchema(): void
     {
         $schema = SchemaEmitter::getSerializedSchema($this->options, $this->dataSource);
-        $schemaIsKnown = ForestHttpApi::hasSchema($this->options, $schema['meta']['schemaFileHash']);
-
+//        $schemaIsKnown = ForestHttpApi::hasSchema($this->options, $schema['meta']['schemaFileHash']);
+        $schemaIsKnown = false;
         if (! $schemaIsKnown) {
             // TODO this.options.logger('Info', 'Schema was updated, sending new version');
             ForestHttpApi::uploadSchema($this->options, $schema);

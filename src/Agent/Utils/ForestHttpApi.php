@@ -2,6 +2,9 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils;
 
+use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
+use GuzzleHttp\Client;
+
 class ForestHttpApi
 {
     public static function hasSchema(array $httpOptions, string $hash): bool
@@ -22,15 +25,16 @@ class ForestHttpApi
 
     public static function uploadSchema(array $httpOptions, array $jsonApiDocument): void
     {
-//    static async uploadSchema(options: HttpOptions, apimap: JSONAPIDocument): Promise<void> {
-//        try {
-//          await superagent
-//            .post(new URL('/forest/apimaps', options.forestServerUrl).toString())
-//            .send(apimap)
-//            .set('forest-secret-key', options.envSecret);
-//        } catch (e) {
-//                this.handleResponseError(e);
-//    }
-//    }
+        try {
+            $forestApi = new ForestApiRequester($httpOptions);
+            $forestApi->post(
+                '/forest/apimaps',
+                [],
+                $jsonApiDocument
+            );
+
+        } catch (\Exception $e) {
+            dd($e);
+        }
     }
 }

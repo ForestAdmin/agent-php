@@ -3,6 +3,8 @@
 namespace ForestAdmin\AgentPHP\Agent\Builder;
 
 use ForestAdmin\AgentPHP\Agent\ForestAdminHttpDriver;
+use ForestAdmin\AgentPHP\Agent\Http\Router;
+use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
@@ -11,8 +13,6 @@ class AgentFactory
     protected static Container $container;
 
     protected Datasource $compositeDatasource;
-
-    //public App $app;
 
     private ForestAdminHttpDriver $httpDriver;
 
@@ -35,7 +35,10 @@ class AgentFactory
 
     public function getRoutes(): array
     {
-        return $this->httpDriver->getRoutes();
+        $services = new ForestAdminHttpDriverServices($this->options);
+        $router = new Router($this->compositeDatasource, $this->httpDriver, $this->options, $services);
+
+        return $router->makeRoutes();
     }
 
 //    public function start()

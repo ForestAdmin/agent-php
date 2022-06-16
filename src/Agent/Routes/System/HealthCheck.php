@@ -2,14 +2,18 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\System;
 
+use ForestAdmin\AgentPHP\Agent\ForestAdminHttpDriver;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
 
 class HealthCheck extends AbstractRoute
 {
-    public function __construct(protected ForestAdminHttpDriverServices $services, protected array $options)
-    {
-        parent::__construct($services, $options);
+    public function __construct(
+        ForestAdminHttpDriverServices $services,
+        array $options,
+        ForestAdminHttpDriver $httpDriver
+    ) {
+        parent::__construct($services, $options, $httpDriver);
     }
 
     /**
@@ -37,6 +41,8 @@ class HealthCheck extends AbstractRoute
         dd($server);
         return 'ok';
 //        return forestResponse();*/
+        $this->httpDriver->sendSchema();
+
 
         return [
             'status'  => 204,
