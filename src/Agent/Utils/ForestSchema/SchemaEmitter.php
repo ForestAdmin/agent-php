@@ -6,7 +6,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 class SchemaEmitter
 {
-    public const LIANA_NAME = 'forest-php-agent';
+    public const LIANA_NAME = 'laravel-forestadmin';
+//    public const LIANA_NAME = 'forest-php-agent';
 
     public const LIANA_VERSION = '1.0.0-beta.22';
 
@@ -94,6 +95,7 @@ class SchemaEmitter
 
         return [
             'data'     => $data,
+            'included' => [], // todo
             'meta'     => $meta,
         ];
     }

@@ -21,10 +21,17 @@ class HealthCheck extends AbstractRoute
      */
     public function setupRoutes(): self
     {
+//        $this->addRoute(
+//            'forest',
+//            'get',
+//            '/',
+//            fn () => $this->handleRequest()
+//        );
+
         $this->addRoute(
             'forest',
             'get',
-            '/',
+            '',
             fn () => $this->handleRequest()
         );
 

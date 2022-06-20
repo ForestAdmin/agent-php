@@ -22,6 +22,7 @@ class Router
     {
         return array_merge(
             HealthCheck::of($this->services, $this->options, $this->httpDriver)->getRoutes(),
+            Authentication::of($this->services, $this->options)->getRoutes(),
         );
     }
 
