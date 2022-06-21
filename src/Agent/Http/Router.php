@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Http;
 
 use ForestAdmin\AgentPHP\Agent\ForestAdminHttpDriver;
+use ForestAdmin\AgentPHP\Agent\Routes\Access\Listing;
 use ForestAdmin\AgentPHP\Agent\Routes\Security\Authentication;
 use ForestAdmin\AgentPHP\Agent\Routes\System\HealthCheck;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
@@ -23,6 +24,7 @@ class Router
         return array_merge(
             HealthCheck::of($this->services, $this->options, $this->httpDriver)->getRoutes(),
             Authentication::of($this->services, $this->options)->getRoutes(),
+            Listing::of($this->services, $this->options, $this->httpDriver)->getRoutes()
         );
     }
 

@@ -1,0 +1,60 @@
+<?php
+
+namespace ForestAdmin\AgentPHP\Agent\Routes\Access;
+
+use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
+use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
+
+class Listing extends AbstractRoute
+{
+    public function __construct(protected ForestAdminHttpDriverServices $services, protected array $options)
+    {
+        parent::__construct($services, $options);
+    }
+
+    /*
+     * import { Context } from 'koa';
+        import Router from '@koa/router';
+
+        import CollectionRoute from '../collection-route';
+        import ContextFilterFactory from '../../utils/context-filter-factory';
+        import QueryStringParser from '../../utils/query-string';
+
+        export default class ListRoute extends CollectionRoute {
+          setupRoutes(router: Router): void {
+            router.get(`/${this.collection.name}`, this.handleList.bind(this));
+          }
+
+          public async handleList(context: Context) {
+            await this.services.permissions.can(context, `browse:${this.collection.name}`);
+
+            const scope = await this.services.permissions.getScope(this.collection, context);
+            const paginatedFilter = ContextFilterFactory.buildPaginated(this.collection, context, scope);
+
+            const records = await this.collection.list(
+              QueryStringParser.parseCaller(context),
+              paginatedFilter,
+              QueryStringParser.parseProjectionWithPks(this.collection, context),
+            );
+
+            context.response.body = this.services.serializer.serializeWithSearchMetadata(
+              this.collection,
+              records,
+              paginatedFilter.search,
+            );
+          }
+        }
+
+     */
+    public function setupRoutes(): AbstractRoute
+    {
+        $this->addRoute(
+            'list',
+            'get',
+            '/{collectionName}',
+            fn () => $this->handleRequest()
+        );
+
+        return $this;
+    }
+}
