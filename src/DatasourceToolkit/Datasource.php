@@ -2,11 +2,13 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
+use Composer\Autoload\ClassMapGenerator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\Chart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\DataSourceSchema;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class Datasource implements DatasourceContract
@@ -31,7 +33,7 @@ class Datasource implements DatasourceContract
         return $this->schema;
     }
 
-    public function getCollection(string $name): Collection
+    public function getCollection(string $name): CollectionContract
     {
         return $this->collections->get($name);
     }
@@ -44,6 +46,28 @@ class Datasource implements DatasourceContract
     public function renderChart(Caller $caller, string $name): Chart
     {
         // TODO: Implement renderChart() method.
+    }
+
+    /**
+     * Fetch all files in the model directory
+     *
+     * @param string $directory
+     * @return Collection
+     */
+    private function fetchFiles(string $directory): Collection
+    {
+        $files = new Collection();
+
+        foreach (glob($directory, GLOB_ONLYDIR) as $dir) {
+            if (file_exists($dir)) {
+                $fileClass = ClassMapGenerator::createMap($dir);
+                foreach (array_keys($fileClass) as $file) {
+                    $files->push($file);
+                }
+            }
+        }
+
+        return $files;
     }
 }
 

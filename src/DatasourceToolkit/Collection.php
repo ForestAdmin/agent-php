@@ -46,7 +46,7 @@ class Collection implements CollectionContract
     public function execute(Caller $caller, string $name, array $formValues, ?Filter $filter = null): ActionResult
     {
         // TODO: Implement execute() method.
-        if (!$this->actions->get($name)) {
+        if (! $this->actions->get($name)) {
             throw new \Exception("Action $name is not implemented.");
         }
 

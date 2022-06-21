@@ -43,7 +43,6 @@ class Request extends SymfonyRequest
         foreach (is_array($keys) ? $keys : func_get_args() as $key) {
             Arr::set($results, $key, Arr::get($input, $key));
         }
-        dd($results);
 
         return $results;
     }
