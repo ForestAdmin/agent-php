@@ -12,7 +12,10 @@
         "spatie/enum": "^3.13",
         "symfony/cache": "^6.0",
         "symfony/http-foundation": "^6.0",
-        "composer/composer": "^2.3"
+        "composer/composer": "^2.3",
+        "league/oauth2-client": "^2.6",
+        "firebase/php-jwt": "^6.2",
+        "nesbot/carbon": "^2.58"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.0",
