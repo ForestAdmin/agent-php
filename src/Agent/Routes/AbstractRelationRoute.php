@@ -10,13 +10,12 @@ abstract class AbstractRelationRoute extends AbstractCollectionRoute
 {
     public function __construct(
         protected ForestAdminHttpDriverServices $services,
-        protected array $options,
         protected DatasourceContract $datasource,
         protected string $collectionName,
         protected string $relationName
 
     ) {
-        parent::__construct($services, $this->options, $this->datasource, $this->collectionName);
+        parent::__construct($services, $this->datasource, $this->collectionName);
     }
 
     protected function getForeignCollection(): RelationSchema

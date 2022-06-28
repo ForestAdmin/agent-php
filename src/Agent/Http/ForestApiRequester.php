@@ -7,7 +7,6 @@ use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Response;
-use Illuminate\Support\Str;
 
 class ForestApiRequester
 {
@@ -17,12 +16,14 @@ class ForestApiRequester
 
     /**
      * ForestApiRequester constructor
+     *
+     * @throws ErrorException
      */
-    public function __construct(protected array $options)
+    public function __construct()
     {
         $this->headers = [
             'Content-Type'      => 'application/json',
-            'forest-secret-key' => $this->options['envSecret'],
+            'forest-secret-key' => forest_config('envSecret'),
         ];
         $this->client = new Client();
     }
@@ -63,6 +64,7 @@ class ForestApiRequester
      * @param array $body
      * @param array $headers
      * @return array[]
+     * @throws ErrorException
      */
     public function getParams(array $query = [], array $body = [], array $headers = []): array
     {
@@ -70,7 +72,7 @@ class ForestApiRequester
             'headers' => $headers,
             'query'   => $query,
             'json'    => $body,
-            'verify'  => ! $this->options['debug'],
+            'verify'  => ! forest_config('debug'),
         ];
     }
 
@@ -128,11 +130,12 @@ class ForestApiRequester
      * @param string $route
      * @return string
      * @throws InvalidUrlException
+     * @throws ErrorException
      */
     private function makeUrl(string $route): string
     {
         if (! str_starts_with($route, 'https://')) {
-            $route = $this->options['forestServerUrl'] . $route;
+            $route = forest_config('forestServerUrl') . $route;
         }
 
 //        if (!config('app.debug')) {

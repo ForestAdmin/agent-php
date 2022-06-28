@@ -7,9 +7,9 @@ use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
 
 class Listing extends AbstractRoute
 {
-    public function __construct(protected ForestAdminHttpDriverServices $services, protected array $options)
+    public function __construct(protected ForestAdminHttpDriverServices $services)
     {
-        parent::__construct($services, $options);
+        parent::__construct($services);
     }
 
     /*

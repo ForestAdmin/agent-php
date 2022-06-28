@@ -10,11 +10,10 @@ abstract class AbstractCollectionRoute extends AbstractRoute
 {
     public function __construct(
         protected ForestAdminHttpDriverServices $services,
-        protected array $options,
         protected DatasourceContract $datasource,
         protected string $collectionName
     ) {
-        parent::__construct($services, $this->options);
+        parent::__construct($services);
     }
 
     protected function getCollection(): Collection

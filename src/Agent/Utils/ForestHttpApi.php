@@ -23,10 +23,10 @@ class ForestHttpApi
         return true;
     }
 
-    public static function uploadSchema(array $httpOptions, array $jsonApiDocument): void
+    public static function uploadSchema(array $jsonApiDocument): void
     {
         try {
-            $forestApi = new ForestApiRequester($httpOptions);
+            $forestApi = new ForestApiRequester();
             $forestApi->post(
                 '/forest/apimaps',
                 [],

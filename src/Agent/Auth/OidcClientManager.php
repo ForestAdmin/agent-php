@@ -17,9 +17,9 @@ class OidcClientManager
 
     private ForestApiRequester $forestApi;
 
-    public function __construct(protected array $options)
+    public function __construct()
     {
-        $this->forestApi = new ForestApiRequester($options);
+        $this->forestApi = new ForestApiRequester();
     }
 
     /**
@@ -52,7 +52,7 @@ class OidcClientManager
             [
                 'clientId'     => $clientData['client_id'],
                 'redirectUri'  => $callbackUrl,
-                'envSecret'    => $this->options['envSecret'],
+                'envSecret'    => forest_config('envSecret'),
             ]
         );
     }
@@ -86,7 +86,7 @@ class OidcClientManager
             $data['registration_endpoint'],
             [],
             $data,
-            ['Authorization' => 'Bearer ' . $this->options['envSecret']]
+            ['Authorization' => 'Bearer ' . forest_config('envSecret')]
         );
 
         return $this->getBody($response);

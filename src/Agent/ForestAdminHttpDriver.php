@@ -10,18 +10,17 @@ class ForestAdminHttpDriver
 {
     public function __construct(
         protected Datasource $dataSource,
-        protected array $options
     ) {
     }
 
     public function sendSchema(): void
     {
-        $schema = SchemaEmitter::getSerializedSchema($this->options, $this->dataSource);
+        $schema = SchemaEmitter::getSerializedSchema($this->dataSource);
 //        $schemaIsKnown = ForestHttpApi::hasSchema($this->options, $schema['meta']['schemaFileHash']);
         $schemaIsKnown = false;
         if (! $schemaIsKnown) {
             // TODO this.options.logger('Info', 'Schema was updated, sending new version');
-            ForestHttpApi::uploadSchema($this->options, $schema);
+            ForestHttpApi::uploadSchema($schema);
         } else {
             // TODO this.options.logger('Info', 'Schema was not updated since last run');
         }

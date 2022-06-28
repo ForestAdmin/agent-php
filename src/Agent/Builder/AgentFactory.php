@@ -25,7 +25,7 @@ class AgentFactory
     public function __construct(protected array $options)
     {
         $this->compositeDatasource = new Datasource();
-        $this->httpDriver = new ForestAdminHttpDriver($this->compositeDatasource, $this->options);
+        $this->httpDriver = new ForestAdminHttpDriver($this->compositeDatasource);
         $this->buildContainer();
     }
 
@@ -36,13 +36,15 @@ class AgentFactory
             fn ($collection) => $this->compositeDatasource->addCollection($collection)
         );
 
+//        forest_cache('httpDriver',  new ForestAdminHttpDriver($this->compositeDatasource));
+
         return $this;
     }
 
     public function getRoutes(): array
     {
         $services = new ForestAdminHttpDriverServices($this->options);
-        $router = new Router($this->compositeDatasource, $this->httpDriver, $this->options, $services);
+        $router = new Router($this->httpDriver, $services);
 
         return $router->makeRoutes();
     }

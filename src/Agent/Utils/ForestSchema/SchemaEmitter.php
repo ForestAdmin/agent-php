@@ -13,15 +13,16 @@ class SchemaEmitter
 
     /**
      * @throws \JsonException
+     * @throws \ErrorException
      */
-    public static function getSerializedSchema(array $options, Datasource $datasource)
+    public static function getSerializedSchema(Datasource $datasource)
     {
-        $schema = $options['isProduction'] ? self::loadFromDisk($options['schemaPath']) : self::generate($options['prefix'], $datasource);
+        $schema = forest_config('isProduction') ? self::loadFromDisk(forest_config('schemaPath')) : self::generate(forest_config('prefix'), $datasource);
 
-        if (! $options['isProduction']) {
+        if (! forest_config('isProduction')) {
             // todo create json file
             $pretty = json_encode($schema, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
-            file_put_contents($options['schemaPath'], $pretty);
+            file_put_contents(forest_config('schemaPath'), $pretty);
             //  writeFile(options.schemaPath, pretty, { encoding: 'utf-8' });
         }
         $hash = sha1(json_encode($schema, JSON_THROW_ON_ERROR));

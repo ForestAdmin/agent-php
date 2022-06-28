@@ -10,10 +10,9 @@ class HealthCheck extends AbstractRoute
 {
     public function __construct(
         ForestAdminHttpDriverServices $services,
-        array $options,
         ForestAdminHttpDriver $httpDriver
     ) {
-        parent::__construct($services, $options, $httpDriver);
+        parent::__construct($services, $httpDriver);
     }
 
     /**

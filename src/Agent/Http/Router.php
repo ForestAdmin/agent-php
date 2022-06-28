@@ -12,9 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 class Router
 {
     public function __construct(
-        protected Datasource $dataSource,
         protected ForestAdminHttpDriver $httpDriver,
-        protected array $options,
         protected ForestAdminHttpDriverServices $services
     ) {
     }
@@ -22,9 +20,9 @@ class Router
     private function getRootRoutes(): array
     {
         return array_merge(
-            HealthCheck::of($this->services, $this->options, $this->httpDriver)->getRoutes(),
-            Authentication::of($this->services, $this->options)->getRoutes(),
-            Listing::of($this->services, $this->options, $this->httpDriver)->getRoutes()
+            HealthCheck::of($this->services, $this->httpDriver)->getRoutes(),
+            Authentication::of($this->services)->getRoutes(),
+            Listing::of($this->services)->getRoutes()
         );
     }
 

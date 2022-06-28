@@ -14,11 +14,11 @@ class AuthManager
 {
     use FormatGuzzle;
 
-    private OidcClientManager $oid;
+    private OidcClientManager $oidc;
 
-    public function __construct(protected array $options)
+    public function __construct()
     {
-        $this->oidc = new OidcClientManager($options);
+        $this->oidc = new OidcClientManager();
     }
 
     /**
@@ -53,7 +53,7 @@ class AuthManager
 
         $forestProvider = $this->oidc->getClientForCallbackUrl($redirectUrl);
         $forestProvider->setRenderingId($this->getRenderingIdFromState($params['state']));
-        if ($this->options['debug']) {
+        if (forest_config('debug')) {
             // @codeCoverageIgnoreStart
             $guzzleClient = new Client([RequestOptions::VERIFY => false]);
             $forestProvider->setHttpClient($guzzleClient);
