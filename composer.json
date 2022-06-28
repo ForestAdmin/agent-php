@@ -15,7 +15,8 @@
         "composer/composer": "^2.3",
         "league/oauth2-client": "^2.6",
         "firebase/php-jwt": "^6.2",
-        "nesbot/carbon": "^2.58"
+        "nesbot/carbon": "^2.58",
+        "php-di/php-di": "^6.4"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.0",
@@ -25,7 +26,10 @@
     "autoload": {
         "psr-4": {
             "ForestAdmin\\AgentPHP\\": "src/"
-        }
+        },
+        "files": [
+            "src/Agent/functions.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

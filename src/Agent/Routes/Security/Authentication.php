@@ -36,8 +36,6 @@ class Authentication extends AbstractRoute
             fn () => $this->handleAuthenticationCallback()
         );
 
-        //router.use(jwt({ secret: this.options.authSecret, cookie: 'forest_session_token' }));
-
         $this->addRoute(
             'logout',
             'POST',
@@ -60,15 +58,6 @@ class Authentication extends AbstractRoute
             'status'           => 200,
             'authorizationUrl' => $this->auth->start($this->options['agentUrl'] . '/forest/authentication/callback', $renderingId),
         ];
-//
-//        'authSecret'      => 'RykWz6JrqD0ctwzIXDfXeb6J8CDZqHMy',
-//            'agentUrl'        => 'http://localhost:8000',
-//            'envSecret'       => 'f3910e5873fc4c0fe344a6cd418184c07b9453feac45f99eaf825a6c3bb736be',
-//            'forestServerUrl' => 'https://api.development.forestadmin.com',
-//            'isProduction'    => false,
-//            'loggerLevel'     => 'Info',
-//            'prefix'          => 'forest',
-//            'schemaPath'      => __DIR__ . '/.forestadmin-schema.json',
     }
 
     public function handleAuthenticationCallback()
