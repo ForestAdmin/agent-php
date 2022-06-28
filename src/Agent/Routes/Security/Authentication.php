@@ -13,6 +13,7 @@ use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
+use function ForestAdmin\config;
 
 class Authentication extends AbstractRoute
 {
@@ -63,7 +64,7 @@ class Authentication extends AbstractRoute
 
         return [
             'status'           => 200,
-            'authorizationUrl' => $this->auth->start(forest_config('agentUrl') . '/forest/authentication/callback', $renderingId),
+            'authorizationUrl' => $this->auth->start(config('agentUrl') . '/forest/authentication/callback', $renderingId),
         ];
     }
 
@@ -76,8 +77,8 @@ class Authentication extends AbstractRoute
     public function handleAuthenticationCallback()
     {
         $request = Request::createFromGlobals();
-        $token = $this->auth->verifyCodeAndGenerateToken(forest_config('agentUrl') .  '/forest/authentication/callback', $request->all());
-        $tokenData = JWT::decode($token, new Key(forest_config('envSecret'), 'HS256'));
+        $token = $this->auth->verifyCodeAndGenerateToken(config('agentUrl') .  '/forest/authentication/callback', $request->all());
+        $tokenData = JWT::decode($token, new Key(config('envSecret'), 'HS256'));
 
         return [
             'status'           => 200,

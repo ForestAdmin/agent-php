@@ -11,16 +11,17 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 class Router
 {
+    private ForestAdminHttpDriverServices $services;
+
     public function __construct(
-        protected ForestAdminHttpDriver $httpDriver,
-        protected ForestAdminHttpDriverServices $services
     ) {
+        $this->services = new ForestAdminHttpDriverServices();
     }
 
     private function getRootRoutes(): array
     {
         return array_merge(
-            HealthCheck::of($this->services, $this->httpDriver)->getRoutes(),
+            HealthCheck::of($this->services)->getRoutes(),
             Authentication::of($this->services)->getRoutes(),
             Listing::of($this->services)->getRoutes()
         );

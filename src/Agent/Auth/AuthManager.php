@@ -9,6 +9,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use JsonException;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
+use function ForestAdmin\config;
 
 class AuthManager
 {
@@ -53,7 +54,7 @@ class AuthManager
 
         $forestProvider = $this->oidc->getClientForCallbackUrl($redirectUrl);
         $forestProvider->setRenderingId($this->getRenderingIdFromState($params['state']));
-        if (forest_config('debug')) {
+        if (config('debug')) {
             // @codeCoverageIgnoreStart
             $guzzleClient = new Client([RequestOptions::VERIFY => false]);
             $forestProvider->setHttpClient($guzzleClient);

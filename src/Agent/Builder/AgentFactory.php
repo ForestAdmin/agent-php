@@ -14,18 +14,15 @@ use Illuminate\Support\Collection;
 
 class AgentFactory
 {
-    private const CONFIG_TTL = 3600;
+    private const TTL = 3600;
 
     protected static Collection $container;
 
     protected Datasource $compositeDatasource;
 
-    private ForestAdminHttpDriver $httpDriver;
-
     public function __construct(protected array $options)
     {
         $this->compositeDatasource = new Datasource();
-        $this->httpDriver = new ForestAdminHttpDriver($this->compositeDatasource);
         $this->buildContainer();
     }
 
@@ -41,13 +38,13 @@ class AgentFactory
         return $this;
     }
 
-    public function getRoutes(): array
-    {
-        $services = new ForestAdminHttpDriverServices($this->options);
-        $router = new Router($this->httpDriver, $services);
-
-        return $router->makeRoutes();
-    }
+//    public function getRoutes(): array
+//    {
+//        $services = new ForestAdminHttpDriverServices();
+//        $router = new Router(self::$container->get('cache')->get('httpDriver'), $services);
+//
+//        return $router->makeRoutes();
+//    }
 
     public static function getContainer(): Collection
     {
@@ -58,10 +55,17 @@ class AgentFactory
     {
         self::$container = new Collection();
 
+        //--- set Cache  ---//
         $filesystem = new Filesystem();
         $directory = $this->options['projectDir'] . '/forest-cache' ;
+        self::$container->getOrPut('cache', fn () => new CacheServices($filesystem, $directory));
+        self::$container->get('cache')->add('config', $this->options, self::TTL);
 
-        self::$container->put('cache', new CacheServices($filesystem, $directory));
-        self::$container->get('cache')->put('config', $this->options, self::CONFIG_TTL);
+        //--- set HttpDriver  ---//
+        self::$container->get('cache')->add(
+            'httpDriver',
+            fn () => new ForestAdminHttpDriver($this->compositeDatasource),
+            self::TTL
+        );
     }
 }

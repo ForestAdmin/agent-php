@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use function ForestAdmin\config;
 
 class SchemaEmitter
 {
@@ -17,12 +18,12 @@ class SchemaEmitter
      */
     public static function getSerializedSchema(Datasource $datasource)
     {
-        $schema = forest_config('isProduction') ? self::loadFromDisk(forest_config('schemaPath')) : self::generate(forest_config('prefix'), $datasource);
+        $schema = config('isProduction') ? self::loadFromDisk(config('schemaPath')) : self::generate(config('prefix'), $datasource);
 
-        if (! forest_config('isProduction')) {
+        if (! config('isProduction')) {
             // todo create json file
             $pretty = json_encode($schema, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
-            file_put_contents(forest_config('schemaPath'), $pretty);
+            file_put_contents(config('schemaPath'), $pretty);
             //  writeFile(options.schemaPath, pretty, { encoding: 'utf-8' });
         }
         $hash = sha1(json_encode($schema, JSON_THROW_ON_ERROR));

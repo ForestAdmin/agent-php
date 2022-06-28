@@ -7,6 +7,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Response;
+use function ForestAdmin\config;
 
 class ForestApiRequester
 {
@@ -23,7 +24,7 @@ class ForestApiRequester
     {
         $this->headers = [
             'Content-Type'      => 'application/json',
-            'forest-secret-key' => forest_config('envSecret'),
+            'forest-secret-key' => config('envSecret'),
         ];
         $this->client = new Client();
     }
@@ -72,7 +73,7 @@ class ForestApiRequester
             'headers' => $headers,
             'query'   => $query,
             'json'    => $body,
-            'verify'  => ! forest_config('debug'),
+            'verify'  => ! config('debug'),
         ];
     }
 
@@ -135,7 +136,7 @@ class ForestApiRequester
     private function makeUrl(string $route): string
     {
         if (! str_starts_with($route, 'https://')) {
-            $route = forest_config('forestServerUrl') . $route;
+            $route = config('forestServerUrl') . $route;
         }
 
 //        if (!config('app.debug')) {

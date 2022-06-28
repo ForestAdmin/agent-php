@@ -3,12 +3,14 @@
 namespace ForestAdmin\AgentPHP\Agent\Services;
 
 
+use function ForestAdmin\config;
+
 class Serializer
 {
     private string $prefix;
 
-    public function __construct(protected array $options)
+    public function __construct()
     {
-        $this->prefix = $options['prefix'];
+        $this->prefix = config('prefix');
     }
 }

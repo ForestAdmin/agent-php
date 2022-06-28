@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
 use ForestAdmin\AgentPHP\Agent\Utils\Traits\FormatGuzzle;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Cache;
+use function ForestAdmin\config;
 
 class OidcClientManager
 {
@@ -52,7 +53,7 @@ class OidcClientManager
             [
                 'clientId'     => $clientData['client_id'],
                 'redirectUri'  => $callbackUrl,
-                'envSecret'    => forest_config('envSecret'),
+                'envSecret'    => config('envSecret'),
             ]
         );
     }
@@ -86,7 +87,7 @@ class OidcClientManager
             $data['registration_endpoint'],
             [],
             $data,
-            ['Authorization' => 'Bearer ' . forest_config('envSecret')]
+            ['Authorization' => 'Bearer ' . config('envSecret')]
         );
 
         return $this->getBody($response);

@@ -4,7 +4,7 @@ namespace ForestAdmin\AgentPHP\Agent\Services;
 
 class Permissions
 {
-    public function __construct(protected array $options)
+    public function __construct()
     {
     }
 

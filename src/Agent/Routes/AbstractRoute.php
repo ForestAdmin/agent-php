@@ -9,14 +9,13 @@ abstract class AbstractRoute
 {
     public function __construct(
         protected ForestAdminHttpDriverServices $services,
-        protected ?ForestAdminHttpDriver        $httpDriver = null,
         protected array $routes = []
     ) {
     }
 
-    public static function of(ForestAdminHttpDriverServices $services, ?ForestAdminHttpDriver $httpDriver = null): self
+    public static function of(ForestAdminHttpDriverServices $services): self
     {
-        return (new static($services, $httpDriver))->setupRoutes();
+        return (new static($services))->setupRoutes();
     }
 
     public function addRoute(string $name, string $method, string $uri, \Closure $closure): void

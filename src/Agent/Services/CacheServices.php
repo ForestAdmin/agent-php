@@ -81,6 +81,9 @@ class CacheServices implements Store
         $expire = $file->read(10);
 
         if (empty($expire) || $this->currentTime() >= $expire) {
+            if (is_callable($value)) {
+                $value = $value();
+            }
             $file->truncate()
                 ->write($this->expiration($seconds).serialize($value))
                 ->close();

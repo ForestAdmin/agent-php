@@ -1,9 +1,19 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+namespace ForestAdmin;
 
-if (! function_exists('forest_cache')) {
-    function forest_cache(string $key, $value = null, ?int $ttl = 60)
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\ForestAdminHttpDriver;
+
+if (! function_exists(__NAMESPACE__ . '\httpDriver')) {
+    function httpDriver(): ?ForestAdminHttpDriver
+    {
+        return cache('httpDriver');
+    }
+}
+
+if (! function_exists(__NAMESPACE__ . '\cache')) {
+    function cache(string $key, $value = null, ?int $ttl = 60)
     {
         $container = AgentFactory::getContainer();
         if ($value !== null) {
@@ -14,13 +24,13 @@ if (! function_exists('forest_cache')) {
     }
 }
 
-if (! function_exists('forest_config')) {
+if (! function_exists(__NAMESPACE__ . '\config')) {
     /**
      * @throws ErrorException
      */
-    function forest_config(?string $key = null)
+    function config(?string $key = null)
     {
-        $config = forest_cache('config');
+        $config = cache('config');
 
         if ($key === null) {
             return $config;
@@ -30,6 +40,6 @@ if (! function_exists('forest_config')) {
             return $config[$key];
         }
 
-        throw new ErrorException('undefined config key '. $key);
+        return null;
     }
 }
