@@ -42,7 +42,7 @@ class AgentFactory
     public function getRoutes(): array
     {
         $services = new ForestAdminHttpDriverServices($this->options);
-        $router = new Router($this->httpDriver, $this->options, $services);
+        $router = new Router($this->compositeDatasource, $this->httpDriver, $this->options, $services);
 
         return $router->makeRoutes();
     }
