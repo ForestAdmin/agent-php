@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Services;
 
 use Carbon\Carbon;
+use Closure;
 use Exception;
 use ForestAdmin\AgentPHP\Agent\Contracts\Store;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
@@ -54,6 +55,24 @@ class CacheServices implements Store
         }
 
         return false;
+    }
+
+    /**
+     * Get an item from the cache, or execute the given Closure and store the result.
+     * @param         $key
+     * @param Closure $callback
+     * @param         $ttl
+     * @return bool
+     */
+    public function remember($key, Closure $callback, $ttl)
+    {
+        $value = $this->get($key);
+
+        if (! is_null($value)) {
+            $this->put($key, $value = $callback(), $ttl);
+        }
+
+        return $value;
     }
 
     /**

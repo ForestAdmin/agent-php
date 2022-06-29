@@ -24,6 +24,17 @@ if (! function_exists(__NAMESPACE__ . '\cache')) {
     }
 }
 
+if (! function_exists(__NAMESPACE__ . '\cacheRemember')) {
+    function cacheRemember(string $key, \Closure $callback, ?int $ttl = 60)
+    {
+        $container = AgentFactory::getContainer();
+
+        return $container->get('cache')->remember($key, $callback, $ttl);
+    }
+}
+
+
+
 if (! function_exists(__NAMESPACE__ . '\config')) {
     /**
      * @throws ErrorException

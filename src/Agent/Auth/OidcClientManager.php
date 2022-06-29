@@ -6,9 +6,10 @@ use ForestAdmin\AgentPHP\Agent\Auth\OAuth2\ForestProvider;
 use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
 use ForestAdmin\AgentPHP\Agent\Utils\Traits\FormatGuzzle;
-use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Support\Facades\Cache;
+use function ForestAdmin\cacheRemember;
 use function ForestAdmin\config;
+use function ForestAdmin\cache;
+use GuzzleHttp\Exception\GuzzleException;
 
 class OidcClientManager
 {
@@ -30,30 +31,36 @@ class OidcClientManager
      */
     public function getClientForCallbackUrl(string $callbackUrl): ForestProvider|string
     {
-//        $cacheKey = $callbackUrl . '-' . config('forest.api.secret') . '-client-data';
+        $cacheKey = $callbackUrl . '-' . config('envSecret') . '-client-data';
 
         try {
             $config = $this->retrieve();
-            $clientCredentials = $this->register(
-                [
-                    'token_endpoint_auth_method' => 'none',
-                    'registration_endpoint'      => $config['registration_endpoint'],
-                    'redirect_uris'              => [$callbackUrl],
-                    'application_type'           => 'web',
-                ]
+            cacheRemember(
+                $cacheKey,
+                function () use ($config, $callbackUrl) {
+                    $clientCredentials = $this->register(
+                        [
+                            'token_endpoint_auth_method' => 'none',
+                            'registration_endpoint'      => $config['registration_endpoint'],
+                            'redirect_uris'              => [$callbackUrl],
+                            'application_type'           => 'web',
+                        ]
+                    );
+
+                    return ['client_id' => $clientCredentials['client_id'], 'issuer' => $config['issuer']];
+                },
+                self::TTL
             );
-            $clientData = ['client_id' => $clientCredentials['client_id'], 'issuer' => $config['issuer']];
-            // todo improve with cache
         } catch (\Exception $e) {
             throw new \ErrorException(ErrorMessages::REGISTRATION_FAILED);
         }
 
         return new ForestProvider(
-            $clientData['issuer'],
+            cache($cacheKey)['issuer'],
             [
-                'clientId'     => $clientData['client_id'],
-                'redirectUri'  => $callbackUrl,
-                'envSecret'    => config('envSecret'),
+                'clientId'    => cache($cacheKey)['client_id'],
+                'redirectUri' => $callbackUrl,
+                'envSecret'   => config('envSecret'),
             ]
         );
     }
