@@ -20,7 +20,9 @@ class Schema
 
                     return $field->getType() === 'Column' && $field->isPrimaryKey();
                 }
-            );
+            )
+            ->values()
+            ->all();
     }
 
 }
