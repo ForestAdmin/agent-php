@@ -35,11 +35,16 @@ class Datasource implements DatasourceContract
 
     public function getCollection(string $name): CollectionContract
     {
-        return $this->collections->get($name);
+        $collection = $this->collections->first(fn ($item) => $item->getName() === $name);
+
+        return $collection ?? throw new \Exception("Collection $name not found.");
     }
 
     public function addCollection(CollectionContract $collection): void
     {
+        if ($this->collections->first(fn ($item) => $item->getName() === $collection->getName())) {
+            throw new \Exception('Collection ' . $collection->getName() . ' already defined in datasource');
+        }
         $this->collections->push($collection);
     }
 

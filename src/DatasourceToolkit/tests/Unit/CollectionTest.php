@@ -74,3 +74,14 @@ it('should set searchable to true',  function() {
     expect($collection)->toBeInstanceOf(Collection::class)
         ->and($collection->isSearchable())->toBe(true);
 });
+
+
+//it('should prevent execute unknown action',  function() {
+//    $collection = new Collection(new Datasource(), '__collection__');
+//    // todo execute is not define for now
+//});
+
+//it('should return an empty form',  function() {
+//    $collection = new Collection(new Datasource(), '__collection__');
+//
+//});
