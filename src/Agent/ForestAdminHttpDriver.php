@@ -9,13 +9,14 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 class ForestAdminHttpDriver
 {
     public function __construct(
-        protected Datasource $dataSource,
+        protected Datasource $dataSource, //todo maybe not necessary here & we could remove the class to the cache
     ) {
     }
 
-    public function sendSchema(): void
+    public function sendSchema(Datasource $datasource): void
     {
-        $schema = SchemaEmitter::getSerializedSchema($this->dataSource);
+        $schema = SchemaEmitter::getSerializedSchema($datasource);
+        dd($schema);
 //        $schemaIsKnown = ForestHttpApi::hasSchema($this->options, $schema['meta']['schemaFileHash']);
         $schemaIsKnown = false;
         if (! $schemaIsKnown) {

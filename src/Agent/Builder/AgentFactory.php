@@ -2,15 +2,13 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Builder;
 
-use DI\Container;
 use ForestAdmin\AgentPHP\Agent\ForestAdminHttpDriver;
-use ForestAdmin\AgentPHP\Agent\Http\Router;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
-use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use Illuminate\Support\Collection;
+use function ForestAdmin\cache;
 
 class AgentFactory
 {
@@ -28,12 +26,15 @@ class AgentFactory
 
     public function addDatasource(DatasourceContract $datasource): self
     {
+        //$mainDatasource = cache('datasource');
+        $mainDatasource = new Datasource();
+
         // todo add logger
         $datasource->getCollections()->each(
-            fn ($collection) => $this->compositeDatasource->addCollection($collection)
+            fn ($collection) => $mainDatasource->addCollection($collection)
         );
 
-//        forest_cache('httpDriver',  new ForestAdminHttpDriver($this->compositeDatasource));
+        cache('datasource', $mainDatasource);
 
         return $this;
     }
@@ -65,6 +66,12 @@ class AgentFactory
         self::$container->get('cache')->add(
             'httpDriver',
             fn () => new ForestAdminHttpDriver($this->compositeDatasource),
+            self::TTL
+        );
+
+        self::$container->get('cache')->add(
+            'datasource',
+            fn () => new Datasource(),
             self::TTL
         );
     }
