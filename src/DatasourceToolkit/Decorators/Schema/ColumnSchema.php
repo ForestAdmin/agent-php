@@ -25,6 +25,7 @@ class ColumnSchema
         protected bool $isSortable = false,
         protected string $type = 'Column',
         protected ?string $defaultValue = null,
+        protected ?string $namespace = null,
         protected array $enumValues = [],
         protected array $validation = [],
     ) {
@@ -76,6 +77,14 @@ class ColumnSchema
     public function getType(): string
     {
         return $this->type;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getNamespace(): ?string
+    {
+        return $this->namespace;
     }
 
     /**

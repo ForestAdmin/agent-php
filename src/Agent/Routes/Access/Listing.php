@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\Access;
 
+use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
 
@@ -52,9 +53,19 @@ class Listing extends AbstractRoute
             'list',
             'get',
             '/{collectionName}',
-            fn () => $this->handleRequest()
+            fn ($args) => $this->handleRequest($args)
         );
 
         return $this;
+    }
+
+    /**
+     * @throws \JsonException
+     */
+    public function handleRequest(array $args = [])
+    {
+        $request = Request::createFromGlobals();
+        // TODO MOVE THIS CLASS TO EXTENDS AbstractCollectionRoute (+UPDATE PARENT)
+        $this->collectionName = $args['collectionName'];
     }
 }
