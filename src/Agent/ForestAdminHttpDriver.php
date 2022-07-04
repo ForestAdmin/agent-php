@@ -8,12 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 class ForestAdminHttpDriver
 {
-    public function __construct(
-        protected Datasource $dataSource, //todo maybe not necessary here & we could remove the class to the cache
-    ) {
-    }
-
-    public function sendSchema(Datasource $datasource): void
+    public static function sendSchema(Datasource $datasource): void
     {
         $schema = SchemaEmitter::getSerializedSchema($datasource);
         dd($schema);

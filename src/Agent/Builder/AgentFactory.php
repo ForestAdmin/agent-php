@@ -39,14 +39,6 @@ class AgentFactory
         return $this;
     }
 
-//    public function getRoutes(): array
-//    {
-//        $services = new ForestAdminHttpDriverServices();
-//        $router = new Router(self::$container->get('cache')->get('httpDriver'), $services);
-//
-//        return $router->makeRoutes();
-//    }
-
     public static function getContainer(): Collection
     {
         return static::$container;
@@ -61,13 +53,6 @@ class AgentFactory
         $directory = $this->options['projectDir'] . '/forest-cache' ;
         self::$container->getOrPut('cache', fn () => new CacheServices($filesystem, $directory));
         self::$container->get('cache')->add('config', $this->options, self::TTL);
-
-        //--- set HttpDriver  ---//
-        self::$container->get('cache')->add(
-            'httpDriver',
-            fn () => new ForestAdminHttpDriver($this->compositeDatasource),
-            self::TTL
-        );
 
         self::$container->get('cache')->add(
             'datasource',
