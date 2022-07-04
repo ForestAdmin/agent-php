@@ -116,6 +116,29 @@ dataset('datasourceWithAllRelations', function () {
     $datasource->addCollection($collectionPersons);
 });
 
-it('should not find an inverse', function ($datasource) {
+it('should not find an inverse when inverse relations is missing', function ($datasource) {
     expect(CollectionUtils::getInverseRelation($datasource->getCollection('books'), 'author'))->toBeNull();
 })->with('dataSourceWithInverseRelationMissing');
+
+it('should inverse a one to many relation in both directions', function ($datasource) {
+    expect(CollectionUtils::getInverseRelation($datasource->getCollection('books'), 'myBookPersons'))->toEqual('myBook')
+        ->and(CollectionUtils::getInverseRelation($datasource->getCollection('bookPersons'), 'myBook'))->toEqual('myBookPersons');
+})->with('datasourceWithAllRelations');
+
+// todo fix errors
+it('should inverse a many to many relation in both directions', function ($datasource) {
+    expect(CollectionUtils::getInverseRelation($datasource->getCollection('books'), 'myPersons'))->toEqual('myBooks')
+        ->and(CollectionUtils::getInverseRelation($datasource->getCollection('persons'), 'myBooks'))->toEqual('myPersons');
+})->with('datasourceWithAllRelations');
+
+it('should inverse a one to one relation in both directions', function ($datasource) {
+    expect(CollectionUtils::getInverseRelation($datasource->getCollection('persons'), 'myBookPerson'))->toEqual('myPerson')
+        ->and(CollectionUtils::getInverseRelation($datasource->getCollection('bookPersons'), 'myPerson'))->toEqual('myBookPerson');
+})->with('datasourceWithAllRelations');
+
+
+
+
+
+
+
