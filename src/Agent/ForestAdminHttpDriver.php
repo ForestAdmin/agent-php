@@ -11,7 +11,7 @@ class ForestAdminHttpDriver
     public static function sendSchema(Datasource $datasource): void
     {
         $schema = SchemaEmitter::getSerializedSchema($datasource);
-        dd($schema);
+        //dd($schema);
 //        $schemaIsKnown = ForestHttpApi::hasSchema($this->options, $schema['meta']['schemaFileHash']);
         $schemaIsKnown = false;
         if (! $schemaIsKnown) {

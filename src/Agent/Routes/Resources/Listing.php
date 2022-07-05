@@ -1,18 +1,14 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\Agent\Routes\Access;
+namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
+use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 
-class Listing extends AbstractRoute
+class Listing extends CollectionRoute
 {
-    public function __construct(protected ForestAdminHttpDriverServices $services)
-    {
-        parent::__construct($services);
-    }
-
     /*
      * import { Context } from 'koa';
         import Router from '@koa/router';
@@ -64,8 +60,16 @@ class Listing extends AbstractRoute
      */
     public function handleRequest(array $args = [])
     {
+        $collectionName = $args['collectionName'];
         $request = Request::createFromGlobals();
-        // TODO MOVE THIS CLASS TO EXTENDS AbstractCollectionRoute (+UPDATE PARENT)
-        $this->collectionName = $args['collectionName'];
+        $scope = new ConditionTreeLeaf(); // TODO NEED TO FIX TO ConditionTree
+
+        $paginatedFilter = ContextFilterFactory::buildPaginated(
+            $this->datasource->getCollection($collectionName),
+            $request,
+            $scope
+        );
+
+        dd($paginatedFilter);
     }
 }
