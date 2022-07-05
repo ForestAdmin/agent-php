@@ -16,6 +16,16 @@ if (! function_exists(__NAMESPACE__ . '\cache')) {
     }
 }
 
+if (! function_exists(__NAMESPACE__ . '\forget')) {
+    function forget(string $key)
+    {
+        $container = AgentFactory::getContainer();
+
+        return $container->get('cache')->forget($key);
+    }
+}
+
+
 if (! function_exists(__NAMESPACE__ . '\cacheRemember')) {
     function cacheRemember(string $key, \Closure $callback, ?int $ttl = 60)
     {

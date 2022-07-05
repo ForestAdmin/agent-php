@@ -8,7 +8,11 @@ use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use Illuminate\Support\Collection;
+use mysql_xdevapi\Exception;
 use function ForestAdmin\cache;
+use function ForestAdmin\forget;
+use function ForestAdmin\cacheRemember;
+use function ForestAdmin\config;
 
 class AgentFactory
 {
@@ -24,19 +28,30 @@ class AgentFactory
         $this->buildContainer();
     }
 
-    public function addDatasource(DatasourceContract $datasource): self
+    public function addDatasources(array $datasources): void
     {
-        //$mainDatasource = cache('datasource');
-        $mainDatasource = new Datasource();
+        if (! config('isProduction')) {
+            forget('datasource');
+        }
 
-        // todo add logger
-        $datasource->getCollections()->each(
-            fn ($collection) => $mainDatasource->addCollection($collection)
+        cacheRemember(
+            'datasource',
+            static function () use ($datasources) {
+                $mainDatasource = new Datasource();
+                /** @var DatasourceContract $datasource */
+                foreach ($datasources as $datasource) {
+                    if (! $datasource instanceof DatasourceContract) {
+                        throw new Exception('Invalid datasource');
+                    }
+                    // todo add logger
+                    $datasource->getCollections()->each(
+                        fn ($collection) => $mainDatasource->addCollection($collection)
+                    );
+                }
+
+                return $mainDatasource;
+            }
         );
-
-        cache('datasource', $mainDatasource);
-
-        return $this;
     }
 
     public static function getContainer(): Collection
@@ -53,11 +68,5 @@ class AgentFactory
         $directory = $this->options['projectDir'] . '/forest-cache' ;
         self::$container->getOrPut('cache', fn () => new CacheServices($filesystem, $directory));
         self::$container->get('cache')->add('config', $this->options, self::TTL);
-
-        self::$container->get('cache')->add(
-            'datasource',
-            fn () => new Datasource(),
-            self::TTL
-        );
     }
 }
