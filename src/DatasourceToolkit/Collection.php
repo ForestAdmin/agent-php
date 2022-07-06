@@ -43,7 +43,7 @@ class Collection implements CollectionContract
         return $this->name;
     }
 
-    public function execute(Caller $caller, string $name, array $formValues, ?Filter $filter = null): ActionResult
+    public function execute(/*Caller $caller, */string $name, array $formValues, ?Filter $filter = null): ActionResult
     {
         // TODO: Implement execute() method.
         if (! $this->actions->get($name)) {
@@ -53,32 +53,32 @@ class Collection implements CollectionContract
         // TODO QUESTION HOW TO RETURN ACTIONRESULT + CHECK DUMMYDATA SOURCE PARAMETERS ARE MISSING ? (base.ts -> override async execute(): Promise<ActionResult>)
     }
 
-    public function getForm(Caller $caller, string $name, ?array $formValues = null, ?Filter $filter = null): array
+    public function getForm(/*Caller $caller, */string $name, ?array $formValues = null, ?Filter $filter = null): array
     {
         return [];
     }
 
-    public function create(Caller $caller, array $data): array
+    public function create(/*Caller $caller, */array $data): array
     {
         // TODO: Implement create() method.
     }
 
-    public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array
+    public function list(/*Caller $caller, */PaginatedFilter $filter, Projection $projection): array
     {
         // TODO: Implement list() method.
     }
 
-    public function update(Caller $caller, Filter $filter, array $patch): void
+    public function update(/*Caller $caller, */Filter $filter, array $patch): void
     {
         // TODO: Implement update() method.
     }
 
-    public function delete(Caller $caller, Filter $filter): void
+    public function delete(/*Caller $caller, */Filter $filter): void
     {
         // TODO: Implement delete() method.
     }
 
-    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit): array
+    public function aggregate(/*Caller $caller, */Filter $filter, Aggregation $aggregation, ?int $limit): array
     {
         // TODO: Implement aggregate() method.
     }

@@ -15,17 +15,17 @@ interface CollectionContract
 
     public function getName(): string;
 
-    public function execute(Caller $caller, string $name, array $formValues, ?Filter $filter = null): ActionResult;
+    public function execute(/*Caller $caller, */string $name, array $formValues, ?Filter $filter = null): ActionResult;
 
-    public function getForm(Caller $caller, string $name, ?array $formValues = null, ?Filter $filter = null): array;
+    public function getForm(/*Caller $caller, */string $name, ?array $formValues = null, ?Filter $filter = null): array;
 
-    public function create(Caller $caller, array $data): array;
+    public function create(/*Caller $caller, */array $data): array;
 
-    public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array;
+    public function list(/*Caller $caller, */PaginatedFilter $filter, Projection $projection): array;
 
-    public function update(Caller $caller, Filter $filter, array $patch): void;
+    public function update(/*Caller $caller, */Filter $filter, array $patch): void;
 
-    public function delete(Caller $caller, Filter $filter): void;
+    public function delete(/*Caller $caller, */Filter $filter): void;
 
-    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit): array;
+    public function aggregate(/*Caller $caller, */Filter $filter, Aggregation $aggregation, ?int $limit): array;
 }

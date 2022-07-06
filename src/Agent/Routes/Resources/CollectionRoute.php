@@ -9,12 +9,9 @@ use function ForestAdmin\cache;
 
 abstract class CollectionRoute extends AbstractRoute
 {
-    protected Datasource $datasource;
-
     public function __construct(protected ForestAdminHttpDriverServices $services)
     {
         parent::__construct($services);
-        $this->datasource = cache('datasource');
     }
 
     /*protected get collection(): Collection {

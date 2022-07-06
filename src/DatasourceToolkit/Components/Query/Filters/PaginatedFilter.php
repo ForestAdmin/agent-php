@@ -12,8 +12,8 @@ class PaginatedFilter extends Filter
         $search = null,
         $searchExtended = null,
         $segment = null,
-        protected ?Sort $sort,
-        protected ?Page $page
+        protected ?Sort $sort = null,
+        protected ?Page $page = null,
     ) {
         parent::__construct($conditionTree, $search, $searchExtended, $segment);
     }

@@ -47,19 +47,22 @@ class ContextFilterFactory
       }
      */
 
-    public static function buildPaginated(Collection $collection, Request $request, ConditionTree $scope, array $paginatedFilters)
+    public static function buildPaginated(Collection $collection, Request $request, ?ConditionTree $scope, array $paginatedFilters = [])
     {
         return new PaginatedFilter(
-            self::build($collection, $request, $scope, $paginatedFilters),
+            conditionTree: null, // TODO NEED TO FIX TO ConditionTree
+            search: null,
+            searchExtended: null,
+            segment: null,
             sort: new Sort(),
             page: new Page(),
         );
     }
 
-    public static function build(Collection $collection, Request $request, ConditionTree $scope, array $paginatedFilters)
+    public static function build(Collection $collection, Request $request, ?ConditionTree $scope, array $paginatedFilters = [])
     {
         return new Filter(
-            conditionTree: new ConditionTreeLeaf(), // TODO NEED TO FIX TO ConditionTree
+            conditionTree: null, // TODO NEED TO FIX TO ConditionTree
             search: null,
             searchExtended: null,
             segment: null,

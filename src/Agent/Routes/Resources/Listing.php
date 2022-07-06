@@ -5,7 +5,9 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use function ForestAdmin\cache;
 
 class Listing extends CollectionRoute
 {
@@ -60,16 +62,16 @@ class Listing extends CollectionRoute
      */
     public function handleRequest(array $args = [])
     {
-        $collectionName = $args['collectionName'];
+        $datasource = cache('datasource');
+        /** @var Collection $collection */
+        $collection = $datasource->getCollection($args['collectionName']);
         $request = Request::createFromGlobals();
-        $scope = new ConditionTreeLeaf(); // TODO NEED TO FIX TO ConditionTree
+        $scope = null;
 
-        $paginatedFilter = ContextFilterFactory::buildPaginated(
-            $this->datasource->getCollection($collectionName),
-            $request,
-            $scope
-        );
+        $paginatedFilter = ContextFilterFactory::buildPaginated($collection, $request, $scope);
 
-        dd($paginatedFilter);
+        //$records = $collection->list()
+
+        dd($datasource->getCollection($collectionName));
     }
 }
