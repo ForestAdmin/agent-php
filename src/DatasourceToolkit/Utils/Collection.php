@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Utils;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection as MainCollection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
@@ -71,5 +72,32 @@ class Collection
         }
 
         return false;
+    }
+
+    public static function getFieldSchema(MainCollection $collection, string $fieldName): ColumnSchema|RelationSchema
+    {
+        $fields = $collection->getFields();
+        if (! $index = strpos($fieldName, ':')) {
+            if (! $fields->get($fieldName)) {
+                throw new \Exception('Column not found ' . $collection->getName() . '.' . $fieldName);
+            }
+
+            return $fields->get($fieldName);
+        }
+
+        $associationName = substr($fieldName, 0, $index);
+        $relationSchema = $fields->get($associationName);
+
+        if (! $relationSchema) {
+            throw new Error('Relation not found ' . $collection->getName() . '.' . $associationName);
+        }
+
+        if ($relationSchema->getType() !== 'ManyToOne' && $relationSchema->getType() !== 'OneToOne') {
+            throw new Error(
+                'Unexpected field type ' . $relationSchema->getType() . ': '. $collection->getName() . '.' . $associationName,
+            );
+        }
+
+        return self::getFieldSchema($collection->getDataSource()->getCollection($relationSchema->getForeignCollection()), substr($fieldName, $index + 1));
     }
 }
