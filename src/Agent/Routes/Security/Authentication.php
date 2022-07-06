@@ -13,6 +13,8 @@ use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use function ForestAdmin\config;
 
 class Authentication extends AbstractRoute
@@ -52,7 +54,7 @@ class Authentication extends AbstractRoute
     }
 
     /**
-     * @return array
+     * @return JsonResponse
      * @throws ErrorException
      * @throws GuzzleException
      * @throws JsonException
@@ -62,10 +64,11 @@ class Authentication extends AbstractRoute
         $request = Request::createFromGlobals();
         $renderingId = $this->getAndCheckRenderingId($request);
 
-        return [
-            'status'           => 200,
-            'authorizationUrl' => $this->auth->start(config('agentUrl') . '/forest/authentication/callback', $renderingId),
-        ];
+        return new JsonResponse(
+            [
+                'authorizationUrl' => $this->auth->start(config('agentUrl') . '/forest/authentication/callback', $renderingId),
+            ]
+        );
     }
 
     /**
@@ -80,16 +83,17 @@ class Authentication extends AbstractRoute
         $token = $this->auth->verifyCodeAndGenerateToken(config('agentUrl') .  '/forest/authentication/callback', $request->all());
         $tokenData = JWT::decode($token, new Key(config('envSecret'), 'HS256'));
 
-        return [
-            'status'           => 200,
-            'token'            => $token,
-            'tokenData'        => $tokenData,
-        ];
+        return new JsonResponse(
+            [
+                'token'            => $token,
+                'tokenData'        => $tokenData,
+            ]
+        );
     }
 
     public function handleAuthenticationLogout()
     {
-        // todo return 204
+        return new Response(null, 204);
     }
 
     /**
