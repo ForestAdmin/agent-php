@@ -5,7 +5,6 @@ namespace ForestAdmin\AgentPHP\Agent\Services;
 
 class JsonApiResponse
 {
-
 //    protected Manager $fractal;
 
     public function __construct()

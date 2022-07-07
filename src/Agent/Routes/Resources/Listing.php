@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
+use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
@@ -73,10 +74,9 @@ class Listing extends CollectionRoute
 
         $paginatedFilter = ContextFilterFactory::buildPaginated($collection, $request, $scope);
 
-        $records = [];
-        dd($collection->list($paginatedFilter, new Projection()));
-//        dd($datasource->getCollection($collectionName));
+        $records = $collection->list($paginatedFilter, new Projection());
+        dd($records);
 
-        return new JsonResponse($records);
+        return new JsonResponse(JsonApi::render($records, $collection->getName()));
     }
 }
