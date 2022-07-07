@@ -7,6 +7,7 @@ use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use function ForestAdmin\cache;
 
@@ -66,15 +67,15 @@ class Listing extends CollectionRoute
         $datasource = cache('datasource');
         /** @var Collection $collection */
         $collection = $datasource->getCollection($args['collectionName']);
+        $collection->hydrate($args);
         $request = Request::createFromGlobals();
         $scope = null;
 
         $paginatedFilter = ContextFilterFactory::buildPaginated($collection, $request, $scope);
 
         $records = [];
-        //$records = $collection->list()
-
-        dd($datasource->getCollection($collectionName));
+        dd($collection->list($paginatedFilter, new Projection()));
+//        dd($datasource->getCollection($collectionName));
 
         return new JsonResponse($records);
     }
