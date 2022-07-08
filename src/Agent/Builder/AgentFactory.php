@@ -2,17 +2,14 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Builder;
 
-use ForestAdmin\AgentPHP\Agent\ForestAdminHttpDriver;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use Illuminate\Support\Collection;
-use mysql_xdevapi\Exception;
-use function ForestAdmin\cache;
-use function ForestAdmin\forget;
 use function ForestAdmin\cacheRemember;
 use function ForestAdmin\config;
+use function ForestAdmin\forget;
+use Illuminate\Support\Collection;
 
 class AgentFactory
 {
@@ -41,7 +38,7 @@ class AgentFactory
                 /** @var DatasourceContract $datasource */
                 foreach ($datasources as $datasource) {
                     if (! $datasource instanceof DatasourceContract) {
-                        throw new Exception('Invalid datasource');
+                        throw new \Exception('Invalid datasource');
                     }
                     // todo add logger
                     $datasource->getCollections()->each(

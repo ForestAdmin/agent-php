@@ -25,7 +25,6 @@ if (! function_exists(__NAMESPACE__ . '\forget')) {
     }
 }
 
-
 if (! function_exists(__NAMESPACE__ . '\cacheRemember')) {
     function cacheRemember(string $key, \Closure $callback, ?int $ttl = 60)
     {
@@ -34,8 +33,6 @@ if (! function_exists(__NAMESPACE__ . '\cacheRemember')) {
         return $container->get('cache')->remember($key, $callback, $ttl);
     }
 }
-
-
 
 if (! function_exists(__NAMESPACE__ . '\config')) {
     /**

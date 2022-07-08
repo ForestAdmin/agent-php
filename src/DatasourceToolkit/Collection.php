@@ -43,6 +43,11 @@ class Collection implements CollectionContract
         return $this->name;
     }
 
+    public function hydrate(array $args): void
+    {
+        // TODO: Implement hydrate() method.
+    }
+
     public function execute(/*Caller $caller, */string $name, array $formValues, ?Filter $filter = null): ActionResult
     {
         // TODO: Implement execute() method.
