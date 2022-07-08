@@ -4,17 +4,39 @@ namespace ForestAdmin\AgentPHP\Agent\Utils;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 
 class ConditionTreeParser
 {
+    /**
+     * @throws \Exception
+     */
     public static function fromPLainObject(Collection $collection, array $filters): ConditionTree
     {
         if (self::isLeaf($filters)) {
             $operator = ucwords($filters['operator'], '_');
             $value = self::parseValue($collection, $filters);
+
+            return new ConditionTreeLeaf($filters['field'], $operator, $value);
         }
+
+        if (self::isBranch($filters)) {
+            $aggregator =  ucfirst($filters['aggregator']);
+
+            $conditions = [];
+            foreach ($filters['conditions'] as $subTree) {
+                $conditions[] = self::fromPLainObject($collection, $subTree);
+            }
+
+            return count($conditions) !== 1
+                ? new ConditionTreeBranch($aggregator, $conditions)
+                : $conditions->first();
+        }
+
+        throw new \Exception('Failed to instantiate condition tree');
     }
 
     private static function parseValue(Collection $collection, array $leaf)

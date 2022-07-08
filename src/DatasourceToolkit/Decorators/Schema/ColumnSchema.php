@@ -14,6 +14,7 @@ class ColumnSchema
      * @param bool                          $isSortable
      * @param string                        $type
      * @param string|null                   $defaultValue
+     * @param string|null                   $namespace
      * @param array                         $enumValues
      * @param array                         $validation
      */

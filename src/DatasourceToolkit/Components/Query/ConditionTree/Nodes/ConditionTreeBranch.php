@@ -6,51 +6,28 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 
-class ConditionTreeLeaf extends ConditionTree
+class ConditionTreeBranch extends ConditionTree
 {
     public function __construct(
-        protected string  $field,
-        protected string  $operator,
-        protected ?string $value = null
+        protected string  $aggregator,
+        protected array   $conditions,
     ) {
-        if ($this->operator) {
-            $this->validOperator($this->operator);
-        }
+    }
+
+    /**
+     * @return array
+     */
+    public function getConditions(): array
+    {
+        return $this->conditions;
     }
 
     /**
      * @return string
      */
-    public function getField(): string
+    public function getAggregator(): string
     {
-        return $this->field;
-    }
-
-    /**
-     * @return string
-     */
-    public function getOperator(): string
-    {
-        return $this->operator;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getValue(): ?string
-    {
-        return $this->value;
-    }
-
-    /**
-     * @throws \Exception
-     */
-    public function validOperator(string $value): void
-    {
-        if (! in_array($value, Operators::ALL_OPERATORS, true)) {
-            dd($value);
-            throw new \Exception("Invalid operators, the $value operator does not exist.");
-        }
+        return $this->aggregator;
     }
 
     public function inverse(): ConditionTree

@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOne
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
+use function ForestAdmin\cache;
 
 class Collection
 {
@@ -98,6 +99,6 @@ class Collection
             );
         }
 
-        return self::getFieldSchema($collection->getDataSource()->getCollection($relationSchema->getForeignCollection()), substr($fieldName, $index + 1));
+        return self::getFieldSchema(cache('datasource')->getCollection($relationSchema->getForeignCollection()), substr($fieldName, $index + 1));
     }
 }
