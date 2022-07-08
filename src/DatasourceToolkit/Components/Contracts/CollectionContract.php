@@ -15,6 +15,10 @@ interface CollectionContract
 
     public function getName(): string;
 
+    public function getClassName(): string;
+
+    public function getTransformer(): string;
+
     public function hydrate(array $args): void;
 
     public function execute(/*Caller $caller, */string $name, array $formValues, ?Filter $filter = null): ActionResult;

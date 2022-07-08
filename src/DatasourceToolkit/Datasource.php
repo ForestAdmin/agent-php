@@ -40,6 +40,13 @@ class Datasource implements DatasourceContract
         return $collection ?? throw new \Exception("Collection $name not found.");
     }
 
+    public function getCollectionByClassName(string $name): CollectionContract
+    {
+        $collection = $this->collections->first(fn ($item) => $item->getClassName() === $name);
+
+        return $collection ?? throw new \Exception("Collection $name not found.");
+    }
+
     /**
      * @throws \Exception
      */

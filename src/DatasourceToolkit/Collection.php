@@ -24,6 +24,10 @@ class Collection implements CollectionContract
 
     protected IlluminateCollection $segments;
 
+    protected string $className;
+
+    protected string $transformer;
+
     public function __construct(
         protected DatasourceContract $dataSource,
         protected string $name,
@@ -43,9 +47,19 @@ class Collection implements CollectionContract
         return $this->name;
     }
 
+    public function getClassName(): string
+    {
+        return $this->className;
+    }
+
+    public function getTransformer(): string
+    {
+        return $this->transformer;
+    }
+
     public function hydrate(array $args): void
     {
-        // TODO: Implement hydrate() method.
+        //
     }
 
     public function execute(/*Caller $caller, */string $name, array $formValues, ?Filter $filter = null): ActionResult
