@@ -11,8 +11,6 @@ use function ForestAdmin\cache;
 class Scope extends FractalScope
 {
     /**
-     * Execute the resources transformer and return the data and included data.
-     *
      * @internal
      */
     protected function executeResourceTransformers(): array

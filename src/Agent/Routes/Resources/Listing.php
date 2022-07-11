@@ -75,7 +75,6 @@ class Listing extends CollectionRoute
         $paginatedFilter = ContextFilterFactory::buildPaginated($collection, $request, $scope);
 
         $records = $collection->list($paginatedFilter, new Projection());
-        dd($records);
 
         return new JsonResponse(JsonApi::render($records, $collection->getName()));
     }
