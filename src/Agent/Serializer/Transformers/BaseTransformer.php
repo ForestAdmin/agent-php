@@ -45,7 +45,7 @@ class BaseTransformer extends TransformerAbstract
             $this->addMethod('include' . Str::ucfirst($key), fn() => $this->item($value, new ChildTransformer(), class_basename($value)));
         }*/
 
-        dd($collection);
+        //dd($collection);
 
         return $collection->attributesToArray();
     }
