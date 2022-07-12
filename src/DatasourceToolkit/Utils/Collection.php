@@ -17,7 +17,7 @@ class Collection
         /** @var RelationSchema $relation */
         $relationField = $collection->getFields()->get($relationName);
         /** @var MainCollection $foreignCollection */
-        $foreignCollection = $collection->getDataSource()->getCollections()->first(fn ($item) => $item->getName() === $relationField->getForeignCollection());
+        $foreignCollection = cache('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relationField->getForeignCollection());
         $inverse = $foreignCollection->getFields()
             ->filter(fn ($field) => is_a($field, RelationSchema::class))
             ->filter(

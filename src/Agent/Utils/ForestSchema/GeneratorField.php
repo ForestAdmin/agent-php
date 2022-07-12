@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
+use function ForestAdmin\cache;
 
 class GeneratorField
 {
@@ -55,7 +56,7 @@ class GeneratorField
     {
         /** @var RelationSchema $relation */
         $relation = $collection->getFields()->get($name);
-        $foreignCollection = $collection->getDataSource()->getCollections()->first(fn ($item) => $item->getName() === $relation->getForeignCollection());
+        $foreignCollection = cache('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relation->getForeignCollection());
 
         $relationSchema = [
             'field'        => $name,
