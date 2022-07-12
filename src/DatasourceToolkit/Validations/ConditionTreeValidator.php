@@ -9,15 +9,21 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 
 class ConditionTreeValidator
 {
+    /**
+     * @throws \Exception
+     */
     public static function validate(ConditionTree $conditionTree, Collection $collection): void
     {
         if ($conditionTree instanceof ConditionTreeBranch) {
-//            ConditionTreeValidator.validateBranch(conditionTree, collection);
+            self::validateBranch($conditionTree, $collection);
+        } elseif ($conditionTree instanceof ConditionTreeLeaf) {
+            self::validateLeaf($conditionTree, $collection);
         } else {
-//            ConditionTreeValidator.validateLeaf(conditionTree, collection);
+            throw new \Exception('Unexpected condition tree type');
         }
     }
 
@@ -35,103 +41,78 @@ class ConditionTreeValidator
         }
     }
 
-    private static function validateLeafs(ConditionTreeLeaf $leaf, Collection $collection): void
+    /**
+     * @throws \Exception
+     */
+    private static function validateLeaf(ConditionTreeLeaf $leaf, Collection $collection): void
     {
+        $fieldSchema = CollectionUtils::getFieldSchema($collection, $leaf->getField());
 
+        self::throwIfOperatorNotAllowedWithColumn($leaf, $fieldSchema);
+        self::throwIfValueNotAllowedWithOperator($leaf, $fieldSchema);
+        self::throwIfOperatorNotAllowedWithColumnType($leaf, $fieldSchema);
+        self::throwIfValueNotAllowedWithColumnType($leaf, $fieldSchema);
     }
 
-    private static function throwIfOperatorNotAllowedWithColumn(ConditionTreeLeaf $leaf, $columnSchema): void
+    /**
+     * @throws \Exception
+     */
+    private static function throwIfOperatorNotAllowedWithColumn(ConditionTreeLeaf $leaf, ColumnSchema|RelationSchema $columnSchema): void
     {
+        $operators = $columnSchema->getFilterOperators();
 
+        if (! isset($operators[$leaf->getOperator()])){
+            throw new \Exception(
+                'The given operator ' . $leaf->getOperator() .
+                ' is not supported by the column: ' .  $leaf->getField() . '\\n' .
+                count($operators) === 0 ? 'The column is not filterable.' : 'The allowed operators are: ' . implode(',', $operators)
+            );
+        }
     }
 
     /**
      * @param ConditionTreeLeaf           $leaf
      * @param ColumnSchema|RelationSchema $columnSchema
      * @return void
+     * @throws \Exception
      */
     private static function throwIfValueNotAllowedWithOperator(ConditionTreeLeaf $leaf, ColumnSchema|RelationSchema $columnSchema): void
     {
         $value = $leaf->getValue();
         $valueType = TypeGetter::get($value, $columnSchema->getColumnType());
+        $allowedTypes = Rules::getAllowedTypesForOperator($leaf->getOperator());
 
-        /*
-
-    const allowedTypes = MAP_ALLOWED_TYPES_FOR_OPERATOR[conditionTree.operator];
-
-    if (!allowedTypes.includes(valueType)) {
-      throw new ValidationError(
-        `The given value attribute '${JSON.stringify(
-          value,
-        )} (type: ${valueType})' has an unexpected value ` +
-          `for the given operator '${conditionTree.operator}'.\n` +
-          `${
-            allowedTypes.length === 0
-              ? 'The value attribute must be empty.'
-              : `The allowed types of the field value are: [${allowedTypes}].`
-          }`,
-      );
-    }
-  }
-         */
-
+        if (!in_array($valueType, $allowedTypes, true)) {
+            throw new \Exception(
+                'The given value attribute ' . $value .
+                ' has an unexpected value for the given operator ' . $leaf->getOperator() . '\\n' .
+                count($allowedTypes) === 0 ? 'The value attribute must be empty.' : 'The allowed types of the field value are: ' . implode(',', $allowedTypes)
+            );
+        }
     }
 
-    /*
-
-  private static validateLeaf(leaf: ConditionTreeLeaf, collection: Collection): void {
-    const fieldSchema = CollectionUtils.getFieldSchema(collection, leaf.field) as ColumnSchema;
-
-    ConditionTreeValidator.throwIfOperatorNotAllowedWithColumn(leaf, fieldSchema);
-    ConditionTreeValidator.throwIfValueNotAllowedWithOperator(leaf, fieldSchema);
-    ConditionTreeValidator.throwIfOperatorNotAllowedWithColumnType(leaf, fieldSchema);
-    ConditionTreeValidator.throwIfValueNotAllowedWithColumnType(leaf, fieldSchema);
-  }
-
-  private static throwIfOperatorNotAllowedWithColumn(
-    conditionTree: ConditionTreeLeaf,
-    columnSchema: ColumnSchema,
-  ): void {
-    const operators = columnSchema.filterOperators;
-
-    if (!operators?.has(conditionTree.operator)) {
-      throw new ValidationError(
-        `The given operator '${conditionTree.operator}' ` +
-          `is not supported by the column: '${conditionTree.field}'.\n${
-            operators?.size
-              ? `The allowed types are: [${[...operators]}]`
-              : 'the column is not filterable'
-          }`,
-      );
-    }
-  }
-
-
-  private static throwIfOperatorNotAllowedWithColumnType(
-    conditionTree: ConditionTreeLeaf,
-    columnSchema: ColumnSchema,
-  ): void {
-    const allowedOperators =
-      MAP_ALLOWED_OPERATORS_FOR_COLUMN_TYPE[columnSchema.columnType as PrimitiveTypes];
-
-    if (!allowedOperators.includes(conditionTree.operator)) {
-      throw new ValidationError(
-        `The given operator '${conditionTree.operator}' ` +
-          `is not allowed with the columnType schema: '${columnSchema.columnType}'.\n` +
-          `The allowed types are: [${allowedOperators}]`,
-      );
-    }
-  }
-
-  private static throwIfValueNotAllowedWithColumnType(
-    conditionTree: ConditionTreeLeaf,
-    columnSchema: ColumnSchema,
-  ): void {
-    const { value, field } = conditionTree;
-    const { columnType } = columnSchema;
-    const allowedTypes = MAP_ALLOWED_TYPES_FOR_COLUMN_TYPE[columnType as PrimitiveTypes];
-
-    FieldValidator.validateValue(field, columnSchema, value, allowedTypes);
-  }
+    /**
+     * @throws \Exception
      */
+    private static function throwIfOperatorNotAllowedWithColumnType(ConditionTreeLeaf $leaf, ColumnSchema|RelationSchema $columnSchema): void
+    {
+        $allowedOperators = Rules::getAllowedOperatorsForColumnType($columnSchema->getColumnType());
+
+        if(!in_array($leaf->getOperator(), $allowedOperators, true)) {
+            throw new \Exception(
+                'The given operator ' . $leaf->getOperator() .
+                ' is not allowed with the columnType schema: ' . $columnSchema->getColumnType() . '\\n' .
+                'The allowed types are: ' . implode(',', $allowedOperators)
+            );
+        }
+    }
+
+    private static function throwIfValueNotAllowedWithColumnType(ConditionTreeLeaf $leaf,  ColumnSchema|RelationSchema $columnSchema): void
+    {
+//        const { value, field } = conditionTree;
+//        const { columnType } = columnSchema;
+//        const allowedTypes = MAP_ALLOWED_TYPES_FOR_COLUMN_TYPE[columnType as PrimitiveTypes];
+//
+//        FieldValidator.validateValue(field, columnSchema, value, allowedTypes);
+    }
 }
