@@ -48,10 +48,9 @@ class ConditionTreeParser
                 ->each(fn($item) => trim($item));
 
             if ($schema->getColumnType() === PrimitiveType::Boolean()) {
-                /* return leaf.value
-                    .split(',')
-                    .map(bool => !['false', '0', 'no'].includes(bool.toLowerCase().trim())); */
-                // todo
+                // Cast values into bool
+                return $values->map(fn ($item) => ! in_array(strtolower($item), ['false', '0', 'no']))
+                    ->all();
             }
 
             if ($schema->getColumnType() === PrimitiveType::Number()) {
