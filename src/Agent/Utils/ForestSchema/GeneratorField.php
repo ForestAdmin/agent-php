@@ -5,7 +5,10 @@ namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 use ForestAdmin\AgentPHP\Agent\Concerns\Relation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use function ForestAdmin\cache;
@@ -82,8 +85,10 @@ class GeneratorField
         }
 
         if (is_array($columnType)) {
-            return [self::convertColumnType($columnType)];
+            return [self::convertColumnType($columnType[0])];
         }
+
+        // todo return object like agent-js
     }
 
     public static function buildToManyRelationSchema(RelationSchema $relation, Collection $collection, Collection $foreignCollection, array $baseSchema): array
@@ -100,7 +105,7 @@ class GeneratorField
         return array_merge(
             $baseSchema,
             [
-                'type'         => '[' . $column->getColumnType()->value . ']',
+                'type'         => [$column->getColumnType()],
                 'defaultValue' => null,
                 'isFilterable' => false,
                 'isPrimaryKey' => false,
@@ -112,16 +117,16 @@ class GeneratorField
         );
     }
 
-    public static function buildOneToOneSchema(RelationSchema $relation, Collection $collection, Collection $foreignCollection, array $baseSchema): array
+    public static function buildOneToOneSchema(OneToOneSchema $relation, Collection $collection, Collection $foreignCollection, array $baseSchema): array
     {
         $key = $relation->getOriginKeyTarget();
         /** @var ColumnSchema $column */
-        $column = $collection->getFields()->get($key);
+        $column = $collection->getFields()->get($relation->getOriginKeyTarget());
 
         return array_merge(
             $baseSchema,
             [
-                'type'         => $column->getColumnType()->value,
+                'type'         => $column->getColumnType(),
                 'defaultValue' => null,
                 'isFilterable' => self::isForeignCollectionFilterable($foreignCollection),
                 'isPrimaryKey' => false,
@@ -133,22 +138,21 @@ class GeneratorField
         );
     }
 
-    public static function buildManyToOneSchema(RelationSchema $relation, Collection $collection, Collection $foreignCollection, array $baseSchema): array
+    public static function buildManyToOneSchema(ManyToOneSchema $relation, Collection $collection, Collection $foreignCollection, array $baseSchema): array
     {
-        $key = $relation->getForeignKey();
-        /** @var ColumnSchema $column */
-        $column = $collection->getFields()->get($key);
+        $key = $relation->getForeignKeyTarget();
+        $foreignTargetColumn = $foreignCollection->getFields()->get($key);
 
         return array_merge(
             $baseSchema,
             [
-                'type'         => $column->getColumnType()->value,
+                'type'         => $foreignTargetColumn->getColumnType() ,
                 'defaultValue' => null,
                 'isFilterable' => self::isForeignCollectionFilterable($foreignCollection),
-                'isPrimaryKey' => $column->isPrimaryKey(),
-                'isRequired'   => in_array('Present', $column->getValidation(), true),
-                'isSortable'   => $column->isSortable(),
-                'validations'  => FrontendValidation::convertValidationList($column->getValidation()),
+                'isPrimaryKey' => false,
+                'isRequired'   => false,
+                'isSortable'   => true,
+                'validations'  => [], //FrontendValidation::convertValidationList($column->getValidation()),
                 'reference'    => $foreignCollection->getName() . '.' . $key,
             ],
         );

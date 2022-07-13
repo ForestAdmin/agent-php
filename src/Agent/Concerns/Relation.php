@@ -17,8 +17,8 @@ final class Relation extends Enum
         return [
             'ManyToMany' => 'BelongsToMany',
             'ManyToOne'  => 'BelongsTo',
-            'OneToMany'  => 'OneToMany',
-            'OneToOne'   => 'OneToOne',
+            'OneToMany'  => 'HasMany',
+            'OneToOne'   => 'HasOne',
         ];
     }
 
