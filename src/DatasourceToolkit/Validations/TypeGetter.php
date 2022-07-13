@@ -8,7 +8,7 @@ use function PHPUnit\Framework\isEmpty;
 
 class TypeGetter
 {
-    public static function get($value, PrimitiveType $typeContext): PrimitiveType | ValidationType
+    public static function get($value, string $typeContext): string | ValidationType
     {
         if (is_array($value)) {
             return self::getArrayType($value, $typeContext);
@@ -19,12 +19,12 @@ class TypeGetter
         }
 
         if (is_numeric($value) && ! is_nan((float) $value)) {
-            return PrimitiveType::Number();
+            return PrimitiveType::NUMBER;
         }
 //        if (value instanceof Date && DateTime.fromJSDate(value).isValid) return 'Date'; //TODO
 
         if (is_bool($value)) {
-            return PrimitiveType::Boolean();
+            return PrimitiveType::BOOLEAN;
         }
 
 //        if (typeof value === 'object' && typeContext === 'Json') return 'Json'; //TODO
@@ -32,9 +32,9 @@ class TypeGetter
         return ValidationType::Null();
     }
 
-    private static function getTypeFromString($value, PrimitiveType $typeContext): PrimitiveType
+    private static function getTypeFromString($value, string $typeContext): string
     {
-        if (in_array($typeContext, [PrimitiveType::Enum(), PrimitiveType::String()], true)) {
+        if (in_array($typeContext, [PrimitiveType::ENUM, PrimitiveType::STRING], true)) {
             return $typeContext;
         }
 
@@ -45,23 +45,23 @@ class TypeGetter
         }
 
         if (self::isJson($value)) {
-            return PrimitiveType::Json();
+            return PrimitiveType::JSON;
         }
 
         if (self::isPoint($value, $typeContext)) {
-            return PrimitiveType::Point();
+            return PrimitiveType::POINT;
         }
 
-        return PrimitiveType::String();
+        return PrimitiveType::STRING;
     }
 
-    private static function isPoint(string $value, PrimitiveType $typeContext): bool
+    private static function isPoint(string $value, string $typeContext): bool
     {
         $potentialPoint = explode(',', $value);
 
         return count($potentialPoint) === 2 &&
-            $typeContext === PrimitiveType::Point() &&
-            self::get($potentialPoint, PrimitiveType::Number()) === ValidationType::Number();
+            $typeContext === PrimitiveType::POINT &&
+            self::get($potentialPoint, PrimitiveType::NUMBER) === ValidationType::Number();
     }
 
     private static function isJson(string $value): bool
@@ -73,36 +73,36 @@ class TypeGetter
         }
     }
 
-    private static function getArrayType(array $value, PrimitiveType $typeContext): ValidationType
+    private static function getArrayType(array $value, string $typeContext): ValidationType
     {
         if (isEmpty($value)) {
             return ValidationType::Empty();
         }
 
-        if (self::isArrayOf(PrimitiveType::Number(), $value, $typeContext)) {
+        if (self::isArrayOf(PrimitiveType::NUMBER, $value, $typeContext)) {
             return ValidationType::Number();
         }
 
-        if (self::isArrayOf(PrimitiveType::Uuid(), $value, $typeContext)) {
+        if (self::isArrayOf(PrimitiveType::UUID, $value, $typeContext)) {
             return ValidationType::Uuid();
         }
 
-        if (self::isArrayOf(PrimitiveType::Boolean(), $value, $typeContext)) {
+        if (self::isArrayOf(PrimitiveType::BOOLEAN, $value, $typeContext)) {
             return ValidationType::Boolean();
         }
 
-        if (self::isArrayOf(PrimitiveType::String(), $value, $typeContext)) {
+        if (self::isArrayOf(PrimitiveType::STRING, $value, $typeContext)) {
             return ValidationType::String();
         }
 
-        if (self::isArrayOf(PrimitiveType::Enum(), $value, $typeContext)) {
+        if (self::isArrayOf(PrimitiveType::ENUM, $value, $typeContext)) {
             return ValidationType::Enum();
         }
 
         return ValidationType::Null();
     }
 
-    private static function isArrayOf(PrimitiveType $primitiveType, array $values, PrimitiveType $typeContext): bool
+    private static function isArrayOf(string $primitiveType, array $values, string $typeContext): bool
     {
         foreach ($values as $value) {
             if (self::get($value, $typeContext) !== $primitiveType) {
@@ -118,18 +118,18 @@ class TypeGetter
         return (bool) strtotime($value);
     }
 
-    private static function getDateType(string $value): PrimitiveType
+    private static function getDateType(string $value): String
     {
         $time = strtotime($value);
 
         if (date('Y-m-d', $time) === $value) {
-            return PrimitiveType::Dateonly();
+            return PrimitiveType::DATEONLY;
         }
 
         if (date('H:i:s', $time) === $value) {
-            return PrimitiveType::Timeonly();
+            return PrimitiveType::TIMEONLY;
         }
 
-        return PrimitiveType::Date();
+        return PrimitiveType::DATE;
     }
 }

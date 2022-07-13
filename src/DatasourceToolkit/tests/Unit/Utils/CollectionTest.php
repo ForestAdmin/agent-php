@@ -16,7 +16,7 @@ dataset('dataSourceWithInverseRelationMissing', function () {
     $collectionBooks->addFields(
         [
             'id'       => new ColumnSchema(
-                columnType: PrimitiveType::Number(),
+                columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),
             'author'   => new ManyToOneSchema(
@@ -25,7 +25,7 @@ dataset('dataSourceWithInverseRelationMissing', function () {
                 foreignCollection: 'persons',
             ),
             'authorId' => new ColumnSchema(
-                columnType: PrimitiveType::Uuid(),
+                columnType: PrimitiveType::UUID,
             ),
         ]
     );
@@ -33,7 +33,7 @@ dataset('dataSourceWithInverseRelationMissing', function () {
     $collectionPersons->addFields(
         [
             'id' => new ColumnSchema(
-                columnType: PrimitiveType::Number(),
+                columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),
         ]
@@ -48,7 +48,7 @@ dataset('datasourceWithAllRelations', function () {
     $collectionBooks->addFields(
         [
             'id'       => new ColumnSchema(
-                columnType: PrimitiveType::Number(),
+                columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),
             'myPersons'   => new ManyToManySchema(
@@ -70,11 +70,11 @@ dataset('datasourceWithAllRelations', function () {
     $collectionBookPersons->addFields(
         [
             'bookId'       => new ColumnSchema(
-                columnType: PrimitiveType::Number(),
+                columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),
             'personId'       => new ColumnSchema(
-                columnType: PrimitiveType::Number(),
+                columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),
             'myBook'   => new ManyToOneSchema(
@@ -93,7 +93,7 @@ dataset('datasourceWithAllRelations', function () {
     $collectionPersons->addFields(
         [
             'id' => new ColumnSchema(
-                columnType: PrimitiveType::Number(),
+                columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),
             'myBooks'   => new ManyToManySchema(

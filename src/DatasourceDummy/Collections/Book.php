@@ -15,18 +15,18 @@ class Book extends BaseCollection
     {
         $fields = [
             'id' => new ColumnSchema(
-                columnType: PrimitiveType::Number(),
+                columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),
             'title' => new ColumnSchema(
-                columnType: PrimitiveType::String(),
+                columnType: PrimitiveType::STRING,
                 defaultValue: 'Foo'
             ),
             'publication' => new ColumnSchema(
-                columnType: PrimitiveType::Date(),
+                columnType: PrimitiveType::DATE,
             ),
             'authorId' => new ColumnSchema(
-                columnType: PrimitiveType::Number(),
+                columnType: PrimitiveType::NUMBER,
             ),
             'author' => new ManyToOneSchema( // TODO CHECK IT'S GOOD ?
                 foreignKey: 'authorId',

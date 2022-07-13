@@ -47,13 +47,13 @@ class ConditionTreeParser
             $values = collect(explode(',', $leaf['value']))
                 ->each(fn($item) => trim($item));
 
-            if ($schema->getColumnType() === PrimitiveType::Boolean()) {
+            if ($schema->getColumnType() === PrimitiveType::BOOLEAN) {
                 // Cast values into bool
                 return $values->map(fn ($item) => ! in_array(strtolower($item), ['false', '0', 'no']))
                     ->all();
             }
 
-            if ($schema->getColumnType() === PrimitiveType::Number()) {
+            if ($schema->getColumnType() === PrimitiveType::NUMBER) {
                 return $values->each(fn($item) => (float) $item)
                     ->filter(fn($number) => ! is_nan($number) && is_finite($number))
                     ->all();

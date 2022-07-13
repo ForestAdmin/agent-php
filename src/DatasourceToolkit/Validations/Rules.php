@@ -35,7 +35,7 @@ class Rules
     {
         $allowedOperators = collect(
             [
-                PrimitiveType::String()->value   => [
+                PrimitiveType::STRING   => [
                     ...self::BASE_OPERATORS,
                     ...self::ARRAY_OPERATORS,
                     'Contains',
@@ -50,15 +50,15 @@ class Rules
                     'IEndsWith',
                     'IStartsWith',
                 ],
-                PrimitiveType::Number()->value   => [...self::BASE_OPERATORS, ...self::ARRAY_OPERATORS, 'GreaterThan', 'LessThan'],
-                PrimitiveType::Dateonly()->value => [...self::BASE_OPERATORS, ...self::BASE_DATEONLY_OPERATORS],
-                PrimitiveType::Date()->value     => [...self::BASE_OPERATORS, ...self::BASE_DATEONLY_OPERATORS, 'BeforeXHoursAgo', 'AfterXHoursAgo'],
-                PrimitiveType::Timeonly()->value => [...self::BASE_OPERATORS, 'LessThan', 'GreaterThan'],
-                PrimitiveType::Enum()->value     => [...self::BASE_OPERATORS, ...self::ARRAY_OPERATORS],
-                PrimitiveType::Uuid()->value     => [...self::BASE_OPERATORS, ...self::ARRAY_OPERATORS],
-                PrimitiveType::Json()->value     => ['Blank', 'Missing', 'Present'],
-                PrimitiveType::Boolean()->value  => self::BASE_OPERATORS,
-                PrimitiveType::Point()->value    => self::BASE_OPERATORS,
+                PrimitiveType::NUMBER   => [...self::BASE_OPERATORS, ...self::ARRAY_OPERATORS, 'GreaterThan', 'LessThan'],
+                PrimitiveType::DATEONLY => [...self::BASE_OPERATORS, ...self::BASE_DATEONLY_OPERATORS],
+                PrimitiveType::DATE     => [...self::BASE_OPERATORS, ...self::BASE_DATEONLY_OPERATORS, 'BeforeXHoursAgo', 'AfterXHoursAgo'],
+                PrimitiveType::TIMEONLY => [...self::BASE_OPERATORS, 'LessThan', 'GreaterThan'],
+                PrimitiveType::ENUM     => [...self::BASE_OPERATORS, ...self::ARRAY_OPERATORS],
+                PrimitiveType::UUID     => [...self::BASE_OPERATORS, ...self::ARRAY_OPERATORS],
+                PrimitiveType::JSON     => ['Blank', 'Missing', 'Present'],
+                PrimitiveType::BOOLEAN  => self::BASE_OPERATORS,
+                PrimitiveType::POINT    => self::BASE_OPERATORS,
             ]
         );
 
@@ -69,16 +69,16 @@ class Rules
     {
         $allowedTypes = collect(
             [
-                PrimitiveType::String()->value   => [PrimitiveType::String(), ValidationType::String(), ValidationType::Null()],
-                PrimitiveType::Number()->value   => [PrimitiveType::Number(), ValidationType::Number(), ValidationType::Null()],
-                PrimitiveType::Dateonly()->value => [PrimitiveType::Dateonly(), PrimitiveType::Number(), ValidationType::Null()],
-                PrimitiveType::Date()->value     => [PrimitiveType::Date(), PrimitiveType::Number(), ValidationType::Null()],
-                PrimitiveType::Timeonly()->value => [PrimitiveType::Timeonly(), ValidationType::Null()],
-                PrimitiveType::Enum()->value     => [PrimitiveType::Enum(), ValidationType::Enum(), ValidationType::Null()],
-                PrimitiveType::Uuid()->value     => [PrimitiveType::Uuid(), ValidationType::Uuid(), ValidationType::Null()],
-                PrimitiveType::Json()->value     => [PrimitiveType::Json(), ValidationType::Null()],
-                PrimitiveType::Boolean()->value  => [PrimitiveType::Boolean(), ValidationType::Boolean(), ValidationType::Null()],
-                PrimitiveType::Point()->value    => [PrimitiveType::Point(), ValidationType::Null()],
+                PrimitiveType::STRING  => [PrimitiveType::STRING, ValidationType::String(), ValidationType::Null()],
+                PrimitiveType::NUMBER   => [PrimitiveType::NUMBER, ValidationType::Number(), ValidationType::Null()],
+                PrimitiveType::DATEONLY => [PrimitiveType::DATEONLY, PrimitiveType::NUMBER, ValidationType::Null()],
+                PrimitiveType::DATE     => [PrimitiveType::DATE, PrimitiveType::NUMBER, ValidationType::Null()],
+                PrimitiveType::TIMEONLY => [PrimitiveType::TIMEONLY, ValidationType::Null()],
+                PrimitiveType::ENUM    => [PrimitiveType::ENUM, ValidationType::Enum(), ValidationType::Null()],
+                PrimitiveType::UUID     => [PrimitiveType::UUID, ValidationType::Uuid(), ValidationType::Null()],
+                PrimitiveType::JSON     => [PrimitiveType::JSON, ValidationType::Null()],
+                PrimitiveType::BOOLEAN  => [PrimitiveType::BOOLEAN, ValidationType::Boolean(), ValidationType::Null()],
+                PrimitiveType::POINT    => [PrimitiveType::POINT, ValidationType::Null()],
             ]
         );
 

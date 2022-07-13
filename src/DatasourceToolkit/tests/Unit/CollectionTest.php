@@ -25,7 +25,7 @@ it('should add action with unique name',  function() {
 });
 
 it('should prevent instantiation when adding field with duplicated name', function() {
-    $field = new ColumnSchema(columnType: PrimitiveType::String());
+    $field = new ColumnSchema(columnType: PrimitiveType::STRING);
     $collection = new Collection(new Datasource(), '__collection__');
     $collection->addField('__duplicated__', $field);
     $collection->addField('__duplicated__', $field);
@@ -33,7 +33,7 @@ it('should prevent instantiation when adding field with duplicated name', functi
 })->throws(Exception::class, 'Field __duplicated__ already defined in collection');
 
 it('should add field with unique name',  function() {
-    $expectedField = new ColumnSchema(columnType: PrimitiveType::String());
+    $expectedField = new ColumnSchema(columnType: PrimitiveType::STRING);
     $collection = new Collection(new Datasource(), '__collection__');
     $collection->addField('__field__', $expectedField);
 
@@ -44,11 +44,11 @@ it('should add field with unique name',  function() {
 it('should add all fields',  function() {
     $expectedFields = [
         '__first__' => new ColumnSchema(
-            columnType: PrimitiveType::Number(),
+            columnType: PrimitiveType::NUMBER,
             isPrimaryKey: true
         ),
         '__second__' => new ColumnSchema(
-            columnType: PrimitiveType::String(),
+            columnType: PrimitiveType::STRING,
         ),
     ];
     $collection = new Collection(new Datasource(), '__collection__');

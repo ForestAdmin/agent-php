@@ -41,12 +41,9 @@ final class FrontendFilterable
         'Uuid'     => self::BASE_OPERATORS,
     ];
 
-    /**
-     * @param PrimitiveType|PrimitiveType[] $type
-     */
-    public static function isFilterable($type, array $operators = [])
+    public static function isFilterable(string|array $type, array $operators = []): bool
     {
-        $neededOperators = new IlluminateCollection(self::getRequiredOperators($type->value));
+        $neededOperators = new IlluminateCollection(self::getRequiredOperators($type));
         $supportedOperators = new IlluminateCollection($operators);
 
         // TODO SHOULD BE THE OPPOSITE ? CHECK SUPPORTED INTO NEEDED ?
@@ -57,7 +54,7 @@ final class FrontendFilterable
      * @param PrimitiveType|PrimitiveType[] $type
      * @return mixed|string[]|null
      */
-    public static function getRequiredOperators($type)
+    public static function getRequiredOperators(string|array $type)
     {
         if (is_string($type) && in_array($type, array_keys(self::OPERATOR_BY_TYPE), true)) {
             return self::OPERATOR_BY_TYPE[$type];

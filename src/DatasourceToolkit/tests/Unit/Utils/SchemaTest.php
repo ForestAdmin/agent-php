@@ -11,14 +11,14 @@ it('should find the pks',  function() {
     $collection->addFields(
         [
             'id' => new ColumnSchema(
-                columnType: PrimitiveType::Number(),
+                columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),
             'notId' => new ColumnSchema(
-                columnType: PrimitiveType::String(),
+                columnType: PrimitiveType::STRING,
             ),
             'otherId' => new ColumnSchema(
-                columnType: PrimitiveType::Number(),
+                columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),
         ]

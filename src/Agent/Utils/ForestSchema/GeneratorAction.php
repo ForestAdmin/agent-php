@@ -107,7 +107,7 @@ class GeneratorAction
         if ($fields) {
             // When sending to server, we need to rename 'value' into 'defaultValue'
             // otherwise, it does not gets applied 🤷‍♂️
-            return $fields.map(static function ($field) use ($collection) {
+            return $fields.map(static function ($field) {
                 $newField = self::buildFieldSchema(cache('datasource'), $field);
                 $newField['defaultValue'] = $newField['value'];
                 unset($newField['value']);

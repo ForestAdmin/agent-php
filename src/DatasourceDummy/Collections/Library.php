@@ -12,11 +12,11 @@ class Library extends BaseCollection
     {
         $fields = [
             'id' => new ColumnSchema(
-                columnType: PrimitiveType::Number(),
+                columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),
             'name' => new ColumnSchema(
-                columnType: PrimitiveType::String(),
+                columnType: PrimitiveType::STRING,
             ),
         ];
 

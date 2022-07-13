@@ -10,7 +10,7 @@ class GeneratorCollection
     {
         return [
             'actions'              => [],
-            'fields'               => $collection->getFields()->map(fn ($field, $name) => GeneratorField::buildSchema($collection, $name)),
+            'fields'               => $collection->getFields()->map(fn ($field, $name) => GeneratorField::buildSchema($collection, $name))->values()->toArray(),
             'icon'                 => null,
             'integration'          => null,
             'isReadOnly'           => $collection->getFields()->every(fn ($field) => $field->getType() === 'Column' && $field->isReadOnly()),

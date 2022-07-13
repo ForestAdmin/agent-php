@@ -12,17 +12,17 @@ class Address extends BaseCollection
     {
         $fields = [
             'id'          => new ColumnSchema(
-                columnType: PrimitiveType::Number(),
+                columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),
             'street'      => new ColumnSchema(
-                columnType: PrimitiveType::String(),
+                columnType: PrimitiveType::STRING,
             ),
             'city'        => new ColumnSchema(
-                columnType: PrimitiveType::String(),
+                columnType: PrimitiveType::STRING,
             ),
             'postal_code' => new ColumnSchema(
-                columnType: PrimitiveType::String(),
+                columnType: PrimitiveType::STRING,
             ),
         ];
         parent::__construct($dataSource, 'Address', $fields);

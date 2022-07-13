@@ -14,17 +14,17 @@ class Person extends BaseCollection
     {
         $fields = [
             'id' => new ColumnSchema(
-                columnType: PrimitiveType::Number(),
+                columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),
             'firstName' => new ColumnSchema(
-                columnType: PrimitiveType::String(),
+                columnType: PrimitiveType::STRING,
             ),
             'lastName' => new ColumnSchema(
-                columnType: PrimitiveType::String(),
+                columnType: PrimitiveType::STRING,
             ),
             'addressId' => new ColumnSchema(
-                columnType: PrimitiveType::Number(),
+                columnType: PrimitiveType::NUMBER,
             ),
             'books' => new OneToManySchema(
                 originKey: 'authorId',

@@ -7,19 +7,19 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveT
 class ColumnSchema
 {
     /**
-     * @param PrimitiveType|PrimitiveType[] $columnType
-     * @param array                         $filterOperators
-     * @param bool                          $isPrimaryKey
-     * @param bool                          $isReadOnly
-     * @param bool                          $isSortable
-     * @param string                        $type
-     * @param string|null                   $defaultValue
-     * @param string|null                   $namespace
-     * @param array                         $enumValues
-     * @param array                         $validation
+     * @param array|string $columnType
+     * @param array        $filterOperators
+     * @param bool         $isPrimaryKey
+     * @param bool         $isReadOnly
+     * @param bool         $isSortable
+     * @param string       $type
+     * @param string|null  $defaultValue
+     * @param string|null  $namespace
+     * @param array        $enumValues
+     * @param array        $validation
      */
     public function __construct(
-        protected array|PrimitiveType $columnType,
+        protected array|string $columnType,
         protected array $filterOperators = [],
         protected bool $isPrimaryKey = false,
         protected bool $isReadOnly = false,
@@ -33,9 +33,9 @@ class ColumnSchema
     }
 
     /**
-     * @return array|PrimitiveType|PrimitiveType[]
+     * @return array|string
      */
-    public function getColumnType(): array|PrimitiveType
+    public function getColumnType(): array|string
     {
         return $this->columnType;
     }
