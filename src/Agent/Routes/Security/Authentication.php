@@ -10,12 +10,12 @@ use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
 use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
+
+use function ForestAdmin\config;
+
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
-use function ForestAdmin\config;
 
 class Authentication extends AbstractRoute
 {
@@ -30,21 +30,21 @@ class Authentication extends AbstractRoute
     public function setupRoutes(): self
     {
         $this->addRoute(
-            'authentication',
+            'forest.authentication',
             'POST',
             '/authentication',
             fn () => $this->handleAuthentication()
         );
 
         $this->addRoute(
-            'authentication-callback',
+            'forest.authentication-callback',
             'GET',
             '/authentication/callback',
             fn () => $this->handleAuthenticationCallback()
         );
 
         $this->addRoute(
-            'logout',
+            'forest.logout',
             'POST',
             '/authentication/logout',
             fn () => $this->handleAuthenticationLogout()
@@ -54,46 +54,50 @@ class Authentication extends AbstractRoute
     }
 
     /**
-     * @return JsonResponse
+     * @return array[]
      * @throws ErrorException
      * @throws GuzzleException
      * @throws JsonException
      */
-    public function handleAuthentication()
+    public function handleAuthentication(): array
     {
         $request = Request::createFromGlobals();
         $renderingId = $this->getAndCheckRenderingId($request);
 
-        return new JsonResponse(
-            [
+        return [
+            'content' => [
                 'authorizationUrl' => $this->auth->start(config('agentUrl') . '/forest/authentication/callback', $renderingId),
-            ]
-        );
+            ],
+        ];
     }
 
     /**
-     * @throws GuzzleException
-     * @throws JsonException
+     * @return array[]
      * @throws ErrorException
+     * @throws GuzzleException
      * @throws IdentityProviderException
+     * @throws JsonException
      */
-    public function handleAuthenticationCallback()
+    public function handleAuthenticationCallback(): array
     {
         $request = Request::createFromGlobals();
-        $token = $this->auth->verifyCodeAndGenerateToken(config('agentUrl') .  '/forest/authentication/callback', $request->all());
+        $token = $this->auth->verifyCodeAndGenerateToken(config('agentUrl') . '/forest/authentication/callback', $request->all());
         $tokenData = JWT::decode($token, new Key(config('envSecret'), 'HS256'));
 
-        return new JsonResponse(
-            [
-                'token'            => $token,
-                'tokenData'        => $tokenData,
-            ]
-        );
+        return [
+            'content' => [
+                'token'     => $token,
+                'tokenData' => $tokenData,
+            ],
+        ];
     }
 
     public function handleAuthenticationLogout()
     {
-        return new Response(null, 204);
+        return [
+            'content' => null,
+            'status'  => 204,
+        ];
     }
 
     /**
@@ -111,6 +115,6 @@ class Authentication extends AbstractRoute
             throw new ErrorException(ErrorMessages::INVALID_RENDERING_ID);
         }
 
-        return (int) $renderingId;
+        return (int)$renderingId;
     }
 }

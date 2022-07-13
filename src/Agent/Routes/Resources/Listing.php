@@ -2,14 +2,11 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
-use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use function ForestAdmin\cache;
 
 class Listing extends CollectionRoute
@@ -51,7 +48,7 @@ class Listing extends CollectionRoute
     public function setupRoutes(): AbstractRoute
     {
         $this->addRoute(
-            'list',
+            'forest.list',
             'get',
             '/{collectionName}',
             fn ($args) => $this->handleRequest($args)
@@ -60,10 +57,7 @@ class Listing extends CollectionRoute
         return $this;
     }
 
-    /**
-     * @throws \JsonException
-     */
-    public function handleRequest(array $args = [])
+    public function handleRequest(array $args = []): array
     {
         $datasource = cache('datasource');
         /** @var Collection $collection */
@@ -74,8 +68,9 @@ class Listing extends CollectionRoute
 
         $paginatedFilter = ContextFilterFactory::buildPaginated($collection, $request, $scope);
 
-        $records = $collection->list($paginatedFilter, new Projection());
-
-        return new JsonResponse(JsonApi::render($records, $collection->getName()));
+        return [
+            'renderTransformer' => true,
+            'content'           => $collection->list($paginatedFilter, new Projection()),
+        ];
     }
 }
