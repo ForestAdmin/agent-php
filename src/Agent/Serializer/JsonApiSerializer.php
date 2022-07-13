@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Serializer;
 
+use Illuminate\Support\Str;
 use League\Fractal\Serializer\JsonApiSerializer as FractalJsonApiSerializer;
 
 /**
@@ -94,14 +95,13 @@ class JsonApiSerializer extends FractalJsonApiSerializer
             $resource['relationships'][$relationshipKey] = [];
         }
 
-        // TODO NECESSARY OR NOT ?
-        //$type = Str::camel($resource['type']);
+        $type = Str::camel($resource['type']);
 
         $resource['relationships'][$relationshipKey] = array_merge(
             [
                 'links' => [
                     'related' => [
-                        'href' => "/forest/{$resource['type']}/{$resource['id']}/relationships/{$relationshipKey}",
+                        'href' => "/forest/$type/{$resource['id']}/relationships/{$relationshipKey}",
                     ],
                 ],
             ],

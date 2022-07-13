@@ -52,11 +52,6 @@ class Collection implements CollectionContract
         return $this->className;
     }
 
-    public function getTransformer(): string
-    {
-        return $this->transformer;
-    }
-
     public function hydrate(array $args): void
     {
         //
@@ -95,6 +90,11 @@ class Collection implements CollectionContract
     public function delete(/*Caller $caller, */Filter $filter): void
     {
         // TODO: Implement delete() method.
+    }
+
+    public function count(Filter $filter): int
+    {
+        // TODO: Implement count() method.
     }
 
     public function aggregate(/*Caller $caller, */Filter $filter, Aggregation $aggregation, ?int $limit): array

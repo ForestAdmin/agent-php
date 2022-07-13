@@ -17,8 +17,6 @@ interface CollectionContract
 
     public function getClassName(): string;
 
-    public function getTransformer(): string;
-
     public function hydrate(array $args): void;
 
     public function execute(/*Caller $caller, */string $name, array $formValues, ?Filter $filter = null): ActionResult;
@@ -32,6 +30,8 @@ interface CollectionContract
     public function update(/*Caller $caller, */Filter $filter, array $patch): void;
 
     public function delete(/*Caller $caller, */Filter $filter): void;
+
+    public function count(/*Caller $caller, */Filter $filter): int;
 
     public function aggregate(/*Caller $caller, */Filter $filter, Aggregation $aggregation, ?int $limit): array;
 }
