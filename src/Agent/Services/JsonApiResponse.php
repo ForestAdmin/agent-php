@@ -3,11 +3,11 @@
 namespace ForestAdmin\AgentPHP\Agent\Services;
 
 use ForestAdmin\AgentPHP\Agent\Serializer\JsonApiSerializer;
-use ForestAdmin\AgentPHP\Agent\Serializer\Scope\ScopeFactory;
 use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BaseTransformer;
 use League\Fractal\Manager;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\Item;
+use League\Fractal\TransformerAbstract;
 use function ForestAdmin\cache;
 use function ForestAdmin\config;
 
@@ -17,13 +17,13 @@ class JsonApiResponse
 
     public function __construct()
     {
-        $this->fractal = new Manager(new ScopeFactory());
+        $this->fractal = new Manager();
     }
 
-    public function render($class, string $name, array $meta = [])
+    public function render($class, TransformerAbstract $transformer, string $name, array $meta = [])
     {
         $this->fractal->setSerializer(new JsonApiSerializer(config('agentUrl')));
-        $transformer = new BaseTransformer();
+        //$transformer = new BaseTransformer();
         // eventuellement regarder de quel type est le 1er élément pour appeler le bon transformer.
         // ds le dossier transformers rajouté autant de transformer que de type (Model Laravel, Entity Symfony, array simple,...)
         //
