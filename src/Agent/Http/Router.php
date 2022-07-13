@@ -4,6 +4,7 @@ namespace ForestAdmin\AgentPHP\Agent\Http;
 
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Count;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Listing;
+use ForestAdmin\AgentPHP\Agent\Routes\Resources\Show;
 use ForestAdmin\AgentPHP\Agent\Routes\Security\Authentication;
 use ForestAdmin\AgentPHP\Agent\Routes\System\HealthCheck;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
@@ -24,6 +25,7 @@ class Router
             Authentication::of($this->services)->getRoutes(),
             Listing::of($this->services)->getRoutes(),
             Count::of($this->services)->getRoutes(),
+            Show::of($this->services)->getRoutes(),
         );
     }
 

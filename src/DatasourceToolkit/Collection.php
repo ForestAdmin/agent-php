@@ -77,6 +77,11 @@ class Collection implements CollectionContract
         // TODO: Implement create() method.
     }
 
+    public function show(/*Caller $caller, */PaginatedFilter $filter, $id, Projection $projection)
+    {
+        // TODO: Implement show() method.
+    }
+
     public function list(/*Caller $caller, */PaginatedFilter $filter, Projection $projection): array
     {
         // TODO: Implement list() method.

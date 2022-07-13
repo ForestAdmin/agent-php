@@ -3,12 +3,11 @@
 namespace ForestAdmin\AgentPHP\Agent\Services;
 
 use ForestAdmin\AgentPHP\Agent\Serializer\JsonApiSerializer;
-use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BaseTransformer;
+use Illuminate\Support\Collection as BaseCollection;
 use League\Fractal\Manager;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\Item;
 use League\Fractal\TransformerAbstract;
-use function ForestAdmin\cache;
 use function ForestAdmin\config;
 
 class JsonApiResponse
@@ -29,23 +28,23 @@ class JsonApiResponse
         //
         // séparé les transformers ds des datasources différent ?
         //dd(cache('datasource'));
-        $resource = new Collection($class, $transformer, $name);
+        //$resource = new Collection($class, $transformer, $name);
 
         /*$transformer = app()->make(BaseTransformer::class);
         $transformer->setAvailableIncludes(ForestSchema::getRelatedData($name));
-
+        */
         if (is_array($class) || $this->isCollection($class)) {
             $resource = new Collection($class, $transformer, $name);
-        } elseif ($this->isPaginator($class)) {
+        } /*elseif ($this->isPaginator($class)) {
             $resource = new Collection($class->getCollection(), $transformer, $name);
             if (request()->has('search')) {
                 $resource->setMeta($this->searchDecorator($resource->getData(), request()->get('search')));
             }
-        } else {
+        }*/ else {
             $resource = new Item($class, $transformer, $name);
         }
 
-        if ($meta) {
+        /*if ($meta) {
             $resource->setMeta(array_merge($resource->getMeta(), $meta));
         }*/
 
@@ -64,7 +63,7 @@ class JsonApiResponse
 
     protected function isCollection($instance): bool
     {
-        // todo
+        return $instance instanceof BaseCollection;
     }
 
     protected function isPaginator($instance): bool

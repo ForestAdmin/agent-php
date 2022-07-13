@@ -25,6 +25,8 @@ interface CollectionContract
 
     public function create(/*Caller $caller, */array $data): array;
 
+    public function show(/*Caller $caller, */PaginatedFilter $filter, $id, Projection $projection);
+
     public function list(/*Caller $caller, */PaginatedFilter $filter, Projection $projection): array;
 
     public function update(/*Caller $caller, */Filter $filter, array $patch): void;
