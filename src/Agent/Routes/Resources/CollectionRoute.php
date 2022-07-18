@@ -16,6 +16,8 @@ abstract class CollectionRoute extends AbstractRoute
 
     protected PaginatedFilter $paginatedFilter;
 
+    protected Request $request;
+
     public function __construct(protected ForestAdminHttpDriverServices $services)
     {
         parent::__construct($services);
@@ -28,9 +30,9 @@ abstract class CollectionRoute extends AbstractRoute
         $datasource = cache('datasource');
         $this->collection = $datasource->getCollection($args['collectionName']);
         $this->collection->hydrate($args);
-        $request = Request::createFromGlobals();
+        $this->request = Request::createFromGlobals();
         $scope = null;
 
-        $this->paginatedFilter = ContextFilterFactory::buildPaginated($this->collection, $request, $scope);
+        $this->paginatedFilter = ContextFilterFactory::buildPaginated($this->collection, $this->request, $scope);
     }
 }

@@ -72,7 +72,7 @@ class Collection implements CollectionContract
         return [];
     }
 
-    public function create(/*Caller $caller, */array $data): array
+    public function create(/*Caller $caller, */array $data)
     {
         // TODO: Implement create() method.
     }
