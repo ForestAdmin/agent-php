@@ -18,9 +18,9 @@ abstract class AbstractRoute
         return (new static($services))->setupRoutes();
     }
 
-    public function addRoute(string $name, string $method, string $uri, \Closure $closure): void
+    public function addRoute(string $name, array|string $methods, string $uri, \Closure $closure): void
     {
-        $this->routes[$name] = compact('method', 'uri', 'closure');
+        $this->routes[$name] = compact('methods', 'uri', 'closure');
     }
 
     public function bootstrap(): void
