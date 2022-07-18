@@ -109,10 +109,8 @@ class ConditionTreeValidator
 
     private static function throwIfValueNotAllowedWithColumnType(ConditionTreeLeaf $leaf,  ColumnSchema|RelationSchema $columnSchema): void
     {
-//        const { value, field } = conditionTree;
-//        const { columnType } = columnSchema;
-//        const allowedTypes = MAP_ALLOWED_TYPES_FOR_COLUMN_TYPE[columnType as PrimitiveTypes];
-//
-//        FieldValidator.validateValue(field, columnSchema, value, allowedTypes);
+        $allowedTypes = Rules::getAllowedTypesForColumnType($columnSchema->getColumnType());
+
+        FieldValidator::validateValue($leaf->getField(), $columnSchema, $leaf->getValue(), $allowedTypes);
     }
 }
