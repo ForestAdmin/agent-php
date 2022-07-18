@@ -24,18 +24,11 @@ class Count extends CollectionRoute
 
     public function handleRequest(array $args = []): array
     {
-        $datasource = cache('datasource');
-        /** @var Collection $collection */
-        $collection = $datasource->getCollection($args['collectionName']);
-        $collection->hydrate($args);
-        $request = Request::createFromGlobals();
-        $scope = null;
-
-        $paginatedFilter = ContextFilterFactory::buildPaginated($collection, $request, $scope);
+        $this->build($args);
 
         return [
             'content' => [
-                'count' => $collection->count($paginatedFilter),
+                'count' => $this->collection->count($this->paginatedFilter),
             ],
         ];
     }
