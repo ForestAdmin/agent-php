@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\Agent\Routes\Resources\Count;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Listing;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Show;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Store;
+use ForestAdmin\AgentPHP\Agent\Routes\Resources\Update;
 use ForestAdmin\AgentPHP\Agent\Routes\Security\Authentication;
 use ForestAdmin\AgentPHP\Agent\Routes\System\HealthCheck;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
@@ -28,6 +29,7 @@ class Router
             Store::of($this->services)->getRoutes(),
             Count::of($this->services)->getRoutes(),
             Show::of($this->services)->getRoutes(),
+            Update::of($this->services)->getRoutes(),
         );
     }
 

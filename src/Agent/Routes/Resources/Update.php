@@ -4,14 +4,14 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 
-class Store extends CollectionRoute
+class Update extends CollectionRoute
 {
     public function setupRoutes(): AbstractRoute
     {
         $this->addRoute(
-            'forest.create',
-            'post',
-            '/{collectionName}',
+            'forest.update',
+            'put',
+            '/{collectionName}/{id}',
             fn ($args) => $this->handleRequest($args)
         );
 
@@ -24,7 +24,7 @@ class Store extends CollectionRoute
 
         return [
             'renderTransformer' => true,
-            'content'           => $this->collection->create($this->request->get('data')),
+            'content'           => $this->collection->update($this->paginatedFilter, $args['id'], $this->request->get('data')),
         ];
     }
 }

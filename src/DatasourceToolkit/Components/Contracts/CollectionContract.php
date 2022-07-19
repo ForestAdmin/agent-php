@@ -29,7 +29,7 @@ interface CollectionContract
 
     public function list(/*Caller $caller, */PaginatedFilter $filter, Projection $projection): array;
 
-    public function update(/*Caller $caller, */Filter $filter, array $patch): void;
+    public function update(/*Caller $caller, */Filter $filter, $id, array $patch);
 
     public function delete(/*Caller $caller, */Filter $filter): void;
 
