@@ -31,7 +31,7 @@ interface CollectionContract
 
     public function update(/*Caller $caller, */Filter $filter, $id, array $patch);
 
-    public function delete(/*Caller $caller, */Filter $filter): void;
+    public function delete(/*Caller $caller, */Filter $filter, $id): void;
 
     public function count(/*Caller $caller, */Filter $filter): int;
 
