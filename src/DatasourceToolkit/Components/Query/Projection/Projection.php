@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection;
 
+use ArrayObject;
 use Closure;
 use Exception;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
@@ -10,34 +11,18 @@ use Illuminate\Support\Collection as IlluminateCollection;
 use Illuminate\Support\Str;
 use function ForestAdmin\cache;
 
-class Projection
+class Projection extends IlluminateCollection
 {
-    private IlluminateCollection $fields;
-
-    public function __construct(array $array = [])
+    public function columns(): array
     {
-        $this->fields = collect($array);
-    }
+        $columns = $this->filter(fn ($column) => ! Str::contains($column, ':'));
 
-    /**
-     * @return IlluminateCollection
-     */
-    public function getFields(): IlluminateCollection
-    {
-        return $this->fields;
-    }
-
-    public function columns(): IlluminateCollection
-    {
-        $columns = $this->fields->filter(fn ($column) => ! Str::contains($column, ':'));
-
-        return $columns;
+        return $columns->all();
     }
 
     public function relations()
     {
-        return $this->fields
-            ->reduce(
+        return $this->reduce(
                 static function ($memo, $path) {
                     if (Str::contains($path, ':')) {
                         $relation = Str::before($path, ':');
@@ -55,9 +40,9 @@ class Projection
             );
     }
 
-    public function replace(Closure $callback)
+    public function replaceItem(Closure $callback)
     {
-        return $this->fields
+        return collect($this)
             ->map($callback)
             ->reduce(
                 static function (Projection $memo, $path) {
@@ -71,47 +56,53 @@ class Projection
             );
     }
 
-    public function union(Projection|array $projection): Projection
+    public function union($items): Projection
     {
-        $fields = collect([...$this->fields, $projection->getFields()])
-            ->reduce(fn ($memo, $projection) => $projection ? [...$memo, ...$projection] : $memo);
+        $fields = $this->merge($items)
+            ->reduce(function ($memo, $items) {
+                if (is_iterable($items)) {
+                    return [...$memo, ...$items];
+                } elseif ($items !== null) {
+                    return [...$memo, ...[$items]];
+                } else {
+                    return $memo;
+                }
+            }, []);
 
-        return new Projection($fields);
+        return new Projection(array_unique($fields));
     }
 
-    public function apply(IlluminateCollection $records): IlluminateCollection
+    public function apply(array $records): IlluminateCollection
     {
-        return $records->map(fn($record) => $this->reproject($record));
+        return collect($records)->map(fn($record) => $this->reproject($record));
     }
 
     public function withPks(Collection $collection): Projection
     {
-        $result = new Projection($this->fields->toArray());
-
         foreach (SchemaUtils::getPrimaryKeys($collection) as $primaryKey) {
-            if (!$result->fields->contains($primaryKey)) {
-                $result->fields->push($primaryKey);
+            if (! $this->contains($primaryKey)) {
+                $this->push($primaryKey);
             }
         }
 
-        foreach ($this->relations() as $relation) {
+        foreach ($this->relations() as $relation => $projection) {
             $schema = $collection->getFields()[$relation];
             $association = cache('datasource')->getCollection($schema->getForeignCollection());
-            $projectionWithPk = $this->withPks($association)->nest($relation);
+            $projectionWithPk = $projection->withPks($association)->nest($relation);
 
             foreach ($projectionWithPk as $field) {
-                if (!$result->fields->contains($field)) {
-                    $result->fields->push($field);
+                if (! $this->contains($field)) {
+                    $this->push($field);
                 }
             }
         }
 
-        return $result;
+        return $this;
     }
 
     public function nest(?string $prefix = null): Projection
     {
-        return $prefix ? ($this->fields->map(fn ($path) => "$prefix:$path")) : $this;
+        return $prefix ? new Projection((collect($this)->map(fn ($path) => "$prefix:$path"))->toArray()) : $this;
     }
 
     /**
@@ -119,13 +110,13 @@ class Projection
      */
     public function unnest(): Projection
     {
-        $prefix = Str::before($this->fields->first(), ':');
+        $prefix = Str::before(collect($this)->first(), ':');
 
-        if (! $this->fields->every(fn ($path) => Str::startsWith($path, $prefix))) {
+        if (! collect($this)->every(fn ($path) => Str::startsWith($path, $prefix))) {
             throw new Exception('Cannot unnest projection.');
         }
 
-        return $this->fields->map(fn ($path) => Str::after($path, $prefix));
+        return new Projection(collect($this)->map(fn ($path) => Str::after($path, "$prefix:"))->toArray());
     }
 
     private function reproject($record = null)
@@ -135,12 +126,12 @@ class Projection
         if ($record) {
             $result = [];
 
+
             foreach($this->columns() as $column) {
                 $result[$column] = $record[$column];
             }
-
-            foreach($this->relations() as $relation) {
-                $result[$relation] = $this->reproject($record[$relation]);
+            foreach($this->relations() as $relation => $projection) {
+                $result[$relation] = $projection->reproject($record[$relation]);
             }
         }
 
