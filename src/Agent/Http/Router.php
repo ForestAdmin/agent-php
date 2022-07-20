@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Http;
 
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Count;
+use ForestAdmin\AgentPHP\Agent\Routes\Resources\Destroy;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Listing;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Show;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Store;
@@ -30,6 +31,7 @@ class Router
             Count::of($this->services)->getRoutes(),
             Show::of($this->services)->getRoutes(),
             Update::of($this->services)->getRoutes(),
+            Destroy::of($this->services)->getRoutes(),
         );
     }
 
