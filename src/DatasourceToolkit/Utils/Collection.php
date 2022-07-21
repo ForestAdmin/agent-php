@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOne
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use function ForestAdmin\cache;
 
 class Collection
@@ -80,7 +81,7 @@ class Collection
         $fields = $collection->getFields();
         if (! $index = strpos($fieldName, ':')) {
             if (! $fields->get($fieldName)) {
-                throw new \Exception('Column not found ' . $collection->getName() . '.' . $fieldName);
+                throw new ForestException('Column not found ' . $collection->getName() . '.' . $fieldName);
             }
 
             return $fields->get($fieldName);

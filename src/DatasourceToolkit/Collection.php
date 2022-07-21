@@ -12,6 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results\ActionResult;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ActionSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class Collection implements CollectionContract
@@ -61,7 +62,7 @@ class Collection implements CollectionContract
     {
         // TODO: Implement execute() method.
         if (! $this->actions->get($name)) {
-            throw new \Exception("Action $name is not implemented.");
+            throw new ForestException("Action $name is not implemented.");
         }
 
         // TODO QUESTION HOW TO RETURN ACTIONRESULT + CHECK DUMMYDATA SOURCE PARAMETERS ARE MISSING ? (base.ts -> override async execute(): Promise<ActionResult>)
@@ -120,12 +121,12 @@ class Collection implements CollectionContract
     }
 
     /**
-     * @throws \Exception
+     * @throws ForestException
      */
     public function addField(string $name, ColumnSchema|RelationSchema $field): void
     {
         if ($this->fields->has($name)) {
-            throw new \Exception('Field ' . $name . ' already defined in collection');
+            throw new ForestException('Field ' . $name . ' already defined in collection');
         }
 
         $this->fields->put($name, $field);
@@ -151,12 +152,12 @@ class Collection implements CollectionContract
     }
 
     /**
-     * @throws \Exception
+     * @throws ForestException
      */
     public function addAction(string $name, ActionSchema $action): void
     {
         if ($this->actions->has($name)) {
-            throw new \Exception('Action ' . $name . ' already defined in collection');
+            throw new ForestException('Action ' . $name . ' already defined in collection');
         }
 
         $this->actions->put($name, $action);

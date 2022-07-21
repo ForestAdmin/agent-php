@@ -2,19 +2,19 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Validations;
 
-
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 
 class ConditionTreeValidator
 {
     /**
-     * @throws \Exception
+     * @throws ForestException
      */
     public static function validate(ConditionTree $conditionTree, Collection $collection): void
     {
@@ -23,17 +23,17 @@ class ConditionTreeValidator
         } elseif ($conditionTree instanceof ConditionTreeLeaf) {
             self::validateLeaf($conditionTree, $collection);
         } else {
-            throw new \Exception('Unexpected condition tree type');
+            throw new ForestException('Unexpected condition tree type');
         }
     }
 
     /**
-     * @throws \Exception
+     * @throws ForestException
      */
     private static function validateBranch(ConditionTreeBranch $branch, Collection $collection): void
     {
-        if (! in_array($branch->getAggregator(), ['And', 'Or'])){
-            throw new \Exception('The given aggregator ' . $branch->getAggregator() . ' is not supported. The supported values are: [\'Or\', \'And\']');
+        if (! in_array($branch->getAggregator(), ['And', 'Or'])) {
+            throw new ForestException('The given aggregator ' . $branch->getAggregator() . ' is not supported. The supported values are: [\'Or\', \'And\']');
         }
 
         foreach ($branch->getConditions() as $condition) {
@@ -42,7 +42,7 @@ class ConditionTreeValidator
     }
 
     /**
-     * @throws \Exception
+     * @throws ForestException
      */
     private static function validateLeaf(ConditionTreeLeaf $leaf, Collection $collection): void
     {
@@ -55,16 +55,16 @@ class ConditionTreeValidator
     }
 
     /**
-     * @throws \Exception
+     * @throws ForestException
      */
     private static function throwIfOperatorNotAllowedWithColumn(ConditionTreeLeaf $leaf, ColumnSchema|RelationSchema $columnSchema): void
     {
         $operators = $columnSchema->getFilterOperators();
 
-        if (! isset($operators[$leaf->getOperator()])){
-            throw new \Exception(
+        if (! isset($operators[$leaf->getOperator()])) {
+            throw new ForestException(
                 'The given operator ' . $leaf->getOperator() .
-                ' is not supported by the column: ' .  $leaf->getField() . '\\n' .
+                ' is not supported by the column: ' . $leaf->getField() . '\\n' .
                 count($operators) === 0 ? 'The column is not filterable.' : 'The allowed operators are: ' . implode(',', $operators)
             );
         }
@@ -74,7 +74,7 @@ class ConditionTreeValidator
      * @param ConditionTreeLeaf           $leaf
      * @param ColumnSchema|RelationSchema $columnSchema
      * @return void
-     * @throws \Exception
+     * @throws ForestException
      */
     private static function throwIfValueNotAllowedWithOperator(ConditionTreeLeaf $leaf, ColumnSchema|RelationSchema $columnSchema): void
     {
@@ -82,8 +82,8 @@ class ConditionTreeValidator
         $valueType = TypeGetter::get($value, $columnSchema->getColumnType());
         $allowedTypes = Rules::getAllowedTypesForOperator($leaf->getOperator());
 
-        if (!in_array($valueType, $allowedTypes, true)) {
-            throw new \Exception(
+        if (! in_array($valueType, $allowedTypes, true)) {
+            throw new ForestException(
                 'The given value attribute ' . $value .
                 ' has an unexpected value for the given operator ' . $leaf->getOperator() . '\\n' .
                 count($allowedTypes) === 0 ? 'The value attribute must be empty.' : 'The allowed types of the field value are: ' . implode(',', $allowedTypes)
@@ -92,14 +92,14 @@ class ConditionTreeValidator
     }
 
     /**
-     * @throws \Exception
+     * @throws ForestException
      */
     private static function throwIfOperatorNotAllowedWithColumnType(ConditionTreeLeaf $leaf, ColumnSchema|RelationSchema $columnSchema): void
     {
         $allowedOperators = Rules::getAllowedOperatorsForColumnType($columnSchema->getColumnType());
 
-        if(!in_array($leaf->getOperator(), $allowedOperators, true)) {
-            throw new \Exception(
+        if (! in_array($leaf->getOperator(), $allowedOperators, true)) {
+            throw new ForestException(
                 'The given operator ' . $leaf->getOperator() .
                 ' is not allowed with the columnType schema: ' . $columnSchema->getColumnType() . '\\n' .
                 'The allowed types are: ' . implode(',', $allowedOperators)
@@ -107,7 +107,7 @@ class ConditionTreeValidator
         }
     }
 
-    private static function throwIfValueNotAllowedWithColumnType(ConditionTreeLeaf $leaf,  ColumnSchema|RelationSchema $columnSchema): void
+    private static function throwIfValueNotAllowedWithColumnType(ConditionTreeLeaf $leaf, ColumnSchema|RelationSchema $columnSchema): void
     {
         $allowedTypes = Rules::getAllowedTypesForColumnType($columnSchema->getColumnType());
 

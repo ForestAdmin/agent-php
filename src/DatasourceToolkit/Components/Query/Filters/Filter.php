@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 class Filter
 {
@@ -27,7 +28,7 @@ class Filter
     public function nest(string $prefix): self
     {
         if (! $this->isNestable()) {
-            throw new \Exception("Filter can't be nested");
+            throw new ForestException("Filter can't be nested");
         }
 
         return $this->override(

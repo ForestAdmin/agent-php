@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\Chart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\DataSourceSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Collection as IlluminateCollection;
 
@@ -37,23 +38,23 @@ class Datasource implements DatasourceContract
     {
         $collection = $this->collections->first(fn ($item) => $item->getName() === $name);
 
-        return $collection ?? throw new \Exception("Collection $name not found.");
+        return $collection ?? throw new ForestException("Collection $name not found.");
     }
 
     public function getCollectionByClassName(string $name): CollectionContract
     {
         $collection = $this->collections->first(fn ($item) => $item->getClassName() === $name);
 
-        return $collection ?? throw new \Exception("Collection $name not found.");
+        return $collection ?? throw new ForestException("Collection $name not found.");
     }
 
     /**
-     * @throws \Exception
+     * @throws ForestException
      */
     public function addCollection(CollectionContract $collection): void
     {
         if ($this->collections->first(fn ($item) => $item->getName() === $collection->getName())) {
-            throw new \Exception('Collection ' . $collection->getName() . ' already defined in datasource');
+            throw new ForestException('Collection ' . $collection->getName() . ' already defined in datasource');
         }
         $this->collections->push($collection);
     }

@@ -2,28 +2,29 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Validations;
 
-use Exception;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
-use Illuminate\Support\Str;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use function ForestAdmin\cache;
+use Illuminate\Support\Str;
 
 class FieldValidator
 {
     /**
-     * @throws Exception
+     * @throws ForestException
      */
     public static function validate(Collection $collection, string $field, $values = null)
     {
         if (! Str::contains($field, ':')) {
             $column = $collection->getFields()->get($field);
             if (! $column) {
-                throw new Exception('Column not found: ' . $collection->getName() . '.' . $field);
+                throw new ForestException('Column not found: ' . $collection->getName() . '.' . $field);
             }
 
             if ($column->getType() !== 'Column') {
-                throw new Exception('Unexpected field type: ' .
+                throw new ForestException(
+                    'Unexpected field type: ' .
                     $collection->getName() . '.' . $field .
                     ' (found ' . $column->getType() . ' expected \'Column\')'
                 );
@@ -39,11 +40,12 @@ class FieldValidator
             $relation = $collection->getFields()->get($prefix);
 
             if (! $relation) {
-                throw new Exception('Relation not found: ' . $collection->getName() . '.' . $prefix);
+                throw new ForestException('Relation not found: ' . $collection->getName() . '.' . $prefix);
             }
 
             if ($relation->getType() !== 'ManyToOne' && $relation->getType() !== 'OneToOne') {
-                throw new Exception('Unexpected field type: ' .
+                throw new ForestException(
+                    'Unexpected field type: ' .
                     $collection->getName() . '.' . $prefix .
                     ' (found ' . $relation->getType() . ' expected \'ManyToOne\' or \'OneToOne\')'
                 );
@@ -70,15 +72,15 @@ class FieldValidator
             self::checkEnumValue($type, $columnSchema, $value);
         }
 
-        if ($allowedTypes && !in_array($type, $allowedTypes, true)) {
-            throw new Exception("Wrong type for $field: $value. Expects " . implode(',', $allowedTypes));
+        if ($allowedTypes && ! in_array($type, $allowedTypes, true)) {
+            throw new ForestException("Wrong type for $field: $value. Expects " . implode(',', $allowedTypes));
         } elseif ($type !== $columnSchema->getColumnType()) {
-            throw new Exception("Wrong type for $field: $value. Expects " . $columnSchema->getColumnType());
+            throw new ForestException("Wrong type for $field: $value. Expects " . $columnSchema->getColumnType());
         }
     }
 
     /**
-     * @throws Exception
+     * @throws ForestException
      */
     public static function checkEnumValue(string $type, ColumnSchema $columnSchema, $enumValue): void
     {
@@ -94,8 +96,8 @@ class FieldValidator
         }
 
         if (! $isEnumAllowed) {
-            throw new Exception(
-                "The given enum value(s) [$enumValue] is not listed in [". implode(',', $columnSchema->getEnumValues()) ."]",
+            throw new ForestException(
+                "The given enum value(s) [$enumValue] is not listed in [" . implode(',', $columnSchema->getEnumValues()) . "]",
             );
         }
     }

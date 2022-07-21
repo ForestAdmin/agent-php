@@ -4,7 +4,6 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Validations;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
 use Illuminate\Support\Collection;
-use mysql_xdevapi\Exception;
 
 class Rules
 {
@@ -69,12 +68,12 @@ class Rules
     {
         $allowedTypes = collect(
             [
-                PrimitiveType::STRING  => [PrimitiveType::STRING, ValidationType::String(), ValidationType::Null()],
+                PrimitiveType::STRING   => [PrimitiveType::STRING, ValidationType::String(), ValidationType::Null()],
                 PrimitiveType::NUMBER   => [PrimitiveType::NUMBER, ValidationType::Number(), ValidationType::Null()],
                 PrimitiveType::DATEONLY => [PrimitiveType::DATEONLY, PrimitiveType::NUMBER, ValidationType::Null()],
                 PrimitiveType::DATE     => [PrimitiveType::DATE, PrimitiveType::NUMBER, ValidationType::Null()],
                 PrimitiveType::TIMEONLY => [PrimitiveType::TIMEONLY, ValidationType::Null()],
-                PrimitiveType::ENUM    => [PrimitiveType::ENUM, ValidationType::Enum(), ValidationType::Null()],
+                PrimitiveType::ENUM     => [PrimitiveType::ENUM, ValidationType::Enum(), ValidationType::Null()],
                 PrimitiveType::UUID     => [PrimitiveType::UUID, ValidationType::Uuid(), ValidationType::Null()],
                 PrimitiveType::JSON     => [PrimitiveType::JSON, ValidationType::Null()],
                 PrimitiveType::BOOLEAN  => [PrimitiveType::BOOLEAN, ValidationType::Boolean(), ValidationType::Null()],
@@ -112,28 +111,28 @@ class Rules
         $allowedTypes = collect(self::computeAllowedTypesForOperators());
         $merged = $allowedTypes->merge(
             [
-                'In'=> $validationTypesArray,
-                'NotIn'=> $validationTypesArray,
-                'IncludesAll'=>$validationTypesArray,
-                'Blank'=> $noTypeAllowed,
-                'Missing'=> $noTypeAllowed,
-                'Present'=> $noTypeAllowed,
-                'Yesterday'=> $noTypeAllowed,
-                'Today'=> $noTypeAllowed,
-                'PreviousQuarter'=> $noTypeAllowed,
-                'PreviousYear'=> $noTypeAllowed,
-                'PreviousMonth'=> $noTypeAllowed,
-                'PreviousWeek'=> $noTypeAllowed,
-                'Past'=> $noTypeAllowed,
-                'Future'=> $noTypeAllowed,
-                'PreviousWeekToDate'=> $noTypeAllowed,
-                'PreviousMonthToDate'=> $noTypeAllowed,
-                'PreviousQuarterToDate'=> $noTypeAllowed,
-                'PreviousYearToDate'=> $noTypeAllowed,
-                'PreviousXDaysToDate'=> ['Number'],
-                'PreviousXDays'=> ['Number'],
-                'BeforeXHoursAgo'=> ['Number'],
-                'AfterXHoursAgo'=> ['Number'],
+                'In'                    => $validationTypesArray,
+                'NotIn'                 => $validationTypesArray,
+                'IncludesAll'           => $validationTypesArray,
+                'Blank'                 => $noTypeAllowed,
+                'Missing'               => $noTypeAllowed,
+                'Present'               => $noTypeAllowed,
+                'Yesterday'             => $noTypeAllowed,
+                'Today'                 => $noTypeAllowed,
+                'PreviousQuarter'       => $noTypeAllowed,
+                'PreviousYear'          => $noTypeAllowed,
+                'PreviousMonth'         => $noTypeAllowed,
+                'PreviousWeek'          => $noTypeAllowed,
+                'Past'                  => $noTypeAllowed,
+                'Future'                => $noTypeAllowed,
+                'PreviousWeekToDate'    => $noTypeAllowed,
+                'PreviousMonthToDate'   => $noTypeAllowed,
+                'PreviousQuarterToDate' => $noTypeAllowed,
+                'PreviousYearToDate'    => $noTypeAllowed,
+                'PreviousXDaysToDate'   => ['Number'],
+                'PreviousXDays'         => ['Number'],
+                'BeforeXHoursAgo'       => ['Number'],
+                'AfterXHoursAgo'        => ['Number'],
             ]
         );
 

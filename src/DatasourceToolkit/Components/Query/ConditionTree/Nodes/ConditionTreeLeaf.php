@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 class ConditionTreeLeaf extends ConditionTree
 {
@@ -43,13 +44,13 @@ class ConditionTreeLeaf extends ConditionTree
     }
 
     /**
-     * @throws \Exception
+     * @throws ForestException
      */
     public function validOperator(string $value): void
     {
         if (! in_array($value, Operators::ALL_OPERATORS, true)) {
             dd($value);
-            throw new \Exception("Invalid operators, the $value operator does not exist.");
+            throw new ForestException("Invalid operators, the $value operator does not exist.");
         }
     }
 

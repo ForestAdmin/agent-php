@@ -2,10 +2,9 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection;
 
-use ArrayObject;
 use Closure;
-use Exception;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 use Illuminate\Support\Collection as IlluminateCollection;
 use Illuminate\Support\Str;
@@ -106,14 +105,14 @@ class Projection extends IlluminateCollection
     }
 
     /**
-     * @throws Exception
+     * @throws ForestException
      */
     public function unnest(): Projection
     {
         $prefix = Str::before(collect($this)->first(), ':');
 
         if (! collect($this)->every(fn ($path) => Str::startsWith($path, $prefix))) {
-            throw new Exception('Cannot unnest projection.');
+            throw new ForestException('Cannot unnest projection.');
         }
 
         return new Projection(collect($this)->map(fn ($path) => Str::after($path, "$prefix:"))->toArray());
@@ -126,11 +125,10 @@ class Projection extends IlluminateCollection
         if ($record) {
             $result = [];
 
-
-            foreach($this->columns() as $column) {
+            foreach ($this->columns() as $column) {
                 $result[$column] = $record[$column];
             }
-            foreach($this->relations() as $relation => $projection) {
+            foreach ($this->relations() as $relation => $projection) {
                 $result[$relation] = $projection->reproject($record[$relation]);
             }
         }
