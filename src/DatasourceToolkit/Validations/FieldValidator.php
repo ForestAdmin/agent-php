@@ -60,7 +60,7 @@ class FieldValidator
     /**
      * @throws Exception
      */
-    public static function validateValue(string $field, ColumnSchema $columnSchema, $value, array $allowedTypes): void
+    public static function validateValue(string $field, ColumnSchema $columnSchema, $value, ?array $allowedTypes = null): void
     {
         // FIXME: handle complex type from ColumnType
         if (gettype($columnSchema->getColumnType()) !== 'string') {
@@ -84,8 +84,6 @@ class FieldValidator
      */
     public static function checkEnumValue(string $type, ColumnSchema $columnSchema, $enumValue): void
     {
-        $isEnumAllowed = false;
-
         if ($type === ValidationType::Enum()->value) {
             $enumValuesConditionTree = collect($enumValue);
             $isEnumAllowed = $enumValuesConditionTree->every(

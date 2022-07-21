@@ -3,8 +3,8 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Validations;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
+use Illuminate\Support\Str;
 use JsonException;
-use function PHPUnit\Framework\isEmpty;
 
 class TypeGetter
 {
@@ -21,13 +21,14 @@ class TypeGetter
         if (is_numeric($value) && ! is_nan((float) $value)) {
             return PrimitiveType::NUMBER;
         }
-//        if (value instanceof Date && DateTime.fromJSDate(value).isValid) return 'Date'; //TODO
+
+        if ($value instanceof \DateTime) {
+            return PrimitiveType::DATE;
+        }
 
         if (is_bool($value)) {
             return PrimitiveType::BOOLEAN;
         }
-
-//        if (typeof value === 'object' && typeContext === 'Json') return 'Json'; //TODO
 
         return ValidationType::Null();
     }
@@ -38,13 +39,15 @@ class TypeGetter
             return $typeContext;
         }
 
-//        if (uuidValidate(value)) return 'Uuid'; TODO
+        if (Str::isUuid($value)) {
+            return PrimitiveType::UUID;
+        }
 
         if (self::isValidDate($value)) {
             return self::getDateType($value);
         }
 
-        if (self::isJson($value)) {
+        if (Str::isJson($value)) {
             return PrimitiveType::JSON;
         }
 
@@ -61,21 +64,12 @@ class TypeGetter
 
         return count($potentialPoint) === 2 &&
             $typeContext === PrimitiveType::POINT &&
-            self::get($potentialPoint, PrimitiveType::NUMBER) === ValidationType::Number();
-    }
-
-    private static function isJson(string $value): bool
-    {
-        try {
-            return (bool) json_decode($value, false, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
-            return false;
-        }
+            self::get(array_map(static fn ($item) => (float) $item, $potentialPoint), PrimitiveType::NUMBER) === ValidationType::Number();
     }
 
     private static function getArrayType(array $value, string $typeContext): ValidationType
     {
-        if (isEmpty($value)) {
+        if (empty($value)) {
             return ValidationType::Empty();
         }
 
