@@ -8,8 +8,10 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\ProjectionFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ConditionTreeValidator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ProjectionValidator;
+use function ForestAdmin\config;
 
 class QueryStringParser
 {
@@ -66,5 +68,36 @@ class QueryStringParser
         } catch (Exception $e) {
             throw new Exception('Invalid projection');
         }
+    }
+
+    public static function parseSearch(Collection $collection, Request $request): string
+    {
+        $search = $request->input('data.attributes.all_records_subset_query.search') ?? $request->get('search');
+
+        if ($search && ! $collection->isSearchable()) {
+            throw new ForestException('Collection is not searchable');
+        }
+    }
+
+    public static function parseSearchExtended(Request $request): bool
+    {
+        $extended = $request->input('data.attributes.all_records_subset_query.searchExtended') ?? $request->get('searchExtended');
+
+        return (bool)$extended;
+    }
+
+    public static function parseSegment(Collection $collection, Request $request): ?string
+    {
+        $segment = $request->input('data.attributes.all_records_subset_query.segment') ?? $request->get('segment');
+
+        if (! $segment) {
+            return null;
+        }
+
+        if (! $collection->getSegments()->contains($segment)) {
+            throw new ForestException("Invalid segment: $segment");
+        }
+
+        return $segment;
     }
 }
