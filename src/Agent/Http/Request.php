@@ -25,6 +25,36 @@ class Request extends SymfonyRequest
     }
 
     /**
+     * Retrieve a header from the request.
+     *
+     * @param  string|null  $key
+     * @param  string|array|null  $default
+     * @return string|array|null
+     */
+    public function header($key = null, $default = null)
+    {
+        return $this->retrieveItem('headers', $key, $default);
+    }
+
+    /**
+     * Get the bearer token from the request headers.
+     *
+     * @return string|null
+     */
+    public function bearerToken()
+    {
+        $header = $this->header('Authorization', '');
+
+        $position = strrpos($header, 'Bearer ');
+
+        if ($position !== false) {
+            $header = substr($header, $position + 7);
+
+            return strpos($header, ',') !== false ? strstr($header, ',', true) : $header;
+        }
+    }
+
+    /**
      * Get all of the input and files for the request.
      *
      * @param  array|mixed|null  $keys
@@ -61,5 +91,22 @@ class Request extends SymfonyRequest
             $key,
             $default
         );
+    }
+
+    /**
+     * Retrieve a parameter item from a given source.
+     *
+     * @param  string  $source
+     * @param  string  $key
+     * @param  string|array|null  $default
+     * @return string|array|null
+     */
+    protected function retrieveItem($source, $key, $default)
+    {
+        if (is_null($key)) {
+            return $this->$source->all();
+        }
+
+        return $this->$source->get($key, $default);
     }
 }
