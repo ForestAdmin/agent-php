@@ -55,7 +55,7 @@ class ContextFilterFactory
             searchExtended: null,
             segment: null,
             sort: new Sort(),
-            page: new Page(),
+            page: new Page(0, 20), // TODO NEED TO FIX
         );
     }
 
