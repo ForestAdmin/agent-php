@@ -3,14 +3,18 @@
 namespace ForestAdmin\AgentPHP\Agent\Utils;
 
 use Exception;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\ProjectionFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ConditionTreeValidator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ProjectionValidator;
+
 use function ForestAdmin\config;
 
 class QueryStringParser
@@ -100,4 +104,22 @@ class QueryStringParser
 
         return $segment;
     }
+
+    public static function parseCaller(Request $request): Caller
+    {
+        $timezone = $request->get('timezone');
+
+        if (! $timezone) {
+            throw new ForestException('Missing timezone');
+        }
+
+        if (! in_array($timezone, \DateTimeZone::listIdentifiers(), true)) {
+            throw new ForestException("Invalid timezone: $timezone");
+        }
+
+        $tokenData = JWT::decode($request->bearerToken(), new Key(config('envSecret'), 'HS256'));
+
+        return Caller::makeFromRequestData($tokenData, $timezone);
+    }
+
 }
