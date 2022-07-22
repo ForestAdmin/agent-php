@@ -25,7 +25,6 @@ dataset('collection', function () {
     );
 });
 
-
 it('should not throw if the field exist on the collection', function ($collection) {
     ProjectionValidator::validate($collection, new Projection(['id']));
 })->expectNotToPerformAssertions()->with('collection');

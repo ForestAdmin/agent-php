@@ -7,6 +7,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\FieldValidator;
+
 use function ForestAdmin\cache;
 
 dataset('collection', function () {
@@ -25,7 +26,7 @@ dataset('collection', function () {
     $collectionOwners = new Collection($datasource, 'owner');
     $collectionOwners->addFields(
         [
-            'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'id'      => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
             'name'    => new ColumnSchema(columnType: PrimitiveType::STRING),
             'address' => new OneToOneSchema(
                 originKey: 'id',
@@ -39,7 +40,7 @@ dataset('collection', function () {
     $datasource->addCollection($collectionOwners);
 
     $options = [
-        'projectDir' => sys_get_temp_dir() // only use for cache
+        'projectDir' => sys_get_temp_dir(), // only use for cache
     ];
     new AgentFactory($options);
     cache('datasource', $datasource);
@@ -72,7 +73,6 @@ test('validate() should throw when the requested field is of type column', funct
     expect(FieldValidator::validate($collection, 'id:address'));
 })->throws(Exception::class, 'Unexpected field type: cars.id (found Column expected \'ManyToOne\' or \'OneToOne\')')
     ->with('collection');
-
 
 
 test('validateValue() on field of type boolean with valid value should not throw', function () {
