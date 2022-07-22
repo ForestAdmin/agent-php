@@ -12,33 +12,24 @@ class ConditionTreeLeaf extends ConditionTree
     public function __construct(
         protected string  $field,
         protected string  $operator,
-        protected ?string $value = null
+        protected $value = null
     ) {
         if ($this->operator) {
             $this->validOperator($this->operator);
         }
     }
 
-    /**
-     * @return string
-     */
     public function getField(): string
     {
         return $this->field;
     }
 
-    /**
-     * @return string
-     */
     public function getOperator(): string
     {
         return $this->operator;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getValue(): ?string
+    public function getValue()
     {
         return $this->value;
     }
@@ -49,7 +40,6 @@ class ConditionTreeLeaf extends ConditionTree
     public function validOperator(string $value): void
     {
         if (! in_array($value, Operators::ALL_OPERATORS, true)) {
-            dd($value);
             throw new ForestException("Invalid operators, the $value operator does not exist.");
         }
     }

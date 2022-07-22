@@ -61,10 +61,10 @@ class ConditionTreeValidator
     {
         $operators = $columnSchema->getFilterOperators();
 
-        if (! isset($operators[$leaf->getOperator()])) {
+        if (! in_array($leaf->getOperator(), $operators, true)) {
             throw new ForestException(
                 'The given operator ' . $leaf->getOperator() .
-                ' is not supported by the column: ' . $leaf->getField() . '\\n' .
+                ' is not supported by the column: ' . $leaf->getField() . '. ' .
                 count($operators) === 0 ? 'The column is not filterable.' : 'The allowed operators are: ' . implode(',', $operators)
             );
         }
@@ -82,10 +82,16 @@ class ConditionTreeValidator
         $valueType = TypeGetter::get($value, $columnSchema->getColumnType());
         $allowedTypes = Rules::getAllowedTypesForOperator($leaf->getOperator());
 
+
+        if ($valueType instanceof ArrayType) {
+            // todo refacto ValidationType
+            $valueType = $valueType->label;
+        }
+
         if (! in_array($valueType, $allowedTypes, true)) {
             throw new ForestException(
-                'The given value attribute ' . $value .
-                ' has an unexpected value for the given operator ' . $leaf->getOperator() . '\\n' .
+                'The given value attribute ' . (is_array($value) ? '[' . implode(',', $value) . ']' : $value) .
+                ' has an unexpected value for the given operator ' . $leaf->getOperator() . '. ' .
                 count($allowedTypes) === 0 ? 'The value attribute must be empty.' : 'The allowed types of the field value are: ' . implode(',', $allowedTypes)
             );
         }
@@ -101,7 +107,7 @@ class ConditionTreeValidator
         if (! in_array($leaf->getOperator(), $allowedOperators, true)) {
             throw new ForestException(
                 'The given operator ' . $leaf->getOperator() .
-                ' is not allowed with the columnType schema: ' . $columnSchema->getColumnType() . '\\n' .
+                ' is not allowed with the columnType schema: ' . $columnSchema->getColumnType() . '. ' .
                 'The allowed types are: ' . implode(',', $allowedOperators)
             );
         }

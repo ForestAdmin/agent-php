@@ -13,7 +13,7 @@ use Spatie\Enum\Enum;
  * @method static self Empty()
  * @method static self Null()
  */
-final class ValidationType extends Enum
+final class ArrayType extends Enum
 {
     protected static function values(): array
     {

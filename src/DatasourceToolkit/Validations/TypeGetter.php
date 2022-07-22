@@ -4,11 +4,10 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Validations;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
 use Illuminate\Support\Str;
-use JsonException;
 
 class TypeGetter
 {
-    public static function get($value, string $typeContext): string | ValidationType
+    public static function get($value, string $typeContext): string | ArrayType
     {
         if (is_array($value)) {
             return self::getArrayType($value, $typeContext);
@@ -30,7 +29,7 @@ class TypeGetter
             return PrimitiveType::BOOLEAN;
         }
 
-        return ValidationType::Null();
+        return ArrayType::Null();
     }
 
     private static function getTypeFromString($value, string $typeContext): string
@@ -45,6 +44,10 @@ class TypeGetter
 
         if (self::isValidDate($value)) {
             return self::getDateType($value);
+        }
+
+        if (is_numeric($value) && $typeContext === PrimitiveType::NUMBER) {
+            return PrimitiveType::NUMBER;
         }
 
         if (Str::isJson($value)) {
@@ -64,36 +67,36 @@ class TypeGetter
 
         return count($potentialPoint) === 2 &&
             $typeContext === PrimitiveType::POINT &&
-            self::get(array_map(static fn ($item) => (float) $item, $potentialPoint), PrimitiveType::NUMBER) === ValidationType::Number();
+            self::get(array_map(static fn ($item) => (float) $item, $potentialPoint), PrimitiveType::NUMBER) === ArrayType::Number();
     }
 
-    private static function getArrayType(array $value, string $typeContext): ValidationType
+    private static function getArrayType(array $value, string $typeContext): ArrayType
     {
         if (empty($value)) {
-            return ValidationType::Empty();
+            return ArrayType::Empty();
         }
 
         if (self::isArrayOf(PrimitiveType::NUMBER, $value, $typeContext)) {
-            return ValidationType::Number();
+            return ArrayType::Number();
         }
 
         if (self::isArrayOf(PrimitiveType::UUID, $value, $typeContext)) {
-            return ValidationType::Uuid();
+            return ArrayType::Uuid();
         }
 
         if (self::isArrayOf(PrimitiveType::BOOLEAN, $value, $typeContext)) {
-            return ValidationType::Boolean();
+            return ArrayType::Boolean();
         }
 
         if (self::isArrayOf(PrimitiveType::STRING, $value, $typeContext)) {
-            return ValidationType::String();
+            return ArrayType::String();
         }
 
         if (self::isArrayOf(PrimitiveType::ENUM, $value, $typeContext)) {
-            return ValidationType::Enum();
+            return ArrayType::Enum();
         }
 
-        return ValidationType::Null();
+        return ArrayType::Null();
     }
 
     private static function isArrayOf(string $primitiveType, array $values, string $typeContext): bool

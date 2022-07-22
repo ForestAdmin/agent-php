@@ -30,7 +30,7 @@ class Rules
         'After',
     ];
 
-    public static function getAllowedOperatorsForColumnType(?string $primitiveType = null): Collection|array
+    public static function getAllowedOperatorsForColumnType(?string $primitiveType = null): array
     {
         $allowedOperators = collect(
             [
@@ -68,26 +68,25 @@ class Rules
     {
         $allowedTypes = collect(
             [
-                PrimitiveType::STRING   => [PrimitiveType::STRING, ValidationType::String(), ValidationType::Null()],
-                PrimitiveType::NUMBER   => [PrimitiveType::NUMBER, ValidationType::Number(), ValidationType::Null()],
-                PrimitiveType::DATEONLY => [PrimitiveType::DATEONLY, PrimitiveType::NUMBER, ValidationType::Null()],
-                PrimitiveType::DATE     => [PrimitiveType::DATE, PrimitiveType::NUMBER, ValidationType::Null()],
-                PrimitiveType::TIMEONLY => [PrimitiveType::TIMEONLY, ValidationType::Null()],
-                PrimitiveType::ENUM     => [PrimitiveType::ENUM, ValidationType::Enum(), ValidationType::Null()],
-                PrimitiveType::UUID     => [PrimitiveType::UUID, ValidationType::Uuid(), ValidationType::Null()],
-                PrimitiveType::JSON     => [PrimitiveType::JSON, ValidationType::Null()],
-                PrimitiveType::BOOLEAN  => [PrimitiveType::BOOLEAN, ValidationType::Boolean(), ValidationType::Null()],
-                PrimitiveType::POINT    => [PrimitiveType::POINT, ValidationType::Null()],
+                PrimitiveType::STRING   => [PrimitiveType::STRING, ArrayType::String(), ArrayType::Null()],
+                PrimitiveType::NUMBER   => [PrimitiveType::NUMBER, ArrayType::Number(), ArrayType::Null()],
+                PrimitiveType::DATEONLY => [PrimitiveType::DATEONLY, PrimitiveType::NUMBER, ArrayType::Null()],
+                PrimitiveType::DATE     => [PrimitiveType::DATE, PrimitiveType::NUMBER, ArrayType::Null()],
+                PrimitiveType::TIMEONLY => [PrimitiveType::TIMEONLY, ArrayType::Null()],
+                PrimitiveType::ENUM     => [PrimitiveType::ENUM, ArrayType::Enum(), ArrayType::Null()],
+                PrimitiveType::UUID     => [PrimitiveType::UUID, ArrayType::Uuid(), ArrayType::Null()],
+                PrimitiveType::JSON     => [PrimitiveType::JSON, ArrayType::Null()],
+                PrimitiveType::BOOLEAN  => [PrimitiveType::BOOLEAN, ArrayType::Boolean(), ArrayType::Null()],
+                PrimitiveType::POINT    => [PrimitiveType::POINT, ArrayType::Null()],
             ]
         );
 
         return $primitiveType ? $allowedTypes->get($primitiveType) : $allowedTypes->toArray();
     }
 
-
     private static function computeAllowedTypesForOperators()
     {
-        return self::getAllowedOperatorsForColumnType()->keys()->reduce(
+        return collect(self::getAllowedOperatorsForColumnType())->keys()->reduce(
             static function ($result, $type) {
                 $allowedOperators = self::getAllowedOperatorsForColumnType($type);
                 foreach ($allowedOperators as $operator) {
@@ -97,16 +96,16 @@ class Rules
                         $result[$operator] = [$type];
                     }
                 }
+
                 return $result;
             }
         );
     }
 
-
     public static function getAllowedTypesForOperator(?string $operator = null): array
     {
-        $noTypeAllowed = [ValidationType::Null()->value];
-        $validationTypesArray = array_values(ValidationType::toArray());
+        $noTypeAllowed = [ArrayType::Null()->value];
+        $validationTypesArray = array_values(ArrayType::toArray());
 
         $allowedTypes = collect(self::computeAllowedTypesForOperators());
         $merged = $allowedTypes->merge(
