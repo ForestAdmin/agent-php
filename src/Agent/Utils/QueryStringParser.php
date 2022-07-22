@@ -9,6 +9,7 @@ use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\ProjectionFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
@@ -19,6 +20,10 @@ use function ForestAdmin\config;
 
 class QueryStringParser
 {
+    public const DEFAULT_ITEMS_PER_PAGE = 15;
+
+    public const DEFAULT_PAGE_TO_SKIP = 1;
+
     /**
      * @throws Exception
      */
@@ -121,5 +126,28 @@ class QueryStringParser
 
         return Caller::makeFromRequestData($tokenData, $timezone);
     }
+
+    public static function parsePagination(Request $request): Page
+    {
+        $queryItemsPerPage = $request->input('data.attributes.all_records_subset_query')['size'] ??
+            $request->get('page')['size'] ??
+            self::DEFAULT_ITEMS_PER_PAGE;
+
+        $queryPageToSkip = $request->input('data.attributes.all_records_subset_query')['number'] ??
+            $request->get('page')['number'] ??
+            self::DEFAULT_PAGE_TO_SKIP;
+
+        if (! is_numeric($queryItemsPerPage) ||
+            ! is_numeric($queryPageToSkip) ||
+            $queryItemsPerPage <= 0 ||
+            $queryPageToSkip <= 0) {
+            throw new ForestException("Invalid pagination [limit: $queryItemsPerPage, skip: $queryPageToSkip]");
+        }
+
+        $offset = ($queryPageToSkip - 1) * $queryItemsPerPage;
+
+        return new Page($offset, $queryItemsPerPage);
+    }
+
 
 }
