@@ -6,9 +6,9 @@ use Closure;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
+use function ForestAdmin\cache;
 use Illuminate\Support\Collection as IlluminateCollection;
 use Illuminate\Support\Str;
-use function ForestAdmin\cache;
 
 class Projection extends IlluminateCollection
 {
@@ -22,21 +22,21 @@ class Projection extends IlluminateCollection
     public function relations()
     {
         return $this->reduce(
-                static function ($memo, $path) {
-                    if (Str::contains($path, ':')) {
-                        $relation = Str::before($path, ':');
-                        $memo[$relation] = new Projection(
-                            [
-                                ...($memo[$relation] ?? []),
-                                Str::after($path, ':')
-                            ]
-                        );
-                    }
+            static function ($memo, $path) {
+                if (Str::contains($path, ':')) {
+                    $relation = Str::before($path, ':');
+                    $memo[$relation] = new Projection(
+                        [
+                            ...($memo[$relation] ?? []),
+                            Str::after($path, ':'),
+                        ]
+                    );
+                }
 
-                    return $memo;
-                },
-                []
-            );
+                return $memo;
+            },
+            []
+        );
     }
 
     public function replaceItem(Closure $callback)
@@ -73,7 +73,7 @@ class Projection extends IlluminateCollection
 
     public function apply(array $records): IlluminateCollection
     {
-        return collect($records)->map(fn($record) => $this->reproject($record));
+        return collect($records)->map(fn ($record) => $this->reproject($record));
     }
 
     public function withPks(Collection $collection): Projection
