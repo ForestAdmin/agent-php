@@ -12,6 +12,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\ProjectionFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort\SortFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ConditionTreeValidator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ProjectionValidator;
@@ -25,7 +27,7 @@ class QueryStringParser
     public const DEFAULT_PAGE_TO_SKIP = 1;
 
     /**
-     * @throws Exception
+     * @throws ExForestExceptionception
      */
     public static function parseConditionTree(Collection $collection, Request $request): ?ConditionTree
     {
@@ -46,12 +48,12 @@ class QueryStringParser
 
             return $conditionTree;
         } catch (Exception $e) {
-            throw new Exception('Invalid filters ' . $e->getMessage());
+            throw new ForestException('Invalid filters ' . $e->getMessage());
         }
     }
 
     /**
-     * @throws Exception
+     * @throws ForestException
      */
     public static function parseProjection(Collection $collection, Request $request): Projection
     {
@@ -74,11 +76,14 @@ class QueryStringParser
             ProjectionValidator::validate($collection, $explicitRequest);
 
             return new Projection($explicitRequest->all());
-        } catch (Exception $e) {
-            throw new Exception('Invalid projection');
+        } catch (\Exception $e) {
+            throw new ForestException('Invalid projection');
         }
     }
 
+    /**
+     * @throws ForestException
+     */
     public static function parseSearch(Collection $collection, Request $request): string
     {
         $search = $request->input('data.attributes.all_records_subset_query.search') ?? $request->get('search');
@@ -92,9 +97,12 @@ class QueryStringParser
     {
         $extended = $request->input('data.attributes.all_records_subset_query.searchExtended') ?? $request->get('searchExtended');
 
-        return (bool)$extended;
+        return (bool) $extended;
     }
 
+    /**
+     * @throws ForestException
+     */
     public static function parseSegment(Collection $collection, Request $request): ?string
     {
         $segment = $request->input('data.attributes.all_records_subset_query.segment') ?? $request->get('segment');
@@ -110,6 +118,9 @@ class QueryStringParser
         return $segment;
     }
 
+    /**
+     * @throws ForestException
+     */
     public static function parseCaller(Request $request): Caller
     {
         $timezone = $request->get('timezone');
@@ -127,6 +138,9 @@ class QueryStringParser
         return Caller::makeFromRequestData($tokenData, $timezone);
     }
 
+    /**
+     * @throws ForestException
+     */
     public static function parsePagination(Request $request): Page
     {
         $queryItemsPerPage = $request->input('data.attributes.all_records_subset_query')['size'] ??
@@ -149,5 +163,18 @@ class QueryStringParser
         return new Page($offset, $queryItemsPerPage);
     }
 
+    public static function parseSort(Collection $collection, Request $request): Sort
+    {
+        $sortString = $request->input('data.attributes.all_records_subset_query.sort') ?? $request->get('sort');
 
+        if (! $sortString) {
+            return SortFactory::byPrimaryKeys($collection);
+        }
+
+        if ($sortString[0] === '-') {
+            return new Sort(substr($sortString, 1), false);
+        } else {
+            return new Sort($sortString);
+        }
+    }
 }

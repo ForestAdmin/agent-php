@@ -54,7 +54,7 @@ class ContextFilterFactory
             search: null,
             searchExtended: null,
             segment: null,
-            sort: new Sort(),
+            sort: new Sort('id'),// TODO NEED TO FIX
             page: new Page(0, 20), // TODO NEED TO FIX
         );
     }
