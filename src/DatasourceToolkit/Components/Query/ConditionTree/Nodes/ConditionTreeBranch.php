@@ -2,8 +2,8 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes;
 
+use Closure;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 
 class ConditionTreeBranch extends ConditionTree
@@ -35,14 +35,12 @@ class ConditionTreeBranch extends ConditionTree
         // TODO: Implement inverse() method.
     }
 
-    public function replaceLeafs(PlainConditionTree|ConditionTree $handler, $bind): ConditionTree
+    public function replaceLeafs(Closure $handler): ConditionTree
     {
-        // TODO: Implement replaceLeafs() method.
-    }
-
-    public function replaceLeafsAsync(PlainConditionTree|ConditionTree $handler, $bind): ConditionTree
-    {
-        // TODO: Implement replaceLeafsAsync() method.
+        return new ConditionTreeBranch(
+            $this->aggregator,
+            array_map(static fn ($condition) => $condition->replaceLeafs($handler), $this->getConditions()),
+        );
     }
 
     public function match(array $record, Collection $collection, string $timezone): bool
@@ -50,19 +48,19 @@ class ConditionTreeBranch extends ConditionTree
         // TODO: Implement match() method.
     }
 
-    public function forEachLeaf(PlainConditionTree|ConditionTree $handler): void
+    public function forEachLeaf(Closure $handler): void
     {
         // TODO: Implement forEachLeaf() method.
     }
 
-    public function everyLeaf(PlainConditionTree|ConditionTree $handler): bool
+    public function everyLeaf(Closure $handler): bool
     {
-        // TODO: Implement everyLeaf() method.
+        return collect($this->getConditions())->every(fn (ConditionTreeLeaf $condition) => $condition->everyLeaf($handler));
     }
 
-    public function someLeaf(PlainConditionTree|ConditionTree $handler): bool
+    public function someLeaf(Closure $handler): bool
     {
-        // TODO: Implement someLeaf() method.
+        return collect($this->getConditions())->contains(fn (ConditionTreeLeaf $condition) => $condition->someLeaf($handler));
     }
 
     public function getProjection(): Projection

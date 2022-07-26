@@ -2,7 +2,9 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes;
 
+use Closure;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
@@ -10,9 +12,9 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 class ConditionTreeLeaf extends ConditionTree
 {
     public function __construct(
-        protected string  $field,
-        protected string  $operator,
-        protected $value = null
+        protected string $field,
+        protected string $operator,
+        protected        $value = null
     ) {
         if ($this->operator) {
             $this->validOperator($this->operator);
@@ -34,6 +36,15 @@ class ConditionTreeLeaf extends ConditionTree
         return $this->value;
     }
 
+    public function toArray(): array
+    {
+        return [
+            'field'    => $this->field,
+            'operator' => $this->operator,
+            'value'    => $this->value,
+        ];
+    }
+
     /**
      * @throws ForestException
      */
@@ -49,14 +60,11 @@ class ConditionTreeLeaf extends ConditionTree
         // TODO: Implement inverse() method.
     }
 
-    public function replaceLeafs(PlainConditionTree|ConditionTree $handler, $bind): ConditionTree
+    public function replaceLeafs(Closure $handler): ConditionTree
     {
-        // TODO: Implement replaceLeafs() method.
-    }
+        $result = $handler($this);
 
-    public function replaceLeafsAsync(PlainConditionTree|ConditionTree $handler, $bind): ConditionTree
-    {
-        // TODO: Implement replaceLeafsAsync() method.
+        return $result instanceof ConditionTree ? $result : ConditionTreeFactory::fromArray($result);
     }
 
     public function match(array $record, Collection $collection, string $timezone): bool
@@ -64,23 +72,28 @@ class ConditionTreeLeaf extends ConditionTree
         // TODO: Implement match() method.
     }
 
-    public function forEachLeaf(PlainConditionTree|ConditionTree $handler): void
+    public function forEachLeaf(Closure $handler): void
     {
         // TODO: Implement forEachLeaf() method.
     }
 
-    public function everyLeaf(PlainConditionTree|ConditionTree $handler): bool
+    public function everyLeaf(Closure $handler): bool
     {
-        // TODO: Implement everyLeaf() method.
+        return $handler($this);
     }
 
-    public function someLeaf(PlainConditionTree|ConditionTree $handler): bool
+    public function someLeaf(Closure $handler): bool
     {
-        // TODO: Implement someLeaf() method.
+        return $handler($this);
     }
 
     public function getProjection(): Projection
     {
         // TODO: Implement getProjection() method.
+    }
+
+    public function override(array $partialConditionTree): ConditionTree
+    {
+        return ConditionTreeFactory::fromArray(array_merge($this->toArray(), $partialConditionTree));
     }
 }
