@@ -11,7 +11,7 @@ class SortFactory
     public static function byPrimaryKeys(Collection $collection): Sort
     {
         return new Sort(
-            ...Schema::getPrimaryKeys()
+            ...Schema::getPrimaryKeys($collection)
         );
     }
 }
