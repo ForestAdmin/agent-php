@@ -2,7 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils;
 
-use Exception;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
@@ -27,29 +26,25 @@ class QueryStringParser
     public const DEFAULT_PAGE_TO_SKIP = 1;
 
     /**
-     * @throws ExForestExceptionception
+     * @throws ForestException
      */
     public static function parseConditionTree(Collection $collection, Request $request): ?ConditionTree
     {
-        try {
-            $filters = $request->input('data.attributes.all_records_subset_query.filters') ?? $request->input('filters');
+        $filters = $request->input('data.attributes.all_records_subset_query.filters') ?? $request->input('filters');
 
-            // check if return is a good idea
-            if (! $filters) {
-                return null;
-            }
-
-            if (is_string($filters)) {
-                $filters = json_decode($filters, true, 512, JSON_THROW_ON_ERROR);
-            }
-
-            $conditionTree = ConditionTreeParser::fromPlainObject($collection, $filters);
-            ConditionTreeValidator::validate($conditionTree, $collection);
-
-            return $conditionTree;
-        } catch (Exception $e) {
-            throw new ForestException('Invalid filters ' . $e->getMessage());
+        // check if return is a good idea
+        if (! $filters) {
+            return null;
         }
+
+        if (is_string($filters)) {
+            $filters = json_decode($filters, true, 512, JSON_THROW_ON_ERROR);
+        }
+
+        $conditionTree = ConditionTreeParser::fromPlainObject($collection, $filters);
+        ConditionTreeValidator::validate($conditionTree, $collection);
+
+        return $conditionTree;
     }
 
     /**
@@ -58,22 +53,22 @@ class QueryStringParser
     public static function parseProjection(Collection $collection, Request $request): Projection
     {
         try {
-            $fields = $request->input('fields.' . $collection->getName());
+            $fields = $request->input('fields[' . $collection->getName() .']');
 
-            if ($fields === null) {
+            if ($fields === null || $fields === '') {
                 return ProjectionFactory::all($collection);
             }
             $rootFields = collect(explode(',', $fields));
             $explicitRequest = $rootFields->map(
                 static function ($field) use ($collection, $request) {
-                    dump($field);
                     $column = $collection->getFields()->get($field);
 
                     return $column->getType() === 'Column' ?
-                        $field : $field . ':' . $request->input("fields.$field");
+                        $field : $field . ':' . $request->input('fields[' . $field .']');
                 }
             );
-            ProjectionValidator::validate($collection, $explicitRequest);
+
+            ProjectionValidator::validate($collection, new Projection($explicitRequest->toArray()));
 
             return new Projection($explicitRequest->all());
         } catch (\Exception $e) {
@@ -81,16 +76,25 @@ class QueryStringParser
         }
     }
 
+    public static function parseProjectionWithPks(Collection $collection, Request $request): Projection
+    {
+        $projection = self::parseProjection($collection, $request);
+
+        return $projection->withPks($collection);
+    }
+
     /**
      * @throws ForestException
      */
-    public static function parseSearch(Collection $collection, Request $request): string
+    public static function parseSearch(Collection $collection, Request $request): ?string
     {
         $search = $request->input('data.attributes.all_records_subset_query.search') ?? $request->get('search');
 
         if ($search && ! $collection->isSearchable()) {
             throw new ForestException('Collection is not searchable');
         }
+
+        return $search;
     }
 
     public static function parseSearchExtended(Request $request): bool
@@ -144,21 +148,21 @@ class QueryStringParser
     public static function parsePagination(Request $request): Page
     {
         $queryItemsPerPage = $request->input('data.attributes.all_records_subset_query')['size'] ??
-            $request->get('page')['size'] ??
+            $request->get('page[size]') ??
             self::DEFAULT_ITEMS_PER_PAGE;
 
-        $queryPageToSkip = $request->input('data.attributes.all_records_subset_query')['number'] ??
-            $request->get('page')['number'] ??
+        $queryPage = $request->input('data.attributes.all_records_subset_query')['number'] ??
+            $request->get('page[number]') ??
             self::DEFAULT_PAGE_TO_SKIP;
 
         if (! is_numeric($queryItemsPerPage) ||
-            ! is_numeric($queryPageToSkip) ||
+            ! is_numeric($queryPage) ||
             $queryItemsPerPage <= 0 ||
-            $queryPageToSkip <= 0) {
-            throw new ForestException("Invalid pagination [limit: $queryItemsPerPage, skip: $queryPageToSkip]");
+            $queryPage <= 0) {
+            throw new ForestException("Invalid pagination [limit: $queryItemsPerPage, skip: $queryPage]");
         }
 
-        $offset = ($queryPageToSkip - 1) * $queryItemsPerPage;
+        $offset = ($queryPage - 1) * $queryItemsPerPage;
 
         return new Page($offset, $queryItemsPerPage);
     }
