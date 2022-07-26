@@ -40,7 +40,8 @@ class Book extends BaseCollection
 
         $this->addAction('Mark as live', new ActionSchema(scope: ActionScope::single(), staticForm: true));
 
-        $this->addSegments(['Active books', 'Deleted books']);
+        $this->addSegment('Active books');
+        $this->addSegment('Deleted books');
 
         $this->setSearchable(true);
     }
