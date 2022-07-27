@@ -4,31 +4,35 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query;
 
 class Sort
 {
-    public function __construct(private string $field, private bool $ascending = true)
+    private array $fields;
+
+    public function __construct(array $items)
     {
+        foreach ($items as $item) {
+            if ($this->fieldIsAscending($item)) {
+                $field = ['field' => $item, 'order' => 'ASC'];
+            } else {
+                $field = ['field' => substr($item, 1), 'order' => 'DESC'];
+            }
+            $this->fields[] = $field;
+        }
     }
 
     /**
-     * @return string
-     */
-    public function getField(): string
-    {
-        return $this->field;
-    }
-
-    /**
+     * @param $value
      * @return bool
      */
-    public function isAscending(): bool
+    public function fieldIsAscending($value): bool
     {
-        return $this->ascending;
+        if ($value[0] === '-') {
+            return false;
+        }
+
+        return true;
     }
 
-    /**
-     * @return string
-     */
-    public function getDirection(): string
+    public function getFields(): array
     {
-        return $this->isAscending() ? 'ASC' : 'DESC';
+        return $this->fields;
     }
 }

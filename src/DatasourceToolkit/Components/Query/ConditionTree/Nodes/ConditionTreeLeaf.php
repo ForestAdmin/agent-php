@@ -17,8 +17,7 @@ class ConditionTreeLeaf extends ConditionTree
         protected string $field,
         protected string $operator,
         protected        $value = null
-    )
-    {
+    ) {
         if ($this->operator) {
             $this->validOperator($this->operator);
         }
@@ -54,7 +53,7 @@ class ConditionTreeLeaf extends ConditionTree
      */
     public function validOperator(string $value): void
     {
-        if (!in_array($value, Operators::ALL_OPERATORS, true)) {
+        if (! in_array($value, Operators::ALL_OPERATORS, true)) {
             throw new ForestException("Invalid operators, the $value operator does not exist.");
         }
     }
