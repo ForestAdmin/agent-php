@@ -148,12 +148,12 @@ class QueryStringParser
      */
     public static function parsePagination(Request $request): Page
     {
-        $queryItemsPerPage = $request->input('data.attributes.all_records_subset_query')['size'] ??
-            $request->get('page[size]') ??
+        $queryItemsPerPage = $request->input('data.attributes.all_records_subset_query.size') ??
+            $request->input('page.size') ??
             self::DEFAULT_ITEMS_PER_PAGE;
 
-        $queryPage = $request->input('data.attributes.all_records_subset_query')['number'] ??
-            $request->get('page[number]') ??
+        $queryPage = $request->input('data.attributes.all_records_subset_query.number') ??
+            $request->input('page.number') ??
             self::DEFAULT_PAGE_TO_SKIP;
 
         if (! is_numeric($queryItemsPerPage) ||
