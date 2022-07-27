@@ -17,6 +17,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ConditionTreeValidator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ProjectionValidator;
 
+use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\SortValidator;
 use function ForestAdmin\config;
 
 class QueryStringParser
@@ -175,10 +176,13 @@ class QueryStringParser
             return SortFactory::byPrimaryKeys($collection);
         }
 
-        if ($sortString[0] === '-') {
-            return new Sort(substr($sortString, 1), false);
-        } else {
-            return new Sort($sortString);
+        try {
+            $sort = new Sort([$sortString]);
+            SortValidator::validate($collection, $sort);
+
+            return  $sort;
+        } catch (\RuntimeException $e) {
+            throw new ForestException("Invalid sort: $sortString");
         }
     }
 }
