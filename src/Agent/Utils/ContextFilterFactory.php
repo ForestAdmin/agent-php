@@ -4,59 +4,29 @@ namespace ForestAdmin\AgentPHP\Agent\Utils;
 
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
 
 class ContextFilterFactory
 {
-    /*
-     * static buildPaginated(
-        collection: Collection,
-        context: Context,
-        scope: ConditionTree,
-        partialFilter?: Partial<PaginatedFilter>,
-      ): PaginatedFilter {
-        return new PaginatedFilter({
-          sort: QueryStringParser.parseSort(collection, context),
-          page: QueryStringParser.parsePagination(context),
-          ...ContextFilterFactory.build(collection, context, scope),
-          ...partialFilter,
-        });
-      }
-
-      static build(
-        collection: Collection,
-        context: Context,
-        scope: ConditionTree,
-        partialFilter?: Partial<Filter>,
-      ): PaginatedFilter {
-        return new Filter({
-          search: QueryStringParser.parseSearch(collection, context),
-          segment: QueryStringParser.parseSegment(collection, context),
-          searchExtended: QueryStringParser.parseSearchExtended(context),
-          conditionTree: ConditionTreeFactory.intersect(
-            QueryStringParser.parseConditionTree(collection, context),
-            scope,
-          ),
-          ...partialFilter,
-        });
-      }
-     */
-
     public static function buildPaginated(Collection $collection, Request $request, ?ConditionTree $scope, array $paginatedFilters = [])
     {
         return new PaginatedFilter(
-            conditionTree: null, // TODO NEED TO FIX TO ConditionTree
-            search: null,
-            searchExtended: null,
-            segment: null,
-            sort: new Sort('id'),// TODO NEED TO FIX
-            page: new Page(0, 20), // TODO NEED TO FIX
+            conditionTree: ConditionTreeFactory::intersect(
+                [
+                    QueryStringParser::parseConditionTree($collection, $request),
+                    $scope,
+                ]
+            ),
+            search: QueryStringParser::parseSearch($collection, $request),
+            searchExtended: QueryStringParser::parseSearchExtended($request),
+            segment: QueryStringParser::parseSegment($collection, $request),
+            sort: QueryStringParser::parseSort($collection, $request),
+            page: QueryStringParser::parsePagination($request)
         );
+        // todo merge $paginatedFilters
     }
 
     public static function build(Collection $collection, Request $request, ?ConditionTree $scope, array $paginatedFilters = [])
