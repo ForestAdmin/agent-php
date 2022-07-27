@@ -3,7 +3,6 @@
 namespace ForestAdmin\AgentPHP\Tests\Agent\Unit;
 
 use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
@@ -12,6 +11,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
@@ -284,3 +284,45 @@ test('parseCaller() should throw a ForestException when the timezone is invalid'
 
     expect(fn () => QueryStringParser::parseCaller($request))->toThrow(ForestException::class, '🌳🌳🌳 Invalid timezone: ThisTZ/Donotexist');
 });
+
+test('parsePagination() should return the pagination parameters', function () {
+    $request = new Request(['page' => ['size' => '10', 'number' => '3']]);
+
+    expect(QueryStringParser::parsePagination($request))->toEqual(new Page(20, 10));
+});
+
+test('parsePagination() when context does not provide the pagination parameters should return the default limit 15 skip 0', function () {
+    $request = new Request();
+
+    expect(QueryStringParser::parsePagination($request))->toEqual(new Page(0, 15));
+});
+
+test('parsePagination() when context provides invalid values should throw a ForestExceptio', function () {
+    $request = new Request(['page' => ['size' => '-5', 'number' => 'NaN']]);
+
+    expect(fn () => QueryStringParser::parsePagination($request))->toThrow(ForestException::class, '🌳🌳🌳 Invalid pagination [limit: -5, skip: NaN]');
+});
+
+test('parseSort() should sort by pk ascending when not sort is given', function ($datasource) {
+    /** @var Collection $collection */
+    $collection = $datasource->getCollection('users');
+    $request = new Request();
+
+    expect(QueryStringParser::parseSort($collection, $request))->toEqual(new Sort(['id']));
+})->with('QueryStringParserCollection');
+
+test('parseSort() should sort by the request field and order when given', function ($datasource) {
+    /** @var Collection $collection */
+    $collection = $datasource->getCollection('users');
+    $request = new Request(['sort' => '-name']);
+
+    expect(QueryStringParser::parseSort($collection, $request))->toEqual(new Sort(['-name']));
+})->with('QueryStringParserCollection');
+
+test('parseSort() should throw a ForestException when the requested sort is invalid', function ($datasource) {
+    /** @var Collection $collection */
+    $collection = $datasource->getCollection('users');
+    $request = new Request(['sort' => '-fieldThatDoNotExist']);
+
+    expect(fn () => QueryStringParser::parseSort($collection, $request))->toThrow(ForestException::class, '🌳🌳🌳 Invalid sort: -fieldThatDoNotExist');
+})->with('QueryStringParserCollection');
