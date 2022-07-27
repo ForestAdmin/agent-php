@@ -8,6 +8,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Condit
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use Illuminate\Support\Str;
+use JetBrains\PhpStorm\ArrayShape;
 
 class ConditionTreeLeaf extends ConditionTree
 {
@@ -15,7 +17,8 @@ class ConditionTreeLeaf extends ConditionTree
         protected string $field,
         protected string $operator,
         protected        $value = null
-    ) {
+    )
+    {
         if ($this->operator) {
             $this->validOperator($this->operator);
         }
@@ -36,6 +39,7 @@ class ConditionTreeLeaf extends ConditionTree
         return $this->value;
     }
 
+    #[ArrayShape(['field' => "string", 'operator' => "string", 'value' => "null"])]
     public function toArray(): array
     {
         return [
@@ -50,14 +54,26 @@ class ConditionTreeLeaf extends ConditionTree
      */
     public function validOperator(string $value): void
     {
-        if (! in_array($value, Operators::ALL_OPERATORS, true)) {
+        if (!in_array($value, Operators::ALL_OPERATORS, true)) {
             throw new ForestException("Invalid operators, the $value operator does not exist.");
         }
     }
 
     public function inverse(): ConditionTree
     {
-        // TODO: Implement inverse() method.
+        if (in_array('Not' . $this->getOperator(), Operators::ALL_OPERATORS, true)) {
+            return $this->override(['operator' => 'Not' . $this->getOperator()]);
+        }
+
+        if (Str::startsWith($this->getOperator(), 'Not')) {
+            return $this->override(['operator' => Str::substr($this->getOperator(), 3)]);
+        }
+
+        return match ($this->getOperator()) {
+            'Blank'   => $this->override(['operator' => 'Present']),
+            'Present' => $this->override(['operator' => 'Blank']),
+            default   => throw new ForestException('Operator: ' . $this->getOperator() . ' cannot be inverted.'),
+        };
     }
 
     public function replaceLeafs(Closure $handler): ConditionTree
@@ -72,9 +88,9 @@ class ConditionTreeLeaf extends ConditionTree
         // TODO: Implement match() method.
     }
 
-    public function forEachLeaf(Closure $handler): void
+    public function forEachLeaf(Closure $handler): self
     {
-        // TODO: Implement forEachLeaf() method.
+        return $handler($this);
     }
 
     public function everyLeaf(Closure $handler): bool
@@ -89,11 +105,16 @@ class ConditionTreeLeaf extends ConditionTree
 
     public function getProjection(): Projection
     {
-        // TODO: Implement getProjection() method.
+        return new Projection([$this->field]);
     }
 
     public function override(array $partialConditionTree): ConditionTree
     {
         return ConditionTreeFactory::fromArray(array_merge($this->toArray(), $partialConditionTree));
+    }
+
+    public function useIntervalOperator(): bool
+    {
+        return in_array($this->operator, Operators::INTERVAL_OPERATORS);
     }
 }

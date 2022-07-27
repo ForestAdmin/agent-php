@@ -9,22 +9,16 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projectio
 class ConditionTreeBranch extends ConditionTree
 {
     public function __construct(
-        protected string  $aggregator,
-        protected array   $conditions,
+        protected string $aggregator,
+        protected array  $conditions,
     ) {
     }
 
-    /**
-     * @return array
-     */
     public function getConditions(): array
     {
         return $this->conditions;
     }
 
-    /**
-     * @return string
-     */
     public function getAggregator(): string
     {
         return $this->aggregator;
@@ -32,7 +26,14 @@ class ConditionTreeBranch extends ConditionTree
 
     public function inverse(): ConditionTree
     {
-        // TODO: Implement inverse() method.
+        $aggregator = $this->getAggregator() === 'Or' ? 'And' : 'Or';
+
+        return new ConditionTreeBranch(
+            $aggregator,
+            collect($this->getConditions())->map(
+                fn (ConditionTreeLeaf $leaf) => $leaf->inverse()
+            )->toArray()
+        );
     }
 
     public function replaceLeafs(Closure $handler): ConditionTree
@@ -48,9 +49,13 @@ class ConditionTreeBranch extends ConditionTree
         // TODO: Implement match() method.
     }
 
-    public function forEachLeaf(Closure $handler): void
+    public function forEachLeaf(Closure $handler): self
     {
-        // TODO: Implement forEachLeaf() method.
+        foreach ($this->conditions as &$condition) {
+            $condition = $condition->forEachLeaf($handler);
+        }
+
+        return $this;
     }
 
     public function everyLeaf(Closure $handler): bool
@@ -65,6 +70,10 @@ class ConditionTreeBranch extends ConditionTree
 
     public function getProjection(): Projection
     {
-        // TODO: Implement getProjection() method.
+        return collect($this->conditions)
+            ->reduce(
+                fn (Projection $memo, ConditionTreeLeaf $condition) => $memo->union($condition->getProjection()),
+                new Projection()
+            );
     }
 }
