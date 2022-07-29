@@ -35,4 +35,13 @@ class Sort
     {
         return $this->fields;
     }
+
+    public function nest(string $prefix = ''): self
+    {
+        foreach ($this->fields as &$field) {
+            $field['field'] = $prefix . ':' . $field['field'];
+        }
+
+        return $this;
+    }
 }

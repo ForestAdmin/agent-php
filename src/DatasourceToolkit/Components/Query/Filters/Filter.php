@@ -9,10 +9,20 @@ class Filter
 {
     public function __construct(
         protected ?ConditionTree $conditionTree = null,
-        protected ?string $search = null,
-        protected ?bool $searchExtended = null,
-        protected ?string $segment = null
+        protected ?string        $search = null,
+        protected ?bool          $searchExtended = null,
+        protected ?string        $segment = null
     ) {
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'conditionTree'  => $this->conditionTree,
+            'search'         => $this->search,
+            'searchExtended' => $this->searchExtended,
+            'segment'        => $this->segment,
+        ];
     }
 
     public function isNestable(): bool
@@ -20,9 +30,9 @@ class Filter
         return ! $this->search && ! $this->segment;
     }
 
-    public static function override(...$args): self
+    public function override(...$args): self
     {
-        return new self(...$args);
+        return new self(...array_merge($this->toArray(), $args));
     }
 
     public function nest(string $prefix): self
@@ -31,11 +41,7 @@ class Filter
             throw new ForestException("Filter can't be nested");
         }
 
-        return $this->override(
-            [
-                'conditionTree' => null !== $this->getConditionTree() ? $this->getConditionTree()->nest($prefix) : null,
-            ]
-        );
+        return $this->override(conditionTree: $this->getConditionTree()?->nest($prefix));
     }
 
     /**
