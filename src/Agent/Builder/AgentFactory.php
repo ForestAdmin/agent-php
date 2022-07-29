@@ -2,10 +2,14 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Builder;
 
+use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
+use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\Chart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use Ramsey\Uuid\Uuid;
 use function ForestAdmin\cacheRemember;
 use function ForestAdmin\config;
 use function ForestAdmin\forget;
@@ -48,6 +52,18 @@ class AgentFactory
 
                 return $mainDatasource;
             }
+        );
+    }
+
+    public function renderChart(Chart $chart): array
+    {
+        return JsonApi::renderItem(
+            [
+                'id'    => Uuid::uuid4(),
+                'value' => $chart->serialize(),
+            ],
+            'stats',
+            new BasicArrayTransformer()
         );
     }
 
