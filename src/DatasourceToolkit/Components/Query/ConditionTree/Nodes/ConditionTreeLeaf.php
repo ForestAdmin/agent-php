@@ -61,16 +61,16 @@ class ConditionTreeLeaf extends ConditionTree
     public function inverse(): ConditionTree
     {
         if (in_array('Not' . $this->getOperator(), Operators::ALL_OPERATORS, true)) {
-            return $this->override(['operator' => 'Not' . $this->getOperator()]);
+            return $this->override(operator: 'Not' . $this->getOperator());
         }
 
         if (Str::startsWith($this->getOperator(), 'Not')) {
-            return $this->override(['operator' => Str::substr($this->getOperator(), 3)]);
+            return $this->override(operator: Str::substr($this->getOperator(), 3));
         }
 
         return match ($this->getOperator()) {
-            'Blank'   => $this->override(['operator' => 'Present']),
-            'Present' => $this->override(['operator' => 'Blank']),
+            'Blank'   => $this->override(operator: 'Present'),
+            'Present' => $this->override(operator: 'Blank'),
             default   => throw new ForestException('Operator: ' . $this->getOperator() . ' cannot be inverted.'),
         };
     }
@@ -107,9 +107,10 @@ class ConditionTreeLeaf extends ConditionTree
         return new Projection([$this->field]);
     }
 
-    public function override(array $partialConditionTree): ConditionTree
+    public function override(...$args): ConditionTree
     {
-        return ConditionTreeFactory::fromArray(array_merge($this->toArray(), $partialConditionTree));
+        return new self(...array_merge($this->toArray(), $args));
+//        return ConditionTreeFactory::fromArray(array_merge($this->toArray(), $partialConditionTree));
     }
 
     public function useIntervalOperator(): bool

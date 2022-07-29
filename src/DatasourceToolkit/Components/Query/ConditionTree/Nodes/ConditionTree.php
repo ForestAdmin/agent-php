@@ -36,8 +36,8 @@ abstract class ConditionTree
 
     public function nest(string $prefix): self
     {
-        return !empty($prefix)
-            ? $this->replaceLeafs(fn ($leaf) => $leaf->override(['field' => $prefix . ':' . $leaf->getField()]))
+        return ! empty($prefix)
+            ? $this->replaceLeafs(fn ($leaf) => $leaf->override(field: $prefix . ':' . $leaf->getField()))
             : $this;
     }
 
@@ -50,23 +50,19 @@ abstract class ConditionTree
         }
         [$prefix] = explode(':', $field);
 
-        if (!$this->everyLeaf(
+        if (! $this->everyLeaf(
             fn (ConditionTreeLeaf $leaf) => Str::startsWith($leaf->getField(), "$prefix:")
         )) {
             throw new ForestException('Cannot unnest condition tree.');
         }
 
         return $this->replaceLeafs(
-            fn (ConditionTreeLeaf $leaf) => $leaf->override(
-                [
-                    'field' => Str::substr($leaf->getField(), Str::length($prefix) + 1),
-                ]
-            )
+            fn (ConditionTreeLeaf $leaf) => $leaf->override(field: Str::substr($leaf->getField(), Str::length($prefix) + 1))
         );
     }
 
     public function replaceFields(Closure $handler): self
     {
-        return $this->replaceLeafs(fn (ConditionTreeLeaf $leaf) => $leaf->override(['field' => $handler($leaf->getField())]));
+        return $this->replaceLeafs(fn (ConditionTreeLeaf $leaf) => $leaf->override(field: $handler($leaf->getField())));
     }
 }

@@ -24,7 +24,7 @@ test('replaceFields() should work', function (ConditionTreeBranch $tree) {
 })->with('conditionTreeBranch');
 
 test('replaceLeafs() should work', function (ConditionTreeBranch $tree) {
-    expect($tree->replaceLeafs(fn (ConditionTreeLeaf $leaf) => $leaf->override(['value' => ! $leaf->getValue()])))
+    expect($tree->replaceLeafs(fn (ConditionTreeLeaf $leaf) => $leaf->override(value: ! $leaf->getValue())))
         ->toEqual(
             new ConditionTreeBranch('And', [
                 new ConditionTreeLeaf('column1', 'Equal', false),
@@ -102,7 +102,7 @@ test('everyLeaf() should work', function (ConditionTreeBranch $tree) {
 
 test('forEachLeaf() should work', function (ConditionTreeBranch $tree) {
     expect(
-        $tree->forEachLeaf(fn ($leaf) => $leaf->override(['field' => 'field']))
+        $tree->forEachLeaf(fn ($leaf) => $leaf->override(field: 'field'))
     )->toEqual(
         new ConditionTreeBranch(
             'And',
