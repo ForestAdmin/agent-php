@@ -5,7 +5,7 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts;
 abstract class Chart
 {
     /**
-     * @return mixed
+     * @return array
      */
-    abstract public function serialize(array $data);
+    abstract public function serialize();
 }

@@ -4,20 +4,15 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts;
 
 class ValueChart extends Chart
 {
-    public function __construct(
-        protected int $countCurrent,
-        protected int $countPrevious,
-    ) {
+    public function __construct(protected int $value, protected ?int $previousValue = null)
+    {
     }
 
-    /**
-     * @return mixed
-     */
-    public function serialize(array $data)
+    public function serialize(): array
     {
         return [
-            'countCurrent'  => $this->countCurrent,
-            'countPrevious' => $this->countPrevious,
+            'countCurrent'  => $this->value,
+            'countPrevious' => $this->previousValue,
         ];
     }
 }
