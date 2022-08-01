@@ -4,16 +4,39 @@
     "type": "library",
     "license": "GPL-3.0-or-later",
     "require": {
-        "php": "^8.0"
+        "php": "^8.0",
+        "composer/composer": "^2.3",
+        "firebase/php-jwt": "^6.2",
+        "galbar/jsonpath": "^2.0",
+        "guzzlehttp/guzzle": "^7.4",
+        "illuminate/collections": "^9.13",
+        "illuminate/support": "^9.19",
+        "league/fractal": "^0.20.1",
+        "league/oauth2-client": "^2.6",
+        "nesbot/carbon": "^2.58",
+        "php-di/php-di": "^6.4",
+        "spatie/enum": "^3.13",
+        "symfony/cache": "^6.0",
+        "symfony/http-foundation": "^6.0",
+        "ramsey/uuid": "^4.3"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.0",
-        "pestphp/pest": "^1.20"
+        "pestphp/pest": "^1.21",
+        "symfony/var-dumper": "^6.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "pestphp/pest": "^1.21",
+        "symfony/var-dumper": "^6.0"
     },
     "autoload": {
         "psr-4": {
-            "Forestadmin\\AgentPHP\\": "src/"
-        }
+            "ForestAdmin\\AgentPHP\\": "src/"
+        },
+        "files": [
+            "src/Agent/functions.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -21,5 +44,10 @@
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
 }
