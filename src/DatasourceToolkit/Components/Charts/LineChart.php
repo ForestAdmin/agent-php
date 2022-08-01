@@ -8,7 +8,7 @@ class LineChart extends Chart
     {
     }
 
-    public function serialize(): array
+    public function serialize()
     {
         $result = collect($this->data)->each(
             fn ($item) => ['label' => $item['label'], 'values' => $item['values']]

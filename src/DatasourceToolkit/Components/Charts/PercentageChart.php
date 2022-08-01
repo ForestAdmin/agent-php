@@ -8,7 +8,7 @@ class PercentageChart extends Chart
     {
     }
 
-    public function serialize(): array
+    public function serialize()
     {
         return $this->value;
     }
