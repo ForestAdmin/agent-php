@@ -2,12 +2,12 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts;
 
-class DistributionChart extends Chart
+class LineChart extends Chart
 {
     public function serialize(): array
     {
         collect($this->data)->each(
-            fn ($item) => ['key' => $item['key'], 'value' => $item['value']]
+            fn ($item) => ['label' => $item['label'], 'values' => $item['values']]
         );
 
         return $this->toArray();
