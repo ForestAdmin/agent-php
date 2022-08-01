@@ -4,12 +4,16 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts;
 
 class LineChart extends Chart
 {
+    public function __construct(protected array $data)
+    {
+    }
+
     public function serialize(): array
     {
-        collect($this->data)->each(
+        $result = collect($this->data)->each(
             fn ($item) => ['label' => $item['label'], 'values' => $item['values']]
         );
 
-        return $this->toArray();
+        return $result->toArray();
     }
 }
