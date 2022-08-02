@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters;
 
 use DateTime;
+use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
@@ -57,7 +58,7 @@ class FilterFactory
         );
     }
 
-    public static function makeThroughFilter(Collection $collection, array $id, string $relationName, Caller $caller, PaginatedFilter $baseForeignFilter): Filter
+    public static function makeThroughFilter(Collection $collection, array $id, string $relationName, Caller $caller, Filter $baseForeignFilter): Filter
     {
         $relation = $collection->getFields()[$relationName];
         $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getOriginKeyTarget());
@@ -81,7 +82,7 @@ class FilterFactory
         // Otherwise we have no choice but to call the target collection so that search and segment
         // are correctly apply, and then match ids in the though collection.
         /** @var Collection $target */
-        $target = cache('datasource')->getCollection($relation->getForeignCollection());
+        $target = Cache::get('datasource')->getCollection($relation->getForeignCollection());
         $records = $target->list(
             self::makeForeignFilter(
                 $collection,
@@ -102,7 +103,7 @@ class FilterFactory
                     new ConditionTreeLeaf(
                         $relation->getForeignKey(),
                         'In',
-                        collect($records)->map(fn ($record) => $record[$relation->getForeignKey()])
+                        collect($records)->map(fn ($record) => $collection->toArray($record)[$relation->getForeignKey()])
                     ),
                 ]
             )
@@ -114,7 +115,7 @@ class FilterFactory
      * - match only children of the provided recordId
      * - can apply on the target collection of the relation
      */
-    public static function makeForeignFilter(Collection $collection, array $id, string $relationName, Caller $caller, PaginatedFilter $baseForeignFilter): Filter
+    public static function makeForeignFilter(Collection $collection, array $id, string $relationName, Caller $caller, Filter $baseForeignFilter): Filter
     {
         $relation = SchemaUtils::getToManyRelation($collection, $relationName);
         $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getOriginKeyTarget());
@@ -136,7 +137,7 @@ class FilterFactory
             $originTree = new ConditionTreeLeaf(
                 $relation->getForeignKeyTarget(),
                 'In',
-                collect($records)->map(fn ($record) => $record[$relation->getForeignKey()])
+                collect($records)->map(fn ($record) => $collection->toArray($record)[$relation->getForeignKey()])
             );
         }
 

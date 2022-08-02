@@ -1,20 +1,32 @@
 <?php
 
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
+
+use function ForestAdmin\cache;
+
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 const TEST_TIMEZONE = 'Europe/Dublin';
 const TEST_DATE = '2022-02-16T10:00:00.000Z';
 
+static $functions;
+
 dataset('DatasourceForFilterFactory', function () {
     yield $datasource = new Datasource();
+
     $collectionBooks = new Collection($datasource, 'books');
     $collectionBooks->addFields(
         [
@@ -34,6 +46,7 @@ dataset('DatasourceForFilterFactory', function () {
             ),
         ]
     );
+
     $collectionReviews = new Collection($datasource, 'reviews');
     $collectionReviews->addFields(
         [
@@ -152,3 +165,53 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
         );
 });
 
+test("makeThroughFilter() should nest the provided filter many to many", closure: function (Datasource $datasource, Caller $caller) {
+    $books = $datasource->getCollection('books');
+    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', 'Equal', 1));
+    $filter = FilterFactory::makeThroughFilter($books, [1], 'reviews', $caller, $baseFilter);
+
+    expect($filter)
+        ->toEqual(
+            new Filter(
+                conditionTree: new ConditionTreeBranch(
+                    aggregator: 'And',
+                    conditions: [
+                        new ConditionTreeLeaf(field: 'book_id', operator: 'Equal', value: 1),
+                        new ConditionTreeLeaf(field: 'review_id', operator: 'Present'),
+                        new ConditionTreeLeaf(field: 'review:someField', operator: 'Equal', value: 1),
+                    ]
+                )
+            )
+        );
+})->with('DatasourceForFilterFactory')->with('caller');
+
+test("makeThroughFilter() should make two queries many to many", closure: function (Datasource $datasource, Caller $caller) {
+    // todo mock cache
+})->with('DatasourceForFilterFactory')->with('caller');
+
+test("makeForeignFilter() should add the fk condition one to many", closure: function (Datasource $datasource, Caller $caller) {
+    $books = $datasource->getCollection('books');
+    $baseFilter = new Filter(
+        conditionTree: new ConditionTreeLeaf('someField', 'Equal', 1),
+        segment: 'some-segment'
+    );
+    $filter = FilterFactory::makeForeignFilter($books, [1], 'bookReviews', $caller, $baseFilter);
+
+    expect($filter)
+        ->toEqual(
+            new Filter(
+                conditionTree: new ConditionTreeBranch(
+                    aggregator: 'And',
+                    conditions: [
+                        new ConditionTreeLeaf(field: 'someField', operator: 'Equal', value: 1),
+                        new ConditionTreeLeaf(field: 'book_id', operator: 'Equal', value: 1),
+                    ]
+                ),
+                segment: 'some-segment'
+            )
+        );
+})->with('DatasourceForFilterFactory')->with('caller');
+
+test("makeForeignFilter() should query the through collection many to many", closure: function (Datasource $datasource, Caller $caller) {
+    // todo mock cache
+})->with('DatasourceForFilterFactory')->with('caller');

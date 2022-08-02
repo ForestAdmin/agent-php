@@ -112,7 +112,8 @@ class Collection
     public static function getValue(MainCollection $collection, Caller $caller, array $id, string $field)
     {
         $index = array_search($field, Schema::getPrimaryKeys($collection), true);
-        if ($index) {
+
+        if ($index !== false) {
             return $id[$index];
         }
 
@@ -138,7 +139,7 @@ class Collection
         $throughCollection = cache('datasource')->getCollection($relation->getThroughCollection());
         $foreignCollectionName = $throughCollection->getFields()
             ->search(
-                fn ($key, $value) => $value instanceof ManyToOneSchema &&
+                fn ($value, $key) => $value instanceof ManyToOneSchema &&
                     $value->getForeignCollection() === $relation->getForeignCollection() &&
                     $value->getForeignKey() === $relation->getForeignKey() &&
                     $value->getForeignKeyTarget() === $relation->getForeignKeyTarget()
