@@ -24,7 +24,7 @@ const TEST_DATE = '2022-02-16T10:00:00.000Z';
 
 static $functions;
 
-dataset('DatasourceForFilterFactory', function () {
+dataset('DatasourceForFilterFactory', dataset: function () {
     yield $datasource = new Datasource();
 
     $collectionBooks = new Collection($datasource, 'books');
@@ -53,6 +53,11 @@ dataset('DatasourceForFilterFactory', function () {
             'id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
         ]
     );
+    $mockCollectionReviews = mock($collectionReviews)
+        ->shouldReceive('list')
+        ->andReturn([['id' => 123]])
+        ->getMock();
+
     $collectionBookReview = new Collection($datasource, 'bookReview');
     $collectionBookReview->addFields(
         [
@@ -65,15 +70,19 @@ dataset('DatasourceForFilterFactory', function () {
             ),
         ]
     );
+    $mockCollectionBookReview = mock($collectionBookReview)
+        ->shouldReceive('list')
+        ->andReturn([['id' => 123, 'review_id' => 1], ['id' => 124, 'review_id' => 2]])
+        ->getMock();
+
     $datasource->addCollection($collectionBooks);
-    $datasource->addCollection($collectionReviews);
-    $datasource->addCollection($collectionBookReview);
+    $datasource->addCollection($mockCollectionReviews);
+    $datasource->addCollection($mockCollectionBookReview);
 
     $options = [
         'projectDir' => sys_get_temp_dir(), // only use for cache
     ];
-    new AgentFactory($options);
-    cache('datasource', $datasource);
+    (new AgentFactory($options))->addDatasources([$datasource]);
 });
 
 test('getPreviousPeriodFilter() when no interval operator is present in the condition tree should not modify the condition tree', closure: function () {
@@ -186,7 +195,21 @@ test("makeThroughFilter() should nest the provided filter many to many", closure
 })->with('DatasourceForFilterFactory')->with('caller');
 
 test("makeThroughFilter() should make two queries many to many", closure: function (Datasource $datasource, Caller $caller) {
-    // todo mock cache
+    $books = $datasource->getCollection('books');
+    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', 'Equal', 1), segment: 'someSegment');
+    $filter = FilterFactory::makeThroughFilter($books, [1], 'reviews', $caller, $baseFilter);
+    expect($filter)
+        ->toEqual(
+            new Filter(
+                conditionTree: new ConditionTreeBranch(
+                    aggregator: 'And',
+                    conditions: [
+                        new ConditionTreeLeaf(field: 'book_id', operator: 'Equal', value: 1),
+                        new ConditionTreeLeaf(field: 'review_id', operator: 'In', value: [123]),
+                    ]
+                )
+            )
+        );
 })->with('DatasourceForFilterFactory')->with('caller');
 
 test("makeForeignFilter() should add the fk condition one to many", closure: function (Datasource $datasource, Caller $caller) {
@@ -213,5 +236,21 @@ test("makeForeignFilter() should add the fk condition one to many", closure: fun
 })->with('DatasourceForFilterFactory')->with('caller');
 
 test("makeForeignFilter() should query the through collection many to many", closure: function (Datasource $datasource, Caller $caller) {
-    // todo mock cache
+    $books = $datasource->getCollection('books');
+    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', 'Equal', 1), segment: 'some-segment');
+    $filter = FilterFactory::makeForeignFilter($books, [1], 'reviews', $caller, $baseFilter);
+
+    expect($filter)
+        ->toEqual(
+            new Filter(
+                conditionTree: new ConditionTreeBranch(
+                    aggregator: 'And',
+                    conditions: [
+                        new ConditionTreeLeaf(field: 'someField', operator: 'Equal', value: 1),
+                        new ConditionTreeLeaf(field: 'id', operator: 'In', value: [1, 2]),
+                    ]
+                ),
+                segment: 'some-segment'
+            )
+        );
 })->with('DatasourceForFilterFactory')->with('caller');
