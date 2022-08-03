@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\System;
 
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\ForestAdminHttpDriver;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
@@ -33,7 +34,7 @@ class HealthCheck extends AbstractRoute
 
     public function handleRequest()
     {
-        ForestAdminHttpDriver::sendSchema(cache('datasource'));
+        ForestAdminHttpDriver::sendSchema(AgentFactory::get('datasource'));
 
         return [
             'content' => null,

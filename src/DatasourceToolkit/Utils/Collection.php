@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Utils;
 
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection as MainCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
@@ -24,7 +25,7 @@ class Collection
         /** @var RelationSchema $relation */
         $relationField = $collection->getFields()->get($relationName);
         /** @var MainCollection $foreignCollection */
-        $foreignCollection = cache('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relationField->getForeignCollection());
+        $foreignCollection = AgentFactory::get('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relationField->getForeignCollection());
         $inverse = $foreignCollection->getFields()
             ->filter(fn ($field) => is_a($field, RelationSchema::class))
             ->filter(
@@ -106,7 +107,7 @@ class Collection
             );
         }
 
-        return self::getFieldSchema(cache('datasource')->getCollection($relationSchema->getForeignCollection()), substr($fieldName, $index + 1));
+        return self::getFieldSchema(AgentFactory::get('datasource')->getCollection($relationSchema->getForeignCollection()), substr($fieldName, $index + 1));
     }
 
     public static function getValue(MainCollection $collection, Caller $caller, array $id, string $field)
@@ -136,7 +137,7 @@ class Collection
         }
 
         /** @var MainCollection $throughCollection */
-        $throughCollection = cache('datasource')->getCollection($relation->getThroughCollection());
+        $throughCollection = AgentFactory::get('datasource')->getCollection($relation->getThroughCollection());
         $foreignCollectionName = $throughCollection->getFields()
             ->search(
                 fn ($value, $key) => $value instanceof ManyToOneSchema &&

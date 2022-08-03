@@ -2,8 +2,8 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Facades;
 
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
-use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 
 /**
  * Class Cache
@@ -17,9 +17,8 @@ class Cache extends Facade
 {
     public static function getFacadeObject()
     {
-        $filesystem = new Filesystem();
-        $directory = __DIR__ . '/../cache'; // todo update path with APP DIR
+        $container = AgentFactory::getContainer();
 
-        return new CacheServices($filesystem, $directory);
+        return $container->get('cache');
     }
 }

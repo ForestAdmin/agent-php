@@ -78,12 +78,12 @@ class Collection implements CollectionContract
         // TODO: Implement create() method.
     }
 
-    public function show(/*Caller $caller, */PaginatedFilter $filter, $id, Projection $projection)
+    public function show(/*Caller $caller, */Filter $filter, $id, Projection $projection)
     {
         // TODO: Implement show() method.
     }
 
-    public function list(/*Caller $caller, */PaginatedFilter $filter, Projection $projection): array
+    public function list(/*Caller $caller, */Filter $filter, Projection $projection): array
     {
         // TODO: Implement list() method.
     }
@@ -202,5 +202,11 @@ class Collection implements CollectionContract
         $this->segments = $segments;
 
         return $this;
+    }
+
+    public function toArray($record): array
+    {
+        // by default $record is an array
+        return $record;
     }
 }

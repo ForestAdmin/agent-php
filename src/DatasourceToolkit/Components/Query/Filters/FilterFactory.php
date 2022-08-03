@@ -3,7 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters;
 
 use DateTime;
-use ForestAdmin\AgentPHP\Agent\Facades\Cache;
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
@@ -12,11 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
-
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
-
-use function ForestAdmin\cache;
-
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
@@ -82,7 +78,7 @@ class FilterFactory
         // Otherwise we have no choice but to call the target collection so that search and segment
         // are correctly apply, and then match ids in the though collection.
         /** @var Collection $target */
-        $target = Cache::get('datasource')->getCollection($relation->getForeignCollection());
+        $target = AgentFactory::get('datasource')->getCollection($relation->getForeignCollection());
         $records = $target->list(
             self::makeForeignFilter(
                 $collection,
@@ -103,7 +99,9 @@ class FilterFactory
                     new ConditionTreeLeaf(
                         $relation->getForeignKey(),
                         'In',
-                        collect($records)->map(fn ($record) => $collection->toArray($record)[$relation->getForeignKey()])
+                        collect($records)
+                            ->map(fn ($record) => $collection->toArray($record)[$relation->getForeignKeyTarget()])
+                            ->toArray()
                     ),
                 ]
             )
@@ -123,9 +121,9 @@ class FilterFactory
         if ($relation->getType() === 'OneToMany') {
             $originTree = new ConditionTreeLeaf($relation->getOriginKey(), 'Equal', $originValue);
         } else {
-            // OneToMany case
+            // ManyToMany case
             /** @var Collection $through */
-            $through = cache('datasource')->getCollection($relation->getThroughCollection());
+            $through = AgentFactory::get('datasource')->getCollection($relation->getThroughCollection());
             $throughTree = ConditionTreeFactory::intersect(
                 [
                     new ConditionTreeLeaf($relation->getOriginKey(), 'Equal', $originValue),
@@ -133,11 +131,13 @@ class FilterFactory
                 ]
             );
             $records = $through->list(new Filter(conditionTree: $throughTree), new Projection([$relation->getForeignKey()]));
-
+//            dd($collection->toArray($records[0])[$relation->getForeignKey()]);
             $originTree = new ConditionTreeLeaf(
                 $relation->getForeignKeyTarget(),
                 'In',
-                collect($records)->map(fn ($record) => $collection->toArray($record)[$relation->getForeignKey()])
+                collect($records)
+                    ->map(fn ($record) => $collection->toArray($record)[$relation->getForeignKey()])
+                    ->toArray()
             );
         }
 
