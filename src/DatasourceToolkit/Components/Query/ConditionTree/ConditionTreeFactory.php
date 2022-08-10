@@ -42,6 +42,7 @@ class ConditionTreeFactory
     public static function intersect(array $trees): ?ConditionTree
     {
         $result = self::group('And', $trees);
+
         $isEmptyAnd = $result instanceof ConditionTreeBranch &&
             $result->getAggregator() === 'And' &&
             count($result->getConditions()) === 0;
@@ -78,8 +79,8 @@ class ConditionTreeFactory
         $conditions = collect($trees)
             ->filter()
             ->reduce(
-                static function ($currentConditions, $tree) {
-                    return $tree instanceof ConditionTreeBranch
+                static function ($currentConditions, $tree) use ($aggregator) {
+                    return $tree instanceof ConditionTreeBranch && $tree->getAggregator() === $aggregator
                         ? [...$currentConditions, ...$tree->getConditions()]
                         : [...$currentConditions, $tree];
                 },
