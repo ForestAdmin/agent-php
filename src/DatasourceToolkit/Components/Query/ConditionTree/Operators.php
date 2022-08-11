@@ -7,34 +7,34 @@ class Operators
     public const UNIQUE_OPERATORS = [
         // All types besides arrays
         'Equal',
-        'NotEqual',
-        'LessThan',
-        'GreaterThan',
+        'Not_Equal',
+        'Less_Than',
+        'Greater_Than',
 
         // Strings
         'Like',
-        'NotContains',
-        'LongerThan',
-        'ShorterThan',
+        'Not_Contains',
+        'Longer_Than',
+        'Shorter_Than',
 
         // Arrays
-        'IncludesAll',
+        'Includes_All',
     ];
 
     public const INTERVAL_OPERATORS = [
         // Dates
         'Today',
         'Yesterday',
-        'PreviousMonth',
-        'PreviousQuarter',
-        'PreviousWeek',
-        'PreviousYear',
-        'PreviousMonthToDate',
-        'PreviousQuarterToDate',
-        'PreviousWeekToDate',
-        'PreviousXDaysToDate',
-        'PreviousXDays',
-        'PreviousYearToDate',
+        'Previous_Month',
+        'Previous_Quarter',
+        'Previous_Week',
+        'Previous_Year',
+        'Previous_Month_To_Date',
+        'Previous_Quarter_To_Date',
+        'Previous_Week_To_Date',
+        'Previous_X_Days_To_Date',
+        'Previous_X_Days',
+        'Previous_Year_To_Date',
     ];
 
     public const OTHER_OPERATORS = [
@@ -45,18 +45,18 @@ class Operators
 
         // All types besides arrays
         'In',
-        'NotIn',
+        'Not_In',
 
         // Strings
-        'StartsWith',
-        'EndsWith',
+        'Starts_With',
+        'Ends_With',
         'Contains',
 
         // Dates
         'Before',
         'After',
-        'AfterXHoursAgo',
-        'BeforeXHoursAgo',
+        'After_X_Hours_Ago',
+        'Before_X_Hours_Ago',
         'Future',
         'Past',
     ];

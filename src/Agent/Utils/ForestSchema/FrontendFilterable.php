@@ -7,27 +7,32 @@ use Illuminate\Support\Collection as IlluminateCollection;
 
 final class FrontendFilterable
 {
-    public const BASE_OPERATORS = ['Equal', 'NotEqual', 'Present', 'Blank'];
+    public const BASE_OPERATORS = ['Equal', 'Not_Equal', 'Present', 'Blank'];
+
+    public const BASE_DATEONLY_OPERATORS = [
+        'Today',
+        'Yesterday',
+        'Previous_X_Days',
+        'Previous_Week',
+        'Previous_Month',
+        'Previous_Quarter',
+        'Previous_Year',
+        'Previous_X_Days_To_Date',
+        'Previous_Week_To_Date',
+        'Previous_Month_To_Date',
+        'Previous_Quarter_To_Date',
+        'Previous_Year_To_Date',
+        'Past',
+        'Future',
+        'Before_X_Hours_Ago',
+        'After_X_Hours_Ago',
+        'Before',
+        'After',
+    ];
 
     public const DATE_OPERATORS = [
         ...self::BASE_OPERATORS,
-        'LessThan',
-        'GreaterThan',
-        'Today',
-        'Yesterday',
-        'PreviousXDays',
-        'PreviousWeek',
-        'PreviousQuarter',
-        'PreviousYear',
-        'PreviousXDaysToDate',
-        'PreviousWeekToDate',
-        'PreviousMonthToDate',
-        'PreviousQuarterToDate',
-        'PreviousYearToDate',
-        'Past',
-        'Future',
-        'BeforeXHoursAgo',
-        'AfterXHoursAgo',
+        ...self::BASE_DATEONLY_OPERATORS,
     ];
 
     public const OPERATOR_BY_TYPE = [
@@ -35,18 +40,34 @@ final class FrontendFilterable
         'Date'     => self::DATE_OPERATORS,
         'Dateonly' => self::DATE_OPERATORS,
         'Enum'     => [...self::BASE_OPERATORS, 'In'],
-        'Number'   => [...self::BASE_OPERATORS, 'In', 'GreaterThan', 'LessThan'],
-        'String'   => [...self::BASE_OPERATORS, 'In', 'StartsWith', 'EndsWith', 'Contains', 'NotContains',],
-        'Timeonly' => [...self::BASE_OPERATORS, 'GreaterThan', 'LessThan'],
+        'Number'   => [...self::BASE_OPERATORS, 'In', 'Greater_Than', 'Less_Than'],
+        'String'   => [...self::BASE_OPERATORS, 'In', 'Starts_With', 'Ends_With', 'Contains', 'Not_Contains'],
+        'Timeonly' => [...self::BASE_OPERATORS, 'Greater_Than', 'Less_Than'],
         'Uuid'     => self::BASE_OPERATORS,
     ];
+
+//    public static function allOperators(): array
+//    {
+//        return [
+//            ...self::BASE_OPERATORS,
+//            ...self::DATE_OPERATORS,
+//            ...[
+//                'In',
+//                'GreaterThan',
+//                'LessThan',
+//                'StartsWith',
+//                'EndsWith',
+//                'Contains',
+//                'NotContains',
+//            ],
+//        ];
+//    }
 
     public static function isFilterable(string|array $type, array $operators = []): bool
     {
         $neededOperators = new IlluminateCollection(self::getRequiredOperators($type));
         $supportedOperators = new IlluminateCollection($operators);
 
-        // TODO SHOULD BE THE OPPOSITE ? CHECK SUPPORTED INTO NEEDED ?
         return $neededOperators->isNotEmpty() && $neededOperators->every(fn ($operator) => $supportedOperators->contains($operator));
     }
 
@@ -64,7 +85,7 @@ final class FrontendFilterable
         // and they should be more restricted, however the frontend code does not seems to check the
         // array's content so I'm replicating the same test here
         if (is_array($type)) {
-            return ['IncludesAll'];
+            return ['Includes_All'];
         }
 
         return null;
