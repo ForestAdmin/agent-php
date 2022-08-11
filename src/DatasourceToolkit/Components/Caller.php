@@ -32,4 +32,12 @@ class Caller
 
         return (new static(...$attributes));
     }
+
+    /**
+     * @return string
+     */
+    public function getTimezone(): string
+    {
+        return $this->timezone;
+    }
 }

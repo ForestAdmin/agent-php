@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
@@ -83,7 +84,7 @@ class Collection implements CollectionContract
         // TODO: Implement show() method.
     }
 
-    public function list(/*Caller $caller, */Filter $filter, Projection $projection): array
+    public function list(Caller $caller, Filter $filter, Projection $projection): array
     {
         // TODO: Implement list() method.
     }
