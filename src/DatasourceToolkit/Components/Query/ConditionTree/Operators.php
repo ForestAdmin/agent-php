@@ -4,62 +4,65 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree;
 
 class Operators
 {
-    public const UNIQUE_OPERATORS = [
-        // All types besides arrays
-        'Equal',
-        'Not_Equal',
-        'Less_Than',
-        'Greater_Than',
+    public const EQUAL = 'Equal';
+    public const NOT_EQUAL = 'Not_Equal';
+    public const LESS_THAN = 'Less_Than';
+    public const GREATER_THAN = 'Greater_Than';
+    public const LIKE = 'Like';
+    public const NOT_CONTAINS = 'Not_Contains';
+    public const CONTAINS = 'Contains';
+    public const LONGER_THAN = 'Longer_Than';
+    public const SHORTER_THAN = 'Shorter_Than';
+    public const INCLUDES_ALL = 'Includes_All';
+    public const PRESENT = 'Present';
+    public const BLANK = 'Blank';
+    public const IN = 'In';
+    public const NOT_IN = 'Not_In';
+    public const STARTS_WITH = 'Starts_With';
+    public const ENDS_WITH = 'Ends_With';
+    public const MISSING = 'Missing';
 
-        // Strings
-        'Like',
-        'Not_Contains',
-        'Longer_Than',
-        'Shorter_Than',
+    public const BEFORE = 'Before';
+    public const AFTER = 'After';
+    public const AFTER_X_HOURS_AGO = 'After_X_Hours_Ago';
+    public const BEFORE_X_HOURS_AGO = 'Before_X_Hours_Ago';
+    public const FUTURE = 'Future';
+    public const PAST = 'Past';
+    public const TODAY = 'Today';
+    public const YESTERDAY = 'Yesterday';
+    public const PREVIOUS_WEEK = 'Previous_Week';
+    public const PREVIOUS_MONTH = 'Previous_Month';
+    public const PREVIOUS_QUARTER = 'Previous_Quarter';
+    public const PREVIOUS_YEAR = 'Previous_Year';
+    public const PREVIOUS_WEEK_TO_DATE = 'Previous_Week_To_Date';
+    public const PREVIOUS_MONTH_TO_DATE = 'Previous_Month_To_Date';
+    public const PREVIOUS_QUARTER_TO_DATE = 'Previous_Quarter_To_Date';
+    public const PREVIOUS_YEAR_TO_DATE = 'Previous_Year_To_Date';
+    public const PREVIOUS_X_DAYS = 'Previous_X_Days';
+    public const PREVIOUS_X_DAYS_TO_DATE = 'Previous_X_Days_To_Date';
 
-        // Arrays
-        'Includes_All',
-    ];
+    public static function getIntervalOperators(): array
+    {
+        return [
+            self::TODAY,
+            self::YESTERDAY,
+            self::PREVIOUS_MONTH,
+            self::PREVIOUS_QUARTER,
+            self::PREVIOUS_WEEK,
+            self::PREVIOUS_YEAR,
+            self::PREVIOUS_MONTH_TO_DATE,
+            self::PREVIOUS_QUARTER_TO_DATE,
+            self::PREVIOUS_WEEK_TO_DATE,
+            self::PREVIOUS_X_DAYS_TO_DATE,
+            self::PREVIOUS_X_DAYS,
+            self::PREVIOUS_YEAR_TO_DATE,
+        ];
+    }
 
-    public const INTERVAL_OPERATORS = [
-        // Dates
-        'Today',
-        'Yesterday',
-        'Previous_Month',
-        'Previous_Quarter',
-        'Previous_Week',
-        'Previous_Year',
-        'Previous_Month_To_Date',
-        'Previous_Quarter_To_Date',
-        'Previous_Week_To_Date',
-        'Previous_X_Days_To_Date',
-        'Previous_X_Days',
-        'Previous_Year_To_Date',
-    ];
-
-    public const OTHER_OPERATORS = [
-        // All types
-        'Present',
-        'Blank',
-        'Missing',
-
-        // All types besides arrays
-        'In',
-        'Not_In',
-
-        // Strings
-        'Starts_With',
-        'Ends_With',
-        'Contains',
-
-        // Dates
-        'Before',
-        'After',
-        'After_X_Hours_Ago',
-        'Before_X_Hours_Ago',
-        'Future',
-        'Past',
-    ];
-
-    public const ALL_OPERATORS = [...self::UNIQUE_OPERATORS, ...self::INTERVAL_OPERATORS, ...self::OTHER_OPERATORS];
+    public static function getAllOperators(): array
+    {
+        return array_values(
+            (new \ReflectionClass(self::class))->getConstants()
+        );
+    }
 }
