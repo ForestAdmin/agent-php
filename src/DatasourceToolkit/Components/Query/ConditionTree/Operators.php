@@ -9,8 +9,10 @@ class Operators
     public const LESS_THAN = 'Less_Than';
     public const GREATER_THAN = 'Greater_Than';
     public const LIKE = 'Like';
+    public const ILIKE = 'ILike';
     public const NOT_CONTAINS = 'Not_Contains';
     public const CONTAINS = 'Contains';
+    public const ICONTAINS = 'IContains';
     public const LONGER_THAN = 'Longer_Than';
     public const SHORTER_THAN = 'Shorter_Than';
     public const INCLUDES_ALL = 'Includes_All';
@@ -19,7 +21,9 @@ class Operators
     public const IN = 'In';
     public const NOT_IN = 'Not_In';
     public const STARTS_WITH = 'Starts_With';
+    public const ISTARTS_WITH = 'IStartsWith';
     public const ENDS_WITH = 'Ends_With';
+    public const IENDS_WITH = 'IEndsWith';
     public const MISSING = 'Missing';
 
     public const BEFORE = 'Before';
