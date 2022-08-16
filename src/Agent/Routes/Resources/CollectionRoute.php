@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
@@ -27,7 +28,7 @@ abstract class CollectionRoute extends AbstractRoute
 
     public function build(array $args = []): void
     {
-        $datasource = cache('datasource');
+        $datasource = AgentFactory::get('datasource');
         $this->collection = $datasource->getCollection($args['collectionName']);
         $this->collection->hydrate($args);
         $this->request = Request::createFromGlobals();

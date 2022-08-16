@@ -54,8 +54,7 @@ dataset('datasourceWithOnetoOneAndManyToOne', function () {
     $options = [
         'projectDir' => sys_get_temp_dir() // only use for cache
     ];
-    new AgentFactory($options);
-    cache('datasource', $datasource);
+    (new AgentFactory($options))->addDatasources([$datasource]);
 });
 
 dataset('datasourceOtherRelations', function () {
@@ -86,8 +85,7 @@ dataset('datasourceOtherRelations', function () {
     $options = [
         'projectDir' => sys_get_temp_dir() // only use for cache
     ];
-    new AgentFactory($options);
-    cache('datasource', $datasource);
+    (new AgentFactory($options))->addDatasources([$datasource]);
 });
 
 test('all() should return all the collection fields and the relation fields', function ($datasource) {

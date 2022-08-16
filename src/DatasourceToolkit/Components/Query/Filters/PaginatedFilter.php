@@ -19,6 +19,22 @@ class PaginatedFilter extends Filter
         parent::__construct($conditionTree, $search, $searchExtended, $segment);
     }
 
+    /**
+     * @return Sort|null
+     */
+    public function getSort(): ?Sort
+    {
+        return $this->sort;
+    }
+
+    /**
+     * @return Page|null
+     */
+    public function getPage(): ?Page
+    {
+        return $this->page;
+    }
+
     public function toArray(): array
     {
         return array_merge(

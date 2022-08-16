@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Concerns\Relation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
@@ -59,7 +60,7 @@ class GeneratorField
     {
         /** @var RelationSchema $relation */
         $relation = $collection->getFields()->get($name);
-        $foreignCollection = cache('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relation->getForeignCollection());
+        $foreignCollection = AgentFactory::get('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relation->getForeignCollection());
 
         $relationSchema = [
             'field'        => $name,

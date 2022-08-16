@@ -43,8 +43,7 @@ dataset('collection', function () {
     $options = [
         'projectDir' => sys_get_temp_dir(), // only use for cache
     ];
-    new AgentFactory($options);
-    cache('datasource', $datasource);
+    (new AgentFactory($options))->addDatasources([$datasource]);
 });
 
 test('validate() should not throw if the field exist on the collection', function ($collection) {

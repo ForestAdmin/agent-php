@@ -53,14 +53,14 @@ class ConditionTreeLeaf extends ConditionTree
      */
     public function validOperator(string $value): void
     {
-        if (! in_array($value, Operators::ALL_OPERATORS, true)) {
+        if (! in_array($value, Operators::getAllOperators(), true)) {
             throw new ForestException("Invalid operators, the $value operator does not exist.");
         }
     }
 
     public function inverse(): ConditionTree
     {
-        if (in_array('Not' . $this->getOperator(), Operators::ALL_OPERATORS, true)) {
+        if (in_array('Not' . $this->getOperator(), Operators::getAllOperators(), true)) {
             return $this->override(operator: 'Not' . $this->getOperator());
         }
 
@@ -115,6 +115,6 @@ class ConditionTreeLeaf extends ConditionTree
 
     public function useIntervalOperator(): bool
     {
-        return in_array($this->operator, Operators::INTERVAL_OPERATORS);
+        return in_array($this->operator, Operators::getIntervalOperators());
     }
 }

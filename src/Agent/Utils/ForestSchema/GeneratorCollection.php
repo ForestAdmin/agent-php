@@ -22,16 +22,4 @@ class GeneratorCollection
             'segments'             => $collection->getSegments()->map(fn ($segment) => GeneratorSegment::buildSchema($collection, $segment))->sortBy('name')->toArray(),
         ];
     }
-
-
-//      actions: await Promise.all(
-//        Object.keys(collection.schema.actions)
-//          .sort()
-//          .map(name => SchemaGeneratorActions.buildSchema(prefix, collection, name)),
-//      ),
-//      fields: Object.keys(collection.schema.fields)
-//        .filter(name => !SchemaUtils.isForeignKey(collection.schema, name))
-//        .sort()
-//        .map(name => SchemaGeneratorFields.buildSchema(collection, name)),
-//}
 }

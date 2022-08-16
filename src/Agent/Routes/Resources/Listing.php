@@ -3,7 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
+use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 
 class Listing extends CollectionRoute
 {
@@ -25,7 +25,11 @@ class Listing extends CollectionRoute
 
         return [
             'renderTransformer' => true,
-            'content'           => $this->collection->list($this->paginatedFilter, new Projection()),
+            'content'           => $this->collection->list(
+                QueryStringParser::parseCaller($this->request),
+                $this->paginatedFilter,
+                QueryStringParser::parseProjection($this->collection, $this->request)
+            ),
         ];
     }
 }

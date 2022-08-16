@@ -21,11 +21,8 @@ use JsonPath\JsonObject;
  */
 class ForestSchema extends Facade
 {
-    /**
-     * @return string
-     */
-    protected static function getFacadeAccessor()
+    public static function getFacadeObject()
     {
-        return 'forest-schema';
+        return new ForestSchemaInstrospection();
     }
 }

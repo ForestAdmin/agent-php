@@ -54,7 +54,7 @@ class QueryStringParser
     public static function parseProjection(Collection $collection, Request $request): Projection
     {
         try {
-            $fields = $request->input('fields[' . $collection->getName() .']');
+            $fields = $request->input('fields.' . $collection->getName());
 
             if ($fields === null || $fields === '') {
                 return ProjectionFactory::all($collection);
@@ -62,10 +62,11 @@ class QueryStringParser
             $rootFields = collect(explode(',', $fields));
             $explicitRequest = $rootFields->map(
                 static function ($field) use ($collection, $request) {
+                    $field = trim($field);
                     $column = $collection->getFields()->get($field);
 
                     return $column->getType() === 'Column' ?
-                        $field : $field . ':' . $request->input('fields[' . $field .']');
+                        $field : $field . ':' . $request->input("fields.$field");
                 }
             );
 

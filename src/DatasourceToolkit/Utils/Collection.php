@@ -2,13 +2,20 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Utils;
 
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection as MainCollection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+
 use function ForestAdmin\cache;
 
 class Collection
@@ -18,7 +25,7 @@ class Collection
         /** @var RelationSchema $relation */
         $relationField = $collection->getFields()->get($relationName);
         /** @var MainCollection $foreignCollection */
-        $foreignCollection = cache('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relationField->getForeignCollection());
+        $foreignCollection = AgentFactory::get('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relationField->getForeignCollection());
         $inverse = $foreignCollection->getFields()
             ->filter(fn ($field) => is_a($field, RelationSchema::class))
             ->filter(
@@ -100,6 +107,45 @@ class Collection
             );
         }
 
-        return self::getFieldSchema(cache('datasource')->getCollection($relationSchema->getForeignCollection()), substr($fieldName, $index + 1));
+        return self::getFieldSchema(AgentFactory::get('datasource')->getCollection($relationSchema->getForeignCollection()), substr($fieldName, $index + 1));
+    }
+
+    public static function getValue(MainCollection $collection, Caller $caller, array $id, string $field)
+    {
+        $index = array_search($field, Schema::getPrimaryKeys($collection), true);
+
+        if ($index !== false) {
+            return $id[$index];
+        }
+
+        $record = $collection->list(
+            new Filter(conditionTree: ConditionTreeFactory::matchIds($collection, [$id])),
+            new Projection([$field])
+        );
+
+        // todo this not work with all framework. example symfony -> $record->get{$field}()
+        return $record[$field];
+    }
+
+    public static function getThroughTarget(MainCollection $collection, string $relationName): ?string
+    {
+        /** @var ManyToManySchema $relation */
+        $relation = $collection->getFields()[$relationName];
+
+        if ($relation->getType() !== 'ManyToMany') {
+            throw new ForestException('Relation must be many to many');
+        }
+
+        /** @var MainCollection $throughCollection */
+        $throughCollection = AgentFactory::get('datasource')->getCollection($relation->getThroughCollection());
+        $foreignCollectionName = $throughCollection->getFields()
+            ->search(
+                fn ($value, $key) => $value instanceof ManyToOneSchema &&
+                    $value->getForeignCollection() === $relation->getForeignCollection() &&
+                    $value->getForeignKey() === $relation->getForeignKey() &&
+                    $value->getForeignKeyTarget() === $relation->getForeignKeyTarget()
+            );
+
+        return $foreignCollectionName ?: null;
     }
 }

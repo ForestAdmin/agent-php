@@ -13,8 +13,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ConditionTreeValidator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\Rules;
 use ForestAdmin\AgentPHP\Tests\DatasourceToolkit\Factories\ConditionTreeUnknown;
 
-use function ForestAdmin\cache;
-
 dataset('ConditionTreeCollection', static function () {
     $datasource = new Datasource();
     yield $collectionCars = new Collection($datasource, 'cars');
@@ -49,8 +47,7 @@ dataset('ConditionTreeCollection', static function () {
     $options = [
         'projectDir' => sys_get_temp_dir(), // only use for cache
     ];
-    new AgentFactory($options);
-    cache('datasource', $datasource);
+    (new AgentFactory($options))->addDatasources([$datasource]);
 });
 
 test('validate() should throw an error with invalid type', function ($collection) {

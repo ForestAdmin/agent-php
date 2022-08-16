@@ -2,32 +2,43 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Validations;
 
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
 use Illuminate\Support\Collection;
 
 class Rules
 {
-    public const BASE_OPERATORS = ['Blank', 'Equal', 'Missing', 'NotEqual', 'Present'];
+    public const BASE_OPERATORS = [
+        Operators::EQUAL,
+        Operators::NOT_EQUAL,
+        Operators::PRESENT,
+        Operators::BLANK,
+        Operators::MISSING,
+    ];
 
-    public const ARRAY_OPERATORS = ['In', 'NotIn', 'IncludesAll'];
+    public const ARRAY_OPERATORS = [
+        Operators::IN,
+        Operators::NOT_IN,
+        Operators::INCLUDES_ALL,
+    ];
 
     public const BASE_DATEONLY_OPERATORS = [
-        'Today',
-        'Yesterday',
-        'PreviousXDaysToDate',
-        'PreviousWeek',
-        'PreviousWeekToDate',
-        'PreviousMonth',
-        'PreviousMonthToDate',
-        'PreviousQuarter',
-        'PreviousQuarterToDate',
-        'PreviousYear',
-        'PreviousYearToDate',
-        'Past',
-        'Future',
-        'PreviousXDays',
-        'Before',
-        'After',
+        Operators::TODAY,
+        Operators::YESTERDAY,
+        Operators::PREVIOUS_X_DAYS,
+        Operators::PREVIOUS_WEEK,
+        Operators::PREVIOUS_MONTH,
+        Operators::PREVIOUS_QUARTER,
+        Operators::PREVIOUS_YEAR,
+        Operators::PREVIOUS_X_DAYS_TO_DATE,
+        Operators::PREVIOUS_WEEK_TO_DATE,
+        Operators::PREVIOUS_MONTH_TO_DATE,
+        Operators::PREVIOUS_QUARTER_TO_DATE,
+        Operators::PREVIOUS_YEAR_TO_DATE,
+        Operators::PAST,
+        Operators::FUTURE,
+        Operators::BEFORE,
+        Operators::AFTER,
     ];
 
     public static function getAllowedOperatorsForColumnType(?string $primitiveType = null): array
@@ -37,25 +48,43 @@ class Rules
                 PrimitiveType::STRING   => [
                     ...self::BASE_OPERATORS,
                     ...self::ARRAY_OPERATORS,
-                    'Contains',
-                    'NotContains',
-                    'EndsWith',
-                    'StartsWith',
-                    'LongerThan',
-                    'ShorterThan',
-                    'Like',
-                    'ILike',
-                    'IContains',
-                    'IEndsWith',
-                    'IStartsWith',
+                    Operators::CONTAINS,
+                    Operators::NOT_CONTAINS,
+                    Operators::ENDS_WITH,
+                    Operators::STARTS_WITH,
+                    Operators::LONGER_THAN,
+                    Operators::SHORTER_THAN,
+                    Operators::LIKE,
+                    Operators::ILIKE,
+                    Operators::ICONTAINS,
+                    Operators::IENDS_WITH,
+                    Operators::ISTARTS_WITH,
                 ],
-                PrimitiveType::NUMBER   => [...self::BASE_OPERATORS, ...self::ARRAY_OPERATORS, 'GreaterThan', 'LessThan'],
+                PrimitiveType::NUMBER   => [
+                    ...self::BASE_OPERATORS,
+                    ...self::ARRAY_OPERATORS,
+                    Operators::GREATER_THAN,
+                    Operators::LESS_THAN,
+                ],
+                PrimitiveType::DATE     => [
+                    ...self::BASE_OPERATORS,
+                    ...self::BASE_DATEONLY_OPERATORS,
+                    Operators::BEFORE_X_HOURS_AGO,
+                    Operators::AFTER_X_HOURS_AGO,
+                ],
+                PrimitiveType::TIMEONLY => [
+                    ...self::BASE_OPERATORS,
+                    Operators::LESS_THAN,
+                    Operators::GREATER_THAN,
+                ],
+                PrimitiveType::JSON     => [
+                    Operators::BLANK,
+                    Operators::MISSING,
+                    Operators::PRESENT,
+                ],
                 PrimitiveType::DATEONLY => [...self::BASE_OPERATORS, ...self::BASE_DATEONLY_OPERATORS],
-                PrimitiveType::DATE     => [...self::BASE_OPERATORS, ...self::BASE_DATEONLY_OPERATORS, 'BeforeXHoursAgo', 'AfterXHoursAgo'],
-                PrimitiveType::TIMEONLY => [...self::BASE_OPERATORS, 'LessThan', 'GreaterThan'],
                 PrimitiveType::ENUM     => [...self::BASE_OPERATORS, ...self::ARRAY_OPERATORS],
                 PrimitiveType::UUID     => [...self::BASE_OPERATORS, ...self::ARRAY_OPERATORS],
-                PrimitiveType::JSON     => ['Blank', 'Missing', 'Present'],
                 PrimitiveType::BOOLEAN  => self::BASE_OPERATORS,
                 PrimitiveType::POINT    => self::BASE_OPERATORS,
             ]
@@ -110,28 +139,28 @@ class Rules
         $allowedTypes = collect(self::computeAllowedTypesForOperators());
         $merged = $allowedTypes->merge(
             [
-                'In'                    => $validationTypesArray,
-                'NotIn'                 => $validationTypesArray,
-                'IncludesAll'           => $validationTypesArray,
-                'Blank'                 => $noTypeAllowed,
-                'Missing'               => $noTypeAllowed,
-                'Present'               => $noTypeAllowed,
-                'Yesterday'             => $noTypeAllowed,
-                'Today'                 => $noTypeAllowed,
-                'PreviousQuarter'       => $noTypeAllowed,
-                'PreviousYear'          => $noTypeAllowed,
-                'PreviousMonth'         => $noTypeAllowed,
-                'PreviousWeek'          => $noTypeAllowed,
-                'Past'                  => $noTypeAllowed,
-                'Future'                => $noTypeAllowed,
-                'PreviousWeekToDate'    => $noTypeAllowed,
-                'PreviousMonthToDate'   => $noTypeAllowed,
-                'PreviousQuarterToDate' => $noTypeAllowed,
-                'PreviousYearToDate'    => $noTypeAllowed,
-                'PreviousXDaysToDate'   => ['Number'],
-                'PreviousXDays'         => ['Number'],
-                'BeforeXHoursAgo'       => ['Number'],
-                'AfterXHoursAgo'        => ['Number'],
+                Operators::IN                       => $validationTypesArray,
+                Operators::NOT_IN                   => $validationTypesArray,
+                Operators::INCLUDES_ALL             => $validationTypesArray,
+                Operators::BLANK                    => $noTypeAllowed,
+                Operators::MISSING                  => $noTypeAllowed,
+                Operators::PRESENT                  => $noTypeAllowed,
+                Operators::YESTERDAY                => $noTypeAllowed,
+                Operators::TODAY                    => $noTypeAllowed,
+                Operators::PREVIOUS_QUARTER         => $noTypeAllowed,
+                Operators::PREVIOUS_YEAR            => $noTypeAllowed,
+                Operators::PREVIOUS_MONTH           => $noTypeAllowed,
+                Operators::PREVIOUS_WEEK            => $noTypeAllowed,
+                Operators::PAST                     => $noTypeAllowed,
+                Operators::FUTURE                   => $noTypeAllowed,
+                Operators::PREVIOUS_WEEK_TO_DATE    => $noTypeAllowed,
+                Operators::PREVIOUS_MONTH_TO_DATE   => $noTypeAllowed,
+                Operators::PREVIOUS_QUARTER_TO_DATE => $noTypeAllowed,
+                Operators::PREVIOUS_YEAR_TO_DATE    => $noTypeAllowed,
+                Operators::PREVIOUS_X_DAYS_TO_DATE  => ['Number'],
+                Operators::PREVIOUS_X_DAYS          => ['Number'],
+                Operators::BEFORE_X_HOURS_AGO       => ['Number'],
+                Operators::AFTER_X_HOURS_AGO        => ['Number'],
             ]
         );
 

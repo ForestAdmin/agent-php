@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection;
 
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use function ForestAdmin\cache;
 
@@ -17,7 +18,7 @@ class ProjectionFactory
                 }
 
                 if ($column->getType() === 'OneToOne' || $column->getType() === 'ManyToOne') {
-                    $relation = cache('datasource')->getCollection($column->getForeignCollection());
+                    $relation = AgentFactory::get('datasource')->getCollection($column->getForeignCollection());
                     $relationFields = $relation->getFields();
 
                     return [

@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
@@ -108,7 +109,7 @@ class GeneratorAction
             // When sending to server, we need to rename 'value' into 'defaultValue'
             // otherwise, it does not gets applied 🤷‍♂️
             return $fields.map(static function ($field) {
-                $newField = self::buildFieldSchema(cache('datasource'), $field);
+                $newField = self::buildFieldSchema(AgentFactory::get('datasource'), $field);
                 $newField['defaultValue'] = $newField['value'];
                 unset($newField['value']);
 

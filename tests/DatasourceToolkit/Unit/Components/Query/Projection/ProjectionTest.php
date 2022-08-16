@@ -7,8 +7,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
-use phpmock\MockBuilder;
-use phpmock\mockery\PHPMockery;
+
 use function ForestAdmin\cache;
 
 dataset('collection', function () {
@@ -57,10 +56,9 @@ dataset('datasource', function () {
     $datasource->addCollection($collectionOwner);
 
     $options = [
-        'projectDir'      => sys_get_temp_dir() // only use for cache
+        'projectDir'      => sys_get_temp_dir(), // only use for cache
     ];
-    new AgentFactory($options);
-    cache('datasource', $datasource);
+    (new AgentFactory($options))->addDatasources([$datasource]);
 });
 
 test('replaceItem() should remove duplicates', function () {
