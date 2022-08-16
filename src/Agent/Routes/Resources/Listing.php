@@ -27,7 +27,7 @@ class Listing extends CollectionRoute
             'renderTransformer' => true,
             'content'           => $this->collection->list(
                 QueryStringParser::parseCaller($this->request),
-                $this->paginatedFilter,
+                $this->filter,
                 QueryStringParser::parseProjection($this->collection, $this->request)
             ),
         ];

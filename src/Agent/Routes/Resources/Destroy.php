@@ -30,7 +30,7 @@ class Destroy extends CollectionRoute
     {
         $this->build($args);
 
-        $this->collection->delete($this->paginatedFilter, $args['id']);
+        $this->collection->delete($this->filter, $args['id']);
 
         return [
             'content' => null,
@@ -48,7 +48,7 @@ class Destroy extends CollectionRoute
         $a = QueryStringParser::parseSort($this->collection, $this->request);
         dd($a);
 
-        $this->collection->deleteBulk($this->paginatedFilter, $ids, $allRecords, $idsExcluded);
+        $this->collection->deleteBulk($this->filter, $ids, $allRecords, $idsExcluded);
 
         return [
             'content' => null,

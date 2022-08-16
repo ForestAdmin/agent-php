@@ -28,7 +28,7 @@ class Count extends CollectionRoute
 
         return [
             'content' => [
-                'count' => $this->collection->count($this->paginatedFilter),
+                'count' => $this->collection->count($this->filter),
             ],
         ];
     }
