@@ -5,6 +5,7 @@
         "This file is @generated automatically"
     ],
 <<<<<<< HEAD
+<<<<<<< HEAD
     "content-hash": "7f4c82b15c2297b1fd01f523396cbd4f",
     "packages": [
         {
@@ -21,24 +22,33 @@
                 "reference": "459f2781e1a08d52ee56b0b1444086e038561e3f",
 =======
     "content-hash": "7d0d7c96514e38b8b1fe1a29bd2a7fc7",
+=======
+    "content-hash": "17ef885a33f7549e26623a1bcd65a9ae",
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
     "packages": [
         {
             "name": "brick/math",
-            "version": "0.9.3",
+            "version": "0.10.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/brick/math.git",
-                "reference": "ca57d18f028f84f777b2168cd1911b0dee2343ae"
+                "reference": "459f2781e1a08d52ee56b0b1444086e038561e3f"
             },
             "dist": {
                 "type": "zip",
+<<<<<<< HEAD
                 "url": "https://api.github.com/repos/brick/math/zipball/ca57d18f028f84f777b2168cd1911b0dee2343ae",
                 "reference": "ca57d18f028f84f777b2168cd1911b0dee2343ae",
 >>>>>>> 44ccf9e (chore: update composer)
+=======
+                "url": "https://api.github.com/repos/brick/math/zipball/459f2781e1a08d52ee56b0b1444086e038561e3f",
+                "reference": "459f2781e1a08d52ee56b0b1444086e038561e3f",
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
+<<<<<<< HEAD
 <<<<<<< HEAD
                 "php": "^7.4 || ^8.0"
             },
@@ -54,6 +64,14 @@
                 "phpunit/phpunit": "^7.5.15 || ^8.5 || ^9.0",
                 "vimeo/psalm": "4.9.2"
 >>>>>>> 44ccf9e (chore: update composer)
+=======
+                "php": "^7.4 || ^8.0"
+            },
+            "require-dev": {
+                "php-coveralls/php-coveralls": "^2.2",
+                "phpunit/phpunit": "^9.0",
+                "vimeo/psalm": "4.25.0"
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
             },
             "type": "library",
             "autoload": {
@@ -79,15 +97,20 @@
             "support": {
                 "issues": "https://github.com/brick/math/issues",
 <<<<<<< HEAD
+<<<<<<< HEAD
                 "source": "https://github.com/brick/math/tree/0.10.2"
 =======
                 "source": "https://github.com/brick/math/tree/0.9.3"
 >>>>>>> 44ccf9e (chore: update composer)
+=======
+                "source": "https://github.com/brick/math/tree/0.10.2"
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
             },
             "funding": [
                 {
                     "url": "https://github.com/BenMorel",
                     "type": "github"
+<<<<<<< HEAD
 <<<<<<< HEAD
                 }
             ],
@@ -101,6 +124,11 @@
             ],
             "time": "2021-08-15T20:50:18+00:00"
 >>>>>>> 44ccf9e (chore: update composer)
+=======
+                }
+            ],
+            "time": "2022-08-10T22:54:19+00:00"
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
         },
         {
             "name": "composer/ca-bundle",
@@ -1259,6 +1287,7 @@
         },
         {
             "name": "illuminate/collections",
+<<<<<<< HEAD
             "version": "v9.26.1",
             "source": {
                 "type": "git",
@@ -1269,6 +1298,18 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/illuminate/collections/zipball/3bda212d2c245b3261cd9af690dfd47d9878cebf",
                 "reference": "3bda212d2c245b3261cd9af690dfd47d9878cebf",
+=======
+            "version": "v9.24.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/collections.git",
+                "reference": "f9eddfa8599dd224df618b08b2502720027d1f10"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/collections/zipball/f9eddfa8599dd224df618b08b2502720027d1f10",
+                "reference": "f9eddfa8599dd224df618b08b2502720027d1f10",
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
                 "shasum": ""
             },
             "require": {
@@ -1310,11 +1351,19 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
+<<<<<<< HEAD
             "time": "2022-08-22T14:29:59+00:00"
         },
         {
             "name": "illuminate/conditionable",
             "version": "v9.26.1",
+=======
+            "time": "2022-08-09T13:26:41+00:00"
+        },
+        {
+            "name": "illuminate/conditionable",
+            "version": "v9.24.0",
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/conditionable.git",
@@ -1360,6 +1409,7 @@
         },
         {
             "name": "illuminate/contracts",
+<<<<<<< HEAD
             "version": "v9.26.1",
             "source": {
                 "type": "git",
@@ -1370,6 +1420,18 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/illuminate/contracts/zipball/0d1dd1a7e947072319f2e641cc50081219606502",
                 "reference": "0d1dd1a7e947072319f2e641cc50081219606502",
+=======
+            "version": "v9.24.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/contracts.git",
+                "reference": "ac7f63520e18721f214e80fa7e8f0a5c77ed2719"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/contracts/zipball/ac7f63520e18721f214e80fa7e8f0a5c77ed2719",
+                "reference": "ac7f63520e18721f214e80fa7e8f0a5c77ed2719",
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
                 "shasum": ""
             },
             "require": {
@@ -1404,11 +1466,19 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
+<<<<<<< HEAD
             "time": "2022-08-18T14:18:13+00:00"
         },
         {
             "name": "illuminate/macroable",
             "version": "v9.26.1",
+=======
+            "time": "2022-07-26T14:41:38+00:00"
+        },
+        {
+            "name": "illuminate/macroable",
+            "version": "v9.24.0",
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/macroable.git",
@@ -1454,6 +1524,7 @@
         },
         {
             "name": "illuminate/support",
+<<<<<<< HEAD
             "version": "v9.26.1",
             "source": {
                 "type": "git",
@@ -1464,6 +1535,18 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/illuminate/support/zipball/aa59158424c704011acd2b3276d020c3bb4759bf",
                 "reference": "aa59158424c704011acd2b3276d020c3bb4759bf",
+=======
+            "version": "v9.24.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/support.git",
+                "reference": "dc872a2a5a6ac8fe14431d7286f4ec4f70b6ac4b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/support/zipball/dc872a2a5a6ac8fe14431d7286f4ec4f70b6ac4b",
+                "reference": "dc872a2a5a6ac8fe14431d7286f4ec4f70b6ac4b",
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
                 "shasum": ""
             },
             "require": {
@@ -1519,7 +1602,11 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
+<<<<<<< HEAD
             "time": "2022-08-22T19:30:28+00:00"
+=======
+            "time": "2022-08-09T06:51:20+00:00"
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
         },
         {
             "name": "justinrainbow/json-schema",
@@ -2649,6 +2736,7 @@
         {
             "name": "ramsey/uuid",
 <<<<<<< HEAD
+<<<<<<< HEAD
             "version": "4.4.0",
             "source": {
                 "type": "git",
@@ -2665,20 +2753,27 @@
                 "brick/math": "^0.8 || ^0.9 || ^0.10",
 =======
             "version": "4.3.1",
+=======
+            "version": "4.4.0",
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
             "source": {
                 "type": "git",
                 "url": "https://github.com/ramsey/uuid.git",
-                "reference": "8505afd4fea63b81a85d3b7b53ac3cb8dc347c28"
+                "reference": "373f7bacfcf3de038778ff27dcce5672ddbf4c8a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ramsey/uuid/zipball/8505afd4fea63b81a85d3b7b53ac3cb8dc347c28",
-                "reference": "8505afd4fea63b81a85d3b7b53ac3cb8dc347c28",
+                "url": "https://api.github.com/repos/ramsey/uuid/zipball/373f7bacfcf3de038778ff27dcce5672ddbf4c8a",
+                "reference": "373f7bacfcf3de038778ff27dcce5672ddbf4c8a",
                 "shasum": ""
             },
             "require": {
+<<<<<<< HEAD
                 "brick/math": "^0.8 || ^0.9",
 >>>>>>> 44ccf9e (chore: update composer)
+=======
+                "brick/math": "^0.8 || ^0.9 || ^0.10",
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
                 "ext-ctype": "*",
                 "ext-json": "*",
                 "php": "^8.0",
@@ -2695,9 +2790,12 @@
                 "ergebnis/composer-normalize": "^2.15",
                 "mockery/mockery": "^1.3",
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
                 "moontoast/math": "^1.1",
 >>>>>>> 44ccf9e (chore: update composer)
+=======
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
                 "paragonie/random-lib": "^2",
                 "php-mock/php-mock": "^2.2",
                 "php-mock/php-mock-mockery": "^1.3",
@@ -2747,10 +2845,14 @@
             "support": {
                 "issues": "https://github.com/ramsey/uuid/issues",
 <<<<<<< HEAD
+<<<<<<< HEAD
                 "source": "https://github.com/ramsey/uuid/tree/4.4.0"
 =======
                 "source": "https://github.com/ramsey/uuid/tree/4.3.1"
 >>>>>>> 44ccf9e (chore: update composer)
+=======
+                "source": "https://github.com/ramsey/uuid/tree/4.4.0"
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
             },
             "funding": [
                 {
@@ -2763,10 +2865,14 @@
                 }
             ],
 <<<<<<< HEAD
+<<<<<<< HEAD
             "time": "2022-08-05T17:58:37+00:00"
 =======
             "time": "2022-03-27T21:42:02+00:00"
 >>>>>>> 44ccf9e (chore: update composer)
+=======
+            "time": "2022-08-05T17:58:37+00:00"
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
         },
         {
             "name": "react/promise",
@@ -3428,6 +3534,7 @@
             "time": "2022-01-02T09:55:41+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "symfony/error-handler",
             "version": "v6.0.11",
             "source": {
@@ -3670,6 +3777,17 @@
             },
             "dist": {
                 "type": "zip",
+=======
+            "name": "symfony/filesystem",
+            "version": "v6.0.11",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/filesystem.git",
+                "reference": "33787a6b6e055245d5710697dfc4a9a2b896c032"
+            },
+            "dist": {
+                "type": "zip",
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
                 "url": "https://api.github.com/repos/symfony/filesystem/zipball/33787a6b6e055245d5710697dfc4a9a2b896c032",
                 "reference": "33787a6b6e055245d5710697dfc4a9a2b896c032",
                 "shasum": ""
@@ -3855,6 +3973,7 @@
                 }
             ],
             "time": "2022-07-22T16:13:32+00:00"
+<<<<<<< HEAD
         },
         {
             "name": "symfony/http-kernel",
@@ -3964,6 +4083,8 @@
                 }
             ],
             "time": "2022-07-29T12:37:40+00:00"
+=======
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
         },
         {
             "name": "symfony/polyfill-ctype",
@@ -4540,6 +4661,7 @@
         },
         {
             "name": "symfony/process",
+<<<<<<< HEAD
             "version": "v6.0.8",
 >>>>>>> 44ccf9e (chore: update composer)
             "source": {
@@ -4628,6 +4750,16 @@
             },
             "dist": {
                 "type": "zip",
+=======
+            "version": "v6.0.11",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/process.git",
+                "reference": "44270a08ccb664143dede554ff1c00aaa2247a43"
+            },
+            "dist": {
+                "type": "zip",
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
                 "url": "https://api.github.com/repos/symfony/process/zipball/44270a08ccb664143dede554ff1c00aaa2247a43",
                 "reference": "44270a08ccb664143dede554ff1c00aaa2247a43",
                 "shasum": ""
@@ -5601,6 +5733,7 @@
         },
         {
             "name": "friendsofphp/php-cs-fixer",
+<<<<<<< HEAD
             "version": "v3.10.0",
             "source": {
                 "type": "git",
@@ -5611,6 +5744,18 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/FriendsOfPHP/PHP-CS-Fixer/zipball/76d7da666e66d83a1dc27a9d1c625c80cc4ac1fe",
                 "reference": "76d7da666e66d83a1dc27a9d1c625c80cc4ac1fe",
+=======
+            "version": "v3.9.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/FriendsOfPHP/PHP-CS-Fixer.git",
+                "reference": "4465d70ba776806857a1ac2a6f877e582445ff36"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/FriendsOfPHP/PHP-CS-Fixer/zipball/4465d70ba776806857a1ac2a6f877e582445ff36",
+                "reference": "4465d70ba776806857a1ac2a6f877e582445ff36",
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
                 "shasum": ""
             },
             "require": {
@@ -5678,7 +5823,11 @@
             "description": "A tool to automatically fix PHP code style",
             "support": {
                 "issues": "https://github.com/FriendsOfPHP/PHP-CS-Fixer/issues",
+<<<<<<< HEAD
                 "source": "https://github.com/FriendsOfPHP/PHP-CS-Fixer/tree/v3.10.0"
+=======
+                "source": "https://github.com/FriendsOfPHP/PHP-CS-Fixer/tree/v3.9.5"
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
             },
             "funding": [
                 {
@@ -5686,7 +5835,134 @@
                     "type": "github"
                 }
             ],
+<<<<<<< HEAD
             "time": "2022-08-17T22:13:10+00:00"
+=======
+            "time": "2022-07-22T08:43:51+00:00"
+        },
+        {
+            "name": "hamcrest/hamcrest-php",
+            "version": "v2.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/hamcrest/hamcrest-php.git",
+                "reference": "8c3d0a3f6af734494ad8f6fbbee0ba92422859f3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/hamcrest/hamcrest-php/zipball/8c3d0a3f6af734494ad8f6fbbee0ba92422859f3",
+                "reference": "8c3d0a3f6af734494ad8f6fbbee0ba92422859f3",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^5.3|^7.0|^8.0"
+            },
+            "replace": {
+                "cordoval/hamcrest-php": "*",
+                "davedevelopment/hamcrest-php": "*",
+                "kodova/hamcrest-php": "*"
+            },
+            "require-dev": {
+                "phpunit/php-file-iterator": "^1.4 || ^2.0",
+                "phpunit/phpunit": "^4.8.36 || ^5.7 || ^6.5 || ^7.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.1-dev"
+                }
+            },
+            "autoload": {
+                "classmap": [
+                    "hamcrest"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "This is the PHP port of Hamcrest Matchers",
+            "keywords": [
+                "test"
+            ],
+            "support": {
+                "issues": "https://github.com/hamcrest/hamcrest-php/issues",
+                "source": "https://github.com/hamcrest/hamcrest-php/tree/v2.0.1"
+            },
+            "time": "2020-07-09T08:09:16+00:00"
+        },
+        {
+            "name": "mockery/mockery",
+            "version": "1.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mockery/mockery.git",
+                "reference": "c10a5f6e06fc2470ab1822fa13fa2a7380f8fbac"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mockery/mockery/zipball/c10a5f6e06fc2470ab1822fa13fa2a7380f8fbac",
+                "reference": "c10a5f6e06fc2470ab1822fa13fa2a7380f8fbac",
+                "shasum": ""
+            },
+            "require": {
+                "hamcrest/hamcrest-php": "^2.0.1",
+                "lib-pcre": ">=7.0",
+                "php": "^7.3 || ^8.0"
+            },
+            "conflict": {
+                "phpunit/phpunit": "<8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8.5 || ^9.3"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Mockery": "library/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Pádraic Brady",
+                    "email": "padraic.brady@gmail.com",
+                    "homepage": "http://blog.astrumfutura.com"
+                },
+                {
+                    "name": "Dave Marshall",
+                    "email": "dave.marshall@atstsolutions.co.uk",
+                    "homepage": "http://davedevelopment.co.uk"
+                }
+            ],
+            "description": "Mockery is a simple yet flexible PHP mock object framework",
+            "homepage": "https://github.com/mockery/mockery",
+            "keywords": [
+                "BDD",
+                "TDD",
+                "library",
+                "mock",
+                "mock objects",
+                "mockery",
+                "stub",
+                "test",
+                "test double",
+                "testing"
+            ],
+            "support": {
+                "issues": "https://github.com/mockery/mockery/issues",
+                "source": "https://github.com/mockery/mockery/tree/1.5.0"
+            },
+            "time": "2022-01-20T13:18:17+00:00"
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
         },
         {
             "name": "myclabs/deep-copy",
@@ -6075,6 +6351,79 @@
                 }
             ],
             "time": "2021-01-03T15:53:42+00:00"
+        },
+        {
+            "name": "pestphp/pest-plugin-mock",
+            "version": "v1.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pestphp/pest-plugin-mock.git",
+                "reference": "c2dbca6cb85a870f2e666d01aca0a3fdca7d063c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pestphp/pest-plugin-mock/zipball/c2dbca6cb85a870f2e666d01aca0a3fdca7d063c",
+                "reference": "c2dbca6cb85a870f2e666d01aca0a3fdca7d063c",
+                "shasum": ""
+            },
+            "require": {
+                "mockery/mockery": "^1.4",
+                "pestphp/pest": "^1.0",
+                "pestphp/pest-plugin": "^1.0",
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "pestphp/pest-dev-tools": "dev-master"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/Autoload.php"
+                ],
+                "psr-4": {
+                    "Pest\\Mock\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Adds mocking capabilities to Pest or PHPUnit",
+            "keywords": [
+                "framework",
+                "mock",
+                "mocking",
+                "pest",
+                "php",
+                "plugin",
+                "test",
+                "testing",
+                "unit"
+            ],
+            "support": {
+                "issues": "https://github.com/pestphp/pest-plugin-mock/issues",
+                "source": "https://github.com/pestphp/pest-plugin-mock/tree/v1.0.3"
+            },
+            "funding": [
+                {
+                    "url": "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=66BYDWAT92N6L",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/nunomaduro",
+                    "type": "github"
+                },
+                {
+                    "url": "https://www.patreon.com/nunomaduro",
+                    "type": "patreon"
+                }
+            ],
+            "time": "2021-06-10T18:04:11+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -7697,6 +8046,97 @@
             "time": "2022-02-21T17:15:17+00:00"
         },
         {
+<<<<<<< HEAD
+=======
+            "name": "symfony/var-dumper",
+            "version": "v6.0.11",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/var-dumper.git",
+                "reference": "2672bdc01c1971e3d8879ce153ec4c3621be5f07"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/var-dumper/zipball/2672bdc01c1971e3d8879ce153ec4c3621be5f07",
+                "reference": "2672bdc01c1971e3d8879ce153ec4c3621be5f07",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0.2",
+                "symfony/polyfill-mbstring": "~1.0"
+            },
+            "conflict": {
+                "phpunit/phpunit": "<5.4.3",
+                "symfony/console": "<5.4"
+            },
+            "require-dev": {
+                "ext-iconv": "*",
+                "symfony/console": "^5.4|^6.0",
+                "symfony/process": "^5.4|^6.0",
+                "symfony/uid": "^5.4|^6.0",
+                "twig/twig": "^2.13|^3.0.4"
+            },
+            "suggest": {
+                "ext-iconv": "To convert non-UTF-8 strings to UTF-8 (or symfony/polyfill-iconv in case ext-iconv cannot be used).",
+                "ext-intl": "To show region name in time zone dump",
+                "symfony/console": "To use the ServerDumpCommand and/or the bin/var-dump-server script"
+            },
+            "bin": [
+                "Resources/bin/var-dump-server"
+            ],
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "Resources/functions/dump.php"
+                ],
+                "psr-4": {
+                    "Symfony\\Component\\VarDumper\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Provides mechanisms for walking through any arbitrary PHP variable",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "debug",
+                "dump"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/var-dumper/tree/v6.0.11"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2022-07-20T13:45:53+00:00"
+        },
+        {
+>>>>>>> 3d85273 (fix: composer (require-dev) && add pestphp/pest-plugin-mock package)
             "name": "theseer/tokenizer",
             "version": "1.2.1",
             "source": {
