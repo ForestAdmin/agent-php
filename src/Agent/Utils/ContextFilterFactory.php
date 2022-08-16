@@ -11,7 +11,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFil
 
 class ContextFilterFactory
 {
-    public static function buildPaginated(Collection $collection, Request $request, ?ConditionTree $scope, array $paginatedFilters = [])
+    public static function buildPaginated(Collection $collection, Request $request, ?ConditionTree $scope): PaginatedFilter
     {
         return new PaginatedFilter(
             conditionTree: ConditionTreeFactory::intersect(
@@ -26,16 +26,20 @@ class ContextFilterFactory
             sort: QueryStringParser::parseSort($collection, $request),
             page: QueryStringParser::parsePagination($request)
         );
-        // todo merge $paginatedFilters
     }
 
-    public static function build(Collection $collection, Request $request, ?ConditionTree $scope, array $paginatedFilters = [])
+    public static function build(Collection $collection, Request $request, ?ConditionTree $scope): Filter
     {
         return new Filter(
-            conditionTree: null, // TODO NEED TO FIX TO ConditionTree
-            search: null,
-            searchExtended: null,
-            segment: null,
+            conditionTree: ConditionTreeFactory::intersect(
+                [
+                    QueryStringParser::parseConditionTree($collection, $request),
+                    $scope,
+                ]
+            ),
+            search: QueryStringParser::parseSearch($collection, $request),
+            searchExtended: QueryStringParser::parseSearchExtended($request),
+            segment: QueryStringParser::parseSegment($collection, $request),
         );
     }
 }
