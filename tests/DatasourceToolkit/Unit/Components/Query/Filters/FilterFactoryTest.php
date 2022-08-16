@@ -18,7 +18,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 const TEST_TIMEZONE = 'Europe/Dublin';
-const TEST_DATE = '2022-02-16T10:00:00.000Z';
 
 static $functions;
 
