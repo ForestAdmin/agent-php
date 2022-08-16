@@ -4,7 +4,6 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
-use function ForestAdmin\cache;
 
 class ProjectionFactory
 {
@@ -25,7 +24,7 @@ class ProjectionFactory
                         ...$memo,
                         ...$relationFields->keys()
                             ->filter(fn ($relationColumnName) => $relationFields->get($relationColumnName)->getType() === 'Column')
-                            ->map(fn ($relationColumnName) => "$columnName:$relationColumnName")
+                            ->map(fn ($relationColumnName)    => "$columnName:$relationColumnName"),
                     ];
                 }
 
