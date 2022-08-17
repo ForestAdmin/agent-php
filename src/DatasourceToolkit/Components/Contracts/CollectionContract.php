@@ -37,5 +37,5 @@ interface CollectionContract
 
     public function count(/*Caller $caller, */Filter $filter): int;
 
-    public function aggregate(/*Caller $caller, */Filter $filter, Aggregation $aggregation, ?int $limit): array;
+    public function aggregate(string $chartType, Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null): ?int;
 }
