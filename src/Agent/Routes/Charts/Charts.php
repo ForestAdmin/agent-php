@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ObjectiveChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ValueChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
@@ -94,6 +95,13 @@ class Charts extends AbstractRoute
         }
 
         return new ValueChart(...$result);
+    }
+
+    private function makeObjective(): ObjectiveChart
+    {
+        $caller = QueryStringParser::parseCaller($this->request);
+
+        return new ObjectiveChart($this->computeValue($this->request, $this->filter, $caller));
     }
 
     private function computeValue(Request $request, Filter $filter, Caller $caller): int
