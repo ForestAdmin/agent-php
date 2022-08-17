@@ -80,6 +80,7 @@ class Charts extends AbstractCollectionRoute
         ];
 
         $isAndAggregator = $this->filter->getConditionTree() instanceof ConditionTreeBranch && $this->filter->getConditionTree()->getAggregator() === 'And';
+
         $withCountPrevious = (bool) $this->filter->getConditionTree()?->someLeaf(fn ($leaf) => $leaf->useIntervalOperator());
 
         if ($withCountPrevious && ! $isAndAggregator) {
