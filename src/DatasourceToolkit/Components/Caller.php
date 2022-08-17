@@ -40,4 +40,17 @@ class Caller
     {
         return $this->timezone;
     }
+
+    public function getRenderingId(): int
+    {
+        return $this->renderingId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
 }
