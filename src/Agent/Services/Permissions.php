@@ -4,18 +4,17 @@ namespace ForestAdmin\AgentPHP\Agent\Services;
 
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
-
+use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
-
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
-
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection as IlluminateCollection;
-use Symfony\Component\HttpFoundation\Response;
-use function ForestAdmin\cache;
-
 use Illuminate\Support\Str;
 use phpDocumentor\Reflection\Types\Boolean;
+use Symfony\Component\HttpFoundation\Response;
 
 class Permissions
 {
@@ -54,9 +53,32 @@ class Permissions
         return $isAllowed;
     }
 
-    public function getScope(): void
+    public function getScope(Collection $collection): ?ConditionTree
     {
-        // todo
+        $permissions = $this->getRenderingPermissions($this->caller->getRenderingId());
+        $scopes = $permissions->get('scopes')->get($collection->getName());
+
+        if (! $scopes) {
+            return null;
+        }
+
+        return $scopes['conditionTree']->replaceLeafs(
+            function (ConditionTreeLeaf $leaf) use ($scopes) {
+                $dynamicValues = Arr::get($scopes, 'dynamicScopeValues.' . $this->caller->getId());
+
+                if (is_string($leaf->getValue()) && Str::startsWith($leaf->getValue(), '$currentUser')) {
+                    if ($dynamicValues) {
+                        return $leaf->override(value: $dynamicValues[$leaf->getValue()]);
+                    }
+
+                    return $leaf->override(value: Str::startsWith($leaf->getValue(), '$currentUser.tags.')
+                        ? $this->caller->getTags()[Str::substr($leaf->getValue(), 18)]
+                        : $this->caller->getTags());
+                }
+
+                return $leaf;
+            }
+        );
     }
 
     private function getRenderingPermissions(int $renderingId): IlluminateCollection

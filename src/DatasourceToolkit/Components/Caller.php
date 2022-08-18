@@ -53,4 +53,12 @@ class Caller
     {
         return $this->id;
     }
+
+    /**
+     * @return array
+     */
+    public function getTags(): array
+    {
+        return $this->tags;
+    }
 }
