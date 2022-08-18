@@ -31,8 +31,5 @@ abstract class CollectionRoute extends AbstractRoute
         $this->collection = $datasource->getCollection($args['collectionName']);
         $this->collection->hydrate($args);
         $this->request = Request::createFromGlobals();
-        $scope = null; // todo
-
-        $this->filter = ContextFilterFactory::buildPaginated($this->collection, $this->request, $scope);
     }
 }

@@ -66,7 +66,7 @@ class ConditionTreeFactory
             foreach ($tree['conditions'] as $condition) {
                 $conditions[] = new ConditionTreeLeaf($condition['field'], ucwords($condition['operator'], '_'), $condition['value']);
             }
-            $branch = new ConditionTreeBranch($tree['aggregator'], $conditions);
+            $branch = new ConditionTreeBranch(ucfirst($tree['aggregator']), $conditions);
 
             return count($branch->getConditions()) === 1 ? $branch->getConditions()[0] : $branch;
         }
