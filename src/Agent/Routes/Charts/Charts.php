@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LineChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ObjectiveChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\PieChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ValueChart;
@@ -18,7 +19,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class Charts extends AbstractRoute
@@ -123,6 +123,20 @@ class Charts extends AbstractRoute
         return new PieChart($this->mapArrayToKeyValueAggregate($result, $aggregate));
     }
 
+    private function makeLine(): LineChart
+    {
+        $aggregation = new Aggregation(
+            operation: $this->request->get('aggregate'),
+            field: $this->request->get('aggregate_field'),
+            groups: [['field' => $this->request->get('group_by_date_field'), 'operation' => $this->request->get('time_range')]] // Todo it's useful to add operation ?
+        );
+        $aggregate = Str::lower($this->request->get('aggregate'));
+
+        $result = $this->collection->aggregate($this->type, $this->caller, $this->filter, $aggregation);
+
+        return new LineChart($this->mapArrayToKeyValueAggregateDate($result, $aggregate, $this->request->get('time_range')));
+    }
+
     private function computeValue(Filter $filter): int
     {
         $aggregation = new Aggregation(operation: $this->request->get('aggregate'), field: $this->request->get('aggregate_field'));
@@ -147,5 +161,37 @@ class Charts extends AbstractRoute
 
                 return compact('key', 'value');
             })->toArray();
+    }
+
+    private function mapArrayToKeyValueAggregateDate($array, string $aggregate, string $aggregateIsADate): array
+    {
+        return collect($array)
+            ->map(function ($item) use ($aggregate, $aggregateIsADate) {
+                $keys = array_keys($item);
+                if ($keys[0] === Str::lower($aggregate)) {
+                    $label = $item[$keys[1]];
+                    $values = $item[$keys[0]];
+                } else {
+                    $label = $item[$keys[0]];
+                    $values = $item[$keys[1]];
+                }
+
+                $label = $label->format($this->getDateFormat($aggregateIsADate));
+
+                return compact('label', 'values');
+            })->toArray();
+    }
+
+    public function getDateFormat(string $field): string
+    {
+        $format = match (Str::lower($field)) {
+            'day'   => 'd/m/Y',
+            'week'  => '\WW-Y',
+            'month' => 'M Y',
+            'year'  => 'Y',
+            default => '',
+        };
+
+        return $format;
     }
 }
