@@ -11,12 +11,15 @@ use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ObjectiveChart;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\PieChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ValueChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class Charts extends AbstractRoute
 {
@@ -27,6 +30,8 @@ class Charts extends AbstractRoute
     protected Request $request;
 
     protected string $type;
+
+    protected Caller $caller;
 
     public function __construct(
         ForestAdminHttpDriverServices $services,
@@ -59,6 +64,7 @@ class Charts extends AbstractRoute
         $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
 
         $this->setType($this->request->get('type'));
+        $this->setCaller(QueryStringParser::parseCaller($this->request));
 
         return [
             'renderChart' => true,
@@ -66,9 +72,6 @@ class Charts extends AbstractRoute
         ];
     }
 
-    /**
-     * @param string $type
-     */
     public function setType(string $type): void
     {
         $chartTypes = ['Value', 'Objective', 'Pie', 'Line', 'Leaderboard'];
@@ -79,11 +82,15 @@ class Charts extends AbstractRoute
         $this->type = $type;
     }
 
+    public function setCaller(Caller $caller): void
+    {
+        $this->caller = $caller;
+    }
+
     private function makeValue(): ValueChart
     {
-        $caller = QueryStringParser::parseCaller($this->request);
         $result = [
-            'value'         => $this->computeValue($this->request, $this->filter, $caller),
+            'value'         => $this->computeValue($this->filter),
             'previousValue' => null,
         ];
 
@@ -91,7 +98,7 @@ class Charts extends AbstractRoute
         $withCountPrevious = (bool)$this->filter->getConditionTree()?->someLeaf(fn ($leaf) => $leaf->useIntervalOperator());
 
         if ($withCountPrevious && ! $isAndAggregator) {
-            $result['previousValue'] = $this->computeValue($this->request, FilterFactory::getPreviousPeriodFilter($this->filter, $caller->getTimezone()), $caller);
+            $result['previousValue'] = $this->computeValue(FilterFactory::getPreviousPeriodFilter($this->filter, $this->caller->getTimezone()));
         }
 
         return new ValueChart(...$result);
@@ -99,16 +106,46 @@ class Charts extends AbstractRoute
 
     private function makeObjective(): ObjectiveChart
     {
-        $caller = QueryStringParser::parseCaller($this->request);
-
-        return new ObjectiveChart($this->computeValue($this->request, $this->filter, $caller));
+        return new ObjectiveChart($this->computeValue($this->filter));
     }
 
-    private function computeValue(Request $request, Filter $filter, Caller $caller): int
+    private function makePie(): PieChart
     {
-        $aggregation = new Aggregation(operation: $request->get('aggregate'), field: $request->get('aggregate_field')); //  groups: [['field' => 'reference','operation' => 'Date' ]]
-        $rows = $this->collection->aggregate($this->type, $caller, $filter, $aggregation);
+        $aggregation = new Aggregation(
+            operation: $this->request->get('aggregate'),
+            field: $this->request->get('aggregate_field'),
+            groups: $this->request->get('group_by_field') ? [['field' => $this->request->get('group_by_field')]] : []
+        );
+        $aggregate = Str::lower($this->request->get('aggregate'));
 
-        return $rows ?? 0;
+        $result = $this->collection->aggregate($this->type, $this->caller, $this->filter, $aggregation);
+
+        return new PieChart($this->mapArrayToKeyValueAggregate($result, $aggregate));
+    }
+
+    private function computeValue(Filter $filter): int
+    {
+        $aggregation = new Aggregation(operation: $this->request->get('aggregate'), field: $this->request->get('aggregate_field'));
+        $result = $this->collection->aggregate($this->type, $this->caller, $filter, $aggregation);
+        $rows = array_shift($result);
+
+        return array_values($rows)[0] ?? 0;
+    }
+
+    private function mapArrayToKeyValueAggregate($array, string $aggregate): array
+    {
+        return collect($array)
+            ->map(function ($item) use ($aggregate) {
+                $keys = array_keys($item);
+                if ($keys[0] === Str::lower($aggregate)) {
+                    $key = $item[$keys[1]];
+                    $value = $item[$keys[0]];
+                } else {
+                    $key = $item[$keys[0]];
+                    $value = $item[$keys[1]];
+                }
+
+                return compact('key', 'value');
+            })->toArray();
     }
 }
