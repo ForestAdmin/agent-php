@@ -30,7 +30,8 @@ class Destroy extends CollectionRoute
     {
         $this->build($args);
 
-        $this->collection->delete($this->filter, $args['id']);
+        $this->permissions->can('delete:' . $this->collection->getName(), $this->collection->getName());
+        $this->collection->delete($this->paginatedFilter, $args['id']);
 
         return [
             'content' => null,

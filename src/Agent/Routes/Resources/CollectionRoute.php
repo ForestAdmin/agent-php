@@ -3,33 +3,29 @@
 namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
-use ForestAdmin\AgentPHP\Agent\Http\Request;
-use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
+use ForestAdmin\AgentPHP\Agent\Routes\AbstractAuthenticatedRoute;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 
-abstract class CollectionRoute extends AbstractRoute
+abstract class CollectionRoute extends AbstractAuthenticatedRoute
 {
     protected Collection $collection;
 
     protected Filter $filter;
 
-    protected Request $request;
-
-    public function __construct(protected ForestAdminHttpDriverServices $services)
+    public function __construct()
     {
-        parent::__construct($services);
+        parent::__construct();
     }
 
     abstract public function handleRequest(array $args = []): array;
 
     public function build(array $args = []): void
     {
+        parent::build($args);
+
         $datasource = AgentFactory::get('datasource');
         $this->collection = $datasource->getCollection($args['collectionName']);
         $this->collection->hydrate($args);
-        $this->request = Request::createFromGlobals();
     }
 }

@@ -2,20 +2,21 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes;
 
-use ForestAdmin\AgentPHP\Agent\ForestAdminHttpDriver;
-use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
+use ForestAdmin\AgentPHP\Agent\Http\Request;
 
 abstract class AbstractRoute
 {
+    protected Request $request;
+
     public function __construct(
-        protected ForestAdminHttpDriverServices $services,
         protected array $routes = []
     ) {
+        $this->request = Request::createFromGlobals();
     }
 
-    public static function of(ForestAdminHttpDriverServices $services): self
+    public static function of(): self
     {
-        return (new static($services))->setupRoutes();
+        return (new static())->setupRoutes();
     }
 
     public function addRoute(string $name, array|string $methods, string $uri, \Closure $closure): void

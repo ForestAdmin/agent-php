@@ -21,6 +21,7 @@ class Update extends CollectionRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
+        $this->permissions->can('edit:' . $this->collection->getName(), $this->collection->getName());
 
         return [
             'renderTransformer' => true,

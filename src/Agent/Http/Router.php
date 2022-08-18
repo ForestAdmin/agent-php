@@ -11,29 +11,23 @@ use ForestAdmin\AgentPHP\Agent\Routes\Resources\Store;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Update;
 use ForestAdmin\AgentPHP\Agent\Routes\Security\Authentication;
 use ForestAdmin\AgentPHP\Agent\Routes\System\HealthCheck;
-use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
+use ForestAdmin\AgentPHP\Agent\Routes\Security\ScopeInvalidation;
 
 class Router
 {
-    private ForestAdminHttpDriverServices $services;
-
-    public function __construct(
-    ) {
-        $this->services = new ForestAdminHttpDriverServices();
-    }
-
     private function getRootRoutes(): array
     {
         return array_merge(
-            HealthCheck::of($this->services)->getRoutes(),
-            Authentication::of($this->services)->getRoutes(),
-            Charts::of($this->services)->getRoutes(),
-            Listing::of($this->services)->getRoutes(),
-            Store::of($this->services)->getRoutes(),
-            Count::of($this->services)->getRoutes(),
-            Show::of($this->services)->getRoutes(),
-            Update::of($this->services)->getRoutes(),
-            Destroy::of($this->services)->getRoutes(),
+            HealthCheck::of()->getRoutes(),
+            Authentication::of()->getRoutes(),
+            Charts::of()->getRoutes(),
+            ScopeInvalidation::of()->getRoutes(),
+            Listing::of()->getRoutes(),
+            Store::of()->getRoutes(),
+            Count::of()->getRoutes(),
+            Show::of()->getRoutes(),
+            Update::of()->getRoutes(),
+            Destroy::of()->getRoutes(),
         );
     }
 

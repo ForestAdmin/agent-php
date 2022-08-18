@@ -25,6 +25,9 @@ class Count extends CollectionRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
+        $this->permissions->can('browse:' . $this->collection->getName(), $this->collection->getName());
+        $scope = $this->permissions->getScope($this->collection);
+        $this->paginatedFilter = ContextFilterFactory::buildPaginated($this->collection, $this->request, $scope);
 
         return [
             'content' => [

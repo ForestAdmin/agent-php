@@ -22,6 +22,7 @@ class Show extends CollectionRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
+        $this->permissions->can('read:' . $this->collection->getName(), $this->collection->getName());
 
         return [
             'renderTransformer' => true,
