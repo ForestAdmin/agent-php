@@ -136,24 +136,4 @@ class Collection
 
         return $relation->getForeignCollection();
     }
-
-
-//    static getThroughOrigin(collection: Collection, relationName: string): string {
-//        const relation = collection.schema.fields[relationName];
-//        if (relation.type !== 'ManyToMany') throw new Error('Relation must be many to many');
-//
-//        const throughCollection = collection.dataSource.getCollection(relation.throughCollection);
-//        const originRelation = Object.entries(throughCollection.schema.fields).find(
-//            ([, field]: [string, RelationSchema]) => {
-//            return (
-//              field.type === 'ManyToOne' &&
-//              field.foreignCollection === collection.name &&
-//              field.foreignKey === relation.originKey &&
-//              field.foreignKeyTarget === relation.originKeyTarget
-//            );
-//          },
-//    ) as [string, RelationSchema];
-//
-//    return originRelation ? originRelation[0] : null;
-//    }
 }
