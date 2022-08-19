@@ -54,7 +54,7 @@ dataset('datasourceWithAllRelations', function () {
             'myPersons'   => new ManyToManySchema(
                 foreignKey: 'personId',
                 foreignKeyTarget: 'id',
-                throughCollection: 'bookPersons',
+                throughTable: 'bookPersons',
                 originKey: 'bookId',
                 originKeyTarget: 'id',
                 foreignCollection: 'persons',
@@ -99,7 +99,7 @@ dataset('datasourceWithAllRelations', function () {
             'myBooks'   => new ManyToManySchema(
                 foreignKey: 'bookId',
                 foreignKeyTarget: 'id',
-                throughCollection: 'bookPersons',
+                throughTable: 'bookPersons',
                 originKey: 'personId',
                 originKeyTarget: 'id',
                 foreignCollection: 'books',
