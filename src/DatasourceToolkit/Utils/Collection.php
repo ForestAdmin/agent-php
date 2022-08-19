@@ -16,8 +16,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneS
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
-use function ForestAdmin\cache;
-
 class Collection
 {
     public static function getInverseRelation(MainCollection $collection, string $relationName): ?string
@@ -53,7 +51,7 @@ class Collection
         if ($field->getType() === 'ManyToMany' &&
             $relationField->getType() === 'ManyToMany' &&
             $field->getOriginKey() === $relationField->getForeignKey() &&
-            $field->getThroughCollection() === $relationField->getThroughCollection() &&
+            $field->getThroughTable() === $relationField->getThroughTable() &&
             $field->getForeignKey() === $relationField->getOriginKey()) {
             return true;
         }
@@ -136,16 +134,26 @@ class Collection
             throw new ForestException('Relation must be many to many');
         }
 
-        /** @var MainCollection $throughCollection */
-        $throughCollection = AgentFactory::get('datasource')->getCollection($relation->getThroughCollection());
-        $foreignCollectionName = $throughCollection->getFields()
-            ->search(
-                fn ($value, $key) => $value instanceof ManyToOneSchema &&
-                    $value->getForeignCollection() === $relation->getForeignCollection() &&
-                    $value->getForeignKey() === $relation->getForeignKey() &&
-                    $value->getForeignKeyTarget() === $relation->getForeignKeyTarget()
-            );
-
-        return $foreignCollectionName ?: null;
+        return $relation->getForeignCollection();
     }
+
+
+//    static getThroughOrigin(collection: Collection, relationName: string): string {
+//        const relation = collection.schema.fields[relationName];
+//        if (relation.type !== 'ManyToMany') throw new Error('Relation must be many to many');
+//
+//        const throughCollection = collection.dataSource.getCollection(relation.throughCollection);
+//        const originRelation = Object.entries(throughCollection.schema.fields).find(
+//            ([, field]: [string, RelationSchema]) => {
+//            return (
+//              field.type === 'ManyToOne' &&
+//              field.foreignCollection === collection.name &&
+//              field.foreignKey === relation.originKey &&
+//              field.foreignKeyTarget === relation.originKeyTarget
+//            );
+//          },
+//    ) as [string, RelationSchema];
+//
+//    return originRelation ? originRelation[0] : null;
+//    }
 }

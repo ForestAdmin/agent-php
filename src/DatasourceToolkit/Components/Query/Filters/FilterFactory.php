@@ -123,7 +123,7 @@ class FilterFactory
         } else {
             // ManyToMany case
             /** @var Collection $through */
-            $through = AgentFactory::get('datasource')->getCollection($relation->getThroughCollection());
+            $through = AgentFactory::get('datasource')->getCollection($relation->getThroughTable());
             $throughTree = ConditionTreeFactory::intersect(
                 [
                     new ConditionTreeLeaf($relation->getOriginKey(), 'Equal', $originValue),
