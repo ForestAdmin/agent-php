@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LeaderboardChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LineChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ObjectiveChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\PieChart;
@@ -18,7 +19,9 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use Illuminate\Support\Str;
 
 class Charts extends AbstractRoute
@@ -137,6 +140,36 @@ class Charts extends AbstractRoute
         return new LineChart($this->mapArrayToKeyValueAggregateDate($result, $aggregate, $this->request->get('time_range')));
     }
 
+    private function makeLeaderboard(): LeaderboardChart
+    {
+        /** @var RelationSchema $field */
+        $field = $this->collection->getFields()[$this->request->get('relationship_field')];
+
+        if ($field->getType() === 'OneToMany') {
+            $foreignCollectionName = CollectionUtils::getInverseRelation($this->collection, $this->request->get('relationship_field'));
+        }
+
+        if ($field->getType() === 'ManyToMany') {
+            $foreignCollectionName = CollectionUtils::getThroughTarget($this->collection, $this->request->get('relationship_field'));
+        }
+
+        $filter = $this->filter->nest($foreignCollectionName);
+        $aggregation = new Aggregation(
+            operation: $this->request->get('aggregate'),
+            field: $this->request->get('aggregate_field'),
+            groups: $this->request->get('label_field') ? [['field' => $this->request->get('label_field')]] : []
+        );
+        $aggregate = Str::lower($this->request->get('aggregate'));
+
+        if (! $filter || ! $aggregation) {
+            throw new ForestException('Failed to generate leaderboard chart: parameters do not match pre-requisites');
+        }
+
+        $result = $this->collection->aggregate($this->type, $this->caller, $filter, $aggregation, $this->request->get('limit'));
+
+        return new LeaderboardChart($this->mapArrayToKeyValueAggregate($result, $aggregate));
+    }
+
     private function computeValue(Filter $filter): int
     {
         $aggregation = new Aggregation(operation: $this->request->get('aggregate'), field: $this->request->get('aggregate_field'));
@@ -182,7 +215,7 @@ class Charts extends AbstractRoute
             })->toArray();
     }
 
-    public function getDateFormat(string $field): string
+    private function getDateFormat(string $field): string
     {
         $format = match (Str::lower($field)) {
             'day'   => 'd/m/Y',

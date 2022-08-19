@@ -39,7 +39,5 @@ class Aggregation
         }
 
         return new Projection($aggregateFields);
-
-       
     }
 }
