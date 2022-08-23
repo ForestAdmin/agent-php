@@ -4,22 +4,16 @@ use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
-<<<<<<< HEAD
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LeaderboardChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LineChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ObjectiveChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\PieChart;
-=======
->>>>>>> f2bfb7c (chore: add test on Chart resources)
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ValueChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
-<<<<<<< HEAD
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
-=======
->>>>>>> f2bfb7c (chore: add test on Chart resources)
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
@@ -35,10 +29,7 @@ function factory($args = []): Datasource
             'title'       => new ColumnSchema(columnType: PrimitiveType::STRING),
             'price'       => new ColumnSchema(columnType: PrimitiveType::NUMBER),
             'date'        => new ColumnSchema(columnType: PrimitiveType::DATE),
-<<<<<<< HEAD
             'year'        => new ColumnSchema(columnType: PrimitiveType::NUMBER),
-=======
->>>>>>> f2bfb7c (chore: add test on Chart resources)
             'reviews'     => new ManyToManySchema(
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
@@ -60,14 +51,11 @@ function factory($args = []): Datasource
         [
             'id'     => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
             'author' => new ColumnSchema(columnType: PrimitiveType::STRING),
-<<<<<<< HEAD
             'book'   => new ManyToOneSchema(
                 foreignKey: 'book_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'books',
             ),
-=======
->>>>>>> f2bfb7c (chore: add test on Chart resources)
         ]
     );
 
@@ -105,11 +93,7 @@ test('setType() should throw a ForestException when the type does not exist in t
 });
 
 test('makeValue() should return a ValueChart', function () {
-<<<<<<< HEAD
     factory(
-=======
-    $datasource = factory(
->>>>>>> f2bfb7c (chore: add test on Chart resources)
         [
             'books' => [
                 'results' => [
@@ -142,7 +126,6 @@ test('makeValue() should return a ValueChart', function () {
         );
 });
 
-<<<<<<< HEAD
 test('makeObjective() should return a ObjectiveChart', function () {
     factory(
         [
@@ -183,12 +166,12 @@ test('makePie() should return a PieChart', function () {
             'books' => [
                 'results' => [
                     [
-                        'year'  => 2021,
-                        'count' => 100,
+                        'key'   => 2021,
+                        'value' => 100,
                     ],
                     [
-                        'year'  => 2022,
-                        'count' => 150,
+                        'key'   => 2022,
+                        'value' => 150,
                     ],
                 ],
             ],
@@ -394,6 +377,3 @@ test('mapArrayToKeyValueAggregate() should throw a ForestException when the type
 
     expect(fn () => $chart->setType('Maps'))->toThrow(ForestException::class, '🌳🌳🌳 Invalid Chart type Maps');
 });
-=======
-
->>>>>>> f2bfb7c (chore: add test on Chart resources)
