@@ -4,6 +4,9 @@ use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LineChart;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ObjectiveChart;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\PieChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ValueChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
@@ -24,6 +27,7 @@ function factory($args = []): Datasource
             'title'       => new ColumnSchema(columnType: PrimitiveType::STRING),
             'price'       => new ColumnSchema(columnType: PrimitiveType::NUMBER),
             'date'        => new ColumnSchema(columnType: PrimitiveType::DATE),
+            'year'        => new ColumnSchema(columnType: PrimitiveType::NUMBER),
             'reviews'     => new ManyToManySchema(
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
@@ -115,4 +119,131 @@ test('makeValue() should return a ValueChart', function () {
         );
 });
 
+test('makeObjective() should return a ObjectiveChart', function () {
+    $datasource = factory(
+        [
+            'books' => [
+                'results' => [
+                    [
+                        'count' => 10,
+                    ],
+                ],
+            ],
+        ]
+    );
 
+    $_GET = [
+        'type'            => 'Objective',
+        'collection'      => 'books',
+        'aggregate_field' => 'price',
+        'aggregate'       => 'Count',
+        'filters'         => null,
+        'timezone'        => 'Europe/Paris',
+    ];
+
+    $chart = new Charts(new ForestAdminHttpDriverServices());
+
+    expect($chart->handleRequest(['collectionName' => 'books']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'renderChart' => true,
+                'content'     => new ObjectiveChart(10),
+            ]
+        );
+});
+
+test('makePie() should return a PieChart', function () {
+    $datasource = factory(
+        [
+            'books' => [
+                'results' => [
+                    [
+                        'key'   => 2021,
+                        'value' => 100,
+                    ],
+                    [
+                        'key'   => 2022,
+                        'value' => 150,
+                    ],
+                ],
+            ],
+        ]
+    );
+
+    $_GET = [
+        'type'           => 'Pie',
+        'collection'     => 'books',
+        'group_by_field' => 'year',
+        'aggregate'      => 'Count',
+        'timezone'       => 'Europe/Paris',
+    ];
+
+    $chart = new Charts(new ForestAdminHttpDriverServices());
+
+    expect($chart->handleRequest(['collectionName' => 'books']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'renderChart' => true,
+                'content'     => new PieChart([
+                    [
+                        'key'   => 2021,
+                        'value' => 100,
+                    ],
+                    [
+                        'key'   => 2022,
+                        'value' => 150,
+                    ],
+                ]),
+            ]
+        );
+});
+
+test('makeLine() should return a LineChart', function () {
+    $datasource = factory(
+        [
+            'books' => [
+                'results' => [
+                    [
+                        'label' => new \DateTime('2022-01-03 00:00:00'),
+                        'value' => 10,
+                    ],
+                    [
+                        'label' => new \DateTime('2022-01-10 00:00:00'),
+                        'value' => 15,
+                    ],
+                ],
+            ],
+        ]
+    );
+
+    $_GET = [
+        'type'                => 'Line',
+        'collection'          => 'books',
+        'group_by_date_field' => 'date',
+        'aggregate'           => 'Count',
+        'time_range'          => 'Week',
+        'timezone'            => 'Europe/Paris',
+    ];
+
+    $chart = new Charts(new ForestAdminHttpDriverServices());
+
+    expect($chart->handleRequest(['collectionName' => 'books']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'renderChart' => true,
+                'content'     => new LineChart([
+                    [
+                        'label'  => 'W01-2022',
+                        'values' => 10,
+                    ],
+                    [
+                        'label'  => 'W02-2022',
+                        'values' => 15,
+                    ],
+                ]),
+            ]
+        );
+});
