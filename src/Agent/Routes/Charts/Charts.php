@@ -75,6 +75,11 @@ class Charts extends AbstractRoute
         ];
     }
 
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
     public function setType(string $type): void
     {
         $chartTypes = ['Value', 'Objective', 'Pie', 'Line', 'Leaderboard'];
