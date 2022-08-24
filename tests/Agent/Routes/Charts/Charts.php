@@ -166,12 +166,12 @@ test('makePie() should return a PieChart', function () {
             'books' => [
                 'results' => [
                     [
-                        'key'   => 2021,
-                        'value' => 100,
+                        'year'  => 2021,
+                        'count' => 100,
                     ],
                     [
-                        'key'   => 2022,
-                        'value' => 150,
+                        'year'  => 2022,
+                        'count' => 150,
                     ],
                 ],
             ],
