@@ -15,6 +15,7 @@ use Illuminate\Support\Collection as IlluminateCollection;
 use Illuminate\Support\Str;
 use phpDocumentor\Reflection\Types\Boolean;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class Permissions
 {
@@ -24,9 +25,14 @@ class Permissions
     {
     }
 
+    public function getCacheKey(int $renderingId): string
+    {
+        return "permissions.$renderingId";
+    }
+
     public function invalidateCache(int $renderingId): void
     {
-        Cache::forget("permissions.$renderingId");
+        Cache::forget($this->getCacheKey($renderingId));
     }
 
     public function canChart(): void
@@ -36,9 +42,8 @@ class Permissions
 
     public function can(string $action, string $collectionName, $allowFetch = true): bool
     {
-        $this->invalidateCache($this->caller->getRenderingId());
         $permissions = $this->getRenderingPermissions($this->caller->getRenderingId());
-        $isAllowed = $permissions->get('actions')->get($action)->contains($this->caller->getId());
+        $isAllowed = $permissions->get('actions')?->get($action)?->contains($this->caller->getId());
 
         if (! $isAllowed && $allowFetch) {
             $this->invalidateCache($this->caller->getRenderingId());
@@ -47,7 +52,7 @@ class Permissions
         }
 
         if (! $isAllowed) {
-            throw new ForestException('Forbidden', Response::HTTP_FORBIDDEN);
+            throw new HttpException(Response::HTTP_FORBIDDEN, 'Forbidden');
         }
 
         return $isAllowed;
@@ -81,10 +86,10 @@ class Permissions
         );
     }
 
-    private function getRenderingPermissions(int $renderingId): IlluminateCollection
+    protected function getRenderingPermissions(int $renderingId): IlluminateCollection
     {
         return Cache::remember(
-            "permissions.$renderingId",
+            $this->getCacheKey($renderingId),
             function () use ($renderingId) {
                 $permissions = ForestHttpApi::getPermissions($renderingId);
 
@@ -104,7 +109,7 @@ class Permissions
     {
         $actions = collect();
         foreach ($rawPermissions['data']['collections'] as $collectionName => $permission) {
-            foreach ($permission['collection'] as $actionName => $userIds) {
+            foreach ($permission['collection'] as $actionName              => $userIds) {
                 $shortName = Str::before($actionName, 'Enabled');
                 $userIds = $userIds instanceof Boolean ? [$this->caller->getId()] : $userIds;
                 $actions->put("$shortName:$collectionName", collect($userIds));
