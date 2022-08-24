@@ -149,6 +149,7 @@ class Charts extends AbstractRoute
     {
         /** @var RelationSchema $field */
         $field = $this->collection->getFields()[$this->request->get('relationship_field')];
+        $foreignCollectionName = null;
 
         if ($field->getType() === 'OneToMany') {
             $foreignCollectionName = CollectionUtils::getInverseRelation($this->collection, $this->request->get('relationship_field'));
@@ -158,7 +159,6 @@ class Charts extends AbstractRoute
             $foreignCollectionName = CollectionUtils::getThroughTarget($this->collection, $this->request->get('relationship_field'));
         }
 
-        $filter = $this->filter->nest($foreignCollectionName);
         $aggregation = new Aggregation(
             operation: $this->request->get('aggregate'),
             field: $this->request->get('aggregate_field'),
@@ -166,10 +166,10 @@ class Charts extends AbstractRoute
         );
         $aggregate = Str::lower($this->request->get('aggregate'));
 
-        if (! $filter || ! $aggregation) {
+        if (! $foreignCollectionName || ! $aggregation->getGroups()) {
             throw new ForestException('Failed to generate leaderboard chart: parameters do not match pre-requisites');
         }
-
+        $filter = $this->filter->nest($foreignCollectionName);
         $result = $this->collection->aggregate($this->type, $this->caller, $filter, $aggregation, $this->request->get('limit'));
 
         return new LeaderboardChart($this->mapArrayToKeyValueAggregate($result, $aggregate));
