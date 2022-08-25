@@ -24,7 +24,7 @@ class Update extends CollectionRoute
 
         return [
             'renderTransformer' => true,
-            'content'           => $this->collection->update($this->paginatedFilter, $args['id'], $this->request->get('data')),
+            'content'           => $this->collection->update($this->filter, $args['id'], $this->request->get('data')),
         ];
     }
 }

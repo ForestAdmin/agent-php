@@ -8,14 +8,13 @@ use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
-use function ForestAdmin\cache;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 
 abstract class CollectionRoute extends AbstractRoute
 {
     protected Collection $collection;
 
-    protected PaginatedFilter $paginatedFilter;
+    protected Filter $filter;
 
     protected Request $request;
 
@@ -32,8 +31,8 @@ abstract class CollectionRoute extends AbstractRoute
         $this->collection = $datasource->getCollection($args['collectionName']);
         $this->collection->hydrate($args);
         $this->request = Request::createFromGlobals();
-        $scope = null;
+        $scope = null; // todo
 
-        $this->paginatedFilter = ContextFilterFactory::buildPaginated($this->collection, $this->request, $scope);
+        $this->filter = ContextFilterFactory::buildPaginated($this->collection, $this->request, $scope);
     }
 }

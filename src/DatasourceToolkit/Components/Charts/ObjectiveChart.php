@@ -4,11 +4,18 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts;
 
 class ObjectiveChart extends Chart
 {
-    public function serialize(): array
+    public function __construct(protected int $value, protected ?int $objective = null)
     {
-        return [
-            'value'     => $this->data[0],
-            'objective' => $this->data[1],
-        ];
+    }
+
+    public function serialize()
+    {
+        $result = ['value' => $this->value];
+
+        if ($this->objective) {
+            $result['objective'] = $this->objective;
+        }
+
+        return $result;
     }
 }

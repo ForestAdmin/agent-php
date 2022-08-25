@@ -5,6 +5,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
@@ -18,9 +19,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 const TEST_TIMEZONE = 'Europe/Dublin';
-const TEST_DATE = '2022-02-16T10:00:00.000Z';
-
-static $functions;
 
 dataset('DatasourceForFilterFactory', dataset: function () {
     yield $datasource = new Datasource();
@@ -32,7 +30,7 @@ dataset('DatasourceForFilterFactory', dataset: function () {
             'reviews'     => new ManyToManySchema(
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
-                throughCollection: 'bookReview',
+                throughTable: 'bookReview',
                 originKey: 'book_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'reviews'
@@ -99,11 +97,11 @@ test("getPreviousPeriodFilter() should override baseOperator by previousOperator
     expect(FilterFactory::getPreviousPeriodFilter($filter, TEST_TIMEZONE)->getConditionTree())
         ->toEqual(new ConditionTreeLeaf('someField', $previousOperator, 'someValue'));
 })->with([
-    ['Today', 'Yesterday'],
-    ['PreviousWeekToDate', 'PreviousWeek'],
-    ['PreviousMonthToDate', 'PreviousMonth'],
-    ['PreviousQuarterToDate', 'PreviousQuarter'],
-    ['PreviousYearToDate', 'PreviousYear'],
+    [Operators::TODAY, Operators::YESTERDAY],
+    [Operators::PREVIOUS_WEEK_TO_DATE, Operators::PREVIOUS_WEEK],
+    [Operators::PREVIOUS_MONTH_TO_DATE, Operators::PREVIOUS_MONTH],
+    [Operators::PREVIOUS_QUARTER_TO_DATE, Operators::PREVIOUS_QUARTER],
+    [Operators::PREVIOUS_YEAR_TO_DATE, Operators::PREVIOUS_YEAR],
 ]);
 
 test("getPreviousPeriodFilter() should replace baseOperator by a greater/less than operator", closure: function ($baseOperator, $unit) {
@@ -121,22 +119,22 @@ test("getPreviousPeriodFilter() should replace baseOperator by a greater/less th
             new ConditionTreeBranch(
                 aggregator: 'And',
                 conditions: [
-                    new ConditionTreeLeaf('someField', 'GreaterThan', $startPeriod->toDateTimeString()),
-                    new ConditionTreeLeaf('someField', 'LessThan', $endPeriod->toDateTimeString()),
+                    new ConditionTreeLeaf('someField', Operators::GREATER_THAN, $startPeriod->toDateTimeString()),
+                    new ConditionTreeLeaf('someField', Operators::LESS_THAN, $endPeriod->toDateTimeString()),
                 ]
             )
         );
 })->with([
-    ['Yesterday', 'Day'],
-    ['PreviousWeek', 'Week'],
-    ['PreviousMonth', 'Month'],
-    ['PreviousQuarter', 'Quarter'],
-    ['PreviousYear', 'Year'],
+    [Operators::YESTERDAY, 'Day'],
+    [Operators::PREVIOUS_WEEK, 'Week'],
+    [Operators::PREVIOUS_MONTH, 'Month'],
+    [Operators::PREVIOUS_QUARTER, 'Quarter'],
+    [Operators::PREVIOUS_YEAR, 'Year'],
 ]);
 
 test("getPreviousPeriodFilter() should replace PreviousXDays operator by a greater/less than", closure: function () {
     $filter = new Filter(
-        conditionTree: new ConditionTreeLeaf('someField', 'PreviousXDays', 3)
+        conditionTree: new ConditionTreeLeaf('someField', Operators::PREVIOUS_X_DAYS, 3)
     );
     $startPeriod = Carbon::now(TEST_TIMEZONE)->subDays(2 * $filter->getConditionTree()->getValue())->startOfDay();
     $endPeriod = Carbon::now(TEST_TIMEZONE)->subDays($filter->getConditionTree()->getValue())->startOfDay();
@@ -146,8 +144,8 @@ test("getPreviousPeriodFilter() should replace PreviousXDays operator by a great
             new ConditionTreeBranch(
                 aggregator: 'And',
                 conditions: [
-                    new ConditionTreeLeaf('someField', 'GreaterThan', $startPeriod->toDateTimeString()),
-                    new ConditionTreeLeaf('someField', 'LessThan', $endPeriod->toDateTimeString()),
+                    new ConditionTreeLeaf('someField', Operators::GREATER_THAN, $startPeriod->toDateTimeString()),
+                    new ConditionTreeLeaf('someField', Operators::LESS_THAN, $endPeriod->toDateTimeString()),
                 ]
             )
         );
@@ -155,7 +153,7 @@ test("getPreviousPeriodFilter() should replace PreviousXDays operator by a great
 
 test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a greater/less than", closure: function () {
     $filter = new Filter(
-        conditionTree: new ConditionTreeLeaf('someField', 'PreviousXDaysToDate', 3)
+        conditionTree: new ConditionTreeLeaf('someField', Operators::PREVIOUS_X_DAYS_TO_DATE, 3)
     );
     $startPeriod = Carbon::now(TEST_TIMEZONE)->subDays(2 * $filter->getConditionTree()->getValue())->startOfDay();
     $endPeriod = Carbon::now(TEST_TIMEZONE)->subDays($filter->getConditionTree()->getValue());
@@ -165,8 +163,8 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
             new ConditionTreeBranch(
                 aggregator: 'And',
                 conditions: [
-                    new ConditionTreeLeaf('someField', 'GreaterThan', $startPeriod->toDateTimeString()),
-                    new ConditionTreeLeaf('someField', 'LessThan', $endPeriod->toDateTimeString()),
+                    new ConditionTreeLeaf('someField', Operators::GREATER_THAN, $startPeriod->toDateTimeString()),
+                    new ConditionTreeLeaf('someField', Operators::LESS_THAN, $endPeriod->toDateTimeString()),
                 ]
             )
         );
@@ -174,7 +172,7 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
 
 test("makeThroughFilter() should nest the provided filter many to many", closure: function (Datasource $datasource, Caller $caller) {
     $books = $datasource->getCollection('books');
-    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', 'Equal', 1));
+    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1));
     $filter = FilterFactory::makeThroughFilter($books, [1], 'reviews', $caller, $baseFilter);
 
     expect($filter)
@@ -183,9 +181,9 @@ test("makeThroughFilter() should nest the provided filter many to many", closure
                 conditionTree: new ConditionTreeBranch(
                     aggregator: 'And',
                     conditions: [
-                        new ConditionTreeLeaf(field: 'book_id', operator: 'Equal', value: 1),
-                        new ConditionTreeLeaf(field: 'review_id', operator: 'Present'),
-                        new ConditionTreeLeaf(field: 'review:someField', operator: 'Equal', value: 1),
+                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
+                        new ConditionTreeLeaf(field: 'review_id', operator: Operators::PRESENT),
+                        new ConditionTreeLeaf(field: 'reviews:someField', operator: Operators::EQUAL, value: 1),
                     ]
                 )
             )
@@ -194,7 +192,7 @@ test("makeThroughFilter() should nest the provided filter many to many", closure
 
 test("makeThroughFilter() should make two queries many to many", closure: function (Datasource $datasource, Caller $caller) {
     $books = $datasource->getCollection('books');
-    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', 'Equal', 1), segment: 'someSegment');
+    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1), segment: 'someSegment');
     $filter = FilterFactory::makeThroughFilter($books, [1], 'reviews', $caller, $baseFilter);
     expect($filter)
         ->toEqual(
@@ -202,8 +200,8 @@ test("makeThroughFilter() should make two queries many to many", closure: functi
                 conditionTree: new ConditionTreeBranch(
                     aggregator: 'And',
                     conditions: [
-                        new ConditionTreeLeaf(field: 'book_id', operator: 'Equal', value: 1),
-                        new ConditionTreeLeaf(field: 'review_id', operator: 'In', value: [123]),
+                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
+                        new ConditionTreeLeaf(field: 'review_id', operator: Operators::IN, value: [123]),
                     ]
                 )
             )
@@ -213,7 +211,7 @@ test("makeThroughFilter() should make two queries many to many", closure: functi
 test("makeForeignFilter() should add the fk condition one to many", closure: function (Datasource $datasource, Caller $caller) {
     $books = $datasource->getCollection('books');
     $baseFilter = new Filter(
-        conditionTree: new ConditionTreeLeaf('someField', 'Equal', 1),
+        conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1),
         segment: 'some-segment'
     );
     $filter = FilterFactory::makeForeignFilter($books, [1], 'bookReviews', $caller, $baseFilter);
@@ -224,8 +222,8 @@ test("makeForeignFilter() should add the fk condition one to many", closure: fun
                 conditionTree: new ConditionTreeBranch(
                     aggregator: 'And',
                     conditions: [
-                        new ConditionTreeLeaf(field: 'someField', operator: 'Equal', value: 1),
-                        new ConditionTreeLeaf(field: 'book_id', operator: 'Equal', value: 1),
+                        new ConditionTreeLeaf(field: 'someField', operator: Operators::EQUAL, value: 1),
+                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
                     ]
                 ),
                 segment: 'some-segment'
@@ -235,7 +233,7 @@ test("makeForeignFilter() should add the fk condition one to many", closure: fun
 
 test("makeForeignFilter() should query the through collection many to many", closure: function (Datasource $datasource, Caller $caller) {
     $books = $datasource->getCollection('books');
-    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', 'Equal', 1), segment: 'some-segment');
+    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1), segment: 'some-segment');
     $filter = FilterFactory::makeForeignFilter($books, [1], 'reviews', $caller, $baseFilter);
 
     expect($filter)
@@ -244,8 +242,8 @@ test("makeForeignFilter() should query the through collection many to many", clo
                 conditionTree: new ConditionTreeBranch(
                     aggregator: 'And',
                     conditions: [
-                        new ConditionTreeLeaf(field: 'someField', operator: 'Equal', value: 1),
-                        new ConditionTreeLeaf(field: 'id', operator: 'In', value: [1, 2]),
+                        new ConditionTreeLeaf(field: 'someField', operator: Operators::EQUAL, value: 1),
+                        new ConditionTreeLeaf(field: 'id', operator: Operators::IN, value: [1, 2]),
                     ]
                 ),
                 segment: 'some-segment'

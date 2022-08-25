@@ -4,8 +4,12 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts;
 
 class PercentageChart extends Chart
 {
-    public function serialize(): array
+    public function __construct(protected int $value)
     {
-        return $this->data[0];
+    }
+
+    public function serialize()
+    {
+        return $this->value;
     }
 }

@@ -9,12 +9,14 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Constraint\Operator;
 
 class FilterFactory
 {
@@ -25,20 +27,20 @@ class FilterFactory
     {
         return $filter->override(
             conditionTree: $filter->getConditionTree()->replaceLeafs(
-                fn (ConditionTreeLeaf $leaf) => match ($leaf->getOperator()) {
-                    'Yesterday'              => self::getPreviousPeriodByUnit($leaf->getField(), 'Day', $timezone),
-                    'PreviousWeek'           => self::getPreviousPeriodByUnit($leaf->getField(), 'Week', $timezone),
-                    'PreviousMonth'          => self::getPreviousPeriodByUnit($leaf->getField(), 'Month', $timezone),
-                    'PreviousQuarter'        => self::getPreviousPeriodByUnit($leaf->getField(), 'Quarter', $timezone),
-                    'PreviousYear'           => self::getPreviousPeriodByUnit($leaf->getField(), 'Year', $timezone),
-                    'PreviousWeekToDate'     => $leaf->override(operator: 'PreviousWeek'),
-                    'PreviousMonthToDate'    => $leaf->override(operator: 'PreviousMonth'),
-                    'PreviousQuarterToDate'  => $leaf->override(operator: 'PreviousQuarter'),
-                    'PreviousYearToDate'     => $leaf->override(operator: 'PreviousYear'),
-                    'Today'                  => $leaf->override(operator: 'Yesterday'),
-                    'PreviousXDays'          => self::getPreviousXDaysPeriod($leaf, $timezone, 'PreviousXDays'),
-                    'PreviousXDaysToDate'    => self::getPreviousXDaysPeriod($leaf, $timezone, 'PreviousXDaysToDate'),
-                    default                  => $leaf
+                fn (ConditionTreeLeaf $leaf)            => match ($leaf->getOperator()) {
+                    Operators::YESTERDAY                => self::getPreviousPeriodByUnit($leaf->getField(), 'Day', $timezone),
+                    Operators::PREVIOUS_WEEK            => self::getPreviousPeriodByUnit($leaf->getField(), 'Week', $timezone),
+                    Operators::PREVIOUS_MONTH           => self::getPreviousPeriodByUnit($leaf->getField(), 'Month', $timezone),
+                    Operators::PREVIOUS_QUARTER         => self::getPreviousPeriodByUnit($leaf->getField(), 'Quarter', $timezone),
+                    Operators::PREVIOUS_YEAR            => self::getPreviousPeriodByUnit($leaf->getField(), 'Year', $timezone),
+                    Operators::PREVIOUS_WEEK_TO_DATE    => $leaf->override(operator: Operators::PREVIOUS_WEEK),
+                    Operators::PREVIOUS_MONTH_TO_DATE   => $leaf->override(operator: Operators::PREVIOUS_MONTH),
+                    Operators::PREVIOUS_QUARTER_TO_DATE => $leaf->override(operator: Operators::PREVIOUS_QUARTER),
+                    Operators::PREVIOUS_YEAR_TO_DATE    => $leaf->override(operator: Operators::PREVIOUS_YEAR),
+                    Operators::TODAY                    => $leaf->override(operator: Operators::YESTERDAY),
+                    Operators::PREVIOUS_X_DAYS          => self::getPreviousXDaysPeriod($leaf, $timezone, 'Previous_X_Days'),
+                    Operators::PREVIOUS_X_DAYS_TO_DATE  => self::getPreviousXDaysPeriod($leaf, $timezone, 'Previous_X_Days_To_Date'),
+                    default                             => $leaf
                 }
             )
         );
@@ -48,8 +50,8 @@ class FilterFactory
     {
         return ConditionTreeFactory::intersect(
             [
-                new ConditionTreeLeaf($field, 'GreaterThan', $startPeriod->format('Y-m-d H:i:s')),
-                new ConditionTreeLeaf($field, 'LessThan', $endPeriod->format('Y-m-d H:i:s')),
+                new ConditionTreeLeaf($field, Operators::GREATER_THAN, $startPeriod->format('Y-m-d H:i:s')),
+                new ConditionTreeLeaf($field, Operators::LESS_THAN, $endPeriod->format('Y-m-d H:i:s')),
             ]
         );
     }
@@ -67,8 +69,8 @@ class FilterFactory
             return $baseThroughFilter->override(
                 conditionTree: ConditionTreeFactory::intersect(
                     [
-                        new ConditionTreeLeaf($relation->getOriginKey(), 'Equal', $originValue),
-                        new ConditionTreeLeaf($relation->getForeignKey(), 'Present'),
+                        new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue),
+                        new ConditionTreeLeaf($relation->getForeignKey(), Operators::PRESENT),
                         $baseThroughFilter->getConditionTree(),
                     ]
                 )
@@ -94,11 +96,11 @@ class FilterFactory
             conditionTree: ConditionTreeFactory::intersect(
                 [
                     // only children of parent
-                    new ConditionTreeLeaf($relation->getOriginKey(), 'Equal', $originValue),
+                    new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue),
                     // only the children which match the conditions in baseForeignFilter
                     new ConditionTreeLeaf(
                         $relation->getForeignKey(),
-                        'In',
+                        Operators::IN,
                         collect($records)
                             ->map(fn ($record) => $collection->toArray($record)[$relation->getForeignKeyTarget()])
                             ->toArray()
@@ -119,22 +121,22 @@ class FilterFactory
         $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getOriginKeyTarget());
 
         if ($relation->getType() === 'OneToMany') {
-            $originTree = new ConditionTreeLeaf($relation->getOriginKey(), 'Equal', $originValue);
+            $originTree = new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue);
         } else {
             // ManyToMany case
             /** @var Collection $through */
-            $through = AgentFactory::get('datasource')->getCollection($relation->getThroughCollection());
+            $through = AgentFactory::get('datasource')->getCollection($relation->getThroughTable());
             $throughTree = ConditionTreeFactory::intersect(
                 [
-                    new ConditionTreeLeaf($relation->getOriginKey(), 'Equal', $originValue),
-                    new ConditionTreeLeaf($relation->getForeignKey(), 'Present'),
+                    new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue),
+                    new ConditionTreeLeaf($relation->getForeignKey(), Operators::PRESENT),
                 ]
             );
             $records = $through->list(new Filter(conditionTree: $throughTree), new Projection([$relation->getForeignKey()]));
 //            dd($collection->toArray($records[0])[$relation->getForeignKey()]);
             $originTree = new ConditionTreeLeaf(
                 $relation->getForeignKeyTarget(),
-                'In',
+                Operators::IN,
                 collect($records)
                     ->map(fn ($record) => $collection->toArray($record)[$relation->getForeignKey()])
                     ->toArray()
@@ -179,7 +181,7 @@ class FilterFactory
     private static function getPreviousXDaysPeriod(ConditionTreeLeaf $leaf, string $timezone, string $operator): ConditionTree
     {
         $startPeriod = Carbon::now($timezone)->subDays(2 * $leaf->getValue())->startOfDay();
-        $endPeriod = $operator === 'PreviousXDays'
+        $endPeriod = $operator === Operators::PREVIOUS_X_DAYS
             ? Carbon::now($timezone)->subDays($leaf->getValue())->startOfDay()
             : Carbon::now($timezone)->subDays($leaf->getValue());
 

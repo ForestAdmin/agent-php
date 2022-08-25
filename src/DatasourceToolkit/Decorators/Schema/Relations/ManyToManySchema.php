@@ -7,7 +7,7 @@ class ManyToManySchema extends ManyRelationSchema
     public function __construct(
         protected string $foreignKey,
         protected string $foreignKeyTarget,
-        protected string $throughCollection,
+        protected string $throughTable,
         protected string $originKey,
         protected string $originKeyTarget,
         protected string $foreignCollection,
@@ -15,9 +15,9 @@ class ManyToManySchema extends ManyRelationSchema
         parent::__construct($foreignKey, $foreignKeyTarget, $foreignCollection, 'ManyToMany');
     }
 
-    public function getThroughCollection(): string
+    public function getThroughTable(): string
     {
-        return $this->throughCollection;
+        return $this->throughTable;
     }
 
     public function getOriginKey(): string

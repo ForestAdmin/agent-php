@@ -109,7 +109,7 @@ class Collection implements CollectionContract
         // TODO: Implement count() method.
     }
 
-    public function aggregate(/*Caller $caller, */Filter $filter, Aggregation $aggregation, ?int $limit): array
+    public function aggregate(string $chartType, Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null): array
     {
         // TODO: Implement aggregate() method.
     }

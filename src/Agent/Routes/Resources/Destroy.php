@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
+use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 
 class Destroy extends CollectionRoute
 {
@@ -29,7 +30,7 @@ class Destroy extends CollectionRoute
     {
         $this->build($args);
 
-        $this->collection->delete($this->paginatedFilter, $args['id']);
+        $this->collection->delete($this->filter, $args['id']);
 
         return [
             'content' => null,
@@ -44,8 +45,10 @@ class Destroy extends CollectionRoute
         $ids = $attributes['ids'];
         $allRecords = $attributes['all_records'];
         $idsExcluded = $attributes['all_records_ids_excluded'];
+        $a = QueryStringParser::parseSort($this->collection, $this->request);
+        dd($a);
 
-        $this->collection->deleteBulk($this->paginatedFilter, $ids, $allRecords, $idsExcluded);
+        $this->collection->deleteBulk($this->filter, $ids, $allRecords, $idsExcluded);
 
         return [
             'content' => null,

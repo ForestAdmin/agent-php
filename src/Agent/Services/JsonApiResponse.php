@@ -51,9 +51,12 @@ class JsonApiResponse
         return $this->fractal->createData($resource)->toArray();
     }
 
-    public function renderItem($data, string $name, string $transformer)
+    public function renderItem($data, string $name, TransformerAbstract $transformer)
     {
-        // todo
+        $this->fractal->setSerializer(new JsonApiSerializer(config('agentUrl')));
+        $resource = new Item($data, $transformer, $name);
+
+        return $this->fractal->createData($resource)->toArray();
     }
 
     public function deactivateCountResponse(): JsonResponse

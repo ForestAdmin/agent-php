@@ -25,7 +25,7 @@ class Show extends CollectionRoute
 
         return [
             'renderTransformer' => true,
-            'content'           => $this->collection->show($this->paginatedFilter, $args['id'], new Projection()),
+            'content'           => $this->collection->show($this->filter, $args['id'], new Projection()),
         ];
     }
 }
