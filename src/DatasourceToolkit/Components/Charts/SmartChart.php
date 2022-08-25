@@ -4,9 +4,12 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts;
 
 class SmartChart extends Chart
 {
-    public function serialize(): array
+    public function __construct(protected $data)
     {
-        // todo
+    }
+
+    public function serialize()
+    {
         return $this->data;
     }
 }
