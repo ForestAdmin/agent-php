@@ -2,9 +2,10 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
+use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 
-class Store extends CollectionRoute
+class Store extends AbstractCollectionRoute
 {
     public function setupRoutes(): AbstractRoute
     {
@@ -25,7 +26,7 @@ class Store extends CollectionRoute
 
         return [
             'renderTransformer' => true,
-            'content'           => $this->collection->create($this->request->get('data')),
+            'content'           => $this->collection->create($this->caller, $this->request->get('data')),
         ];
     }
 }
