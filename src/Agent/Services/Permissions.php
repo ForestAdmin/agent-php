@@ -3,13 +3,13 @@
 namespace ForestAdmin\AgentPHP\Agent\Services;
 
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
+use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection as IlluminateCollection;
 use Illuminate\Support\Str;
@@ -35,12 +35,33 @@ class Permissions
         Cache::forget($this->getCacheKey($renderingId));
     }
 
-    public function canChart(): void
+    public function canChart(Request $request, $allowFetch = true): bool
     {
-        // todo Checks that a charting query is in the list of allowed queries
+        $chart = $request->all();
+        $type = strtolower(Str::plural($request->get('type')));
+//        // When the server sends the data of the allowed charts, the target column is not specified
+//        // for relations => allow them all.
+//        if (chart?.group_by_field?.includes(':'))
+//          chart.group_by_field = chart.group_by_field.substring(0, chart.group_by_field.indexOf(':'));
+
+        $chartHash = $this->arrayHash($chart);
+        $permissions = $this->getRenderingPermissions($this->caller->getRenderingId());
+        $isAllowed = $permissions->get('charts')?->contains("$type:$chartHash");
+
+        if (! $isAllowed && $allowFetch) {
+            $this->invalidateCache($this->caller->getRenderingId());
+
+            return $this->canChart($request, false);
+        }
+
+        if (! $isAllowed) {
+            throw new HttpException(Response::HTTP_FORBIDDEN, 'Forbidden');
+        }
+
+        return $isAllowed;
     }
 
-    public function can(string $action, string $collectionName, $allowFetch = true): bool
+    public function can(string $action, $allowFetch = true): bool
     {
         $permissions = $this->getRenderingPermissions($this->caller->getRenderingId());
         $isAllowed = $permissions->get('actions')?->get($action)?->contains($this->caller->getId());
@@ -48,7 +69,7 @@ class Permissions
         if (! $isAllowed && $allowFetch) {
             $this->invalidateCache($this->caller->getRenderingId());
 
-            return $this->can($action, $collectionName, false);
+            return $this->can($action, false);
         }
 
         if (! $isAllowed) {
@@ -93,11 +114,11 @@ class Permissions
             function () use ($renderingId) {
                 $permissions = ForestHttpApi::getPermissions($renderingId);
 
-                // todo decode Chart
                 return collect(
                     [
                         'actions' => $this->decodeActionPermissions($permissions),
                         'scopes'  => $this->decodeScopePermissions($permissions, $renderingId),
+                        'charts'  => $this->decodeChartPermissions($permissions)
                     ]
                 );
             },
@@ -141,5 +162,24 @@ class Permissions
         }
 
         return collect($scopes);
+    }
+
+    private function decodeChartPermissions(array $rawPermissions): IlluminateCollection
+    {
+        $actions = collect();
+        foreach ($rawPermissions['stats'] as $typeChart => $permissions) {
+            foreach ($permissions as $permission) {
+                $permission = array_filter($permission, static fn ($value) => ! is_null($value) && $value !== '');
+                $permissionHash = $this->arrayHash($permission);
+                $actions->push("$typeChart:$permissionHash");
+            }
+        }
+
+        return $actions;
+    }
+
+    private function arrayHash(array $data): string
+    {
+        return sha1(json_encode(ksort($data), JSON_THROW_ON_ERROR));
     }
 }

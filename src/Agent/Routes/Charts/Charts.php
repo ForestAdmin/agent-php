@@ -46,8 +46,7 @@ class Charts extends AbstractCollectionRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
-        // todo
-        //$this->permissions->can('browse:' . $this->collection->getName(), $this->collection->getName());
+        $this->permissions->canChart($this->request);
         $scope = $this->permissions->getScope($this->collection);
         $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
         $this->setType($this->request->get('type'));
