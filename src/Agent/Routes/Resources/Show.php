@@ -30,6 +30,7 @@ class Show extends AbstractCollectionRoute
 
         return [
             'renderTransformer' => true,
+            'name'              => $args['collectionName'],
             'content'           => $this->collection->show(
                 $this->caller,
                 $this->filter,

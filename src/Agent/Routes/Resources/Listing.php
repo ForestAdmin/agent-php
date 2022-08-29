@@ -30,6 +30,7 @@ class Listing extends AbstractCollectionRoute
 
         return [
             'renderTransformer' => true,
+            'name'              => $args['collectionName'],
             'content'           => $this->collection->list(
                 $this->caller,
                 $this->filter,

@@ -29,6 +29,7 @@ class Update extends AbstractCollectionRoute
 
         return [
             'renderTransformer' => true,
+            'name'              => $args['collectionName'],
             'content'           => $this->collection->update($this->caller, $this->filter, $args['id'], $this->request->get('data')),
         ];
     }

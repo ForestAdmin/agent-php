@@ -26,6 +26,7 @@ class Store extends AbstractCollectionRoute
 
         return [
             'renderTransformer' => true,
+            'name'              => $args['collectionName'],
             'content'           => $this->collection->create($this->caller, $this->request->get('data')),
         ];
     }
