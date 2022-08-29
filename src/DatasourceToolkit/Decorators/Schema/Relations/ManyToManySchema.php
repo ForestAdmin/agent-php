@@ -11,6 +11,7 @@ class ManyToManySchema extends ManyRelationSchema
         protected string $originKey,
         protected string $originKeyTarget,
         protected string $foreignCollection,
+        protected string $inverseName
     ) {
         parent::__construct($foreignKey, $foreignKeyTarget, $foreignCollection, 'ManyToMany');
     }
@@ -28,5 +29,10 @@ class ManyToManySchema extends ManyRelationSchema
     public function getOriginKeyTarget(): string
     {
         return $this->originKeyTarget;
+    }
+
+    public function getInverseName(): string
+    {
+        return $this->inverseName;
     }
 }
