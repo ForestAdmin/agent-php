@@ -38,6 +38,8 @@ class Permissions
     public function canChart(Request $request, $allowFetch = true): bool
     {
         $chart = $request->all();
+        unset($chart['timezone']);
+
         $type = strtolower(Str::plural($request->get('type')));
 //        // When the server sends the data of the allowed charts, the target column is not specified
 //        // for relations => allow them all.
@@ -98,8 +100,8 @@ class Permissions
                     }
 
                     return $leaf->override(value: Str::startsWith($leaf->getValue(), '$currentUser.tags.')
-                        ? $this->caller->getTags()[Str::substr($leaf->getValue(), 18)]
-                        : $this->caller->getTags());
+                        ? $this->caller->getTag(Str::substr($leaf->getValue(), 18))
+                        : $this->caller->getValue(Str::substr($leaf->getValue(), 13)));
                 }
 
                 return $leaf;

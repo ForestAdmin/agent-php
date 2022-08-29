@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class Caller
@@ -21,7 +22,14 @@ class Caller
 
     public static function makeFromRequestData(object $requestObjectData, $timezone): self
     {
-        $data = (array) $requestObjectData;
+        // cast object to array recursively
+        $toArray = function ($x) use (&$toArray) {
+            return is_scalar($x)
+                ? $x
+                : array_map($toArray, (array) $x);
+        };
+        $data = $toArray($requestObjectData);
+
         $data['timezone'] = $timezone;
         unset($data['exp']);
 
@@ -55,10 +63,16 @@ class Caller
     }
 
     /**
-     * @return array
+     * @param string $key
+     * @return ?string
      */
-    public function getTags(): array
+    public function getTag(string$key): ?string
     {
-        return $this->tags;
+        return $this->tags[$key] ?: null;
+    }
+
+    public function getValue(string $key)
+    {
+        return $this->$key ?: null;
     }
 }
