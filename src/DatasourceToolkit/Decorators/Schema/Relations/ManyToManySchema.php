@@ -5,13 +5,12 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations;
 class ManyToManySchema extends ManyRelationSchema
 {
     public function __construct(
-        protected string $foreignKey,
-        protected string $foreignKeyTarget,
-        protected string $throughTable,
         protected string $originKey,
         protected string $originKeyTarget,
+        protected string $throughTable,
+        protected string $foreignKey,
+        protected string $foreignKeyTarget,
         protected string $foreignCollection,
-        protected string $inverseName
     ) {
         parent::__construct($foreignKey, $foreignKeyTarget, $foreignCollection, 'ManyToMany');
     }
@@ -29,10 +28,5 @@ class ManyToManySchema extends ManyRelationSchema
     public function getOriginKeyTarget(): string
     {
         return $this->originKeyTarget;
-    }
-
-    public function getInverseName(): string
-    {
-        return $this->inverseName;
     }
 }

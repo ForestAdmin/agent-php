@@ -60,14 +60,12 @@ class FilterFactory
         $relation = $collection->getFields()[$relationName];
         $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getOriginKeyTarget());
         $foreignRelation = CollectionUtils::getThroughTarget($collection, $relationName);
-
         // Optimization for many to many when there is not search/segment (saves one query)
         if ($foreignRelation) {
-
             return $baseForeignFilter->override(
                 conditionTree: ConditionTreeFactory::intersect(
                     [
-                        new ConditionTreeLeaf($relation->getInverseName() . ':' . $relation->getForeignKeyTarget(), Operators::EQUAL, $originValue),
+                        new ConditionTreeLeaf($relation->getForeignKey() . ':' . $relation->getForeignKeyTarget(), Operators::EQUAL, $originValue),
                         $baseForeignFilter->getConditionTree(),
                     ]
                 )
