@@ -18,16 +18,16 @@ class Router
     private function getRootRoutes(): array
     {
         return array_merge(
-            HealthCheck::of()->getRoutes(),
-            Authentication::of()->getRoutes(),
-            Charts::of()->getRoutes(),
-            ScopeInvalidation::of()->getRoutes(),
-            Listing::of()->getRoutes(),
-            Store::of()->getRoutes(),
-            Count::of()->getRoutes(),
-            Show::of()->getRoutes(),
-            Update::of()->getRoutes(),
-            Destroy::of()->getRoutes(),
+            HealthCheck::getRoutes(),
+            Authentication::getRoutes(),
+            Charts::getRoutes(),
+            ScopeInvalidation::getRoutes(),
+            Listing::getRoutes(),
+            Store::getRoutes(),
+            Count::getRoutes(),
+            Show::getRoutes(),
+            Update::getRoutes(),
+            Destroy::getRoutes(),
         );
     }
 

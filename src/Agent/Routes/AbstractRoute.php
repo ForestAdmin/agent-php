@@ -14,11 +14,6 @@ abstract class AbstractRoute
         $this->request = Request::createFromGlobals();
     }
 
-    public static function of(): self
-    {
-        return (new static())->setupRoutes();
-    }
-
     public function addRoute(string $name, array|string $methods, string $uri, \Closure $closure): void
     {
         $this->routes[$name] = compact('methods', 'uri', 'closure');
@@ -29,9 +24,9 @@ abstract class AbstractRoute
         // Do nothing by default -> maybe this function is not necessary in PHP context
     }
 
-    public function getRoutes(): array
+    public static function getRoutes(): array
     {
-        return $this->routes;
+        return (new static())->setupRoutes()->routes;
     }
 
     abstract public function setupRoutes(): self;
