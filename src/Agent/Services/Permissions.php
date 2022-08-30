@@ -39,12 +39,15 @@ class Permissions
     {
         $chart = $request->all();
         unset($chart['timezone']);
-
         $type = strtolower(Str::plural($request->get('type')));
-//        // When the server sends the data of the allowed charts, the target column is not specified
-//        // for relations => allow them all.
-//        if (chart?.group_by_field?.includes(':'))
-//          chart.group_by_field = chart.group_by_field.substring(0, chart.group_by_field.indexOf(':'));
+
+        // When the server sends the data of the allowed charts, the target column is not specified
+        // for relations => allow them all.
+        if ($request->input('group_by_field')
+            && Str::contains($request->input('group_by_field'), ':')
+        ) {
+            $chart['group_by_field'] = Str::before($chart['group_by_field'], ':');
+        }
 
         $chartHash = $this->arrayHash($chart);
         $permissions = $this->getRenderingPermissions($this->caller->getRenderingId());
