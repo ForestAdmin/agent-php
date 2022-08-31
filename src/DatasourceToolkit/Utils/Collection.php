@@ -167,55 +167,10 @@ dd($record);
             }
         }
 
-        $foreignCollectionName = self::getInverseRelation($collection, $relationName);
-
-dd($relation, $foreignFilter, $foreignCollectionName);
         return $foreignCollection->list(
             $caller,
             FilterFactory::makeForeignFilter($collection, $id, $relationName, $caller, $foreignFilter),
             $projection
         );
     }
-
-
-//    static async listRelation(
-//        collection: Collection,
-//        id: CompositeId,
-//        relationName: string,
-//        caller: Caller,
-//        foreignFilter: PaginatedFilter,
-//        projection: Projection,
-//      ): Promise<RecordData[]> {
-//        const relation = SchemaUtils.getToManyRelation(collection.schema, relationName);
-//        const foreign = collection.dataSource.getCollection(relation.foreignCollection);
-//
-//        // Optimization for many to many when there is not search/segment.
-//        if (relation.type === 'ManyToMany' && foreignFilter.isNestable) {
-//          const foreignRelation = CollectionUtils.getThroughTarget(collection, relationName);
-//
-//          if (foreignRelation) {
-//            const through = collection.dataSource.getCollection(relation.throughCollection);
-//            const records = await through.list(
-//              caller,
-//              await FilterFactory.makeThroughFilter(
-//                collection,
-//                id,
-//                relationName,
-//                caller,
-//                foreignFilter,
-//              ),
-//              projection.nest(foreignRelation),
-//            );
-//
-//            return records.map(r => r[foreignRelation] as RecordData);
-//          }
-//    }
-//
-//    // Otherwise fetch the target table (this works with both relation types)
-//    return foreign.list(
-//            caller,
-//            await FilterFactory.makeForeignFilter(collection, id, relationName, caller, foreignFilter),
-//          projection,
-//        );
-//      }
 }

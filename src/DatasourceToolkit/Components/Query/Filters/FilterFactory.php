@@ -118,7 +118,7 @@ class FilterFactory
         $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getOriginKeyTarget());
 
         if ($relation->getType() === 'OneToMany') {
-            $originTree = new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue);
+            $originTree = new ConditionTreeLeaf($relation->getInverseRelationName(), Operators::EQUAL, $originValue);
         } else {
             // ManyToMany case
             /** @var Collection $through */
