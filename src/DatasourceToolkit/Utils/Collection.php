@@ -7,6 +7,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Collection as MainCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
@@ -15,6 +17,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToMany
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 
 class Collection
 {
@@ -24,6 +27,7 @@ class Collection
         $relationField = $collection->getFields()->get($relationName);
         /** @var MainCollection $foreignCollection */
         $foreignCollection = AgentFactory::get('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relationField->getForeignCollection());
+        dd($relationField, $foreignCollection->getFields());
         $inverse = $foreignCollection->getFields()
             ->filter(fn ($field) => is_a($field, RelationSchema::class))
             ->filter(
@@ -117,10 +121,11 @@ class Collection
         }
 
         $record = $collection->list(
+            $caller,
             new Filter(conditionTree: ConditionTreeFactory::matchIds($collection, [$id])),
             new Projection([$field])
         );
-
+dd($record);
         // todo this not work with all framework. example symfony -> $record->get{$field}()
         return $record[$field];
     }
@@ -136,4 +141,81 @@ class Collection
 
         return $relation->getForeignCollection();
     }
+
+    public static function listRelation(
+        MainCollection $collection,
+        $id,
+        string $relationName,
+        Caller $caller,
+        PaginatedFilter $foreignFilter,
+        Projection $projection
+    ) {
+        $relation = Schema::getToManyRelation($collection, $relationName);
+        $foreignCollection = $collection->getDataSource()->getCollection($relation->getForeignCollection());
+        if ($relation->getType() === 'ManyToMany' && $foreignFilter->isNestable()) {
+            $foreignRelation = CollectionUtils::getThroughTarget($collection, $relationName);
+            $projection->push($relation->getForeignKey() . ':' . $relation->getForeignKeyTarget());
+
+            if ($foreignRelation === $foreignCollection->getName()) {
+                $records = $foreignCollection->list(
+                    $caller,
+                    FilterFactory::makeThroughFilter($collection, $id, $relationName, $caller, $foreignFilter),
+                    $projection
+                );
+
+                return $records;
+            }
+        }
+
+        $foreignCollectionName = self::getInverseRelation($collection, $relationName);
+
+dd($relation, $foreignFilter, $foreignCollectionName);
+        return $foreignCollection->list(
+            $caller,
+            FilterFactory::makeForeignFilter($collection, $id, $relationName, $caller, $foreignFilter),
+            $projection
+        );
+    }
+
+
+//    static async listRelation(
+//        collection: Collection,
+//        id: CompositeId,
+//        relationName: string,
+//        caller: Caller,
+//        foreignFilter: PaginatedFilter,
+//        projection: Projection,
+//      ): Promise<RecordData[]> {
+//        const relation = SchemaUtils.getToManyRelation(collection.schema, relationName);
+//        const foreign = collection.dataSource.getCollection(relation.foreignCollection);
+//
+//        // Optimization for many to many when there is not search/segment.
+//        if (relation.type === 'ManyToMany' && foreignFilter.isNestable) {
+//          const foreignRelation = CollectionUtils.getThroughTarget(collection, relationName);
+//
+//          if (foreignRelation) {
+//            const through = collection.dataSource.getCollection(relation.throughCollection);
+//            const records = await through.list(
+//              caller,
+//              await FilterFactory.makeThroughFilter(
+//                collection,
+//                id,
+//                relationName,
+//                caller,
+//                foreignFilter,
+//              ),
+//              projection.nest(foreignRelation),
+//            );
+//
+//            return records.map(r => r[foreignRelation] as RecordData);
+//          }
+//    }
+//
+//    // Otherwise fetch the target table (this works with both relation types)
+//    return foreign.list(
+//            caller,
+//            await FilterFactory.makeForeignFilter(collection, id, relationName, caller, foreignFilter),
+//          projection,
+//        );
+//      }
 }

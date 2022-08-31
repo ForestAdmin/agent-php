@@ -58,7 +58,7 @@ class FilterFactory
     public static function makeThroughFilter(Collection $collection, array $id, string $relationName, Caller $caller, Filter $baseForeignFilter): Filter
     {
         $relation = $collection->getFields()[$relationName];
-        $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getOriginKeyTarget());
+        $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getForeignKeyTarget());
         $foreignRelation = CollectionUtils::getThroughTarget($collection, $relationName);
         // Optimization for many to many when there is not search/segment (saves one query)
         if ($foreignRelation) {
