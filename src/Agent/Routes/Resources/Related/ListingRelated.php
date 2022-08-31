@@ -4,6 +4,7 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources\Related;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRelationRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
+use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
@@ -25,6 +26,9 @@ class ListingRelated extends AbstractRelationRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
+        $scope = $this->permissions->getScope($this->childCollection);
+        $this->filter = ContextFilterFactory::buildPaginated($this->childCollection, $this->request, $scope);
+
         $id = Id::unpackId($this->collection, $args['id']);
 
         $records = CollectionUtils::listRelation(
