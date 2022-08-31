@@ -3,7 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Utils;
 
 use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
-use GuzzleHttp\Client;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 class ForestHttpApi
 {
@@ -32,9 +32,28 @@ class ForestHttpApi
                 [],
                 $jsonApiDocument
             );
-
         } catch (\Exception $e) {
             dd($e);
+        }
+    }
+
+    public static function getPermissions(int $renderingId)
+    {
+        try {
+            $forestApi = new ForestApiRequester();
+            $response = $forestApi->get(
+                '/liana/v3/permissions',
+                compact('renderingId')
+            );
+            $body = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+
+            if (isset($body['meta']['rolesACLActivated']) && ! $body['meta']['rolesACLActivated']) {
+                throw new ForestException('Roles V2 are unsupported');
+            }
+
+            return $body;
+        } catch (\Exception $e) {
+            // todo this.handleResponseError(e);
         }
     }
 }

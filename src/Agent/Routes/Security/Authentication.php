@@ -21,9 +21,9 @@ class Authentication extends AbstractRoute
 {
     private AuthManager $auth;
 
-    public function __construct(protected ForestAdminHttpDriverServices $services)
+    public function __construct()
     {
-        parent::__construct($services);
+        parent::__construct();
         $this->auth = new AuthManager();
     }
 
@@ -61,8 +61,7 @@ class Authentication extends AbstractRoute
      */
     public function handleAuthentication(): array
     {
-        $request = Request::createFromGlobals();
-        $renderingId = $this->getAndCheckRenderingId($request);
+        $renderingId = $this->getAndCheckRenderingId();
 
         return [
             'content' => [
@@ -80,8 +79,7 @@ class Authentication extends AbstractRoute
      */
     public function handleAuthenticationCallback(): array
     {
-        $request = Request::createFromGlobals();
-        $token = $this->auth->verifyCodeAndGenerateToken(config('agentUrl') . '/forest/authentication/callback', $request->all());
+        $token = $this->auth->verifyCodeAndGenerateToken(config('agentUrl') . '/forest/authentication/callback', $this->request->all());
         $tokenData = JWT::decode($token, new Key(config('envSecret'), 'HS256'));
 
         return [
@@ -101,13 +99,12 @@ class Authentication extends AbstractRoute
     }
 
     /**
-     * @param Request $request
      * @return int
      * @throws ErrorException
      */
-    private function getAndCheckRenderingId(Request $request): int
+    private function getAndCheckRenderingId(): int
     {
-        if (! $renderingId = $request->get('renderingId')) {
+        if (! $renderingId = $this->request->get('renderingId')) {
             throw new ErrorException(ErrorMessages::MISSING_RENDERING_ID);
         }
 

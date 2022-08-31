@@ -58,15 +58,15 @@ class ConditionTreeFactory
     public static function fromArray(array $tree): ConditionTree
     {
         if (self::isLeaf($tree)) {
-            return new ConditionTreeLeaf($tree['field'], $tree['operator'], $tree['value']);
+            return new ConditionTreeLeaf($tree['field'], ucwords($tree['operator'], '_'), $tree['value']);
         }
 
         if (self::isBranch($tree)) {
             $conditions = [];
             foreach ($tree['conditions'] as $condition) {
-                $conditions[] = new ConditionTreeLeaf($condition['field'], $condition['operator'], $condition['value']);
+                $conditions[] = new ConditionTreeLeaf($condition['field'], ucwords($condition['operator'], '_'), $condition['value']);
             }
-            $branch = new ConditionTreeBranch($tree['aggregator'], $conditions);
+            $branch = new ConditionTreeBranch(ucfirst($tree['aggregator']), $conditions);
 
             return count($branch->getConditions()) === 1 ? $branch->getConditions()[0] : $branch;
         }

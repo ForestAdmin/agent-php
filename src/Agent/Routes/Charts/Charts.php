@@ -2,12 +2,8 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\Charts;
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
-use ForestAdmin\AgentPHP\Agent\Http\Request;
-use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
+use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
-use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LeaderboardChart;
@@ -24,23 +20,13 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use Illuminate\Support\Str;
 
-class Charts extends AbstractRoute
+class Charts extends AbstractCollectionRoute
 {
     protected Collection $collection;
 
     protected Filter $filter;
 
-    protected Request $request;
-
     protected string $type;
-
-    protected Caller $caller;
-
-    public function __construct(
-        ForestAdminHttpDriverServices $services,
-    ) {
-        parent::__construct($services);
-    }
 
     /**
      * @return $this
@@ -59,15 +45,11 @@ class Charts extends AbstractRoute
 
     public function handleRequest(array $args = []): array
     {
-        $datasource = AgentFactory::get('datasource');
-        $this->collection = $datasource->getCollection($args['collectionName']);
-        $this->collection->hydrate($args);
-        $this->request = Request::createFromGlobals();
-        $scope = null; // todo
+        $this->build($args);
+        $this->permissions->canChart($this->request);
+        $scope = $this->permissions->getScope($this->collection);
         $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
-
         $this->setType($this->request->get('type'));
-        $this->setCaller(QueryStringParser::parseCaller($this->request));
 
         return [
             'renderChart' => true,
@@ -90,11 +72,6 @@ class Charts extends AbstractRoute
         $this->type = $type;
     }
 
-    public function setCaller(Caller $caller): void
-    {
-        $this->caller = $caller;
-    }
-
     private function makeValue(): ValueChart
     {
         $result = [
@@ -103,7 +80,7 @@ class Charts extends AbstractRoute
         ];
 
         $isAndAggregator = $this->filter->getConditionTree() instanceof ConditionTreeBranch && $this->filter->getConditionTree()->getAggregator() === 'And';
-        $withCountPrevious = (bool)$this->filter->getConditionTree()?->someLeaf(fn ($leaf) => $leaf->useIntervalOperator());
+        $withCountPrevious = (bool) $this->filter->getConditionTree()?->someLeaf(fn ($leaf) => $leaf->useIntervalOperator());
 
         if ($withCountPrevious && ! $isAndAggregator) {
             $result['previousValue'] = $this->computeValue(FilterFactory::getPreviousPeriodFilter($this->filter, $this->caller->getTimezone()));

@@ -74,12 +74,12 @@ class Collection implements CollectionContract
         return [];
     }
 
-    public function create(/*Caller $caller, */array $data)
+    public function create(Caller $caller, array $data)
     {
         // TODO: Implement create() method.
     }
 
-    public function show(/*Caller $caller, */Filter $filter, $id, Projection $projection)
+    public function show(Caller $caller, Filter $filter, $id, Projection $projection)
     {
         // TODO: Implement show() method.
     }
@@ -89,22 +89,22 @@ class Collection implements CollectionContract
         // TODO: Implement list() method.
     }
 
-    public function update(/*Caller $caller, */Filter $filter, $id, array $patch)
+    public function update(Caller $caller, Filter $filter, $id, array $patch)
     {
         // TODO: Implement update() method.
     }
 
-    public function delete(/*Caller $caller, */Filter $filter, $id): void
+    public function delete(Caller $caller, Filter $filter, $id): void
     {
         // TODO: Implement delete() method.
     }
 
-    public function deleteBulk(/*Caller $caller, */Filter $filter, $ids, bool $allRecords = false, array $idsExcluded = []): void
+    public function deleteBulk(Caller $caller, Filter $filter, $ids, bool $allRecords = false, array $idsExcluded = []): void
     {
         // TODO: Implement delete() method.
     }
 
-    public function count(Filter $filter): int
+    public function count(Caller $caller, Filter $filter): int
     {
         // TODO: Implement count() method.
     }

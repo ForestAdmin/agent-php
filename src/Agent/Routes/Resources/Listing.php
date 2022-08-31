@@ -2,10 +2,12 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
+use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
+use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 
-class Listing extends CollectionRoute
+class Listing extends AbstractCollectionRoute
 {
     public function setupRoutes(): AbstractRoute
     {
@@ -22,11 +24,14 @@ class Listing extends CollectionRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
+        $this->permissions->can('browse:' . $this->collection->getName(), $this->collection->getName());
+        $scope = $this->permissions->getScope($this->collection);
+        $this->filter = ContextFilterFactory::buildPaginated($this->collection, $this->request, $scope);
 
         return [
             'renderTransformer' => true,
             'content'           => $this->collection->list(
-                QueryStringParser::parseCaller($this->request),
+                $this->caller,
                 $this->filter,
                 QueryStringParser::parseProjection($this->collection, $this->request)
             ),

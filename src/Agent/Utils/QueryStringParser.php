@@ -16,9 +16,12 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort\SortFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ConditionTreeValidator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ProjectionValidator;
-
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\SortValidator;
+
 use function ForestAdmin\config;
+
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class QueryStringParser
 {
@@ -125,10 +128,15 @@ class QueryStringParser
     }
 
     /**
-     * @throws ForestException
+     * @param Request $request
+     * @return Caller
      */
     public static function parseCaller(Request $request): Caller
     {
+        if (! $request->bearerToken()) {
+            throw new HttpException(Response::HTTP_UNAUTHORIZED, 'You must be logged in to access at this resource.');
+        }
+
         $timezone = $request->get('timezone');
 
         if (! $timezone) {

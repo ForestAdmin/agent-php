@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Facades;
 
+use Closure;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 
@@ -10,6 +11,8 @@ use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
  *
  * @method static array get($key)
  * @method static array put($key, $value, $seconds)
+ * @method static array remember($key, Closure $callback, $seconds)
+ * @method static bool forget($key)
  *
  * @see CacheServices
  */

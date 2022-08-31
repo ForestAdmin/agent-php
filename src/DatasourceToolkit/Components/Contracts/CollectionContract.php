@@ -23,19 +23,19 @@ interface CollectionContract
 
     public function getForm(/*Caller $caller, */string $name, ?array $formValues = null, ?Filter $filter = null): array;
 
-    public function create(/*Caller $caller, */array $data);
+    public function create(Caller $caller, array $data);
 
-    public function show(/*Caller $caller, */PaginatedFilter $filter, $id, Projection $projection);
+    public function show(Caller $caller, PaginatedFilter $filter, $id, Projection $projection);
 
     public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array;
 
-    public function update(/*Caller $caller, */Filter $filter, $id, array $patch);
+    public function update(Caller $caller, Filter $filter, $id, array $patch);
 
-    public function delete(/*Caller $caller, */Filter $filter, $id): void;
+    public function delete(Caller $caller, Filter $filter, $id): void;
 
-    public function deleteBulk(/*Caller $caller, */Filter $filter, $ids, bool $allRecords = false, array $idsExcluded = []): void;
+    public function deleteBulk(Caller $caller, Filter $filter, $ids, bool $allRecords = false, array $idsExcluded = []): void;
 
-    public function count(/*Caller $caller, */Filter $filter): int;
+    public function count(Caller $caller, Filter $filter): int;
 
     public function aggregate(string $chartType, Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null): array;
 }
