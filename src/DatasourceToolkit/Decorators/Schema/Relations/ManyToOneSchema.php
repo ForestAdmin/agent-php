@@ -8,8 +8,9 @@ class ManyToOneSchema extends ManyRelationSchema
         protected string $foreignKey,
         protected string $foreignKeyTarget,
         protected string $foreignCollection,
+        protected string $inverseRelationName,
     ) {
-        parent::__construct($foreignKey, $foreignKeyTarget, $foreignCollection, 'ManyToOne');
+        parent::__construct($foreignKey, $foreignKeyTarget, $foreignCollection, 'ManyToOne', $inverseRelationName);
     }
 
     public function getForeignCollection(): string

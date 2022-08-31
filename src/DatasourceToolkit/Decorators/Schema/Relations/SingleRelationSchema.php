@@ -11,8 +11,9 @@ abstract class SingleRelationSchema extends RelationSchema
         protected string $originKeyTarget,
         protected string $foreignCollection,
         protected string $type,
+        protected string $inverseRelationName,
     ) {
-        parent::__construct($foreignCollection, $type);
+        parent::__construct($foreignCollection, $type, $inverseRelationName);
     }
 
     public function getOriginKey(): string
