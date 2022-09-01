@@ -103,12 +103,7 @@ class Collection implements CollectionContract
         // TODO: Implement delete() method.
     }
 
-    public function count(Caller $caller, Filter $filter): int
-    {
-        // TODO: Implement count() method.
-    }
-
-    public function aggregate(string $chartType, Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null): array
+    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
     {
         // TODO: Implement aggregate() method.
     }
