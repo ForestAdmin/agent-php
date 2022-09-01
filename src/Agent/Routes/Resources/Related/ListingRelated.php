@@ -35,7 +35,7 @@ class ListingRelated extends AbstractRelationRoute
             $this->collection,
             $id,
             $args['relationName'],
-            QueryStringParser::parseCaller($this->request),
+            $this->caller,
             $this->filter,
             QueryStringParser::parseProjectionWithPks($this->childCollection, $this->request)
         );
@@ -46,31 +46,4 @@ class ListingRelated extends AbstractRelationRoute
             'content'           => $records,
         ];
     }
-
-//    public async handleListRelated(context: Context): Promise<void> {
-//        await this.services.permissions.can(context, `browse:${this.collection.name}`);
-//
-//    const parentId = IdUtils.unpackId(this.collection.schema, context.params.parentId);
-//    const scope = await this.services.permissions.getScope(this.foreignCollection, context);
-//        const paginatedFilter = ContextFilterFactory.buildPaginated(
-//                this.foreignCollection,
-//                context,
-//                scope,
-//            );
-//
-//        const records = await CollectionUtils.listRelation(
-//        this.collection,
-//        parentId,
-//        this.relationName,
-//        QueryStringParser.parseCaller(context),
-//        paginatedFilter,
-//        QueryStringParser.parseProjectionWithPks(this.foreignCollection, context),
-//    );
-//
-//        context.response.body = this.services.serializer.serializeWithSearchMetadata(
-//                this.foreignCollection,
-//                records,
-//                paginatedFilter.search,
-//            );
-//      }
 }
