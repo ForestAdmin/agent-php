@@ -206,3 +206,4 @@ test('union() should work with a null projection', function () {
 
     expect($projection1->union(null))->toEqual($projection1);
 });
+

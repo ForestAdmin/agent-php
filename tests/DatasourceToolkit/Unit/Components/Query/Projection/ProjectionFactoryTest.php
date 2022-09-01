@@ -96,6 +96,7 @@ function datasourceWithOneToOneAndManyToOne(): Datasource
         'projectDir'   => sys_get_temp_dir(), // only use for cache
         'isProduction' => false,
     ];
+
     (new AgentFactory($options,  []))->addDatasources([$datasource]);
 
     return $datasource;
@@ -131,6 +132,7 @@ function datasourceOtherRelations(): Datasource
     $options = [
         'projectDir' => sys_get_temp_dir(), // only use for cache
     ];
+
     (new AgentFactory($options,  []))->addDatasources([$datasource]);
 
     return $datasource;
