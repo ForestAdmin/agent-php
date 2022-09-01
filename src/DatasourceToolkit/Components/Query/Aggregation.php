@@ -40,4 +40,41 @@ class Aggregation
 
         return new Projection($aggregateFields);
     }
+
+    public function override(...$args): self
+    {
+        return new self(...array_merge($this->toArray(), $args));
+    }
+
+    public function nest(?string $prefix = null): self
+    {
+        if (null === $prefix) {
+            return $this;
+        }
+
+        $nestedField = null;
+        $nestedGroups = [];
+
+        if ($this->field) {
+            $nestedField = "$prefix:$this->field";
+        }
+
+        if (count($this->groups) > 0) {
+            $nestedGroups = collect($this->groups)->map(fn ($item) => [
+                'field'     => $prefix . ':' . $item['field'],
+                'operation' => $item['operation'],
+            ]);
+        }
+
+        return new self(operation: $this->operation, field: $nestedField, groups: $nestedGroups);
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'operation' => $this->operation,
+            'field'     => $this->field,
+            'groups'    => $this->groups,
+        ];
+    }
 }
