@@ -2,12 +2,13 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results;
 
+// todo useful ?
+
 class ErrorResult extends ActionResult
 {
-    // TODO may extends Exception ? is yes transform this Class to Exception
     public function __construct(
-        protected string $type = 'Error',
         protected string $message,
+        protected string $type = 'Error',
     ) {
         parent::__construct($type);
     }

@@ -2,11 +2,13 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results;
 
+// todo useful ?
+
 class RedirectResult extends ActionResult
 {
     public function __construct(
-        protected string $type = 'Redirect',
         protected string $path,
+        protected string $type = 'Redirect',
     ) {
         parent::__construct($type);
     }
