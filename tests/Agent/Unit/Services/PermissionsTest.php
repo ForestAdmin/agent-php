@@ -78,6 +78,7 @@ test('invalidate cache should delete the cache', function () {
 });
 
 test('can() should call getRenderingPermissions twice', function () {
+    permissionsFactory();
     $request = Request::createFromGlobals();
     $mockPermissions = mock(Permissions::class)
         ->makePartial()

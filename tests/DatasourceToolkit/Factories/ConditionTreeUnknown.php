@@ -9,7 +9,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projectio
 
 class ConditionTreeUnknown extends ConditionTree
 {
-
     public function inverse(): ConditionTree
     {
         // TODO: Implement inverse() method.

@@ -206,7 +206,7 @@ class Collection implements CollectionContract
 
     public function setSegments(array $segments): Collection
     {
-        $this->segments = $segments;
+        $this->segments = collect($segments);
 
         return $this;
     }

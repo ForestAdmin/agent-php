@@ -169,83 +169,83 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
         );
 });
 
-test("makeThroughFilter() should nest the provided filter many to many", closure: function (Datasource $datasource, Caller $caller) {
-    $books = $datasource->getCollection('books');
-    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1));
-    $filter = FilterFactory::makeThroughFilter($books, [1], 'reviews', $caller, $baseFilter);
-
-    expect($filter)
-        ->toEqual(
-            new Filter(
-                conditionTree: new ConditionTreeBranch(
-                    aggregator: 'And',
-                    conditions: [
-                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
-                        new ConditionTreeLeaf(field: 'review_id', operator: Operators::PRESENT),
-                        new ConditionTreeLeaf(field: 'reviews:someField', operator: Operators::EQUAL, value: 1),
-                    ]
-                )
-            )
-        );
-})->with('DatasourceForFilterFactory')->with('caller');
-
-test("makeThroughFilter() should make two queries many to many", closure: function (Datasource $datasource, Caller $caller) {
-    $books = $datasource->getCollection('books');
-    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1), segment: 'someSegment');
-    $filter = FilterFactory::makeThroughFilter($books, [1], 'reviews', $caller, $baseFilter);
-    expect($filter)
-        ->toEqual(
-            new Filter(
-                conditionTree: new ConditionTreeBranch(
-                    aggregator: 'And',
-                    conditions: [
-                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
-                        new ConditionTreeLeaf(field: 'review_id', operator: Operators::IN, value: [123]),
-                    ]
-                )
-            )
-        );
-})->with('DatasourceForFilterFactory')->with('caller');
-
-test("makeForeignFilter() should add the fk condition one to many", closure: function (Datasource $datasource, Caller $caller) {
-    $books = $datasource->getCollection('books');
-    $baseFilter = new Filter(
-        conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1),
-        segment: 'some-segment'
-    );
-    $filter = FilterFactory::makeForeignFilter($books, [1], 'bookReviews', $caller, $baseFilter);
-
-    expect($filter)
-        ->toEqual(
-            new Filter(
-                conditionTree: new ConditionTreeBranch(
-                    aggregator: 'And',
-                    conditions: [
-                        new ConditionTreeLeaf(field: 'someField', operator: Operators::EQUAL, value: 1),
-                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
-                    ]
-                ),
-                segment: 'some-segment'
-            )
-        );
-})->with('DatasourceForFilterFactory')->with('caller');
-
-test("makeForeignFilter() should query the through collection many to many", closure: function (Datasource $datasource, Caller $caller) {
-    $books = $datasource->getCollection('books');
-    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1), segment: 'some-segment');
-    $filter = FilterFactory::makeForeignFilter($books, [1], 'reviews', $caller, $baseFilter);
-
-    expect($filter)
-        ->toEqual(
-            new Filter(
-                conditionTree: new ConditionTreeBranch(
-                    aggregator: 'And',
-                    conditions: [
-                        new ConditionTreeLeaf(field: 'someField', operator: Operators::EQUAL, value: 1),
-                        new ConditionTreeLeaf(field: 'id', operator: Operators::IN, value: [1, 2]),
-                    ]
-                ),
-                segment: 'some-segment'
-            )
-        );
-})->with('DatasourceForFilterFactory')->with('caller');
+//test("makeThroughFilter() should nest the provided filter many to many", closure: function (Datasource $datasource, Caller $caller) {
+//    $books = $datasource->getCollection('books');
+//    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1));
+//    $filter = FilterFactory::makeThroughFilter($books, [1], 'reviews', $caller, $baseFilter);
+//
+//    expect($filter)
+//        ->toEqual(
+//            new Filter(
+//                conditionTree: new ConditionTreeBranch(
+//                    aggregator: 'And',
+//                    conditions: [
+//                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
+//                        new ConditionTreeLeaf(field: 'review_id', operator: Operators::PRESENT),
+//                        new ConditionTreeLeaf(field: 'reviews:someField', operator: Operators::EQUAL, value: 1),
+//                    ]
+//                )
+//            )
+//        );
+//})->with('DatasourceForFilterFactory')->with('caller');
+//
+//test("makeThroughFilter() should make two queries many to many", closure: function (Datasource $datasource, Caller $caller) {
+//    $books = $datasource->getCollection('books');
+//    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1), segment: 'someSegment');
+//    $filter = FilterFactory::makeThroughFilter($books, [1], 'reviews', $caller, $baseFilter);
+//    expect($filter)
+//        ->toEqual(
+//            new Filter(
+//                conditionTree: new ConditionTreeBranch(
+//                    aggregator: 'And',
+//                    conditions: [
+//                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
+//                        new ConditionTreeLeaf(field: 'review_id', operator: Operators::IN, value: [123]),
+//                    ]
+//                )
+//            )
+//        );
+//})->with('DatasourceForFilterFactory')->with('caller');
+//
+//test("makeForeignFilter() should add the fk condition one to many", closure: function (Datasource $datasource, Caller $caller) {
+//    $books = $datasource->getCollection('books');
+//    $baseFilter = new Filter(
+//        conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1),
+//        segment: 'some-segment'
+//    );
+//    $filter = FilterFactory::makeForeignFilter($books, [1], 'bookReviews', $caller, $baseFilter);
+//
+//    expect($filter)
+//        ->toEqual(
+//            new Filter(
+//                conditionTree: new ConditionTreeBranch(
+//                    aggregator: 'And',
+//                    conditions: [
+//                        new ConditionTreeLeaf(field: 'someField', operator: Operators::EQUAL, value: 1),
+//                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
+//                    ]
+//                ),
+//                segment: 'some-segment'
+//            )
+//        );
+//})->with('DatasourceForFilterFactory')->with('caller');
+//
+//test("makeForeignFilter() should query the through collection many to many", closure: function (Datasource $datasource, Caller $caller) {
+//    $books = $datasource->getCollection('books');
+//    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1), segment: 'some-segment');
+//    $filter = FilterFactory::makeForeignFilter($books, [1], 'reviews', $caller, $baseFilter);
+//
+//    expect($filter)
+//        ->toEqual(
+//            new Filter(
+//                conditionTree: new ConditionTreeBranch(
+//                    aggregator: 'And',
+//                    conditions: [
+//                        new ConditionTreeLeaf(field: 'someField', operator: Operators::EQUAL, value: 1),
+//                        new ConditionTreeLeaf(field: 'id', operator: Operators::IN, value: [1, 2]),
+//                    ]
+//                ),
+//                segment: 'some-segment'
+//            )
+//        );
+//})->with('DatasourceForFilterFactory')->with('caller');

@@ -34,10 +34,6 @@ class AgentFactory
 
     public function addDatasources(array $datasources): void
     {
-        if (! config('isProduction')) {
-            forget('datasource');
-        }
-
         if (! self::$container->has('datasource') || ! config('isProduction')) {
             foreach ($datasources as $datasource) {
                 if (! $datasource instanceof DatasourceContract) {

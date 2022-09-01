@@ -1,5 +1,6 @@
 <?php
 
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
@@ -10,8 +11,9 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToMany
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 
-dataset('dataSourceWithInverseRelationMissing', function () {
-    yield $datasource = new Datasource();
+function dataSourceWithInverseRelationMissing(): Datasource
+{
+    $datasource = new Datasource();
     $collectionBooks = new Collection($datasource, 'books');
     $collectionBooks->addFields(
         [
@@ -40,10 +42,17 @@ dataset('dataSourceWithInverseRelationMissing', function () {
     );
     $datasource->addCollection($collectionBooks);
     $datasource->addCollection($collectionPersons);
-});
 
-dataset('datasourceWithAllRelations', function () {
-    yield $datasource = new Datasource();
+    $options = [
+        'projectDir' => sys_get_temp_dir(), // only use for cache
+    ];
+    (new AgentFactory($options))->addDatasources([$datasource]);
+
+    return $datasource;
+}
+
+function datasourceWithAllRelations() {
+    $datasource = new Datasource();
     $collectionBooks = new Collection($datasource, 'books');
     $collectionBooks->addFields(
         [
@@ -114,27 +123,42 @@ dataset('datasourceWithAllRelations', function () {
     $datasource->addCollection($collectionBooks);
     $datasource->addCollection($collectionBookPersons);
     $datasource->addCollection($collectionPersons);
+
+    $options = [
+        'projectDir' => sys_get_temp_dir(), // only use for cache
+    ];
+    (new AgentFactory($options))->addDatasources([$datasource]);
+
+    return $datasource;
+}
+
+it('should not find an inverse when inverse relations is missing', function () {
+    $datasource = dataSourceWithInverseRelationMissing();
+
+    expect(CollectionUtils::getInverseRelation($datasource->getCollection('books'), 'author'))->toBeNull();
 });
 
-it('should not find an inverse when inverse relations is missing', function ($datasource) {
-    expect(CollectionUtils::getInverseRelation($datasource->getCollection('books'), 'author'))->toBeNull();
-})->with('dataSourceWithInverseRelationMissing');
+it('should inverse a one to many relation in both directions', function () {
+    $datasource = datasourceWithAllRelations();
 
-it('should inverse a one to many relation in both directions', function ($datasource) {
     expect(CollectionUtils::getInverseRelation($datasource->getCollection('books'), 'myBookPersons'))->toEqual('myBook')
         ->and(CollectionUtils::getInverseRelation($datasource->getCollection('bookPersons'), 'myBook'))->toEqual('myBookPersons');
-})->with('datasourceWithAllRelations');
+});
 
 // todo fix errors
-it('should inverse a many to many relation in both directions', function ($datasource) {
+it('should inverse a many to many relation in both directions', function () {
+    $datasource = datasourceWithAllRelations();
+
     expect(CollectionUtils::getInverseRelation($datasource->getCollection('books'), 'myPersons'))->toEqual('myBooks')
         ->and(CollectionUtils::getInverseRelation($datasource->getCollection('persons'), 'myBooks'))->toEqual('myPersons');
-})->with('datasourceWithAllRelations');
+});
 
-it('should inverse a one to one relation in both directions', function ($datasource) {
+it('should inverse a one to one relation in both directions', function () {
+    $datasource = datasourceWithAllRelations();
+
     expect(CollectionUtils::getInverseRelation($datasource->getCollection('persons'), 'myBookPerson'))->toEqual('myPerson')
         ->and(CollectionUtils::getInverseRelation($datasource->getCollection('bookPersons'), 'myPerson'))->toEqual('myBookPerson');
-})->with('datasourceWithAllRelations');
+});
 
 
 

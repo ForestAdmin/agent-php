@@ -10,18 +10,22 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneS
 
 use function ForestAdmin\cache;
 
-dataset('collection', function () {
-    yield $collection = new Collection(new Datasource(), 'foo');
+function projectionCollection(): Collection
+{
+    $collection = new Collection(new Datasource(), 'foo');
     $collection->addFields(
         [
             'id'   => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
             'name' => new ColumnSchema(columnType: PrimitiveType::STRING),
         ]
     );
-});
 
-dataset('collectionCompositePK', function () {
-    yield $collection = new Collection(new Datasource(), 'foo');
+    return $collection;
+}
+
+function collectionCompositePK(): Collection
+{
+    $collection = new Collection(new Datasource(), 'foo');
     $collection->addFields(
         [
             'key1' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
@@ -29,10 +33,13 @@ dataset('collectionCompositePK', function () {
             'name' => new ColumnSchema(columnType: PrimitiveType::STRING),
         ]
     );
-});
 
-dataset('datasource', function () {
-    yield $datasource = new Datasource();
+    return $collection;
+}
+
+function projectionDatasource(): Datasource
+{
+    $datasource = new Datasource();
     $collectionCars = new Collection($datasource, 'cars');
     $collectionCars->addFields(
         [
@@ -59,7 +66,9 @@ dataset('datasource', function () {
         'projectDir'      => sys_get_temp_dir(), // only use for cache
     ];
     (new AgentFactory($options))->addDatasources([$datasource]);
-});
+
+    return $datasource;
+}
 
 test('replaceItem() should remove duplicates', function () {
     $projection = new Projection(['id', 'name']);
@@ -74,7 +83,6 @@ test('replaceItem() should allow replacing one field by many', function () {
 
     expect($projection)->toEqual(new Projection(['id', 'firstName', 'lastName']));
 });
-
 
 test('apply() should reproject a list of records', function () {
     $projection = (new Projection(['id', 'name', 'author:name', 'other:id']));
@@ -134,27 +142,31 @@ test('unnest() should throw when not possible', function () {
     expect($projection->unnest());
 })->throws(Exception::class, 'Cannot unnest projection.');
 
-test('withPks() should automatically add pks to the provided projection when the pk is a single field', function ($collection) {
+test('withPks() should automatically add pks to the provided projection when the pk is a single field', function () {
+    $collection = projectionCollection();
     $projection = (new Projection(['name']))->withPks($collection);
 
     expect($projection)->toEqual(new Projection(['name', 'id']));
-})->with('collection');
+});
 
-test('withPks() should do nothing when the pks are already provided and the pk is a single field', function ($collection) {
+test('withPks() should do nothing when the pks are already provided and the pk is a single field', function () {
+    $collection = projectionCollection();
     $projection = (new Projection(['id', 'name']))->withPks($collection);
 
     expect($projection)->toEqual(new Projection(['id', 'name']));
-})->with('collection');
+});
 
-test('withPks() should automatically add pks to the provided projection when the pk is a composite', function ($collection) {
+test('withPks() should automatically add pks to the provided projection when the pk is a composite', function () {
+    $collection = collectionCompositePK();
     $projection = (new Projection(['name']))->withPks($collection);
 
     expect($projection)->toEqual(new Projection(['name', 'key1', 'key2']));
-})->with('collectionCompositePK');
+});
 
-test('should automatically add pks for all relations when dealing with projection using relationships', function (Datasource $datasource) {
+test('should automatically add pks for all relations when dealing with projection using relationships', function () {
+    $datasource = projectionDatasource();
     $collection = $datasource->getCollection('cars');
     $projection = (new Projection(['name', 'owner:name']))->withPks($collection);
 
     expect($projection)->toEqual(new Projection(['name', 'owner:name', 'id', 'owner:id']));
-})->with('datasource');
+});

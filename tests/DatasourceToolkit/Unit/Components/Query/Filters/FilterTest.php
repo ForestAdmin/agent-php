@@ -1,16 +1,17 @@
 <?php
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 dataset('simpleFilter', function () {
-    $leaf = new ConditionTreeLeaf('column', 'GreaterThan', 0);
+    $leaf = new ConditionTreeLeaf('column', Operators::GREATER_THAN, 0);
     yield $filter = new Filter(conditionTree: $leaf);
 });
 
 test('override() should work', function (Filter $filter) {
-    $newLeaf = new ConditionTreeLeaf('column', 'LessThan', 0);
+    $newLeaf = new ConditionTreeLeaf('column', Operators::LESS_THAN, 0);
 
     expect($filter->override(conditionTree: $newLeaf))
         ->toEqual(new Filter(conditionTree: $newLeaf));
@@ -20,7 +21,7 @@ test('nest() should work', function (Filter $filter) {
     $nestedFilter = $filter->nest('prefix');
 
     expect($nestedFilter)->toEqual(
-        new Filter(conditionTree: new ConditionTreeLeaf('prefix:column', 'GreaterThan', 0))
+        new Filter(conditionTree: new ConditionTreeLeaf('prefix:column', Operators::GREATER_THAN, 0))
     );
 })->with('simpleFilter');
 

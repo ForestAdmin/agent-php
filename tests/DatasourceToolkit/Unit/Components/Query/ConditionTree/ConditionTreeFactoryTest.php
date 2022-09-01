@@ -4,34 +4,35 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 test('intersect() should return the parameter when called with only one param', function () {
-    $tree = ConditionTreeFactory::intersect([new ConditionTreeLeaf('column', 'Equal', true)]);
+    $tree = ConditionTreeFactory::intersect([new ConditionTreeLeaf('column', Operators::EQUAL, true)]);
 
-    expect($tree)->toEqual(new ConditionTreeLeaf('column', 'Equal', true));
+    expect($tree)->toEqual(new ConditionTreeLeaf('column', Operators::EQUAL, true));
 });
 
 test('intersect() should ignore null params', function () {
-    $tree = ConditionTreeFactory::intersect([null, new ConditionTreeLeaf('column', 'Equal', true), null]);
+    $tree = ConditionTreeFactory::intersect([null, new ConditionTreeLeaf('column', Operators::EQUAL, true), null]);
 
-    expect($tree)->toEqual(new ConditionTreeLeaf('column', 'Equal', true));
+    expect($tree)->toEqual(new ConditionTreeLeaf('column', Operators::EQUAL, true));
 });
 
 test('intersect() multiple trees should return the tree', function () {
-    $conditionTree = new ConditionTreeLeaf('column', 'Equal', true);
-    $otherConditionTree = new ConditionTreeLeaf('otherColumn', 'Equal', true);
+    $conditionTree = new ConditionTreeLeaf('column', Operators::EQUAL, true);
+    $otherConditionTree = new ConditionTreeLeaf('otherColumn', Operators::EQUAL, true);
     $tree = ConditionTreeFactory::intersect([$conditionTree, $otherConditionTree]);
 
     expect($tree)->toEqual(new ConditionTreeBranch('And', [$conditionTree, $otherConditionTree]));
 });
 
 test('intersect() should merge And trees', function () {
-    $conditionTree = new ConditionTreeLeaf('column', 'Equal', true);
-    $otherConditionTree = new ConditionTreeLeaf('otherColumn', 'Equal', true);
+    $conditionTree = new ConditionTreeLeaf('column', Operators::EQUAL, true);
+    $otherConditionTree = new ConditionTreeLeaf('otherColumn', Operators::EQUAL, true);
     $tree = ConditionTreeFactory::intersect(
         [
             new ConditionTreeBranch('And', [$conditionTree]),
@@ -59,12 +60,12 @@ test('fromArray() should work with a simple case', function () {
     $tree = ConditionTreeFactory::fromArray(
         [
             'field'    => 'field',
-            'operator' => 'Equal',
+            'operator' => Operators::EQUAL,
             'value'    => 'something',
         ]
     );
 
-    expect($tree)->toEqual(new ConditionTreeLeaf('field', 'Equal', 'something'));
+    expect($tree)->toEqual(new ConditionTreeLeaf('field', Operators::EQUAL, 'something'));
 });
 
 test('fromArray() should remove useless aggregators from the frontend', function () {
@@ -74,14 +75,14 @@ test('fromArray() should remove useless aggregators from the frontend', function
             'conditions' => [
                 [
                     'field'    => 'field',
-                    'operator' => 'Equal',
+                    'operator' => Operators::EQUAL,
                     'value'    => 'something',
                 ],
             ],
         ]
     );
 
-    expect($tree)->toEqual(new ConditionTreeLeaf('field', 'Equal', 'something'));
+    expect($tree)->toEqual(new ConditionTreeLeaf('field', Operators::EQUAL, 'something'));
 });
 
 test('fromArray() should work with an aggregator', function () {
@@ -91,12 +92,12 @@ test('fromArray() should work with an aggregator', function () {
             'conditions' => [
                 [
                     'field'    => 'field',
-                    'operator' => 'Equal',
+                    'operator' => Operators::EQUAL,
                     'value'    => 'something',
                 ],
                 [
                     'field'    => 'field',
-                    'operator' => 'Equal',
+                    'operator' => Operators::EQUAL,
                     'value'    => 'something',
                 ],
             ],
@@ -107,8 +108,8 @@ test('fromArray() should work with an aggregator', function () {
         new ConditionTreeBranch(
             'And',
             [
-                new ConditionTreeLeaf('field', 'Equal', 'something'),
-                new ConditionTreeLeaf('field', 'Equal', 'something'),
+                new ConditionTreeLeaf('field', Operators::EQUAL, 'something'),
+                new ConditionTreeLeaf('field', Operators::EQUAL, 'something'),
             ]
         ),
     );

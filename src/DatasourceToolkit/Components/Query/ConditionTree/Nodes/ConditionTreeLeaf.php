@@ -65,7 +65,7 @@ class ConditionTreeLeaf extends ConditionTree
         }
 
         if (Str::startsWith($this->getOperator(), 'Not')) {
-            return $this->override(operator: Str::substr($this->getOperator(), 3));
+            return $this->override(operator: Str::substr($this->getOperator(), 4));
         }
 
         return match ($this->getOperator()) {

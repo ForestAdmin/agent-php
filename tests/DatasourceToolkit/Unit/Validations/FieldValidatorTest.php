@@ -11,7 +11,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\FieldValidator;
 
 use function ForestAdmin\cache;
 
-dataset('collection', function () {
+dataset('FieldValidatorCollection', function () {
     $datasource = new Datasource();
     yield $collectionCars = new Collection($datasource, 'cars');
     $collectionCars->addFields(
@@ -48,31 +48,31 @@ dataset('collection', function () {
 
 test('validate() should not throw if the field exist on the collection', function ($collection) {
     expect(FieldValidator::validate($collection, 'id'));
-})->expectNotToPerformAssertions()->with('collection');
+})->expectNotToPerformAssertions()->with('FieldValidatorCollection');
 
 test('validate() should throw if the field does not exists', function ($collection) {
     expect(FieldValidator::validate($collection, '__not_defined'));
 })->throws(ForestException::class, '🌳🌳🌳 Column not found: cars.__not_defined')
-    ->with('collection');
+    ->with('FieldValidatorCollection');
 
 test('validate() should throw if the relation does not exists', function ($collection) {
     expect(FieldValidator::validate($collection, '__not_defined:id'));
 })->throws(ForestException::class, '🌳🌳🌳 Relation not found: cars.__not_defined')
-    ->with('collection');
+    ->with('FieldValidatorCollection');
 
 test('validate() should throw if the field is not of column type', function ($collection) {
     expect(FieldValidator::validate($collection, 'owner'));
 })->throws(ForestException::class, '🌳🌳🌳 Unexpected field type: cars.owner (found OneToOne expected \'Column\')')
-    ->with('collection');
+    ->with('FieldValidatorCollection');
 
 test('validate() should validate fields on other collections', function ($collection) {
     expect(FieldValidator::validate($collection, 'owner:name'));
-})->expectNotToPerformAssertions()->with('collection');
+})->expectNotToPerformAssertions()->with('FieldValidatorCollection');
 
 test('validate() should throw when the requested field is of type column', function ($collection) {
     expect(FieldValidator::validate($collection, 'id:address'));
 })->throws(ForestException::class, '🌳🌳🌳 Unexpected field type: cars.id (found Column expected \'ManyToOne\' or \'OneToOne\')')
-    ->with('collection');
+    ->with('FieldValidatorCollection');
 
 
 test('validateValue() on field of type boolean with valid value should not throw', function () {

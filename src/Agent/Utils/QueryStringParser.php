@@ -4,6 +4,7 @@ namespace ForestAdmin\AgentPHP\Agent\Utils;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;

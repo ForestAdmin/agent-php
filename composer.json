@@ -39,7 +39,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Forestadmin\\AgentPHP\\Tests\\": "tests/"
+            "ForestAdmin\\AgentPHP\\Tests\\": "tests/"
         }
     },
     "minimum-stability": "dev",
