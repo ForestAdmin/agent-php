@@ -8,6 +8,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results\ActionResult;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
 
 interface CollectionContract
 {
@@ -36,4 +38,6 @@ interface CollectionContract
     public function deleteBulk(Caller $caller, Filter $filter, $ids, bool $allRecords = false, array $idsExcluded = []): void;
 
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null);
+
+    public function associate(Caller $caller, $id, array $data, OneToManySchema|ManyToManySchema $relation, $value): void;
 }

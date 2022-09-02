@@ -11,6 +11,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projectio
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results\ActionResult;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ActionSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection as IlluminateCollection;
@@ -106,6 +108,11 @@ class Collection implements CollectionContract
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
     {
         // TODO: Implement aggregate() method.
+    }
+
+    public function associate(Caller $caller, $id, array $data, OneToManySchema|ManyToManySchema $relation, $value): void
+    {
+        // TODO: Implement create() method.
     }
 
     public function addFields(array $fields): void

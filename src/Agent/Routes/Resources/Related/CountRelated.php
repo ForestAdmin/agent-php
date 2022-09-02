@@ -6,7 +6,6 @@ use ForestAdmin\AgentPHP\Agent\Routes\AbstractRelationRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
-use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 
