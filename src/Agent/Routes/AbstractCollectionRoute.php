@@ -13,7 +13,7 @@ abstract class AbstractCollectionRoute extends AbstractAuthenticatedRoute
 
     protected Filter $filter;
 
-    private Datasource $datasource;
+    protected Datasource $datasource;
 
     abstract public function handleRequest(array $args = []): array;
 
