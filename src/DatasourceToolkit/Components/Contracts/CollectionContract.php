@@ -35,7 +35,7 @@ interface CollectionContract
 
     public function delete(Caller $caller, Filter $filter, $id): void;
 
-    public function deleteBulk(Caller $caller, Filter $filter, $ids, bool $allRecords = false, array $idsExcluded = []): void;
+    public function deleteBulk(Caller $caller, Filter $filter, bool $allRecords = false, array $selectionIds = []): void;
 
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null);
 

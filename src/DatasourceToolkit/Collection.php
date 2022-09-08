@@ -100,7 +100,7 @@ class Collection implements CollectionContract
         // TODO: Implement delete() method.
     }
 
-    public function deleteBulk(Caller $caller, Filter $filter, $ids, bool $allRecords = false, array $idsExcluded = []): void
+    public function deleteBulk(Caller $caller, Filter $filter, bool $allRecords = false, array $selectionIds = []): void
     {
         // TODO: Implement delete() method.
     }

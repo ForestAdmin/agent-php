@@ -9,10 +9,10 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\FieldValidator;
 
 class Id
 {
-    public static function unpackId(Collection $collection, string $idArgument)
+    public static function unpackId(Collection $collection, string $packedId)
     {
         $primaryKeyNames = SchemaUtils::getPrimaryKeys($collection);
-        $primaryKeyValues = explode('|', $idArgument);
+        $primaryKeyValues = explode('|', $packedId);
 
         if (count($primaryKeyNames) !== count($primaryKeyValues)) {
             throw new ForestException('Expected $primaryKeyNames a size of ' . count($primaryKeyNames) . ' values, found ' . count($primaryKeyValues));
@@ -26,6 +26,13 @@ class Id
 
             return [$value];
         });
+
+        return $values->all();
+    }
+
+    public static function unpackIds(Collection $collection, array $packedIds): array
+    {
+        $values = collect($packedIds)->map(fn ($item) => self::unpackId($collection, $item))->flatten();
 
         return $values->all();
     }

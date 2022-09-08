@@ -4,6 +4,7 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
+use ForestAdmin\AgentPHP\Agent\Utils\BodyParser;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 
 class Destroy extends AbstractCollectionRoute
@@ -35,7 +36,6 @@ class Destroy extends AbstractCollectionRoute
         $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
         $this->collection->delete($this->caller, $this->filter, $args['id']);
 
-
         return [
             'content' => null,
             'status'  => 204,
@@ -48,13 +48,8 @@ class Destroy extends AbstractCollectionRoute
         $this->permissions->can('delete:' . $this->collection->getName(), $this->collection->getName());
         $scope = $this->permissions->getScope($this->collection);
         $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
-
-        $attributes = $this->request->get('data')['attributes'];
-        $ids = $attributes['ids'];
-        $allRecords = $attributes['all_records'];
-        $idsExcluded = $attributes['all_records_ids_excluded'];
-
-        $this->collection->deleteBulk($this->caller, $this->filter, $ids, $allRecords, $idsExcluded);
+        $selectionIds = BodyParser::parseSelectionIds($this->collection, $this->request);
+        $this->collection->deleteBulk($this->caller, $this->filter, $selectionIds['areExcluded'], $selectionIds['ids']);
 
         return [
             'content' => null,
