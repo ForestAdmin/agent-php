@@ -39,5 +39,5 @@ interface CollectionContract
 
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null);
 
-    public function associate(Caller $caller, $id, array $data, OneToManySchema|ManyToManySchema $relation, $value): void;
+    public function associate(Caller $caller, $id, OneToManySchema|ManyToManySchema $relation, $value): void;
 }

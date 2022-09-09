@@ -27,7 +27,7 @@ class AssociateRelated extends AbstractRelationRoute
         $this->build($args);
         $scope = $this->permissions->getScope($this->childCollection);
         // todo is filter useful here
-//        $this->filter = ContextFilterFactory::build($this->childCollection, $this->request, $scope);
+        // $this->filter = ContextFilterFactory::build($this->childCollection, $this->request, $scope);
 
         $id = Id::unpackId($this->collection, $args['id']);
         $childId = Id::unpackId($this->childCollection, $this->request->input('data')[0]['id']);
@@ -39,7 +39,7 @@ class AssociateRelated extends AbstractRelationRoute
         [$pk] = Schema::getPrimaryKeys($this->collection);
         $parentValue = CollectionUtils::getValue($this->collection, $this->caller, $id, $pk);
 
-        $this->collection->associate($this->caller, $parentValue, [], $relation, $childValue);
+        $this->collection->associate($this->caller, $parentValue, $relation, $childValue);
 
         return [
             'content' => null,
