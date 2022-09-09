@@ -9,7 +9,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\FieldValidator;
 
 class Id
 {
-    public static function unpackId(Collection $collection, string $packedId)
+    public static function unpackId(Collection $collection, string $packedId): array
     {
         $primaryKeyNames = SchemaUtils::getPrimaryKeys($collection);
         $primaryKeyValues = explode('|', $packedId);
