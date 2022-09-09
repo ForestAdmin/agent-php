@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Services;
 
+use ForestAdmin\AgentPHP\Agent\Facades\ForestSchema;
 use ForestAdmin\AgentPHP\Agent\Serializer\JsonApiSerializer;
 use Illuminate\Support\Collection as BaseCollection;
 use League\Fractal\Manager;
@@ -30,9 +31,9 @@ class JsonApiResponse
         //dd(cache('datasource'));
         //$resource = new Collection($class, $transformer, $name);
 
-        /*$transformer = app()->make(BaseTransformer::class);
+        /*$transformer = app()->make(BaseTransformer::class);*/
         $transformer->setAvailableIncludes(ForestSchema::getRelatedData($name));
-        */
+
         if (is_array($class) || $this->isCollection($class)) {
             $resource = new Collection($class, $transformer, $name);
         } /*elseif ($this->isPaginator($class)) {

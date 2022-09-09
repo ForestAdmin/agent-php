@@ -95,13 +95,11 @@ class JsonApiSerializer extends FractalJsonApiSerializer
             $resource['relationships'][$relationshipKey] = [];
         }
 
-        $type = Str::camel($resource['type']);
-
         $resource['relationships'][$relationshipKey] = array_merge(
             [
                 'links' => [
                     'related' => [
-                        'href' => "/forest/$type/{$resource['id']}/relationships/{$relationshipKey}",
+                        'href' => "/forest/{$resource['type']}/{$resource['id']}/relationships/{$relationshipKey}",
                     ],
                 ],
             ],
