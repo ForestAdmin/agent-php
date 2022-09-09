@@ -30,6 +30,7 @@ class AssociateRelated extends AbstractRelationRoute
         // $this->filter = ContextFilterFactory::build($this->childCollection, $this->request, $scope);
 
         $id = Id::unpackId($this->collection, $args['id']);
+        // todo do we allow multiple childId ??
         $childId = Id::unpackId($this->childCollection, $this->request->input('data')[0]['id']);
         $relation = Schema::getToManyRelation($this->collection, $args['relationName']);
 

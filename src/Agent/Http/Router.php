@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\Agent\Routes\Resources\Destroy;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Listing;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\AssociateRelated;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\CountRelated;
+use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\DissociateRelated;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\ListingRelated;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Show;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Store;
@@ -33,6 +34,7 @@ class Router
             Destroy::getRoutes(),
             ListingRelated::getRoutes(),
             AssociateRelated::getRoutes(),
+            DissociateRelated::getRoutes(),
             CountRelated::getRoutes(),
         );
     }

@@ -121,6 +121,7 @@ class FilterFactory
             $originTree = new ConditionTreeLeaf($relation->getInverseRelationName(), Operators::EQUAL, $originValue);
         } else {
             // ManyToMany case
+            // todo useful ?
             /** @var Collection $through */
             $through = AgentFactory::get('datasource')->getCollection($relation->getThroughTable());
             $throughTree = ConditionTreeFactory::intersect(

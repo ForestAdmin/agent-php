@@ -110,9 +110,14 @@ class Collection implements CollectionContract
         // TODO: Implement aggregate() method.
     }
 
-    public function associate(Caller $caller, $id, OneToManySchema|ManyToManySchema $relation, $value): void
+    public function associate(Caller $caller, $id, OneToManySchema|ManyToManySchema $relation, $childId): void
     {
         // TODO: Implement create() method.
+    }
+
+    public function dissociate(Caller $caller, $id, OneToManySchema|ManyToManySchema $relation, $childId): void
+    {
+        // TODO: Implement dissociate() method.
     }
 
     public function addFields(array $fields): void
