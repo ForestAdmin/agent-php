@@ -9,6 +9,7 @@ use League\Fractal\Manager;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\Item;
 use League\Fractal\TransformerAbstract;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use function ForestAdmin\config;
 
 class JsonApiResponse
@@ -62,7 +63,13 @@ class JsonApiResponse
 
     public function deactivateCountResponse(): JsonResponse
     {
-        // todo
+        return new JsonResponse(
+            [
+                'meta' => [
+                    'count' => 'deactivated',
+                ],
+            ]
+        );
     }
 
     protected function isCollection($instance): bool
