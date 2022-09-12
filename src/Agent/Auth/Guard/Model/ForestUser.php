@@ -15,6 +15,8 @@ use Illuminate\Support\Str;
  */
 class ForestUser
 {
+    public const ALLOWED_PERMISSION_LEVELS = ['admin', 'editor', 'developer'];
+
     /**
      * @var array
      */
@@ -96,7 +98,7 @@ class ForestUser
      */
     public function addPermission(string $key, array $values): ForestUser
     {
-        if (!empty($values)) {
+        if (! empty($values)) {
             $this->permissions->put($key, $values);
         }
 
@@ -110,7 +112,7 @@ class ForestUser
      */
     public function hasPermission(string $key, string $action): bool
     {
-        if (!(isset($this->getPermissions()[$key]) && in_array($action, $this->getPermissions()[$key], true))) {
+        if (! (isset($this->getPermissions()[$key]) && in_array($action, $this->getPermissions()[$key], true))) {
             app(ForestUserFactory::class)->makePermissionToUser($this, $this->getAttribute('rendering_id'), true);
 
             return isset($this->getPermissions()[$key]) && in_array($action, $this->getPermissions()[$key], true);
@@ -145,7 +147,7 @@ class ForestUser
      */
     public function addSmartActionPermission(string $key, array $values): ForestUser
     {
-        if (!empty($values)) {
+        if (! empty($values)) {
             $this->smartActionPermissions->put($key, $values);
         }
 
@@ -168,7 +170,11 @@ class ForestUser
      */
     public function hasLiveQueryPermission(string $query): bool
     {
-        if (!$this->hasQuery($query)) {
+        if (in_array($this->getAttribute('permission_level'), self::ALLOWED_PERMISSION_LEVELS, true)) {
+            return true;
+        }
+
+        if (! $this->hasQuery($query)) {
             app(ForestUserFactory::class)->makePermissionToUser($this, $this->getAttribute('rendering_id'), true);
 
             return $this->hasQuery($query);
@@ -198,10 +204,14 @@ class ForestUser
      */
     public function hasSimpleChartPermission(array $chart): bool
     {
+        if (in_array($this->getAttribute('permission_level'), self::ALLOWED_PERMISSION_LEVELS, true)) {
+            return true;
+        }
+
         $type = strtolower(Str::plural($chart['type']));
         $chart = $this->formatChartPayload($chart);
 
-        if (!$this->hasChart($type, $chart)) {
+        if (! $this->hasChart($type, $chart)) {
             app(ForestUserFactory::class)->makePermissionToUser($this, $this->getAttribute('rendering_id'), true);
 
             return $this->hasChart($type, $chart);
@@ -241,6 +251,7 @@ class ForestUser
     public function setStats(array $stats): ForestUser
     {
         $this->stats = $stats;
+
         return $this;
     }
 
@@ -259,7 +270,7 @@ class ForestUser
             'group_by_date_field' => 'groupByFieldName',
             'time_range'          => 'timeRange',
             'relationship_field'  => 'relationshipFieldName',
-            'label_field'         => 'labelFieldName'
+            'label_field'         => 'labelFieldName',
         ];
 
         foreach ($chart as $key => $value) {
