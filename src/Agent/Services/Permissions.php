@@ -21,6 +21,8 @@ class Permissions
 {
     public const TTL = 60 * 60 * 24;
 
+    public const ALLOWED_PERMISSION_LEVELS = ['admin', 'editor', 'developer'];
+
     public function __construct(protected Caller $caller)
     {
     }
@@ -51,7 +53,8 @@ class Permissions
 
         $chartHash = $this->arrayHash($chart);
         $permissions = $this->getRenderingPermissions($this->caller->getRenderingId());
-        $isAllowed = $permissions->get('charts')?->contains("$type:$chartHash");
+        $isAllowed = in_array($this->caller->getValue('permission_level'), self::ALLOWED_PERMISSION_LEVELS, true)
+            || $permissions->get('charts')?->contains("$type:$chartHash");
 
         if (! $isAllowed && $allowFetch) {
             $this->invalidateCache($this->caller->getRenderingId());
