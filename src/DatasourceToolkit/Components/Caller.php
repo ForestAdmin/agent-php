@@ -73,6 +73,6 @@ class Caller
 
     public function getValue(string $key)
     {
-        return $this->$key ?: null;
+        return property_exists($this, $key) ? $this->$key : null;
     }
 }
