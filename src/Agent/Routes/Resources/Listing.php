@@ -6,6 +6,9 @@ use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
+use Illuminate\Support\Str;
+use Laracsv\Export;
+use League\Csv\Writer;
 
 class Listing extends AbstractCollectionRoute
 {
@@ -23,6 +26,11 @@ class Listing extends AbstractCollectionRoute
 
     public function handleRequest(array $args = []): array
     {
+        if (Str::endsWith($args['collectionName'], '.csv')) {
+            $args['collectionName'] = Str::replaceLast('.csv', '', $args['collectionName']);
+            return $this->handleRequestCsv($args);
+        }
+
         $this->build($args);
         $this->permissions->can('browse:' . $this->collection->getName(), $this->collection->getName());
         $scope = $this->permissions->getScope($this->collection);
@@ -37,5 +45,57 @@ class Listing extends AbstractCollectionRoute
                 QueryStringParser::parseProjection($this->collection, $this->request)
             ),
         ];
+    }
+
+    public function handleRequestCsv(array $args = []): array
+    {
+        $this->build($args);
+        $this->permissions->can('browse:' . $this->collection->getName(), $this->collection->getName());
+        $this->permissions->can('export:' . $this->collection->getName(), $this->collection->getName());
+
+        $scope = $this->permissions->getScope($this->collection);
+        $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
+
+        $rows = $this->collection->list(
+            $this->caller,
+            $this->filter,
+            QueryStringParser::parseProjection($this->collection, $this->request),
+            false
+        );
+
+        $filename = $this->request->input('filename', $this->collection->getName()) . '.csv';
+
+        $csv = Writer::createFromString();
+        $csv->insertOne(explode(',', $this->request->get('header')));
+        foreach ($rows as $row) {
+            $csv->insertOne($this->formatField($row));
+        }
+
+        $csv->toString();
+
+
+        return [
+            'content' => [
+                $csv->output($filename),
+            ],
+            'headers' => [
+                'Content-type'        => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ],
+        ];
+    }
+
+    private function formatField(array $field): array
+    {
+        foreach ($field as $key => $value) {
+            if (is_bool($value)) {
+                $field[$key] = (int)$value;
+            }
+            if (is_array($value)) {
+                $field[$key] = '';
+            }
+        }
+
+        return array_values($field);
     }
 }
