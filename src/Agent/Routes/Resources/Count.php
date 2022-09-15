@@ -24,7 +24,7 @@ class Count extends AbstractCollectionRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
-        $this->permissions->can('browse:' . $this->collection->getName(), $this->collection->getName());
+        $this->permissions->can('browse:' . $this->collection->getName());
         $scope = $this->permissions->getScope($this->collection);
         $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
 

@@ -31,7 +31,7 @@ class Destroy extends AbstractCollectionRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
-        $this->permissions->can('delete:' . $this->collection->getName(), $this->collection->getName());
+        $this->permissions->can('delete:' . $this->collection->getName());
         $scope = $this->permissions->getScope($this->collection);
         $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
         $this->collection->delete($this->caller, $this->filter, $args['id']);
@@ -45,7 +45,7 @@ class Destroy extends AbstractCollectionRoute
     public function handleRequestBulk(array $args = []): array
     {
         $this->build($args);
-        $this->permissions->can('delete:' . $this->collection->getName(), $this->collection->getName());
+        $this->permissions->can('delete:' . $this->collection->getName());
         $scope = $this->permissions->getScope($this->collection);
         $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
         $selectionIds = BodyParser::parseSelectionIds($this->collection, $this->request);
