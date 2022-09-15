@@ -148,8 +148,9 @@ class Collection
         $id,
         string $relationName,
         Caller $caller,
-        PaginatedFilter $foreignFilter,
-        Projection $projection
+        Filter $foreignFilter,
+        Projection $projection,
+        bool $arrayObject = true
     ) {
         $relation = Schema::getToManyRelation($collection, $relationName);
         $foreignCollection = $collection->getDataSource()->getCollection($relation->getForeignCollection());
@@ -161,7 +162,8 @@ class Collection
                 $records = $foreignCollection->list(
                     $caller,
                     FilterFactory::makeThroughFilter($collection, $id, $relationName, $caller, $foreignFilter),
-                    $projection
+                    $projection,
+                    $arrayObject
                 );
 
                 return $records;
@@ -171,7 +173,8 @@ class Collection
         return $foreignCollection->list(
             $caller,
             FilterFactory::makeForeignFilter($collection, $id, $relationName, $caller, $foreignFilter),
-            $projection
+            $projection,
+            $arrayObject
         );
     }
 
