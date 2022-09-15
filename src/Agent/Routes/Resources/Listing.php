@@ -5,9 +5,9 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
+use ForestAdmin\AgentPHP\Agent\Utils\Csv;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use Illuminate\Support\Str;
-use Laracsv\Export;
 use League\Csv\Writer;
 
 class Listing extends AbstractCollectionRoute
@@ -69,7 +69,7 @@ class Listing extends AbstractCollectionRoute
         $csv = Writer::createFromString();
         $csv->insertOne(explode(',', $this->request->get('header')));
         foreach ($rows as $row) {
-            $csv->insertOne($this->formatField($row));
+            $csv->insertOne(Csv::formatField($row));
         }
 
         $csv->toString();
@@ -84,19 +84,5 @@ class Listing extends AbstractCollectionRoute
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             ],
         ];
-    }
-
-    private function formatField(array $field): array
-    {
-        foreach ($field as $key => $value) {
-            if (is_bool($value)) {
-                $field[$key] = (int)$value;
-            }
-            if (is_array($value)) {
-                $field[$key] = '';
-            }
-        }
-
-        return array_values($field);
     }
 }
