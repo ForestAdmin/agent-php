@@ -2,8 +2,23 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils;
 
+use League\Csv\Writer;
+
 class Csv
 {
+    public static function make(array $rows, array $header, string $filename): void
+    {
+        $csv = Writer::createFromString();
+        $csv->insertOne($header);
+        foreach ($rows as $row) {
+            $csv->insertOne(self::formatField($row));
+        }
+
+        $csv->toString();
+
+        $csv->output($filename);
+    }
+
     public static function formatField(array $field): array
     {
         foreach ($field as $key => $value) {

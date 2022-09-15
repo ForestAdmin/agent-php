@@ -79,19 +79,11 @@ class ListingRelated extends AbstractRelationRoute
         );
 
         $filename = $this->request->input('filename', $this->childCollection->getName()) . '.csv';
-
-        $csv = Writer::createFromString();
-        $csv->insertOne(explode(',', $this->request->get('header')));
-        foreach ($rows as $row) {
-            $csv->insertOne(Csv::formatField($row));
-        }
-
-        $csv->toString();
-
+        $header = explode(',', $this->request->get('header'));
 
         return [
             'content' => [
-                $csv->output($filename),
+                Csv::make($rows, $header, $filename),
             ],
             'headers' => [
                 'Content-type'        => 'text/csv',
