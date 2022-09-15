@@ -78,15 +78,6 @@ class ListingRelated extends AbstractRelationRoute
             false
         );
 
-//        dd($records);
-
-//        $rows = $this->collection->list(
-//            $this->caller,
-//            $this->filter,
-//            QueryStringParser::parseProjection($this->collection, $this->request),
-//            false
-//        );
-//
         $filename = $this->request->input('filename', $this->childCollection->getName()) . '.csv';
 
         $csv = Writer::createFromString();
