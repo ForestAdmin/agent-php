@@ -2,7 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Serializer;
 
-use Illuminate\Support\Str;
 use League\Fractal\Serializer\JsonApiSerializer as FractalJsonApiSerializer;
 
 /**

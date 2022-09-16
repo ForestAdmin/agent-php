@@ -2,10 +2,16 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils;
 
+use League\Csv\CannotInsertRecord;
+use League\Csv\Exception;
 use League\Csv\Writer;
 
 class Csv
 {
+    /**
+     * @throws CannotInsertRecord
+     * @throws Exception
+     */
     public static function make(array $rows, array $header, string $filename): void
     {
         $csv = Writer::createFromString();
