@@ -9,6 +9,24 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\FieldValidator;
 
 class Id
 {
+    public static function packId(Collection $collection, array $record): string
+    {
+        $primaryKeyNames = SchemaUtils::getPrimaryKeys($collection);
+
+        if (empty($primaryKeyNames)) {
+            throw new ForestException('This collection has no primary key');
+        }
+
+        return $primaryKeyNames->map(fn ($pk) => $record[$pk])->join('|');
+    }
+
+    public static function packIds(Collection $collection, array $records): array
+    {
+        $values = collect($records)->map(fn ($item) => self::packId($collection, $item))->flatten();
+
+        return $values->all();
+    }
+
     public static function unpackId(Collection $collection, string $packedId): array
     {
         $primaryKeyNames = SchemaUtils::getPrimaryKeys($collection);
