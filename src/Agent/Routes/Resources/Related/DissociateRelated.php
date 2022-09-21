@@ -7,7 +7,11 @@ use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\BodyParser;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
+use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema;
 
@@ -28,12 +32,10 @@ class DissociateRelated extends AbstractRelationRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
-        $scope = $this->permissions->getScope($this->childCollection);
-
         $id = Id::unpackId($this->collection, $args['id']);
         $isDeleteMode = $this->request->get('delete') ?? false;
         $selectionIds = BodyParser::parseSelectionIds($this->childCollection, $this->request);
-        $this->filter = $this->getBaseForeignFilter($scope);
+        $this->filter = $this->getBaseForeignFilter($selectionIds);
 
         $relation = Schema::getToManyRelation($this->collection, $args['relationName']);
 
@@ -58,19 +60,29 @@ class DissociateRelated extends AbstractRelationRoute
         ];
     }
 
-    private function getBaseForeignFilter($scope)
+    /**
+     * @param array $selectionIds
+     * @return Filter
+     */
+    private function getBaseForeignFilter(array $selectionIds): Filter
     {
-        //$selectionIds = BodyParser::parseSelectionIds($this->childCollection, $this->request);
+        if (! array_key_exists('ids', $selectionIds) || empty($selectionIds['ids'])) {
+            throw new ForestException('Expected no empty id list');
+        }
 
-        return ContextFilterFactory::build($this->childCollection, $this->request, $scope);
+        $selectedIds = ConditionTreeFactory::matchIds($this->childCollection, $selectionIds);
+        if ($selectionIds['areExcluded']) {
+            $selectedIds->inverse();
+        }
 
-        // TODO NEED TO CHECK
-//        return ContextFilterFactory.build(this.foreignCollection, context, null, {
-//          conditionTree: ConditionTreeFactory.intersect(
-//            await this.services.permissions.getScope(this.foreignCollection, context),
-//            QueryStringParser.parseConditionTree(this.foreignCollection, context),
-//            selectedIds,
-//          ),
-//        });
+        $conditionTree = ConditionTreeFactory::intersect(
+            [
+                $this->permissions->getScope($this->childCollection),
+                QueryStringParser::parseConditionTree($this->childCollection, $this->request),
+                $selectedIds,
+            ]
+        );
+
+        return ContextFilterFactory::build($this->childCollection, $this->request, $conditionTree);
     }
 }
