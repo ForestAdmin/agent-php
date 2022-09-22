@@ -50,7 +50,7 @@ class Id
 
     public static function unpackIds(Collection $collection, array $packedIds): array
     {
-        $values = collect($packedIds)->map(fn ($item) => self::unpackId($collection, $item))->flatten();
+        $values = collect($packedIds)->map(fn ($item) => self::unpackId($collection, $item));
 
         return $values->all();
     }

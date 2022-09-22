@@ -14,6 +14,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactor
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema;
+use Illuminate\Support\Arr;
 
 class DissociateRelated extends AbstractRelationRoute
 {
@@ -38,7 +39,6 @@ class DissociateRelated extends AbstractRelationRoute
         $this->filter = $this->getBaseForeignFilter($selectionIds);
 
         $relation = Schema::getToManyRelation($this->collection, $args['relationName']);
-
         if ($isDeleteMode) {
             if ($relation->getType() === 'ManyToMany') {
                 $filter = FilterFactory::makeThroughFilter($this->collection, $id, $args['relationName'], $this->caller, $this->filter);
@@ -51,7 +51,7 @@ class DissociateRelated extends AbstractRelationRoute
             [$pk] = Schema::getPrimaryKeys($this->collection);
             $parentValue = CollectionUtils::getValue($this->collection, $this->caller, $id, $pk);
             $childIds = Id::unpackIds($this->childCollection, collect($this->request->input('data'))->pluck('id')->toArray());
-            $this->collection->dissociate($this->caller, $parentValue, $relation, $childIds);
+            $this->collection->dissociate($this->caller, $parentValue, $relation, Arr::flatten($childIds));
         }
 
         return [
@@ -70,7 +70,7 @@ class DissociateRelated extends AbstractRelationRoute
             throw new ForestException('Expected no empty id list');
         }
 
-        $selectedIds = ConditionTreeFactory::matchIds($this->childCollection, $selectionIds);
+        $selectedIds = ConditionTreeFactory::matchIds($this->childCollection, $selectionIds['ids']);
         if ($selectionIds['areExcluded']) {
             $selectedIds->inverse();
         }

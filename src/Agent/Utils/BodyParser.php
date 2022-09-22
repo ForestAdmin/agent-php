@@ -10,7 +10,8 @@ class BodyParser
 {
     public static function parseSelectionIds(Collection $collection, Request $request): array
     {
-        $attributes = $request->get('data')['attributes'] ?? null;
+        $attributes = $request->input('data.attributes');
+
         $areExcluded = $attributes && array_key_exists('all_records', $attributes) ? $attributes['all_records'] : false;
         $inputIds = $attributes && array_key_exists('ids', $attributes)
             ? $attributes['ids']

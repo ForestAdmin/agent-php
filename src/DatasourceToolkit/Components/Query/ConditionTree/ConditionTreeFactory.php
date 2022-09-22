@@ -96,9 +96,8 @@ class ConditionTreeFactory
             return new ConditionTreeBranch('Or', []);
         }
 
-        if (count($values) === 1) {
+        if (count($fields) === 1) {
             $fieldValues = [];
-            // todo check with test
             foreach ($values as $value) {
                 $fieldValues[] = $value[0];
             }
@@ -108,17 +107,32 @@ class ConditionTreeFactory
                 : new ConditionTreeLeaf($fields[0], 'Equal', $fieldValues[0]);
         }
 
-//        const [firstField, ...otherFields] = fields;
-        $group = new IlluminateCollection();
+        $firstField = $fields[0];
+        unset($fields[0]);
+        $otherFields = array_values($fields);
 
+        $group = new IlluminateCollection();
         foreach ($values as $value) {
-            if ($group->has($value[0])) {
-                $group->get($value[0])->push($value[1]);
+            $firstValue = $value[0];
+            unset($value[0]);
+            $otherValues = array_values($value);
+            if ($group->has($firstValue)) {
+                $group->get($firstValue)->push($otherValues);
             } else {
-                $group->put($value[0], collect([$value[1]]));
+                $group->put($firstValue, collect([$otherValues]));
             }
         }
-        // todo finish this with matchRecords()
+
+        return self::union(
+            $group->map(
+                fn ($subValues, $firstValue) => self::intersect(
+                    [
+                        self::matchFields([$firstField], [[$firstValue]]),
+                        self::matchFields($otherFields, $subValues->toArray()),
+                    ]
+                )
+            )->all(),
+        );
     }
 
     private static function isLeaf(array $tree): bool
