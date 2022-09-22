@@ -60,8 +60,8 @@ class ConditionTreeLeaf extends ConditionTree
 
     public function inverse(): ConditionTree
     {
-        if (in_array('Not' . $this->getOperator(), Operators::getAllOperators(), true)) {
-            return $this->override(operator: 'Not' . $this->getOperator());
+        if (in_array('Not_' . $this->getOperator(), Operators::getAllOperators(), true)) {
+            return $this->override(operator: 'Not_' . $this->getOperator());
         }
 
         if (Str::startsWith($this->getOperator(), 'Not')) {
@@ -110,7 +110,6 @@ class ConditionTreeLeaf extends ConditionTree
     public function override(...$args): ConditionTree
     {
         return new self(...array_merge($this->toArray(), $args));
-//        return ConditionTreeFactory::fromArray(array_merge($this->toArray(), $partialConditionTree));
     }
 
     public function useIntervalOperator(): bool

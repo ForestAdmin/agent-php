@@ -11,6 +11,7 @@ abstract class AbstractCollectionRoute extends AbstractAuthenticatedRoute
 {
     protected Collection $collection;
 
+    // todo remove attribute
     protected Filter $filter;
 
     protected Datasource $datasource;

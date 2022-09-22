@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 
 class Update extends AbstractCollectionRoute
 {
@@ -25,16 +26,25 @@ class Update extends AbstractCollectionRoute
     {
         $this->build($args);
         $this->permissions->can('edit:' . $this->collection->getName());
-        $scope = $this->permissions->getScope($this->collection);
-        $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
-        $id = Id::unpackId($this->collection, $args['id'], true);
+
+        $id = Id::unpackId($this->collection, $args['id']);
+        $filter = ContextFilterFactory::build(
+            $this->collection,
+            $this->request,
+            ConditionTreeFactory::intersect(
+                [
+                    $this->permissions->getScope($this->collection),
+                    ConditionTreeFactory::matchIds($this->collection, [$id]),
+                ]
+            )
+        );
 
         return [
             'renderTransformer' => true,
             'name'              => $args['collectionName'],
             'content'           => $this->collection->update(
                 $this->caller,
-                $this->filter,
+                $filter,
                 $id,
                 $this->request->get('data')
             ),

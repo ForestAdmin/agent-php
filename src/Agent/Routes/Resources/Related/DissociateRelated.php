@@ -70,16 +70,16 @@ class DissociateRelated extends AbstractRelationRoute
             throw new ForestException('Expected no empty id list');
         }
 
-        $selectedIds = ConditionTreeFactory::matchIds($this->childCollection, $selectionIds['ids']);
+        $conditionTreeIds = ConditionTreeFactory::matchIds($this->childCollection, $selectionIds['ids']);
         if ($selectionIds['areExcluded']) {
-            $selectedIds->inverse();
+            $conditionTreeIds->inverse();
         }
 
         $conditionTree = ConditionTreeFactory::intersect(
             [
                 $this->permissions->getScope($this->childCollection),
                 QueryStringParser::parseConditionTree($this->childCollection, $this->request),
-                $selectedIds,
+                $conditionTreeIds,
             ]
         );
 
