@@ -24,10 +24,12 @@ class AgentFactory
 
     protected Datasource $compositeDatasource;
 
-    public function __construct(protected array $options)
+    public function __construct(array $config, array $services)
     {
         $this->compositeDatasource = new Datasource();
-        $this->buildContainer();
+        $this->buildContainer($services);
+        $this->buildCache($config);
+
     }
 
     public function addDatasources(array $datasources): void
@@ -72,15 +74,19 @@ class AgentFactory
         return self::$container->get($key);
     }
 
-    private function buildContainer(): void
+    private function buildContainer(array $services): void
     {
         self::$container = new Container();
+        foreach ($services as $key => $value) {
+            self::$container->set($key, $value);
+        }
+    }
 
-        //--- set Cache  ---//
+    private function buildCache(array $config): void
+    {
         $filesystem = new Filesystem();
-        $directory = $this->options['projectDir'] . '/forest-cache' ;
+        $directory = $config['projectDir'] . '/forest-cache' ;
         self::$container->set('cache', new CacheServices($filesystem, $directory));
-        // maybe move config into container ??
-        self::$container->get('cache')->add('config', $this->options, self::TTL);
+        self::$container->get('cache')->add('config', $config, self::TTL);
     }
 }
