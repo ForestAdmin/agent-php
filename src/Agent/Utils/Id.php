@@ -17,7 +17,7 @@ class Id
             throw new ForestException('This collection has no primary key');
         }
 
-        return $primaryKeyNames->map(fn ($pk) => $record[$pk])->join('|');
+        return collect($primaryKeyNames)->map(fn ($pk) => $record[$pk])->join('|');
     }
 
     public static function packIds(Collection $collection, array $records): array
@@ -27,7 +27,7 @@ class Id
         return $values->all();
     }
 
-    public static function unpackId(Collection $collection, string $packedId): array
+    public static function unpackId(Collection $collection, string $packedId, bool $withKey = false): array
     {
         $primaryKeyNames = SchemaUtils::getPrimaryKeys($collection);
         $primaryKeyValues = explode('|', $packedId);
@@ -36,13 +36,13 @@ class Id
             throw new ForestException('Expected $primaryKeyNames a size of ' . count($primaryKeyNames) . ' values, found ' . count($primaryKeyValues));
         }
 
-        $values = collect($primaryKeyNames)->mapWithKeys(function ($pkName, $index) use ($primaryKeyValues, $collection) {
+        $values = collect($primaryKeyNames)->mapWithKeys(function ($pkName, $index) use ($primaryKeyValues, $collection, $withKey) {
             $field = $collection->getFields()[$pkName];
             $value = $primaryKeyValues[$index];
             $castedValue = $field->getColumnType() === 'Number' ? (int) $value : $value;
             FieldValidator::validateValue($value, $field, $castedValue);
 
-            return [$value];
+            return $withKey ? [$pkName => $value] : [$index => $value];
         });
 
         return $values->all();

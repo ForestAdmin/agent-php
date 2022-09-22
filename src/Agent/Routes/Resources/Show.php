@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
+use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 
 class Show extends AbstractCollectionRoute
@@ -27,6 +28,7 @@ class Show extends AbstractCollectionRoute
         $this->permissions->can('read:' . $this->collection->getName());
         $scope = $this->permissions->getScope($this->collection);
         $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
+        $id = Id::unpackId($this->collection, $args['id'], true);
 
         return [
             'renderTransformer' => true,
@@ -34,7 +36,7 @@ class Show extends AbstractCollectionRoute
             'content'           => $this->collection->show(
                 $this->caller,
                 $this->filter,
-                $args['id'],
+                $id,
                 QueryStringParser::parseProjection($this->collection, $this->request)
             ),
         ];

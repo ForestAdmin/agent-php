@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\BodyParser;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
+use ForestAdmin\AgentPHP\Agent\Utils\Id;
 
 class Destroy extends AbstractCollectionRoute
 {
@@ -34,7 +35,9 @@ class Destroy extends AbstractCollectionRoute
         $this->permissions->can('delete:' . $this->collection->getName());
         $scope = $this->permissions->getScope($this->collection);
         $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
-        $this->collection->delete($this->caller, $this->filter, $args['id']);
+        $id = Id::unpackId($this->collection, $args['id'], true);
+
+        $this->collection->delete($this->caller, $this->filter, $id);
 
         return [
             'content' => null,

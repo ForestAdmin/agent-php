@@ -2,6 +2,8 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Serializer;
 
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use League\Fractal\Serializer\JsonApiSerializer as FractalJsonApiSerializer;
 
 /**
@@ -14,12 +16,12 @@ class JsonApiSerializer extends FractalJsonApiSerializer
      */
     public function item(?string $resourceKey, array $data): array
     {
-        $id = $this->getIdFromData($data);
+        $collection = AgentFactory::get('datasource')->getCollection($resourceKey);
 
         $resource = [
             'data' => [
                 'type'       => $resourceKey,
-                'id'         => (string) $id,
+                'id'         => Id::packId($collection, $data),
                 'attributes' => $data,
             ],
         ];
