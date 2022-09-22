@@ -21,9 +21,9 @@ class Operators
     public const IN = 'In';
     public const NOT_IN = 'Not_In';
     public const STARTS_WITH = 'Starts_With';
-    public const ISTARTS_WITH = 'IStartsWith';
+    public const ISTARTS_WITH = 'IStarts_With';
     public const ENDS_WITH = 'Ends_With';
-    public const IENDS_WITH = 'IEndsWith';
+    public const IENDS_WITH = 'IEnds_With';
     public const MISSING = 'Missing';
 
     public const BEFORE = 'Before';
