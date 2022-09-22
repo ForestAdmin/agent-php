@@ -100,11 +100,6 @@ class Collection implements CollectionContract
         // TODO: Implement delete() method.
     }
 
-    public function deleteBulk(Caller $caller, Filter $filter, bool $allRecords = false, array $selectionIds = []): void
-    {
-        // TODO: Implement delete() method.
-    }
-
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
     {
         // TODO: Implement aggregate() method.
