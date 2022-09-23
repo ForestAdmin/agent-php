@@ -85,7 +85,12 @@ class Collection implements CollectionContract
         // TODO: Implement show() method.
     }
 
-    public function list(Caller $caller, Filter $filter, Projection $projection, bool $arrayObject = true): array
+    public function list(Caller $caller, Filter $filter, Projection $projection): array
+    {
+        // TODO: Implement list() method.
+    }
+
+    public function export(Caller $caller, Filter $filter, Projection $projection): array
     {
         // TODO: Implement list() method.
     }

@@ -57,11 +57,10 @@ class Listing extends AbstractCollectionRoute
         $scope = $this->permissions->getScope($this->collection);
         $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
 
-        $rows = $this->collection->list(
+        $rows = $this->collection->export(
             $this->caller,
             $this->filter,
             QueryStringParser::parseProjection($this->collection, $this->request),
-            false
         );
 
         $filename = $this->request->input('filename', $this->collection->getName()) . '.csv';

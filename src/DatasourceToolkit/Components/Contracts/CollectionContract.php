@@ -29,7 +29,9 @@ interface CollectionContract
 
     public function show(Caller $caller, PaginatedFilter $filter, $id, Projection $projection);
 
-    public function list(Caller $caller, PaginatedFilter $filter, Projection $projection, bool $arrayObject = true): array;
+    public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array;
+
+    public function export(Caller $caller, PaginatedFilter $filter, Projection $projection): array;
 
     public function update(Caller $caller, Filter $filter, $id, array $patch);
 
