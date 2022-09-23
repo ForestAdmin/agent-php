@@ -9,6 +9,7 @@ use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
@@ -33,25 +34,37 @@ class DissociateRelated extends AbstractRelationRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
+        $this->permissions->can('delete:' . $this->collection->getName());
+
         $id = Id::unpackId($this->collection, $args['id']);
         $isDeleteMode = $this->request->get('delete') ?? false;
         $selectionIds = BodyParser::parseSelectionIds($this->childCollection, $this->request);
-        $this->filter = $this->getBaseForeignFilter($selectionIds);
+        $childFilter = $this->getBaseForeignFilter($selectionIds);
 
         $relation = Schema::getToManyRelation($this->collection, $args['relationName']);
         if ($isDeleteMode) {
             if ($relation->getType() === 'ManyToMany') {
-                $filter = FilterFactory::makeThroughFilter($this->collection, $id, $args['relationName'], $this->caller, $this->filter);
+                $childFilter = FilterFactory::makeThroughFilter($this->collection, $id, $args['relationName'], $this->caller, $childFilter);
             } else {
-                $filter = FilterFactory::makeForeignFilter($this->collection, $id, $args['relationName'], $this->caller, $this->filter);
+                $childFilter = FilterFactory::makeForeignFilter($this->collection, $id, $args['relationName'], $this->caller, $childFilter);
             }
 
-            $this->childCollection->deleteBulk($this->caller, $filter, $selectionIds['areExcluded'], $selectionIds['ids']);
+            $this->childCollection->delete($this->caller, $childFilter, Arr::flatten($selectionIds['ids']));
         } else {
             [$pk] = Schema::getPrimaryKeys($this->collection);
             $parentValue = CollectionUtils::getValue($this->collection, $this->caller, $id, $pk);
-            $childIds = Id::unpackIds($this->childCollection, collect($this->request->input('data'))->pluck('id')->toArray());
-            $this->collection->dissociate($this->caller, $parentValue, $relation, Arr::flatten($childIds));
+            $parentFilter = ContextFilterFactory::build(
+                $this->collection,
+                $this->request,
+                ConditionTreeFactory::intersect(
+                    [
+                        $this->permissions->getScope($this->collection),
+                        new ConditionTreeLeaf($pk, 'Equal', $parentValue),
+                    ]
+                )
+            );
+
+            $this->collection->dissociate($this->caller, $parentFilter, $childFilter, $relation);
         }
 
         return [

@@ -37,7 +37,7 @@ class ListingRelated extends AbstractRelationRoute
         $this->build($args);
         $this->permissions->can('browse:' . $this->childCollection->getName());
         $scope = $this->permissions->getScope($this->childCollection);
-        $this->filter = ContextFilterFactory::buildPaginated($this->childCollection, $this->request, $scope);
+        $filter = ContextFilterFactory::buildPaginated($this->childCollection, $this->request, $scope);
 
         $id = Id::unpackId($this->collection, $args['id']);
 
@@ -46,7 +46,7 @@ class ListingRelated extends AbstractRelationRoute
             $id,
             $args['relationName'],
             $this->caller,
-            $this->filter,
+            $filter,
             QueryStringParser::parseProjectionWithPks($this->childCollection, $this->request)
         );
 
@@ -64,7 +64,7 @@ class ListingRelated extends AbstractRelationRoute
         $this->permissions->can('export:' . $this->childCollection->getName());
 
         $scope = $this->permissions->getScope($this->childCollection);
-        $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
+        $filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
 
         $id = Id::unpackId($this->collection, $args['id']);
 
@@ -73,7 +73,7 @@ class ListingRelated extends AbstractRelationRoute
             $id,
             $args['relationName'],
             $this->caller,
-            $this->filter,
+            $filter,
             QueryStringParser::parseProjectionWithPks($this->childCollection, $this->request),
             false
         );
