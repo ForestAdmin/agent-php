@@ -25,29 +25,31 @@ class OidcClientManager
     }
 
     /**
-     * @param string $callbackUrl
      * @return ForestProvider|string
      * @throws GuzzleException|\ErrorException
      */
-    public function getClientForCallbackUrl(string $callbackUrl): ForestProvider|string
+    public function makeForestProvider(): ForestProvider|string
     {
-        $cacheKey = $callbackUrl . '-' . config('envSecret') . '-client-data';
+        $cacheKey = config('envSecret') . '-client-data';
 
         try {
             $config = $this->retrieve();
             cacheRemember(
                 $cacheKey,
-                function () use ($config, $callbackUrl) {
+                function () use ($config) {
                     $clientCredentials = $this->register(
                         [
                             'token_endpoint_auth_method' => 'none',
                             'registration_endpoint'      => $config['registration_endpoint'],
-                            'redirect_uris'              => [$callbackUrl],
                             'application_type'           => 'web',
                         ]
                     );
 
-                    return ['client_id' => $clientCredentials['client_id'], 'issuer' => $config['issuer']];
+                    return [
+                        'client_id'    => $clientCredentials['client_id'],
+                        'issuer'       => $config['issuer'],
+                        'redirect_uri' => $clientCredentials['redirect_uris'][0],
+                    ];
                 },
                 self::TTL
             );
@@ -59,7 +61,7 @@ class OidcClientManager
             cache($cacheKey)['issuer'],
             [
                 'clientId'    => cache($cacheKey)['client_id'],
-                'redirectUri' => $callbackUrl,
+                'redirectUri' => cache($cacheKey)['redirect_uri'],
                 'envSecret'   => config('envSecret'),
             ]
         );

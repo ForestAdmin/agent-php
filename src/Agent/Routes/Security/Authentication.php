@@ -65,7 +65,7 @@ class Authentication extends AbstractRoute
 
         return [
             'content' => [
-                'authorizationUrl' => $this->auth->start(config('agentUrl') . '/forest/authentication/callback', $renderingId),
+                'authorizationUrl' => $this->auth->start($renderingId),
             ],
         ];
     }
@@ -79,7 +79,7 @@ class Authentication extends AbstractRoute
      */
     public function handleAuthenticationCallback(): array
     {
-        $token = $this->auth->verifyCodeAndGenerateToken(config('agentUrl') . '/forest/authentication/callback', $this->request->all());
+        $token = $this->auth->verifyCodeAndGenerateToken($this->request->all());
         $tokenData = JWT::decode($token, new Key(config('envSecret'), 'HS256'));
 
         return [
