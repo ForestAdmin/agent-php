@@ -12,7 +12,7 @@ class Csv
      * @throws CannotInsertRecord
      * @throws Exception
      */
-    public static function make(array $rows, array $header, string $filename): string
+    public static function make(array $rows, array $header): string
     {
         $csv = Writer::createFromString();
         $csv->insertOne($header);
