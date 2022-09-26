@@ -2,6 +2,8 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query;
 
+use Illuminate\Support\Str;
+
 class Sort
 {
     private array $fields;
@@ -9,6 +11,7 @@ class Sort
     public function __construct(array $items)
     {
         foreach ($items as $item) {
+            $item = Str::replace('.', ':', $item);
             if ($this->fieldIsAscending($item)) {
                 $field = ['field' => $item, 'order' => 'ASC'];
             } else {
