@@ -162,8 +162,7 @@ class Collection
                 $records = $foreignCollection->list(
                     $caller,
                     FilterFactory::makeThroughFilter($collection, $id, $relationName, $caller, $foreignFilter),
-                    $projection,
-                    $arrayObject
+                    $projection
                 );
 
                 return $records;
@@ -173,8 +172,7 @@ class Collection
         return $foreignCollection->list(
             $caller,
             FilterFactory::makeForeignFilter($collection, $id, $relationName, $caller, $foreignFilter),
-            $projection,
-            $arrayObject
+            $projection
         );
     }
 
