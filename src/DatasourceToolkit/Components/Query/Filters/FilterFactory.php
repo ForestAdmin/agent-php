@@ -16,7 +16,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
-use PHPUnit\Framework\Constraint\Operator;
 
 class FilterFactory
 {
@@ -59,19 +58,15 @@ class FilterFactory
     public static function makeThroughFilter(Collection $collection, array $id, string $relationName, Caller $caller, Filter $baseForeignFilter): Filter
     {
         $relation = $collection->getFields()[$relationName];
-        $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getOriginKeyTarget());
+        $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getForeignKeyTarget());
         $foreignRelation = CollectionUtils::getThroughTarget($collection, $relationName);
-
         // Optimization for many to many when there is not search/segment (saves one query)
-        if ($foreignRelation && $baseForeignFilter->isNestable()) {
-            $baseThroughFilter = $baseForeignFilter->nest($foreignRelation);
-
-            return $baseThroughFilter->override(
+        if ($foreignRelation) {
+            return $baseForeignFilter->override(
                 conditionTree: ConditionTreeFactory::intersect(
                     [
-                        new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue),
-                        new ConditionTreeLeaf($relation->getForeignKey(), Operators::PRESENT),
-                        $baseThroughFilter->getConditionTree(),
+                        new ConditionTreeLeaf($relation->getForeignKey() . ':' . $relation->getForeignKeyTarget(), Operators::EQUAL, $originValue),
+                        $baseForeignFilter->getConditionTree(),
                     ]
                 )
             );
@@ -79,6 +74,7 @@ class FilterFactory
 
         // Otherwise we have no choice but to call the target collection so that search and segment
         // are correctly apply, and then match ids in the though collection.
+        // TODO useful for our agent
         /** @var Collection $target */
         $target = AgentFactory::get('datasource')->getCollection($relation->getForeignCollection());
         $records = $target->list(
@@ -115,15 +111,17 @@ class FilterFactory
      * - match only children of the provided recordId
      * - can apply on the target collection of the relation
      */
+    // todo check this method - it's useful for our agent ?
     public static function makeForeignFilter(Collection $collection, array $id, string $relationName, Caller $caller, Filter $baseForeignFilter): Filter
     {
         $relation = SchemaUtils::getToManyRelation($collection, $relationName);
         $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getOriginKeyTarget());
 
         if ($relation->getType() === 'OneToMany') {
-            $originTree = new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue);
+            $originTree = new ConditionTreeLeaf($relation->getInverseRelationName(), Operators::EQUAL, $originValue);
         } else {
             // ManyToMany case
+            // todo useful ?
             /** @var Collection $through */
             $through = AgentFactory::get('datasource')->getCollection($relation->getThroughTable());
             $throughTree = ConditionTreeFactory::intersect(
@@ -133,7 +131,6 @@ class FilterFactory
                 ]
             );
             $records = $through->list(new Filter(conditionTree: $throughTree), new Projection([$relation->getForeignKey()]));
-//            dd($collection->toArray($records[0])[$relation->getForeignKey()]);
             $originTree = new ConditionTreeLeaf(
                 $relation->getForeignKeyTarget(),
                 Operators::IN,

@@ -22,10 +22,11 @@ class Store extends AbstractCollectionRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
-        $this->permissions->can('add:' . $this->collection->getName(), $this->collection->getName());
+        $this->permissions->can('add:' . $this->collection->getName());
 
         return [
             'renderTransformer' => true,
+            'name'              => $args['collectionName'],
             'content'           => $this->collection->create($this->caller, $this->request->get('data')),
         ];
     }

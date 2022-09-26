@@ -2,12 +2,14 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Services;
 
+use ForestAdmin\AgentPHP\Agent\Facades\ForestSchema;
 use ForestAdmin\AgentPHP\Agent\Serializer\JsonApiSerializer;
 use Illuminate\Support\Collection as BaseCollection;
 use League\Fractal\Manager;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\Item;
 use League\Fractal\TransformerAbstract;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use function ForestAdmin\config;
 
 class JsonApiResponse
@@ -30,9 +32,9 @@ class JsonApiResponse
         //dd(cache('datasource'));
         //$resource = new Collection($class, $transformer, $name);
 
-        /*$transformer = app()->make(BaseTransformer::class);
+        /*$transformer = app()->make(BaseTransformer::class);*/
         $transformer->setAvailableIncludes(ForestSchema::getRelatedData($name));
-        */
+
         if (is_array($class) || $this->isCollection($class)) {
             $resource = new Collection($class, $transformer, $name);
         } /*elseif ($this->isPaginator($class)) {
@@ -61,7 +63,13 @@ class JsonApiResponse
 
     public function deactivateCountResponse(): JsonResponse
     {
-        // todo
+        return new JsonResponse(
+            [
+                'meta' => [
+                    'count' => 'deactivated',
+                ],
+            ]
+        );
     }
 
     protected function isCollection($instance): bool

@@ -51,6 +51,7 @@ class Charts extends AbstractCollectionRoute
         $scope = $this->permissions->getScope($this->collection);
         $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
         $this->setType($this->request->get('type'));
+        $this->setCaller(QueryStringParser::parseCaller($this->request));
 
         return [
             'renderChart' => true,
@@ -73,6 +74,11 @@ class Charts extends AbstractCollectionRoute
         $this->type = $type;
     }
 
+    public function setCaller(Caller $caller): void
+    {
+        $this->caller = $caller;
+    }
+
     private function makeValue(): ValueChart
     {
         $result = [
@@ -81,6 +87,7 @@ class Charts extends AbstractCollectionRoute
         ];
 
         $isAndAggregator = $this->filter->getConditionTree() instanceof ConditionTreeBranch && $this->filter->getConditionTree()->getAggregator() === 'And';
+
         $withCountPrevious = (bool) $this->filter->getConditionTree()?->someLeaf(fn ($leaf) => $leaf->useIntervalOperator());
 
         if ($withCountPrevious && ! $isAndAggregator) {

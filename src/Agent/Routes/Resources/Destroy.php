@@ -4,7 +4,11 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
+use ForestAdmin\AgentPHP\Agent\Utils\BodyParser;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
+use ForestAdmin\AgentPHP\Agent\Utils\Id;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
+use Illuminate\Support\Arr;
 
 class Destroy extends AbstractCollectionRoute
 {
@@ -30,11 +34,21 @@ class Destroy extends AbstractCollectionRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
+        $this->permissions->can('delete:' . $this->collection->getName());
 
-        $this->permissions->can('delete:' . $this->collection->getName(), $this->collection->getName());
-        $scope = $this->permissions->getScope($this->collection);
-        $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
-        $this->collection->delete($this->caller, $this->filter, $args['id']);
+        $id = Id::unpackId($this->collection, $args['id']);
+        $filter = ContextFilterFactory::build(
+            $this->collection,
+            $this->request,
+            ConditionTreeFactory::intersect(
+                [
+                    $this->permissions->getScope($this->collection),
+                    ConditionTreeFactory::matchIds($this->collection, [$id]),
+                ]
+            )
+        );
+
+        $this->collection->delete($this->caller, $filter, $id);
 
         return [
             'content' => null,
@@ -45,16 +59,25 @@ class Destroy extends AbstractCollectionRoute
     public function handleRequestBulk(array $args = []): array
     {
         $this->build($args);
-        $this->permissions->can('delete:' . $this->collection->getName(), $this->collection->getName());
-        $scope = $this->permissions->getScope($this->collection);
-        $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
+        $this->permissions->can('delete:' . $this->collection->getName());
+        $selectionIds = BodyParser::parseSelectionIds($this->collection, $this->request);
+        $conditionTreeIds = ConditionTreeFactory::matchIds($this->collection, $selectionIds['ids']);
+        if ($selectionIds['areExcluded']) {
+            $conditionTreeIds = $conditionTreeIds->inverse();
+        }
 
-        $attributes = $this->request->get('data')['attributes'];
-        $ids = $attributes['ids'];
-        $allRecords = $attributes['all_records'];
-        $idsExcluded = $attributes['all_records_ids_excluded'];
+        $filter = ContextFilterFactory::build(
+            $this->collection,
+            $this->request,
+            ConditionTreeFactory::intersect(
+                [
+                    $this->permissions->getScope($this->collection),
+                    $conditionTreeIds,
+                ]
+            )
+        );
 
-        $this->collection->deleteBulk($this->caller, $this->filter, $ids, $allRecords, $idsExcluded);
+        $this->collection->delete($this->caller, $filter, Arr::flatten($selectionIds['ids']));
 
         return [
             'content' => null,

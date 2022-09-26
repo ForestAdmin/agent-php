@@ -52,7 +52,9 @@ class LockableFile
     protected function ensureDirectoryExists($path)
     {
         if (! file_exists(dirname($path))) {
-            @mkdir(dirname($path), 0777, true);
+            if (! mkdir($concurrentDirectory = dirname($path), 0777, true) && ! is_dir($concurrentDirectory)) {
+                throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
+            }
         }
     }
 

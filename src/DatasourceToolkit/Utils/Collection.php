@@ -5,8 +5,11 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Utils;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection as MainCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
@@ -20,10 +23,12 @@ class Collection
 {
     public static function getInverseRelation(MainCollection $collection, string $relationName): ?string
     {
+        // TODO useful ? because we have the attribute inverseRelationName into our RelationSchema
         /** @var RelationSchema $relation */
         $relationField = $collection->getFields()->get($relationName);
         /** @var MainCollection $foreignCollection */
         $foreignCollection = AgentFactory::get('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relationField->getForeignCollection());
+
         $inverse = $foreignCollection->getFields()
             ->filter(fn ($field) => is_a($field, RelationSchema::class))
             ->filter(
@@ -117,6 +122,7 @@ class Collection
         }
 
         $record = $collection->list(
+            $caller,
             new Filter(conditionTree: ConditionTreeFactory::matchIds($collection, [$id])),
             new Projection([$field])
         );
@@ -135,5 +141,74 @@ class Collection
         }
 
         return $relation->getForeignCollection();
+    }
+
+    public static function listRelation(
+        MainCollection $collection,
+        $id,
+        string $relationName,
+        Caller $caller,
+        Filter $foreignFilter,
+        Projection $projection,
+        bool $arrayObject = true
+    ) {
+        $relation = Schema::getToManyRelation($collection, $relationName);
+        $foreignCollection = $collection->getDataSource()->getCollection($relation->getForeignCollection());
+        if ($relation->getType() === 'ManyToMany' && $foreignFilter->isNestable()) {
+            $foreignRelation = self::getThroughTarget($collection, $relationName);
+            $projection->push($relation->getForeignKey() . ':' . $relation->getForeignKeyTarget());
+
+            if ($foreignRelation === $foreignCollection->getName()) {
+                $records = $foreignCollection->list(
+                    $caller,
+                    FilterFactory::makeThroughFilter($collection, $id, $relationName, $caller, $foreignFilter),
+                    $projection
+                );
+
+                return $records;
+            }
+        }
+
+        return $foreignCollection->list(
+            $caller,
+            FilterFactory::makeForeignFilter($collection, $id, $relationName, $caller, $foreignFilter),
+            $projection
+        );
+    }
+
+    public static function aggregateRelation(
+        MainCollection $collection,
+        $id,
+        string $relationName,
+        Caller $caller,
+        Filter $foreignFilter,
+        Aggregation $aggregation,
+        ?int $limit = null
+    ) {
+        $relation = Schema::getToManyRelation($collection, $relationName);
+        $foreignCollection = $collection->getDataSource()->getCollection($relation->getForeignCollection());
+
+        if ($relation->getType() === 'ManyToMany' && $foreignFilter->isNestable()) {
+            $foreignRelation = self::getThroughTarget($collection, $relationName);
+            $aggregation = $aggregation->override(field: $relation->getForeignKey() . ':' . $relation->getForeignKeyTarget());
+
+            if ($foreignRelation === $foreignCollection->getName()) {
+                $records = $foreignCollection->aggregate(
+                    $caller,
+                    FilterFactory::makeThroughFilter($collection, $id, $relationName, $caller, $foreignFilter),
+                    $aggregation,
+                    $limit
+                );
+
+                return $records;
+            }
+        }
+
+        return $foreignCollection->aggregate(
+            $caller,
+            FilterFactory::makeForeignFilter($collection, $id, $relationName, $caller, $foreignFilter),
+            $aggregation,
+            $limit
+        );
     }
 }

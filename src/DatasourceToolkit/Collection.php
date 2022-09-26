@@ -7,11 +7,12 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContra
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results\ActionResult;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ActionSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection as IlluminateCollection;
@@ -89,6 +90,11 @@ class Collection implements CollectionContract
         // TODO: Implement list() method.
     }
 
+    public function export(Caller $caller, Filter $filter, Projection $projection): array
+    {
+        // TODO: Implement list() method.
+    }
+
     public function update(Caller $caller, Filter $filter, $id, array $patch)
     {
         // TODO: Implement update() method.
@@ -99,19 +105,19 @@ class Collection implements CollectionContract
         // TODO: Implement delete() method.
     }
 
-    public function deleteBulk(Caller $caller, Filter $filter, $ids, bool $allRecords = false, array $idsExcluded = []): void
-    {
-        // TODO: Implement delete() method.
-    }
-
-    public function count(Caller $caller, Filter $filter): int
-    {
-        // TODO: Implement count() method.
-    }
-
-    public function aggregate(string $chartType, Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null): array
+    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
     {
         // TODO: Implement aggregate() method.
+    }
+
+    public function associate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void
+    {
+        // TODO: Implement create() method.
+    }
+
+    public function dissociate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void
+    {
+        // TODO: Implement dissociate() method.
     }
 
     public function addFields(array $fields): void

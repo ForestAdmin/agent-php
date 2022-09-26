@@ -3,16 +3,16 @@
 namespace ForestAdmin\AgentPHP\Agent\Routes;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema;
 
-abstract class AbstractCollectionRoute extends AbstractAuthenticatedRoute
+abstract class AbstractRelationRoute extends AbstractAuthenticatedRoute
 {
     protected Collection $collection;
 
-    // todo remove attribute
-    protected Filter $filter;
+    protected Collection $childCollection;
 
     protected Datasource $datasource;
 
@@ -24,5 +24,9 @@ abstract class AbstractCollectionRoute extends AbstractAuthenticatedRoute
 
         $this->datasource = AgentFactory::get('datasource');
         $this->collection = $this->datasource->getCollection($args['collectionName']);
+        $this->collection->hydrate($args);
+
+        $relation = Schema::getToManyRelation($this->collection, $args['relationName']);
+        $this->childCollection = $this->datasource->getCollection($relation->getForeignCollection());
     }
 }
