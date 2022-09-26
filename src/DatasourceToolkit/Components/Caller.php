@@ -16,6 +16,7 @@ class Caller
         protected int $renderingId,
         protected array $tags,
         protected string $timezone,
+        protected string $permissionLevel,
         protected ?string $role = null,
     ) {
     }
