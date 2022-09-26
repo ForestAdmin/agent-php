@@ -67,9 +67,7 @@ class Listing extends AbstractCollectionRoute
         $header = explode(',', $this->request->get('header'));
 
         return [
-            'content' => [
-                Csv::make($rows, $header, $filename),
-            ],
+            'content' => Csv::make($rows, $header, $filename),
             'headers' => [
                 'Content-type'        => 'text/csv',
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',

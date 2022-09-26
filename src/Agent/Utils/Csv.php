@@ -12,17 +12,18 @@ class Csv
      * @throws CannotInsertRecord
      * @throws Exception
      */
-    public static function make(array $rows, array $header, string $filename): void
+    public static function make(array $rows, array $header, string $filename): string
     {
         $csv = Writer::createFromString();
         $csv->insertOne($header);
+
+        $records = [];
         foreach ($rows as $row) {
-            $csv->insertOne(self::formatField($row));
+            $records[] = self::formatField($row);
         }
+        $csv->insertAll($records);
 
-        $csv->toString();
-
-        $csv->output($filename);
+        return $csv->toString();
     }
 
     public static function formatField(array $field): array
