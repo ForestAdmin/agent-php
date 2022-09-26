@@ -16,12 +16,14 @@ class JsonApiSerializer extends FractalJsonApiSerializer
      */
     public function item(?string $resourceKey, array $data): array
     {
-        $collection = AgentFactory::get('datasource')->getCollection($resourceKey);
+        $collection = AgentFactory::get('datasource')
+            ->getCollections($resourceKey)
+            ->first(fn ($item) => $item->getName() === $resourceKey);
 
         $resource = [
             'data' => [
                 'type'       => $resourceKey,
-                'id'         => Id::packId($collection, $data),
+                'id'         => $collection ? Id::packId($collection, $data) : (string) $this->getIdFromData($data),
                 'attributes' => $data,
             ],
         ];
