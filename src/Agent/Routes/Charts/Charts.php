@@ -4,6 +4,7 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Charts;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
+use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LeaderboardChart;
@@ -103,7 +104,7 @@ class Charts extends AbstractCollectionRoute
         );
         $aggregate = Str::lower($this->request->get('aggregate'));
 
-        $result = $this->collection->aggregate($this->type, $this->caller, $this->filter, $aggregation);
+        $result = $this->collection->aggregate($this->caller, $this->filter, $aggregation, null, $this->type);
 
         return new PieChart($this->mapArrayToKeyValueAggregate($result, $aggregate));
     }
@@ -117,7 +118,7 @@ class Charts extends AbstractCollectionRoute
         );
         $aggregate = Str::lower($this->request->get('aggregate'));
 
-        $result = $this->collection->aggregate($this->type, $this->caller, $this->filter, $aggregation);
+        $result = $this->collection->aggregate($this->caller, $this->filter, $aggregation, null, $this->type);
 
         return new LineChart($this->mapArrayToKeyValueAggregateDate($result, $aggregate, $this->request->get('time_range')));
     }
@@ -147,7 +148,7 @@ class Charts extends AbstractCollectionRoute
             throw new ForestException('Failed to generate leaderboard chart: parameters do not match pre-requisites');
         }
         $filter = $this->filter->nest($foreignCollectionName);
-        $result = $this->collection->aggregate($this->type, $this->caller, $filter, $aggregation, $this->request->get('limit'));
+        $result = $this->collection->aggregate($this->caller, $filter, $aggregation, $this->request->get('limit'), $this->type);
 
         return new LeaderboardChart($this->mapArrayToKeyValueAggregate($result, $aggregate));
     }
@@ -155,7 +156,7 @@ class Charts extends AbstractCollectionRoute
     private function computeValue(Filter $filter): int
     {
         $aggregation = new Aggregation(operation: $this->request->get('aggregate'), field: $this->request->get('aggregate_field'));
-        $result = $this->collection->aggregate($this->type, $this->caller, $filter, $aggregation);
+        $result = $this->collection->aggregate($this->caller, $filter, $aggregation, null ,$this->type);
         $rows = array_shift($result);
 
         return array_values($rows)[0] ?? 0;

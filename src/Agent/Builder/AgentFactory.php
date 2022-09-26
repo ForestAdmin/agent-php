@@ -11,7 +11,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\Chart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
-use function ForestAdmin\cacheRemember;
 use function ForestAdmin\config;
 use function ForestAdmin\forget;
 
