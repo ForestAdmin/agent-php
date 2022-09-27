@@ -7,21 +7,15 @@ use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
 use ForestAdmin\AgentPHP\Agent\Services\Permissions;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
-<<<<<<< HEAD
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
-=======
->>>>>>> 662ea58 (chore: update chart test)
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LeaderboardChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LineChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ObjectiveChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\PieChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ValueChart;
-<<<<<<< HEAD
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
-=======
->>>>>>> 662ea58 (chore: update chart test)
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
@@ -31,31 +25,18 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToMany
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Str;
 
-<<<<<<< HEAD
 function factoryChart($args = []): Charts
 {
     $datasource = new Datasource();
     $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
 
     $collectionBooks = new Collection($datasource, 'Book');
-=======
-function factory($args = []): Charts
-{
-    $datasource = new Datasource();
-    $_SERVER['HTTP_AUTHORIZATION'] = $args['bearer'] ?? BEARER;
-
-    $collectionBooks = new Collection($datasource, 'books');
->>>>>>> 662ea58 (chore: update chart test)
     $collectionBooks->addFields(
         [
             'id'          => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
             'title'       => new ColumnSchema(columnType: PrimitiveType::STRING),
             'price'       => new ColumnSchema(columnType: PrimitiveType::NUMBER),
-<<<<<<< HEAD
             'date'        => new ColumnSchema(columnType: PrimitiveType::DATE, filterOperators: [Operators::YESTERDAY]),
-=======
-            'date'        => new ColumnSchema(columnType: PrimitiveType::DATE),
->>>>>>> 662ea58 (chore: update chart test)
             'year'        => new ColumnSchema(columnType: PrimitiveType::NUMBER),
             'reviews'     => new ManyToManySchema(
                 originKey: 'book_id',
@@ -63,32 +44,19 @@ function factory($args = []): Charts
                 throughTable: 'book_review',
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
-<<<<<<< HEAD
                 foreignCollection: 'Review',
                 inverseRelationName: 'Book',
-=======
-                foreignCollection: 'reviews',
-                inverseRelationName: 'books',
->>>>>>> 662ea58 (chore: update chart test)
             ),
             'bookReviews' => new OneToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
-<<<<<<< HEAD
                 foreignCollection: 'Review',
-=======
-                foreignCollection: 'reviews',
->>>>>>> 662ea58 (chore: update chart test)
                 inverseRelationName: 'bookReviews',
             ),
         ]
     );
 
-<<<<<<< HEAD
     $collectionReviews = new Collection($datasource, 'Review');
-=======
-    $collectionReviews = new Collection($datasource, 'reviews');
->>>>>>> 662ea58 (chore: update chart test)
     $collectionReviews->addFields(
         [
             'id'     => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
@@ -96,11 +64,7 @@ function factory($args = []): Charts
             'book'   => new ManyToOneSchema(
                 foreignKey: 'book_id',
                 foreignKeyTarget: 'id',
-<<<<<<< HEAD
                 foreignCollection: 'Book',
-=======
-                foreignCollection: 'books',
->>>>>>> 662ea58 (chore: update chart test)
                 inverseRelationName: 'bookReviews',
             ),
         ]
@@ -109,7 +73,6 @@ function factory($args = []): Charts
     if (isset($args['books']['results'])) {
         $collectionBooks = mock($collectionBooks)
             ->shouldReceive('aggregate')
-<<<<<<< HEAD
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null, \Mockery::type('string'));
 
         if (isset($args['books']['previous'])) {
@@ -119,10 +82,6 @@ function factory($args = []): Charts
             $collectionBooks = $collectionBooks->andReturn($args['books']['results'])
                 ->getMock();
         }
-=======
-            ->andReturn($args['books']['results'])
-            ->getMock();
->>>>>>> 662ea58 (chore: update chart test)
     }
 
     $datasource->addCollection($collectionBooks);
@@ -133,11 +92,7 @@ function factory($args = []): Charts
         'envSecret'    => SECRET,
         'isProduction' => false,
     ];
-<<<<<<< HEAD
     (new Agentfactory($options, []))->addDatasources([$datasource]);
-=======
-    (new AgentFactory($options, []))->addDatasources([$datasource]);
->>>>>>> 662ea58 (chore: update chart test)
 
     $_GET = $args['payload'];
     $request = Request::createFromGlobals();
@@ -161,10 +116,6 @@ function factory($args = []): Charts
     $chart = mock(Charts::class)
         ->makePartial()
         ->shouldReceive('checkIp')
-<<<<<<< HEAD
-=======
-        ->andReturnNull()
->>>>>>> 662ea58 (chore: update chart test)
         ->getMock();
 
     invokeProperty($chart, 'request', $request);
@@ -172,7 +123,6 @@ function factory($args = []): Charts
     return $chart;
 }
 
-<<<<<<< HEAD
 test('make() should return a new instance of Chart with routes', function () {
     $chart = Charts::make();
 
@@ -180,9 +130,6 @@ test('make() should return a new instance of Chart with routes', function () {
         ->and($chart->getRoutes())->toHaveKey('forest.chart');
 });
 
-
-=======
->>>>>>> 662ea58 (chore: update chart test)
 test('setType() should return type string', function () {
     $chart = new Charts();
     $chart->setType('Value');
@@ -197,11 +144,7 @@ test('setType() should throw a ForestException when the type does not exist in t
 });
 
 test('makeValue() should return a ValueChart', function () {
-<<<<<<< HEAD
     $chart = factoryChart(
-=======
-    $chart = factory(
->>>>>>> 662ea58 (chore: update chart test)
         [
             'books'   => [
                 'results' => [
@@ -212,11 +155,7 @@ test('makeValue() should return a ValueChart', function () {
             ],
             'payload' => [
                 'type'            => 'Value',
-<<<<<<< HEAD
                 'collection'      => 'Book',
-=======
-                'collection'      => 'books',
->>>>>>> 662ea58 (chore: update chart test)
                 'aggregate_field' => 'price',
                 'aggregate'       => 'Sum',
                 'filters'         => null,
@@ -225,11 +164,7 @@ test('makeValue() should return a ValueChart', function () {
         ]
     );
 
-<<<<<<< HEAD
     expect($chart->handleRequest(['collectionName' => 'Book']))
-=======
-    expect($chart->handleRequest(['collectionName' => 'books']))
->>>>>>> 662ea58 (chore: update chart test)
         ->toBeArray()
         ->toEqual(
             [
@@ -239,7 +174,6 @@ test('makeValue() should return a ValueChart', function () {
         );
 });
 
-<<<<<<< HEAD
 test('makeValue() with previous filter should return a ValueChart', function () {
     $chart = factoryChart(
         [
@@ -275,12 +209,6 @@ test('makeObjective() should return a ObjectiveChart', function () {
     $chart = factoryChart(
         [
             'books'   => [
-=======
-test('makeObjective() should return a ObjectiveChart', function () {
-    $chart = factory(
-        [
-            'books' => [
->>>>>>> 662ea58 (chore: update chart test)
                 'results' => [
                     [
                         'count' => 10,
@@ -289,11 +217,7 @@ test('makeObjective() should return a ObjectiveChart', function () {
             ],
             'payload' => [
                 'type'            => 'Objective',
-<<<<<<< HEAD
                 'collection'      => 'Book',
-=======
-                'collection'      => 'books',
->>>>>>> 662ea58 (chore: update chart test)
                 'aggregate_field' => 'price',
                 'aggregate'       => 'Count',
                 'filters'         => null,
@@ -302,11 +226,7 @@ test('makeObjective() should return a ObjectiveChart', function () {
         ],
     );
 
-<<<<<<< HEAD
     expect($chart->handleRequest(['collectionName' => 'Book']))
-=======
-    expect($chart->handleRequest(['collectionName' => 'books']))
->>>>>>> 662ea58 (chore: update chart test)
         ->toBeArray()
         ->toEqual(
             [
@@ -317,15 +237,9 @@ test('makeObjective() should return a ObjectiveChart', function () {
 });
 
 test('makePie() should return a PieChart', function () {
-<<<<<<< HEAD
     $chart = factoryChart(
         [
             'books'   => [
-=======
-    $chart = factory(
-        [
-            'books' => [
->>>>>>> 662ea58 (chore: update chart test)
                 'results' => [
                     [
                         'year'  => 2021,
@@ -339,11 +253,7 @@ test('makePie() should return a PieChart', function () {
             ],
             'payload' => [
                 'type'           => 'Pie',
-<<<<<<< HEAD
                 'collection'     => 'Book',
-=======
-                'collection'     => 'books',
->>>>>>> 662ea58 (chore: update chart test)
                 'group_by_field' => 'year',
                 'aggregate'      => 'Count',
                 'timezone'       => 'Europe/Paris',
@@ -351,11 +261,7 @@ test('makePie() should return a PieChart', function () {
         ],
     );
 
-<<<<<<< HEAD
     expect($chart->handleRequest(['collectionName' => 'Book']))
-=======
-    expect($chart->handleRequest(['collectionName' => 'books']))
->>>>>>> 662ea58 (chore: update chart test)
         ->toBeArray()
         ->toEqual(
             [
@@ -374,17 +280,10 @@ test('makePie() should return a PieChart', function () {
         );
 });
 
-<<<<<<< HEAD
 test('makeLine() with day filter should return a LineChart', function () {
     $chart = factoryChart(
         [
             'books'   => [
-=======
-test('makeLine() should return a LineChart', function () {
-    $chart = factory(
-        [
-            'books' => [
->>>>>>> 662ea58 (chore: update chart test)
                 'results' => [
                     [
                         'label' => new \DateTime('2022-01-03 00:00:00'),
@@ -398,7 +297,6 @@ test('makeLine() should return a LineChart', function () {
             ],
             'payload' => [
                 'type'                => 'Line',
-<<<<<<< HEAD
                 'collection'          => 'Book',
                 'group_by_date_field' => 'date',
                 'aggregate'           => 'Count',
@@ -445,9 +343,6 @@ test('makeLine() with week filter should return a LineChart', function () {
             'payload' => [
                 'type'                => 'Line',
                 'collection'          => 'Book',
-=======
-                'collection'          => 'books',
->>>>>>> 662ea58 (chore: update chart test)
                 'group_by_date_field' => 'date',
                 'aggregate'           => 'Count',
                 'time_range'          => 'Week',
@@ -456,11 +351,7 @@ test('makeLine() with week filter should return a LineChart', function () {
         ]
     );
 
-<<<<<<< HEAD
     expect($chart->handleRequest(['collectionName' => 'Book']))
-=======
-    expect($chart->handleRequest(['collectionName' => 'books']))
->>>>>>> 662ea58 (chore: update chart test)
         ->toBeArray()
         ->toEqual(
             [
@@ -479,7 +370,6 @@ test('makeLine() with week filter should return a LineChart', function () {
         );
 });
 
-<<<<<<< HEAD
 test('makeLine() with month filter should return a LineChart', function () {
     $chart = factoryChart(
         [
@@ -574,12 +464,6 @@ test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation
     $chart = factoryChart(
         [
             'books'   => [
-=======
-test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation', function () {
-    $chart = factory(
-        [
-            'books' => [
->>>>>>> 662ea58 (chore: update chart test)
                 'results' => [
                     [
                         'title' => 'Foundation',
@@ -593,11 +477,7 @@ test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation
             ],
             'payload' => [
                 'type'               => 'Leaderboard',
-<<<<<<< HEAD
                 'collection'         => 'Book',
-=======
-                'collection'         => 'books',
->>>>>>> 662ea58 (chore: update chart test)
                 'label_field'        => 'title',
                 'aggregate'          => 'Count',
                 'relationship_field' => 'bookReviews',
@@ -606,11 +486,7 @@ test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation
         ],
     );
 
-<<<<<<< HEAD
     expect($chart->handleRequest(['collectionName' => 'Book']))
-=======
-    expect($chart->handleRequest(['collectionName' => 'books']))
->>>>>>> 662ea58 (chore: update chart test)
         ->toBeArray()
         ->toEqual(
             [
@@ -630,15 +506,9 @@ test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation
 });
 
 test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relation', function () {
-<<<<<<< HEAD
     $chart = factoryChart(
         [
             'books'   => [
-=======
-    $chart = factory(
-        [
-            'books' => [
->>>>>>> 662ea58 (chore: update chart test)
                 'results' => [
                     [
                         'title' => 'Foundation',
@@ -652,11 +522,7 @@ test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relatio
             ],
             'payload' => [
                 'type'               => 'Leaderboard',
-<<<<<<< HEAD
                 'collection'         => 'Book',
-=======
-                'collection'         => 'books',
->>>>>>> 662ea58 (chore: update chart test)
                 'label_field'        => 'title',
                 'aggregate'          => 'Count',
                 'relationship_field' => 'reviews',
@@ -665,11 +531,7 @@ test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relatio
         ],
     );
 
-<<<<<<< HEAD
     expect($chart->handleRequest(['collectionName' => 'Book']))
-=======
-    expect($chart->handleRequest(['collectionName' => 'books']))
->>>>>>> 662ea58 (chore: update chart test)
         ->toBeArray()
         ->toEqual(
             [
@@ -689,36 +551,22 @@ test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relatio
 });
 
 test('makeLeaderboard() should throw a ForestException when the request is not filled correctly', function () {
-<<<<<<< HEAD
     $chart = factoryChart(
         [
             'books'   => [
-=======
-    $chart = factory(
-        [
-            'books' => [
->>>>>>> 662ea58 (chore: update chart test)
                 'results' => [],
             ],
             'payload' => [
                 'type'               => 'Leaderboard',
                 'aggregate'          => 'Count',
-<<<<<<< HEAD
                 'collection'         => 'Book',
-=======
-                'collection'         => 'books',
->>>>>>> 662ea58 (chore: update chart test)
                 'relationship_field' => 'reviews',
                 'timezone'           => 'Europe/Paris',
             ],
         ],
     );
 
-<<<<<<< HEAD
     expect(fn () => $chart->handleRequest(['collectionName' => 'Book']))->toThrow(ForestException::class, '🌳🌳🌳 Failed to generate leaderboard chart: parameters do not match pre-requisites');
-=======
-    expect(fn () => $chart->handleRequest(['collectionName' => 'books']))->toThrow(ForestException::class, '🌳🌳🌳 Failed to generate leaderboard chart: parameters do not match pre-requisites');
->>>>>>> 662ea58 (chore: update chart test)
 });
 
 test('mapArrayToKeyValueAggregate() should throw a ForestException when the type does not exist in the chartTypes list', function () {
@@ -726,4 +574,3 @@ test('mapArrayToKeyValueAggregate() should throw a ForestException when the type
 
     expect(fn () => $chart->setType('Maps'))->toThrow(ForestException::class, '🌳🌳🌳 Invalid Chart type Maps');
 });
-
