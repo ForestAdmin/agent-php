@@ -171,3 +171,38 @@ test('should automatically add pks for all relations when dealing with projectio
 
     expect($projection)->toEqual(new Projection(['name', 'owner:name', 'id', 'owner:id']));
 });
+
+test('union() should work with two projections', function () {
+    $projection1 = new Projection(['id', 'title']);
+    $projection2 = new Projection(['id', 'amount']);
+
+    expect($projection1->union($projection2))->toEqual(new Projection(
+        [
+            'id',
+            'title',
+            'amount',
+        ]
+    ));
+});
+
+
+test('union() should work with more two projections', function () {
+    $projection1 = new Projection(['id', 'title']);
+    $projection2 = new Projection(['id', 'amount']);
+    $projection3 = new Projection(['id', 'category']);
+
+    expect($projection1->union([$projection2, $projection3]))->toEqual(new Projection(
+        [
+            'id',
+            'title',
+            'amount',
+            'category',
+        ]
+    ));
+});
+
+test('union() should work with a null projection', function () {
+    $projection1 = new Projection(['id', 'title']);
+
+    expect($projection1->union(null))->toEqual($projection1);
+});

@@ -61,14 +61,12 @@ class Projection extends IlluminateCollection
             ->reduce(function ($memo, $items) {
                 if (is_iterable($items)) {
                     return [...$memo, ...$items];
-                } elseif ($items !== null) {
-                    return [...$memo, ...[$items]];
                 } else {
-                    return $memo;
+                    return [...$memo, ...[$items]];
                 }
             }, []);
 
-        return new Projection(array_unique($fields));
+        return new Projection(array_values(array_unique($fields)));
     }
 
     public function apply(array $records): IlluminateCollection
