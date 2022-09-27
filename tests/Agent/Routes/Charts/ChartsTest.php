@@ -270,7 +270,52 @@ test('makePie() should return a PieChart', function () {
         );
 });
 
-test('makeLine() should return a LineChart', function () {
+test('makeLine() with day filter should return a LineChart', function () {
+    $chart = factory(
+        [
+            'books'   => [
+                'results' => [
+                    [
+                        'label' => new \DateTime('2022-01-03 00:00:00'),
+                        'value' => 10,
+                    ],
+                    [
+                        'label' => new \DateTime('2022-01-10 00:00:00'),
+                        'value' => 15,
+                    ],
+                ],
+            ],
+            'payload' => [
+                'type'                => 'Line',
+                'collection'          => 'books',
+                'group_by_date_field' => 'date',
+                'aggregate'           => 'Count',
+                'time_range'          => 'Day',
+                'timezone'            => 'Europe/Paris',
+            ],
+        ]
+    );
+
+    expect($chart->handleRequest(['collectionName' => 'books']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'renderChart' => true,
+                'content'     => new LineChart([
+                    [
+                        'label'  => '03/01/2022',
+                        'values' => 10,
+                    ],
+                    [
+                        'label'  => '10/01/2022',
+                        'values' => 15,
+                    ],
+                ]),
+            ]
+        );
+});
+
+test('makeLine() with week filter should return a LineChart', function () {
     $chart = factory(
         [
             'books'   => [
@@ -308,6 +353,96 @@ test('makeLine() should return a LineChart', function () {
                     ],
                     [
                         'label'  => 'W02-2022',
+                        'values' => 15,
+                    ],
+                ]),
+            ]
+        );
+});
+
+test('makeLine() with month filter should return a LineChart', function () {
+    $chart = factory(
+        [
+            'books'   => [
+                'results' => [
+                    [
+                        'label' => new \DateTime('2022-01-01 00:00:00'),
+                        'value' => 10,
+                    ],
+                    [
+                        'label' => new \DateTime('2022-02-01 00:00:00'),
+                        'value' => 15,
+                    ],
+                ],
+            ],
+            'payload' => [
+                'type'                => 'Line',
+                'collection'          => 'books',
+                'group_by_date_field' => 'date',
+                'aggregate'           => 'Count',
+                'time_range'          => 'Month',
+                'timezone'            => 'Europe/Paris',
+            ],
+        ]
+    );
+
+    expect($chart->handleRequest(['collectionName' => 'books']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'renderChart' => true,
+                'content'     => new LineChart([
+                    [
+                        'label'  => 'Jan 2022',
+                        'values' => 10,
+                    ],
+                    [
+                        'label'  => 'Feb 2022',
+                        'values' => 15,
+                    ],
+                ]),
+            ]
+        );
+});
+
+test('makeLine() with month year should return a LineChart', function () {
+    $chart = factory(
+        [
+            'books'   => [
+                'results' => [
+                    [
+                        'label' => new \DateTime('2022-01-01 00:00:00'),
+                        'value' => 10,
+                    ],
+                    [
+                        'label' => new \DateTime('2023-01-01 00:00:00'),
+                        'value' => 15,
+                    ],
+                ],
+            ],
+            'payload' => [
+                'type'                => 'Line',
+                'collection'          => 'books',
+                'group_by_date_field' => 'date',
+                'aggregate'           => 'Count',
+                'time_range'          => 'Year',
+                'timezone'            => 'Europe/Paris',
+            ],
+        ]
+    );
+
+    expect($chart->handleRequest(['collectionName' => 'books']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'renderChart' => true,
+                'content'     => new LineChart([
+                    [
+                        'label'  => '2022',
+                        'values' => 10,
+                    ],
+                    [
+                        'label'  => '2023',
                         'values' => 15,
                     ],
                 ]),

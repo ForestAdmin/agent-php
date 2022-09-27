@@ -163,7 +163,7 @@ class Charts extends AbstractCollectionRoute
     private function computeValue(Filter $filter): int
     {
         $aggregation = new Aggregation(operation: $this->request->get('aggregate'), field: $this->request->get('aggregate_field'));
-        $result = $this->collection->aggregate($this->caller, $filter, $aggregation, null ,$this->type);
+        $result = $this->collection->aggregate($this->caller, $filter, $aggregation, null, $this->type);
         $rows = array_shift($result);
 
         return array_values($rows)[0] ?? 0;
@@ -173,6 +173,7 @@ class Charts extends AbstractCollectionRoute
     {
         return collect($array)
             ->map(function ($item) use ($aggregate) {
+                // @codeCoverageIgnoreStart
                 $keys = array_keys($item);
                 if ($keys[0] === Str::lower($aggregate)) {
                     $key = $item[$keys[1]];
@@ -181,6 +182,7 @@ class Charts extends AbstractCollectionRoute
                     $key = $item[$keys[0]];
                     $value = $item[$keys[1]];
                 }
+                // @codeCoverageIgnoreEnd
 
                 return compact('key', 'value');
             })->toArray();
@@ -190,6 +192,7 @@ class Charts extends AbstractCollectionRoute
     {
         return collect($array)
             ->map(function ($item) use ($aggregate, $aggregateIsADate) {
+                // @codeCoverageIgnoreStart
                 $keys = array_keys($item);
                 if ($keys[0] === Str::lower($aggregate)) {
                     $label = $item[$keys[1]];
@@ -198,6 +201,7 @@ class Charts extends AbstractCollectionRoute
                     $label = $item[$keys[0]];
                     $values = $item[$keys[1]];
                 }
+                // @codeCoverageIgnoreEnd
 
                 $label = $label->format($this->getDateFormat($aggregateIsADate));
 
@@ -207,14 +211,11 @@ class Charts extends AbstractCollectionRoute
 
     private function getDateFormat(string $field): string
     {
-        $format = match (Str::lower($field)) {
-            'day'   => 'd/m/Y',
+        return match (Str::lower($field)) {
             'week'  => '\WW-Y',
             'month' => 'M Y',
             'year'  => 'Y',
-            default => '',
+            default => 'd/m/Y',
         };
-
-        return $format;
     }
 }
