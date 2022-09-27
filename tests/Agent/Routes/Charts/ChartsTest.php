@@ -1,8 +1,11 @@
 <?php
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Facades\Cache;
+use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
-use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
+use ForestAdmin\AgentPHP\Agent\Services\Permissions;
+use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LeaderboardChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LineChart;
@@ -16,11 +19,12 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToMan
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use Illuminate\Support\Str;
 
-function factory($args = []): Datasource
+function factory($args = []): Charts
 {
     $datasource = new Datasource();
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
+    $_SERVER['HTTP_AUTHORIZATION'] = $args['bearer'] ?? BEARER;
 
     $collectionBooks = new Collection($datasource, 'books');
     $collectionBooks->addFields(
@@ -31,17 +35,19 @@ function factory($args = []): Datasource
             'date'        => new ColumnSchema(columnType: PrimitiveType::DATE),
             'year'        => new ColumnSchema(columnType: PrimitiveType::NUMBER),
             'reviews'     => new ManyToManySchema(
-                foreignKey: 'review_id',
-                foreignKeyTarget: 'id',
-                throughTable: 'bookReview',
                 originKey: 'book_id',
                 originKeyTarget: 'id',
-                foreignCollection: 'reviews'
+                throughTable: 'book_review',
+                foreignKey: 'review_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'reviews',
+                inverseRelationName: 'books',
             ),
             'bookReviews' => new OneToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'reviews',
+                inverseRelationName: 'bookReviews',
             ),
         ]
     );
@@ -55,6 +61,7 @@ function factory($args = []): Datasource
                 foreignKey: 'book_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'books',
+                inverseRelationName: 'bookReviews',
             ),
         ]
     );
@@ -74,47 +81,71 @@ function factory($args = []): Datasource
         'envSecret'    => SECRET,
         'isProduction' => false,
     ];
-    (new AgentFactory($options,  []))->addDatasources([$datasource]);
+    (new AgentFactory($options, []))->addDatasources([$datasource]);
 
-    return $datasource;
+    $_GET = $args['payload'];
+    $request = Request::createFromGlobals();
+    $permissions = new Permissions(QueryStringParser::parseCaller($request));
+
+    Cache::put(
+        $permissions->getCacheKey(10),
+        collect(
+            [
+                'scopes' => collect(),
+                'charts' => collect(
+                    [
+                        strtolower(Str::plural($_GET['type'])) . ':' . sha1(json_encode(ksort($_GET), JSON_THROW_ON_ERROR)),
+                    ]
+                ),
+            ]
+        ),
+        300
+    );
+
+    $chart = mock(Charts::class)
+        ->makePartial()
+        ->shouldReceive('checkIp')
+        ->andReturnNull()
+        ->getMock();
+
+    invokeProperty($chart, 'request', $request);
+
+    return $chart;
 }
 
 test('setType() should return type string', function () {
-    $chart = new Charts(new ForestAdminHttpDriverServices());
+    $chart = new Charts();
     $chart->setType('Value');
 
     expect($chart->getType())->toEqual('Value');
 });
 
 test('setType() should throw a ForestException when the type does not exist in the chartTypes list', function () {
-    $chart = new Charts(new ForestAdminHttpDriverServices());
+    $chart = new Charts();
 
     expect(fn () => $chart->setType('Maps'))->toThrow(ForestException::class, '🌳🌳🌳 Invalid Chart type Maps');
 });
 
 test('makeValue() should return a ValueChart', function () {
-    factory(
+    $chart = factory(
         [
-            'books' => [
+            'books'   => [
                 'results' => [
                     [
                         'sum' => 10,
                     ],
                 ],
             ],
+            'payload' => [
+                'type'            => 'Value',
+                'collection'      => 'books',
+                'aggregate_field' => 'price',
+                'aggregate'       => 'Sum',
+                'filters'         => null,
+                'timezone'        => 'Europe/Paris',
+            ],
         ]
     );
-
-    $_GET = [
-        'type'            => 'Value',
-        'collection'      => 'books',
-        'aggregate_field' => 'price',
-        'aggregate'       => 'Sum',
-        'filters'         => null,
-        'timezone'        => 'Europe/Paris',
-    ];
-
-    $chart = new Charts(new ForestAdminHttpDriverServices());
 
     expect($chart->handleRequest(['collectionName' => 'books']))
         ->toBeArray()
@@ -127,7 +158,7 @@ test('makeValue() should return a ValueChart', function () {
 });
 
 test('makeObjective() should return a ObjectiveChart', function () {
-    factory(
+    $chart = factory(
         [
             'books' => [
                 'results' => [
@@ -136,19 +167,16 @@ test('makeObjective() should return a ObjectiveChart', function () {
                     ],
                 ],
             ],
-        ]
+            'payload' => [
+                'type'            => 'Objective',
+                'collection'      => 'books',
+                'aggregate_field' => 'price',
+                'aggregate'       => 'Count',
+                'filters'         => null,
+                'timezone'        => 'Europe/Paris',
+            ],
+        ],
     );
-
-    $_GET = [
-        'type'            => 'Objective',
-        'collection'      => 'books',
-        'aggregate_field' => 'price',
-        'aggregate'       => 'Count',
-        'filters'         => null,
-        'timezone'        => 'Europe/Paris',
-    ];
-
-    $chart = new Charts(new ForestAdminHttpDriverServices());
 
     expect($chart->handleRequest(['collectionName' => 'books']))
         ->toBeArray()
@@ -161,7 +189,7 @@ test('makeObjective() should return a ObjectiveChart', function () {
 });
 
 test('makePie() should return a PieChart', function () {
-    factory(
+    $chart = factory(
         [
             'books' => [
                 'results' => [
@@ -175,18 +203,15 @@ test('makePie() should return a PieChart', function () {
                     ],
                 ],
             ],
-        ]
+            'payload' => [
+                'type'           => 'Pie',
+                'collection'     => 'books',
+                'group_by_field' => 'year',
+                'aggregate'      => 'Count',
+                'timezone'       => 'Europe/Paris',
+            ],
+        ],
     );
-
-    $_GET = [
-        'type'           => 'Pie',
-        'collection'     => 'books',
-        'group_by_field' => 'year',
-        'aggregate'      => 'Count',
-        'timezone'       => 'Europe/Paris',
-    ];
-
-    $chart = new Charts(new ForestAdminHttpDriverServices());
 
     expect($chart->handleRequest(['collectionName' => 'books']))
         ->toBeArray()
@@ -208,7 +233,7 @@ test('makePie() should return a PieChart', function () {
 });
 
 test('makeLine() should return a LineChart', function () {
-    factory(
+    $chart = factory(
         [
             'books' => [
                 'results' => [
@@ -222,19 +247,16 @@ test('makeLine() should return a LineChart', function () {
                     ],
                 ],
             ],
+            'payload' => [
+                'type'                => 'Line',
+                'collection'          => 'books',
+                'group_by_date_field' => 'date',
+                'aggregate'           => 'Count',
+                'time_range'          => 'Week',
+                'timezone'            => 'Europe/Paris',
+            ],
         ]
     );
-
-    $_GET = [
-        'type'                => 'Line',
-        'collection'          => 'books',
-        'group_by_date_field' => 'date',
-        'aggregate'           => 'Count',
-        'time_range'          => 'Week',
-        'timezone'            => 'Europe/Paris',
-    ];
-
-    $chart = new Charts(new ForestAdminHttpDriverServices());
 
     expect($chart->handleRequest(['collectionName' => 'books']))
         ->toBeArray()
@@ -256,7 +278,7 @@ test('makeLine() should return a LineChart', function () {
 });
 
 test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation', function () {
-    factory(
+    $chart = factory(
         [
             'books' => [
                 'results' => [
@@ -270,19 +292,16 @@ test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation
                     ],
                 ],
             ],
-        ]
+            'payload' => [
+                'type'               => 'Leaderboard',
+                'collection'         => 'books',
+                'label_field'        => 'title',
+                'aggregate'          => 'Count',
+                'relationship_field' => 'bookReviews',
+                'timezone'           => 'Europe/Paris',
+            ],
+        ],
     );
-
-    $_GET = [
-        'type'               => 'Leaderboard',
-        'collection'         => 'books',
-        'label_field'        => 'title',
-        'aggregate'          => 'Count',
-        'relationship_field' => 'bookReviews',
-        'timezone'           => 'Europe/Paris',
-    ];
-
-    $chart = new Charts(new ForestAdminHttpDriverServices());
 
     expect($chart->handleRequest(['collectionName' => 'books']))
         ->toBeArray()
@@ -304,7 +323,7 @@ test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation
 });
 
 test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relation', function () {
-    factory(
+    $chart = factory(
         [
             'books' => [
                 'results' => [
@@ -318,19 +337,16 @@ test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relatio
                     ],
                 ],
             ],
-        ]
+            'payload' => [
+                'type'               => 'Leaderboard',
+                'collection'         => 'books',
+                'label_field'        => 'title',
+                'aggregate'          => 'Count',
+                'relationship_field' => 'reviews',
+                'timezone'           => 'Europe/Paris',
+            ],
+        ],
     );
-
-    $_GET = [
-        'type'               => 'Leaderboard',
-        'collection'         => 'books',
-        'label_field'        => 'title',
-        'aggregate'          => 'Count',
-        'relationship_field' => 'reviews',
-        'timezone'           => 'Europe/Paris',
-    ];
-
-    $chart = new Charts(new ForestAdminHttpDriverServices());
 
     expect($chart->handleRequest(['collectionName' => 'books']))
         ->toBeArray()
@@ -352,28 +368,27 @@ test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relatio
 });
 
 test('makeLeaderboard() should throw a ForestException when the request is not filled correctly', function () {
-    factory(
+    $chart = factory(
         [
             'books' => [
                 'results' => [],
             ],
-        ]
+            'payload' => [
+                'type'               => 'Leaderboard',
+                'aggregate'          => 'Count',
+                'collection'         => 'books',
+                'relationship_field' => 'reviews',
+                'timezone'           => 'Europe/Paris',
+            ],
+        ],
     );
-    $_GET = [
-        'type'               => 'Leaderboard',
-        'aggregate'          => 'Count',
-        'collection'         => 'books',
-        'relationship_field' => 'reviews',
-        'timezone'           => 'Europe/Paris',
-    ];
-
-    $chart = new Charts(new ForestAdminHttpDriverServices());
 
     expect(fn () => $chart->handleRequest(['collectionName' => 'books']))->toThrow(ForestException::class, '🌳🌳🌳 Failed to generate leaderboard chart: parameters do not match pre-requisites');
 });
 
 test('mapArrayToKeyValueAggregate() should throw a ForestException when the type does not exist in the chartTypes list', function () {
-    $chart = new Charts(new ForestAdminHttpDriverServices());
+    $chart = new Charts();
 
     expect(fn () => $chart->setType('Maps'))->toThrow(ForestException::class, '🌳🌳🌳 Invalid Chart type Maps');
 });
+
