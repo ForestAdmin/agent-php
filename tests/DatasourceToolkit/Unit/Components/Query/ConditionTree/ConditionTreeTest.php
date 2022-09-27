@@ -66,9 +66,18 @@ test('nest() should work', function (ConditionTreeBranch $tree) {
     );
 })->with('conditionTreeBranch');
 
-test('unnest() should work', function (ConditionTreeBranch $tree) {
+test('unnest() should work with conditionTreeBranch', function (ConditionTreeBranch $tree) {
     expect($tree->nest('prefix')->unnest())->toEqual($tree);
 })->with('conditionTreeBranch');
+
+test('unnest() should work with conditionTreeLeaf', function (ConditionTreeBranch $tree) {
+    $tree = $tree->nest('prefix');
+    $conditionTreeLeaf = $tree->getConditions()[0];
+
+    expect($conditionTreeLeaf->unnest())
+        ->toEqual(new ConditionTreeLeaf('column1', Operators::EQUAL, true));
+})->with('conditionTreeBranch');
+
 
 test('unnest() should throw', function (ConditionTreeBranch $tree) {
     expect(static fn () => $tree->unnest())
@@ -114,3 +123,8 @@ test('forEachLeaf() should work', function (ConditionTreeBranch $tree) {
         )
     );
 })->with('conditionTreeBranch');
+
+test('validOperator() should throw', function () {
+    expect(static fn () => new ConditionTreeLeaf('column1', 'unknown'))
+        ->toThrow(ForestException::class, '🌳🌳🌳 Invalid operators, the unknown operator does not exist.');
+});
