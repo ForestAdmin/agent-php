@@ -27,6 +27,7 @@ function conditionTreeCollectionValidation(): Collection
                 originKey: 'id',
                 originKeyTarget: 'id',
                 foreignCollection: 'owner',
+                inverseRelationName: 'car'
             ),
         ]
     );
@@ -38,7 +39,8 @@ function conditionTreeCollectionValidation(): Collection
             'address' => new OneToOneSchema(
                 originKey: 'id',
                 originKeyTarget: 'id',
-                foreignCollection: 'address'
+                foreignCollection: 'address',
+                inverseRelationName: 'owner'
             ),
         ]
     );
@@ -49,7 +51,7 @@ function conditionTreeCollectionValidation(): Collection
     $options = [
         'projectDir' => sys_get_temp_dir(), // only use for cache
     ];
-    (new AgentFactory($options))->addDatasources([$datasource]);
+    (new AgentFactory($options,  []))->addDatasources([$datasource]);
 
     return $collectionCars;
 }

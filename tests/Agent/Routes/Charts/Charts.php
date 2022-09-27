@@ -20,7 +20,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 function factory($args = []): Datasource
 {
     $datasource = new Datasource();
-    $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZW1haWwiOiJqb2huLmRvZUBkb21haW4uY29tIiwiZmlyc3ROYW1lIjoiSm9obiIsImxhc3ROYW1lIjoiRG9lIiwidGVhbSI6IkRldmVsb3BlcnMiLCJyZW5kZXJpbmdJZCI6IjEwIiwidGFncyI6W10sInRpbWV6b25lIjoiRXVyb3BlL1BhcmlzIn0.-zTadg2QjQSH6b5kZxa4kSfBCZBAZq9T4ZJqAkTAQcs';
+    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
 
     $collectionBooks = new Collection($datasource, 'books');
     $collectionBooks->addFields(
@@ -71,10 +71,10 @@ function factory($args = []): Datasource
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => '34b6d9b573e160b957244c1082619bc5a9e36ee8abae5fe7d15991d08ac9f31d',
+        'envSecret'    => SECRET,
         'isProduction' => false,
     ];
-    (new AgentFactory($options))->addDatasources([$datasource]);
+    (new AgentFactory($options,  []))->addDatasources([$datasource]);
 
     return $datasource;
 }

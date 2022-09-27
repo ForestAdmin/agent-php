@@ -49,6 +49,7 @@ function projectionDatasource(): Datasource
                 originKey: 'id',
                 originKeyTarget: 'owner_id',
                 foreignCollection: 'owners',
+                inverseRelationName: 'car'
             ),
         ]
     );
@@ -65,7 +66,7 @@ function projectionDatasource(): Datasource
     $options = [
         'projectDir'      => sys_get_temp_dir(), // only use for cache
     ];
-    (new AgentFactory($options))->addDatasources([$datasource]);
+    (new AgentFactory($options,  []))->addDatasources([$datasource]);
 
     return $datasource;
 }

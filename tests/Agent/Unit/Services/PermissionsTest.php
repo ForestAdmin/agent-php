@@ -16,7 +16,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 function permissionsFactory($scopes = [], $post = []): Permissions
 {
-    $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZW1haWwiOiJqb2huLmRvZUBkb21haW4uY29tIiwiZmlyc3ROYW1lIjoiSm9obiIsImxhc3ROYW1lIjoiRG9lIiwidGVhbSI6IkRldmVsb3BlcnMiLCJyZW5kZXJpbmdJZCI6IjEwIiwidGFncyI6eyJzb21ldGhpbmciOiJ0YWdWYWx1ZSJ9LCJ0aW1lem9uZSI6IkV1cm9wZS9QYXJpcyJ9.iNiTlSoaCfUIOJ643E8AdhbsmIu45KB4L-TaCt0qNyU';
+    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
     $_GET = ['timezone' => 'Europe/Paris'];
     $_POST = $post;
     $datasource = new Datasource();
@@ -30,10 +30,10 @@ function permissionsFactory($scopes = [], $post = []): Permissions
     $datasource->addCollection($collectionBooking);
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => '34b6d9b573e160b957244c1082619bc5a9e36ee8abae5fe7d15991d08ac9f31d',
+        'envSecret'    => SECRET,
         'isProduction' => false,
     ];
-    (new AgentFactory($options))->addDatasources([$datasource]);
+    (new AgentFactory($options,  []))->addDatasources([$datasource]);
 
     $request = Request::createFromGlobals();
     $permissions = new Permissions(QueryStringParser::parseCaller($request));

@@ -25,6 +25,7 @@ function dataSourceWithInverseRelationMissing(): Datasource
                 foreignKey: 'authorId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'persons',
+                inverseRelationName: 'books'
             ),
             'authorId' => new ColumnSchema(
                 columnType: PrimitiveType::UUID,
@@ -46,12 +47,13 @@ function dataSourceWithInverseRelationMissing(): Datasource
     $options = [
         'projectDir' => sys_get_temp_dir(), // only use for cache
     ];
-    (new AgentFactory($options))->addDatasources([$datasource]);
+    (new AgentFactory($options,  []))->addDatasources([$datasource]);
 
     return $datasource;
 }
 
-function datasourceWithAllRelations() {
+function datasourceWithAllRelations(): Datasource
+{
     $datasource = new Datasource();
     $collectionBooks = new Collection($datasource, 'books');
     $collectionBooks->addFields(
@@ -61,17 +63,19 @@ function datasourceWithAllRelations() {
                 isPrimaryKey: true
             ),
             'myPersons'   => new ManyToManySchema(
-                foreignKey: 'personId',
-                foreignKeyTarget: 'id',
-                throughTable: 'bookPersons',
                 originKey: 'bookId',
                 originKeyTarget: 'id',
+                throughTable: 'bookPersons',
+                foreignKey: 'personId',
+                foreignKeyTarget: 'id',
                 foreignCollection: 'persons',
+                inverseRelationName: 'persons'
             ),
             'myBookPersons'   => new OneToManySchema(
                 originKey: 'bookId',
                 originKeyTarget: 'id',
                 foreignCollection: 'bookPersons',
+                inverseRelationName: 'bookPersons'
             ),
         ]
     );
@@ -90,11 +94,13 @@ function datasourceWithAllRelations() {
                 foreignKey: 'bookId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'books',
+                inverseRelationName: 'book'
             ),
             'myPerson'   => new ManyToOneSchema(
                 foreignKey: 'personId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'persons',
+                inverseRelationName: 'person'
             ),
         ]
     );
@@ -106,17 +112,19 @@ function datasourceWithAllRelations() {
                 isPrimaryKey: true
             ),
             'myBooks'   => new ManyToManySchema(
-                foreignKey: 'bookId',
-                foreignKeyTarget: 'id',
-                throughTable: 'bookPersons',
                 originKey: 'personId',
                 originKeyTarget: 'id',
+                throughTable: 'bookPersons',
+                foreignKey: 'bookId',
+                foreignKeyTarget: 'id',
                 foreignCollection: 'books',
+                inverseRelationName: 'persons'
             ),
             'myBookPerson'   => new OneToOneSchema(
                 originKey: 'personId',
                 originKeyTarget: 'id',
                 foreignCollection: 'bookPersons',
+                inverseRelationName: 'bookPersons'
             ),
         ]
     );
@@ -127,7 +135,7 @@ function datasourceWithAllRelations() {
     $options = [
         'projectDir' => sys_get_temp_dir(), // only use for cache
     ];
-    (new AgentFactory($options))->addDatasources([$datasource]);
+    (new AgentFactory($options,  []))->addDatasources([$datasource]);
 
     return $datasource;
 }

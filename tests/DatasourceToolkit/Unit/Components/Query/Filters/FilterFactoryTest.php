@@ -77,7 +77,7 @@ dataset('DatasourceForFilterFactory', dataset: function () {
     $options = [
         'projectDir' => sys_get_temp_dir(), // only use for cache
     ];
-    (new AgentFactory($options))->addDatasources([$datasource]);
+    (new AgentFactory($options,  []))->addDatasources([$datasource]);
 });
 
 test('getPreviousPeriodFilter() when no interval operator is present in the condition tree should not modify the condition tree', closure: function () {

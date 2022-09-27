@@ -51,9 +51,9 @@ dataset('QueryStringParserCollection', static function () {
     $datasource->addCollection($housesCollection);
     $options = [
         'projectDir' => sys_get_temp_dir(), // only use for cache
-        'envSecret'  => '34b6d9b573e160b957244c1082619bc5a9e36ee8abae5fe7d15991d08ac9f31d',
+        'envSecret'  => SECRET,
     ];
-    (new AgentFactory($options))->addDatasources([$datasource]);
+    (new AgentFactory($options,  []))->addDatasources([$datasource]);
 });
 
 test('parseConditionTree() should work when passed in the querystring (for list)', function ($datasource) {
