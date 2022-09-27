@@ -12,6 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LineChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ObjectiveChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\PieChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ValueChart;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
@@ -32,7 +33,7 @@ function factory($args = []): Charts
             'id'          => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
             'title'       => new ColumnSchema(columnType: PrimitiveType::STRING),
             'price'       => new ColumnSchema(columnType: PrimitiveType::NUMBER),
-            'date'        => new ColumnSchema(columnType: PrimitiveType::DATE),
+            'date'        => new ColumnSchema(columnType: PrimitiveType::DATE, filterOperators: [Operators::YESTERDAY]),
             'year'        => new ColumnSchema(columnType: PrimitiveType::NUMBER),
             'reviews'     => new ManyToManySchema(
                 originKey: 'book_id',
@@ -68,9 +69,15 @@ function factory($args = []): Charts
 
     if (isset($args['books']['results'])) {
         $collectionBooks = mock($collectionBooks)
-            ->shouldReceive('aggregate')
-            ->andReturn($args['books']['results'])
-            ->getMock();
+            ->shouldReceive('aggregate');
+
+        if (isset($args['books']['previous'])) {
+            $collectionBooks = $collectionBooks->andReturn($args['books']['results'][0], $args['books']['results'][1])
+                ->getMock();
+        } else {
+            $collectionBooks = $collectionBooks->andReturn($args['books']['results'])
+                ->getMock();
+        }
     }
 
     $datasource->addCollection($collectionBooks);
@@ -157,10 +164,41 @@ test('makeValue() should return a ValueChart', function () {
         );
 });
 
+test('makeValue() with previous filter should return a ValueChart', function () {
+    $chart = factory(
+        [
+            'books'   => [
+                'results'  => [
+                    [['sum' => 10]],
+                    [['previous' => 5]],
+                ],
+                'previous' => true,
+            ],
+            'payload' => [
+                'type'            => 'Value',
+                'collection'      => 'books',
+                'aggregate_field' => 'price',
+                'aggregate'       => 'Sum',
+                'filters'         => "{\"field\":\"date\",\"operator\":\"yesterday\",\"value\":null}",
+                'timezone'        => 'Europe/Paris',
+            ],
+        ]
+    );
+
+    expect($chart->handleRequest(['collectionName' => 'books']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'renderChart' => true,
+                'content'     => new ValueChart(10, 5),
+            ]
+        );
+});
+
 test('makeObjective() should return a ObjectiveChart', function () {
     $chart = factory(
         [
-            'books' => [
+            'books'   => [
                 'results' => [
                     [
                         'count' => 10,
@@ -191,7 +229,7 @@ test('makeObjective() should return a ObjectiveChart', function () {
 test('makePie() should return a PieChart', function () {
     $chart = factory(
         [
-            'books' => [
+            'books'   => [
                 'results' => [
                     [
                         'year'  => 2021,
@@ -235,7 +273,7 @@ test('makePie() should return a PieChart', function () {
 test('makeLine() should return a LineChart', function () {
     $chart = factory(
         [
-            'books' => [
+            'books'   => [
                 'results' => [
                     [
                         'label' => new \DateTime('2022-01-03 00:00:00'),
@@ -280,7 +318,7 @@ test('makeLine() should return a LineChart', function () {
 test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation', function () {
     $chart = factory(
         [
-            'books' => [
+            'books'   => [
                 'results' => [
                     [
                         'title' => 'Foundation',
@@ -325,7 +363,7 @@ test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation
 test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relation', function () {
     $chart = factory(
         [
-            'books' => [
+            'books'   => [
                 'results' => [
                     [
                         'title' => 'Foundation',
@@ -370,7 +408,7 @@ test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relatio
 test('makeLeaderboard() should throw a ForestException when the request is not filled correctly', function () {
     $chart = factory(
         [
-            'books' => [
+            'books'   => [
                 'results' => [],
             ],
             'payload' => [

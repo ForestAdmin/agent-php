@@ -29,7 +29,6 @@ class AgentFactory
         $this->compositeDatasource = new Datasource();
         $this->buildContainer($services);
         $this->buildCache($config);
-
     }
 
     public function addDatasources(array $datasources): void
