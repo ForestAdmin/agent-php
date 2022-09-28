@@ -480,8 +480,6 @@ test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation
         ],
     );
 
-    dd($chart->handleRequest(['collectionName' => 'Book']));
-
     expect($chart->handleRequest(['collectionName' => 'Book']))
         ->toBeArray()
         ->toEqual(

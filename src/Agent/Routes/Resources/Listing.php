@@ -8,7 +8,6 @@ use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Csv;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use Illuminate\Support\Str;
-use League\Csv\Writer;
 
 class Listing extends AbstractCollectionRoute
 {
