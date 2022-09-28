@@ -51,6 +51,200 @@ test('matchIds() with a collection with no pk should raise error', function () {
         ->toThrow(ForestException::class, 'Collection must have at least one primary key');
 });
 
+test('matchIds() with a collection which does not support equal and in should raise error', function () {
+    $collection = new Collection(new Datasource(), 'cars');
+    $collection->addFields(
+        [
+            'id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+        ]
+    );
+
+    expect(static fn () => ConditionTreeFactory::matchIds($collection, [[]]))
+        ->toThrow(ForestException::class, "🌳🌳🌳 Field 'id' must support operators: ['Equal', 'In']");
+});
+
+test('matchRecords() should generate matchNone with simple PK', function () {
+    $collection = new Collection(new Datasource(), 'cars');
+    $collection->addFields(
+        [
+            'id' => new ColumnSchema(
+                columnType: PrimitiveType::NUMBER,
+                filterOperators: [Operators::EQUAL, Operators::IN],
+                isPrimaryKey: true
+            ),
+        ]
+    );
+
+    expect(ConditionTreeFactory::matchRecords($collection, []))
+        ->toEqual(new ConditionTreeBranch('Or', []));
+});
+
+test('matchRecords() should generate equal with simple PK', function () {
+    $collection = new Collection(new Datasource(), 'cars');
+    $collection->addFields(
+        [
+            'id' => new ColumnSchema(
+                columnType: PrimitiveType::NUMBER,
+                filterOperators: [Operators::EQUAL, Operators::IN],
+                isPrimaryKey: true
+            ),
+        ]
+    );
+
+    expect(ConditionTreeFactory::matchRecords($collection, [['id' => 1]]))
+        ->toEqual(new ConditionTreeLeaf('id', 'Equal', 1));
+});
+
+test('matchRecords() should generate In with simple PK', function () {
+    $collection = new Collection(new Datasource(), 'cars');
+    $collection->addFields(
+        [
+            'id' => new ColumnSchema(
+                columnType: PrimitiveType::NUMBER,
+                filterOperators: [Operators::EQUAL, Operators::IN],
+                isPrimaryKey: true
+            ),
+        ]
+    );
+
+    expect(ConditionTreeFactory::matchRecords($collection, [['id' => 1], ['id' => 2]]))
+        ->toEqual(new ConditionTreeLeaf('id', 'In', [1, 2]));
+});
+
+test('matchRecords() should generate a simple and with a composite PK', function () {
+    $collection = new Collection(new Datasource(), 'cars');
+    $collection->addFields(
+        [
+            'col1' => new ColumnSchema(
+                columnType: PrimitiveType::NUMBER,
+                filterOperators: [Operators::EQUAL, Operators::IN],
+                isPrimaryKey: true
+            ),
+            'col2' => new ColumnSchema(
+                columnType: PrimitiveType::NUMBER,
+                filterOperators: [Operators::EQUAL, Operators::IN],
+                isPrimaryKey: true
+            ),
+        ]
+    );
+
+    expect(
+        ConditionTreeFactory::matchRecords(
+            $collection,
+            [
+                [
+                    'col1' => 1,
+                    'col2' => 1,
+                ],
+            ]
+        )
+    )->toEqual(
+        new ConditionTreeBranch(
+            'And',
+            [
+                new ConditionTreeLeaf('col1', 'Equal', 1),
+                new ConditionTreeLeaf('col2', 'Equal', 1),
+            ]
+        )
+    );
+});
+
+test('matchRecords() should factorize with a composite PK', function () {
+    $collection = new Collection(new Datasource(), 'cars');
+    $collection->addFields(
+        [
+            'col1' => new ColumnSchema(
+                columnType: PrimitiveType::NUMBER,
+                filterOperators: [Operators::EQUAL, Operators::IN],
+                isPrimaryKey: true
+            ),
+            'col2' => new ColumnSchema(
+                columnType: PrimitiveType::NUMBER,
+                filterOperators: [Operators::EQUAL, Operators::IN],
+                isPrimaryKey: true
+            ),
+        ]
+    );
+
+    expect(
+        ConditionTreeFactory::matchRecords(
+            $collection,
+            [
+                [
+                    'col1' => 1,
+                    'col2' => 1,
+                ],
+                [
+                    'col1' => 1,
+                    'col2' => 2,
+                ],
+            ]
+        )
+    )->toEqual(
+        new ConditionTreeBranch(
+            'And',
+            [
+                new ConditionTreeLeaf('col1', 'Equal', 1),
+                new ConditionTreeLeaf('col2', 'In', [1,2]),
+            ]
+        )
+    );
+});
+
+test('matchRecords() should not factorize with a composite PK', function () {
+    $collection = new Collection(new Datasource(), 'cars');
+    $collection->addFields(
+        [
+            'col1' => new ColumnSchema(
+                columnType: PrimitiveType::NUMBER,
+                filterOperators: [Operators::EQUAL, Operators::IN],
+                isPrimaryKey: true
+            ),
+            'col2' => new ColumnSchema(
+                columnType: PrimitiveType::NUMBER,
+                filterOperators: [Operators::EQUAL, Operators::IN],
+                isPrimaryKey: true
+            ),
+        ]
+    );
+
+    expect(
+        ConditionTreeFactory::matchRecords(
+            $collection,
+            [
+                [
+                    'col1' => 1,
+                    'col2' => 1,
+                ],
+                [
+                    'col1' => 2,
+                    'col2' => 2,
+                ],
+            ]
+        )
+    )->toEqual(
+        new ConditionTreeBranch(
+            'Or',
+            [
+                new ConditionTreeBranch(
+                    'And',
+                    [
+                        new ConditionTreeLeaf('col1', 'Equal', 1),
+                        new ConditionTreeLeaf('col2', 'Equal', 1),
+                    ]
+                ),
+                new ConditionTreeBranch(
+                    'And',
+                    [
+                        new ConditionTreeLeaf('col1', 'Equal', 2),
+                        new ConditionTreeLeaf('col2', 'Equal', 2),
+                    ]
+                ),
+            ]
+        )
+    );
+});
+
 test('fromArray() should crash when calling with badly formatted array', function () {
     expect(static fn () => ConditionTreeFactory::fromArray([]))
         ->toThrow(ForestException::class, '🌳🌳🌳 Failed to instantiate condition tree from array');
