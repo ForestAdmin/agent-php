@@ -11,7 +11,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 use Illuminate\Support\Carbon;
@@ -26,7 +25,7 @@ class FilterFactory
     {
         return $filter->override(
             conditionTree: $filter->getConditionTree()->replaceLeafs(
-                fn (ConditionTreeLeaf $leaf)            => match ($leaf->getOperator()) {
+                fn (ConditionTreeLeaf $leaf) => match ($leaf->getOperator()) {
                     Operators::YESTERDAY                => self::getPreviousPeriodByUnit($leaf->getField(), 'Day', $timezone),
                     Operators::PREVIOUS_WEEK            => self::getPreviousPeriodByUnit($leaf->getField(), 'Week', $timezone),
                     Operators::PREVIOUS_MONTH           => self::getPreviousPeriodByUnit($leaf->getField(), 'Month', $timezone),
@@ -58,14 +57,14 @@ class FilterFactory
     public static function makeThroughFilter(Collection $collection, array $id, string $relationName, Caller $caller, Filter $baseForeignFilter): Filter
     {
         $relation = $collection->getFields()[$relationName];
-        $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getForeignKeyTarget());
+        $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getOriginKeyTarget());
         $foreignRelation = CollectionUtils::getThroughTarget($collection, $relationName);
         // Optimization for many to many when there is not search/segment (saves one query)
         if ($foreignRelation) {
             return $baseForeignFilter->override(
                 conditionTree: ConditionTreeFactory::intersect(
                     [
-                        new ConditionTreeLeaf($relation->getForeignKey() . ':' . $relation->getForeignKeyTarget(), Operators::EQUAL, $originValue),
+                        new ConditionTreeLeaf($relation->getInverseRelationName() . ':' . $relation->getOriginKeyTarget(), Operators::EQUAL, $originValue),
                         $baseForeignFilter->getConditionTree(),
                     ]
                 )
@@ -85,20 +84,20 @@ class FilterFactory
                 $caller,
                 $baseForeignFilter
             ),
-            new Projection([$relation->getForeignKeyTarget()])
+            new Projection([$relation->getOriginKeyTarget()])
         );
 
         return new Filter(
             conditionTree: ConditionTreeFactory::intersect(
                 [
                     // only children of parent
-                    new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue),
+                    new ConditionTreeLeaf($relation->getForeignKey(), Operators::EQUAL, $originValue),
                     // only the children which match the conditions in baseForeignFilter
                     new ConditionTreeLeaf(
-                        $relation->getForeignKey(),
+                        $relation->getOriginKey(),
                         Operators::IN,
                         collect($records)
-                            ->map(fn ($record) => $collection->toArray($record)[$relation->getForeignKeyTarget()])
+                            ->map(fn ($record) => $collection->toArray($record)[$relation->getOriginKeyTarget()])
                             ->toArray()
                     ),
                 ]
@@ -126,16 +125,16 @@ class FilterFactory
             $through = AgentFactory::get('datasource')->getCollection($relation->getThroughTable());
             $throughTree = ConditionTreeFactory::intersect(
                 [
-                    new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue),
-                    new ConditionTreeLeaf($relation->getForeignKey(), Operators::PRESENT),
+                    new ConditionTreeLeaf($relation->getForeignKey(), Operators::EQUAL, $originValue),
+                    new ConditionTreeLeaf($relation->getOriginKey(), Operators::PRESENT),
                 ]
             );
-            $records = $through->list(new Filter(conditionTree: $throughTree), new Projection([$relation->getForeignKey()]));
+            $records = $through->list(new Filter(conditionTree: $throughTree), new Projection([$relation->getOriginKey()]));
             $originTree = new ConditionTreeLeaf(
-                $relation->getForeignKeyTarget(),
+                $relation->getOriginKeyTarget(),
                 Operators::IN,
                 collect($records)
-                    ->map(fn ($record) => $collection->toArray($record)[$relation->getForeignKey()])
+                    ->map(fn ($record) => $collection->toArray($record)[$relation->getOriginKey()])
                     ->toArray()
             );
         }
@@ -154,18 +153,6 @@ class FilterFactory
      */
     private static function getPreviousPeriodByUnit(string $field, string $unit, string $timezone): ConditionTree
     {
-        $allowedUnit = [
-            'Day',
-            'Week',
-            'Month',
-            'Quarter',
-            'Year',
-        ];
-
-        if (! in_array($unit, $allowedUnit)) {
-            throw new ForestException('Operator not allowed');
-        }
-
         $sub = 'sub' . Str::plural($unit);
         $start = 'startOf' . $unit;
         $end = 'endOf' . $unit;

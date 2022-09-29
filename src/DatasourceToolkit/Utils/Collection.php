@@ -56,8 +56,7 @@ class Collection
         if ($field->getType() === 'ManyToMany' &&
             $relationField->getType() === 'ManyToMany' &&
             $field->getOriginKey() === $relationField->getForeignKey() &&
-            $field->getThroughTable() === $relationField->getThroughTable() &&
-            $field->getForeignKey() === $relationField->getOriginKey()) {
+            $field->getThroughTable() === $relationField->getThroughTable()) {
             return true;
         }
 
@@ -150,22 +149,19 @@ class Collection
         Caller $caller,
         Filter $foreignFilter,
         Projection $projection,
-        bool $arrayObject = true
     ) {
         $relation = Schema::getToManyRelation($collection, $relationName);
         $foreignCollection = $collection->getDataSource()->getCollection($relation->getForeignCollection());
         if ($relation->getType() === 'ManyToMany' && $foreignFilter->isNestable()) {
             $foreignRelation = self::getThroughTarget($collection, $relationName);
-            $projection->push($relation->getForeignKey() . ':' . $relation->getForeignKeyTarget());
+            $projection->push($relation->getOriginKey() . ':' . $relation->getOriginKeyTarget());
 
             if ($foreignRelation === $foreignCollection->getName()) {
-                $records = $foreignCollection->list(
+                return $foreignCollection->list(
                     $caller,
                     FilterFactory::makeThroughFilter($collection, $id, $relationName, $caller, $foreignFilter),
                     $projection
                 );
-
-                return $records;
             }
         }
 
@@ -190,7 +186,7 @@ class Collection
 
         if ($relation->getType() === 'ManyToMany' && $foreignFilter->isNestable()) {
             $foreignRelation = self::getThroughTarget($collection, $relationName);
-            $aggregation = $aggregation->override(field: $relation->getForeignKey() . ':' . $relation->getForeignKeyTarget());
+            $aggregation = $aggregation->override(field: $relation->getOriginKey() . ':' . $relation->getOriginKeyTarget());
 
             if ($foreignRelation === $foreignCollection->getName()) {
                 $records = $foreignCollection->aggregate(
