@@ -25,7 +25,7 @@ function factoryListing($args = []): Listing
         [
             'id'         => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
             'first_name' => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'last_name'  => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'last_name'  => new ColumnSchema(columnType: PrimitiveType::STRING),
             'birthday'   => new ColumnSchema(columnType: PrimitiveType::DATE),
             'active'     => new ColumnSchema(columnType: PrimitiveType::BOOLEAN),
         ]
