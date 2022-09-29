@@ -7,15 +7,12 @@ use ForestAdmin\AgentPHP\Agent\Routes\Resources\Destroy;
 use ForestAdmin\AgentPHP\Agent\Services\Permissions;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
 
-function factoryDestroy($args = []): Destroy
+function factoryDestroy(): Destroy
 {
     $datasource = new Datasource();
     $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
@@ -29,14 +26,6 @@ function factoryDestroy($args = []): Destroy
             'brand' => new ColumnSchema(columnType: PrimitiveType::STRING),
         ]
     );
-
-//    if (isset($args['destroy'])) {
-//        $collectionCars = mock($collectionCars)
-//            ->shouldReceive('aggregate')
-//            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class))
-//            ->andReturn(($args['destroy']))
-//            ->getMock();
-//    }
 
     $datasource->addCollection($collectionCars);
 
@@ -84,24 +73,7 @@ test('make() should return a new instance of Destroy with routes', function () {
 });
 
 test('handleRequest() should return a response 200', function () {
-//    $data = [
-//        [
-//            'id'    => 1,
-//            'model' => 'F8',
-//            'brand' => 'Ferrari',
-//        ],
-//        [
-//            'id'    => 2,
-//            'model' => 'Aventador',
-//            'brand' => 'Lamborghini',
-//        ],
-//    ];
-
-    $destroy = factoryDestroy(
-//        [
-//            'destroy' => $data,
-//        ]
-    );
+    $destroy = factoryDestroy();
 
     expect($destroy->handleRequest(['collectionName' => 'Car', 'id' => 1]))
         ->toBeArray()
