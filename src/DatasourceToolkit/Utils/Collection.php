@@ -9,7 +9,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
@@ -149,7 +148,11 @@ class Collection
         Caller $caller,
         Filter $foreignFilter,
         Projection $projection,
+        $format = 'list'
     ) {
+        if (! in_array($format, ['list', 'export'], true)) {
+            throw new ForestException("Return format of collection unknown, only values 'list' or 'export' are allowed");
+        }
         $relation = Schema::getToManyRelation($collection, $relationName);
         $foreignCollection = $collection->getDataSource()->getCollection($relation->getForeignCollection());
         if ($relation->getType() === 'ManyToMany' && $foreignFilter->isNestable()) {
@@ -157,7 +160,7 @@ class Collection
             $projection->push($relation->getOriginKey() . ':' . $relation->getOriginKeyTarget());
 
             if ($foreignRelation === $foreignCollection->getName()) {
-                return $foreignCollection->list(
+                return $foreignCollection->$format(
                     $caller,
                     FilterFactory::makeThroughFilter($collection, $id, $relationName, $caller, $foreignFilter),
                     $projection
@@ -165,7 +168,7 @@ class Collection
             }
         }
 
-        return $foreignCollection->list(
+        return $foreignCollection->$format(
             $caller,
             FilterFactory::makeForeignFilter($collection, $id, $relationName, $caller, $foreignFilter),
             $projection
