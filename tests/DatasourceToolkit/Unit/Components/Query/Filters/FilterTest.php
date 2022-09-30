@@ -33,3 +33,21 @@ test('nest() should crash with a segment', function () {
         ->and(fn () => $segmentFilter->nest('prefix'))
         ->toThrow(ForestException::class, 'Filter can\'t be nested');
 });
+
+test('getSegment() should work', function () {
+    $segmentFilter = new Filter(segment: 'someSegment');
+
+    expect($segmentFilter->getSegment())->toEqual('someSegment');
+});
+
+test('getSearch() should work', function () {
+    $segmentFilter = new Filter(search: 'foo');
+
+    expect($segmentFilter->getSearch())->toEqual('foo');
+});
+
+test('getSearchExtended() should work', function () {
+    $segmentFilter = new Filter(searchExtended: true);
+
+    expect($segmentFilter->getSearchExtended())->toBeTrue();
+});

@@ -45,6 +45,14 @@ test('nest() should work', function (PaginatedFilter $paginatedFilter) {
         );
 })->with('paginatedFilter');
 
+test('getSort() should work', function (PaginatedFilter $paginatedFilter) {
+    expect($paginatedFilter->getSort())->toEqual(new Sort(['column']));
+})->with('paginatedFilter');
+
+test('getPage() should work', function (PaginatedFilter $paginatedFilter) {
+    expect($paginatedFilter->getPage())->toEqual(new Page(0, 20));
+})->with('paginatedFilter');
+
 test('nest() should crash with a segment', function () {
     $segmentFilter = new PaginatedFilter(segment: 'someSegment');
 
