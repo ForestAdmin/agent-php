@@ -124,6 +124,14 @@ function factoryChart($args = []): Charts
     return $chart;
 }
 
+test('make() should return a new instance of Chart with routes', function () {
+    $chart = Charts::make();
+
+    expect($chart)->toBeInstanceOf(Charts::class)
+        ->and($chart->getRoutes())->toHaveKey('forest.chart');
+});
+
+
 test('setType() should return type string', function () {
     $chart = new Charts();
     $chart->setType('Value');
