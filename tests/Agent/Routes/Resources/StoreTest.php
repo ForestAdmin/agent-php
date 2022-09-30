@@ -18,8 +18,8 @@ function factoryStore($args = []): Store
     $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
     $_GET['timezone'] = 'Europe/Paris';
 
-    $collectionCars = new Collection($datasource, 'Car');
-    $collectionCars->addFields(
+    $collectionCar = new Collection($datasource, 'Car');
+    $collectionCar->addFields(
         [
             'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
             'model' => new ColumnSchema(columnType: PrimitiveType::STRING),
@@ -28,14 +28,14 @@ function factoryStore($args = []): Store
     );
 
     if (isset($args['store'])) {
-        $collectionCars = mock($collectionCars)
+        $collectionCar = mock($collectionCar)
             ->shouldReceive('create')
             ->with(\Mockery::type(Caller::class), $_GET['data'])
             ->andReturn(($args['store']))
             ->getMock();
     }
 
-    $datasource->addCollection($collectionCars);
+    $datasource->addCollection($collectionCar);
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),

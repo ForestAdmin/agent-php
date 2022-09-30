@@ -21,8 +21,8 @@ function factoryShow($args = []): Show
     $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
     $_GET['timezone'] = 'Europe/Paris';
 
-    $collectionCars = new Collection($datasource, 'Car');
-    $collectionCars->addFields(
+    $collectionCar = new Collection($datasource, 'Car');
+    $collectionCar->addFields(
         [
             'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::IN, Operators::EQUAL], isPrimaryKey: true),
             'model' => new ColumnSchema(columnType: PrimitiveType::STRING),
@@ -31,14 +31,14 @@ function factoryShow($args = []): Show
     );
 
     if (isset($args['show'])) {
-        $collectionCars = mock($collectionCars)
+        $collectionCar = mock($collectionCar)
             ->shouldReceive('show')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), [$args['show']['id']], \Mockery::type(Projection::class))
             ->andReturn(($args['show']))
             ->getMock();
     }
 
-    $datasource->addCollection($collectionCars);
+    $datasource->addCollection($collectionCar);
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),

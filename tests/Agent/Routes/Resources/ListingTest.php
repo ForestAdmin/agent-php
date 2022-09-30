@@ -20,8 +20,8 @@ function factoryListing($args = []): Listing
     $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
     $_GET['timezone'] = 'Europe/Paris';
 
-    $collectionUsers = new Collection($datasource, 'User');
-    $collectionUsers->addFields(
+    $collectionUser = new Collection($datasource, 'User');
+    $collectionUser->addFields(
         [
             'id'         => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
             'first_name' => new ColumnSchema(columnType: PrimitiveType::STRING),
@@ -32,7 +32,7 @@ function factoryListing($args = []): Listing
     );
 
     if (isset($args['listing'])) {
-        $collectionUsers = mock($collectionUsers)
+        $collectionUser = mock($collectionUser)
             ->shouldReceive('list')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
             ->andReturn($args['listing'])
@@ -40,14 +40,14 @@ function factoryListing($args = []): Listing
     }
 
     if (isset($args['export'])) {
-        $collectionUsers = mock($collectionUsers)
+        $collectionUser = mock($collectionUser)
             ->shouldReceive('export')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
             ->andReturn($args['export'])
             ->getMock();
     }
 
-    $datasource->addCollection($collectionUsers);
+    $datasource->addCollection($collectionUser);
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),

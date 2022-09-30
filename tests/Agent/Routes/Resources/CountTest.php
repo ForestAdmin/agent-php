@@ -20,8 +20,8 @@ function factoryCount($args = []): Count
     $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
     $_GET['timezone'] = 'Europe/Paris';
 
-    $collectionUsers = new Collection($datasource, 'User');
-    $collectionUsers->addFields(
+    $collectionUser = new Collection($datasource, 'User');
+    $collectionUser->addFields(
         [
             'id'         => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
             'first_name' => new ColumnSchema(columnType: PrimitiveType::STRING),
@@ -30,14 +30,14 @@ function factoryCount($args = []): Count
     );
 
     if (isset($args['count'])) {
-        $collectionUsers = mock($collectionUsers)
+        $collectionUser = mock($collectionUser)
             ->shouldReceive('aggregate')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class))
             ->andReturn(count($args['count']))
             ->getMock();
     }
 
-    $datasource->addCollection($collectionUsers);
+    $datasource->addCollection($collectionUser);
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
