@@ -11,7 +11,8 @@
     </testsuites>
     <coverage processUncoveredFiles="true">
         <include>
-            <directory suffix=".php">./src</directory>
+            <directory suffix=".php">./src/Agent</directory>
+            <directory suffix=".php">./src/DatasourceToolkit</directory>
         </include>
     </coverage>
 </phpunit>
