@@ -99,11 +99,11 @@ class Collection
         $relationSchema = $fields->get($associationName);
 
         if (! $relationSchema) {
-            throw new Error('Relation not found ' . $collection->getName() . '.' . $associationName);
+            throw new ForestException('Relation not found ' . $collection->getName() . '.' . $associationName);
         }
 
         if ($relationSchema->getType() !== 'ManyToOne' && $relationSchema->getType() !== 'OneToOne') {
-            throw new Error(
+            throw new ForestException(
                 'Unexpected field type ' . $relationSchema->getType() . ': '. $collection->getName() . '.' . $associationName,
             );
         }
@@ -125,7 +125,6 @@ class Collection
             new Projection([$field])
         );
 
-        // todo this not work with all framework. example symfony -> $record->get{$field}()
         return $record[$field];
     }
 
