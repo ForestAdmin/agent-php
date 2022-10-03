@@ -57,7 +57,6 @@ function factoryDestroy(): Destroy
     $destroy = mock(Destroy::class)
         ->makePartial()
         ->shouldReceive('checkIp')
-        ->andReturnNull()
         ->getMock();
 
     invokeProperty($destroy, 'request', $request);

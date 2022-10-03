@@ -125,7 +125,6 @@ function factoryDissociateRelated($args = []): DissociateRelated
     $dissociate = mock(DissociateRelated::class)
         ->makePartial()
         ->shouldReceive('checkIp')
-        ->andReturnNull()
         ->getMock();
 
     invokeProperty($dissociate, 'request', $request);

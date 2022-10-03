@@ -67,7 +67,6 @@ function factoryCount($args = []): Count
     $Count = mock(Count::class)
         ->makePartial()
         ->shouldReceive('checkIp')
-        ->andReturnNull()
         ->getMock();
 
     invokeProperty($Count, 'request', $request);

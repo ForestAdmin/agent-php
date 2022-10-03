@@ -78,7 +78,6 @@ function factoryListing($args = []): Listing
     $listing = mock(Listing::class)
         ->makePartial()
         ->shouldReceive('checkIp')
-        ->andReturnNull()
         ->getMock();
 
     invokeProperty($listing, 'request', $request);

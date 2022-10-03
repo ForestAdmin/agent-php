@@ -92,7 +92,6 @@ function factoryCountRelated($args = []): CountRelated
     $CountRelated = mock(CountRelated::class)
         ->makePartial()
         ->shouldReceive('checkIp')
-        ->andReturnNull()
         ->getMock();
 
     invokeProperty($CountRelated, 'request', $request);

@@ -65,7 +65,6 @@ function factoryStore($args = []): Store
     $store = mock(Store::class)
         ->makePartial()
         ->shouldReceive('checkIp')
-        ->andReturnNull()
         ->getMock();
 
     invokeProperty($store, 'request', $request);

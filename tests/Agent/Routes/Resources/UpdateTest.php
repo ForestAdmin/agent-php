@@ -67,7 +67,6 @@ function factoryUpdate($args = []): Update
     $update = mock(Update::class)
         ->makePartial()
         ->shouldReceive('checkIp')
-        ->andReturnNull()
         ->getMock();
 
     invokeProperty($update, 'request', $request);

@@ -68,7 +68,6 @@ function factoryShow($args = []): Show
     $show = mock(Show::class)
         ->makePartial()
         ->shouldReceive('checkIp')
-        ->andReturnNull()
         ->getMock();
 
     invokeProperty($show, 'request', $request);

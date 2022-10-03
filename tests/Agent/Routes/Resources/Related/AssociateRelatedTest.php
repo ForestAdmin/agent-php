@@ -93,7 +93,6 @@ function factoryAssociateRelated($args = []): AssociateRelated
     $associate = mock(AssociateRelated::class)
         ->makePartial()
         ->shouldReceive('checkIp')
-        ->andReturnNull()
         ->getMock();
 
     invokeProperty($associate, 'request', $request);

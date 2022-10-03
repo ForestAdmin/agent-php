@@ -116,7 +116,6 @@ function factoryChart($args = []): Charts
     $chart = mock(Charts::class)
         ->makePartial()
         ->shouldReceive('checkIp')
-        ->andReturnNull()
         ->getMock();
 
     invokeProperty($chart, 'request', $request);
