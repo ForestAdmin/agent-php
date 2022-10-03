@@ -16,10 +16,6 @@ class LineChart extends Chart
             ChartValidator::validate((! array_key_exists('label', $item) || ! array_key_exists('values', $item)), $item, "'label', 'values'");
         }
 
-        $result = collect($this->data)->each(
-            fn ($item) => ['label' => $item['label'], 'values' => $item['values']]
-        );
-
-        return $result->toArray();
+        return $this->data;
     }
 }

@@ -16,10 +16,12 @@ class LeaderboardChart extends Chart
             ChartValidator::validate((! array_key_exists('key', $item) || ! array_key_exists('value', $item)), $item, "'key', 'value'");
         }
 
-        $result = collect($this->data)->each(
-            fn ($item) => ['key' => $item['key'], 'value' => $item['value']]
-        );
+        return $this->data;
 
-        return $result->toArray();
+//        $result = collect($this->data)->each(
+//            fn ($item) => ['key' => $item['key'], 'value' => $item['value']]
+//        );
+//
+//        return $result->toArray();
     }
 }
