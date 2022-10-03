@@ -18,7 +18,6 @@ function factoryHealthCheck($args = []): HealthCheck
     ];
     (new AgentFactory($options, []))->addDatasources([$datasource]);
 
-
     Cache::put(
         'config',
         [
