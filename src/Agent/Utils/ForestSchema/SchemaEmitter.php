@@ -18,7 +18,7 @@ class SchemaEmitter
      */
     public static function getSerializedSchema(Datasource $datasource)
     {
-        $schema = config('isProduction') ? self::loadFromDisk(config('schemaPath')) : self::generate(config('prefix'), $datasource);
+        $schema = config('isProduction') ? self::loadFromDisk() : self::generate(config('prefix'), $datasource);
 
         if (! config('isProduction')) {
             // todo create json file
