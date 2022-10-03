@@ -74,7 +74,7 @@ function factoryCount($args = []): Count
     return $Count;
 }
 
-test('make() should return a new instance of Listing with routes', function () {
+test('make() should return a new instance of Count with routes', function () {
     $count = Count::make();
 
     expect($count)->toBeInstanceOf(Count::class)

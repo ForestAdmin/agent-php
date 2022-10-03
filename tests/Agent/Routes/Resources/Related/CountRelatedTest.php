@@ -99,7 +99,7 @@ function factoryCountRelated($args = []): CountRelated
     return $CountRelated;
 }
 
-test('make() should return a new instance of Listing with routes', function () {
+test('make() should return a new instance of CountRelated with routes', function () {
     $count = CountRelated::make();
 
     expect($count)->toBeInstanceOf(CountRelated::class)

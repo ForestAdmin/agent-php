@@ -30,7 +30,7 @@ function factoryScopeInvalidation(): ScopeInvalidation
     return $scopeInvalidation;
 }
 
-test('make() should return a new instance of Listing with routes', function () {
+test('make() should return a new instance of ScopeInvalidation with routes', function () {
     $scopeInvalidation = ScopeInvalidation::make();
 
     expect($scopeInvalidation)->toBeInstanceOf(ScopeInvalidation::class)

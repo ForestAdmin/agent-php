@@ -37,7 +37,7 @@ function factoryHealthCheck($args = []): HealthCheck
     return $healthCheck;
 }
 
-test('make() should return a new instance of Listing with routes', function () {
+test('make() should return a new instance of HealthCheck with routes', function () {
     $healthCheck = HealthCheck::make();
 
     expect($healthCheck)->toBeInstanceOf(HealthCheck::class)
