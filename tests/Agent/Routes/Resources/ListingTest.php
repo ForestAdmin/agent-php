@@ -2,6 +2,7 @@
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
+use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Listing;
 use ForestAdmin\AgentPHP\Agent\Services\Permissions;
@@ -13,6 +14,10 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projectio
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
+use GuzzleHttp\Psr7\Response;
+use Prophecy\Argument;
+use Prophecy\Prophet;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 function factoryListing($args = []): Listing
 {
@@ -165,4 +170,78 @@ test('handleRequestCsv() should return a response 200', function () {
                 ],
             ]
         );
+});
+
+test('checkIp() should check the clientIp in the ip-whitelist-rules', function () {
+    $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+
+    $data = [
+        'data' => [
+            'type'       => 'ip-whitelist-rules',
+            'id'         => '1',
+            'attributes' => [
+                'rules'            => [
+                    [
+                        'type' => 0,
+                        'ip'   => '127.0.0.1',
+                    ],
+                ],
+                'use_ip_whitelist' => true,
+            ],
+        ],
+    ];
+    $prophet = new Prophet();
+    $forestApiRequester = $prophet->prophesize(ForestApiRequester::class);
+    $forestApiRequester
+        ->get(Argument::type('string'))
+        ->shouldBeCalled()
+        ->willReturn(
+            new Response(200, [], json_encode($data, JSON_THROW_ON_ERROR))
+        );
+
+    $listing = mock(Listing::class)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods();
+
+    invokeProperty($listing, 'request', Request::createFromGlobals());
+
+    expect($listing->checkIp($forestApiRequester->reveal()))
+        ->toBeNull();
+});
+
+test('checkIp() throw when the clientIp is not into the ip-whitelist-rules', function () {
+    $_SERVER['REMOTE_ADDR'] = '10.10.10.1';
+
+    $data = [
+        'data' => [
+            'type'       => 'ip-whitelist-rules',
+            'id'         => '1',
+            'attributes' => [
+                'rules'            => [
+                    [
+                        'type' => 0,
+                        'ip'   => '127.0.0.1',
+                    ],
+                ],
+                'use_ip_whitelist' => true,
+            ],
+        ],
+    ];
+    $prophet = new Prophet();
+    $forestApiRequester = $prophet->prophesize(ForestApiRequester::class);
+    $forestApiRequester
+        ->get(Argument::type('string'))
+        ->shouldBeCalled()
+        ->willReturn(
+            new Response(200, [], json_encode($data, JSON_THROW_ON_ERROR))
+        );
+
+    $listing = mock(Listing::class)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods();
+
+    invokeProperty($listing, 'request', Request::createFromGlobals());
+
+    expect(fn () => $listing->checkIp($forestApiRequester->reveal()))
+        ->toThrow(HttpException::class, 'IP address rejected (' . $_SERVER['REMOTE_ADDR'] . ')');
 });
