@@ -18,15 +18,12 @@ class IpWhitelist
 
     public const RULE_MATCH_SUBNET = 2;
 
-    private bool $useIpWhitelist = false;
+    protected bool $useIpWhitelist = false;
 
-    private array $rules = [];
+    protected array $rules = [];
 
-    private ForestApiRequester $forestApi;
-
-    public function __construct()
+    public function __construct(protected ForestApiRequester $forestApi)
     {
-        $this->forestApi = new ForestApiRequester();
         $this->retrieve();
     }
 
