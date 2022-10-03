@@ -6,25 +6,20 @@ use ErrorException;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use ForestAdmin\AgentPHP\Agent\Auth\AuthManager;
-use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
 use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
-
-use function ForestAdmin\config;
-
 use GuzzleHttp\Exception\GuzzleException;
 use JsonException;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 
+use function ForestAdmin\config;
+
 class Authentication extends AbstractRoute
 {
-    private AuthManager $auth;
-
     public function __construct()
     {
         parent::__construct();
-        $this->auth = new AuthManager();
     }
 
     public function setupRoutes(): self
@@ -65,7 +60,7 @@ class Authentication extends AbstractRoute
 
         return [
             'content' => [
-                'authorizationUrl' => $this->auth->start($renderingId),
+                'authorizationUrl' => $this->auth()->start($renderingId),
             ],
         ];
     }
@@ -79,7 +74,7 @@ class Authentication extends AbstractRoute
      */
     public function handleAuthenticationCallback(): array
     {
-        $token = $this->auth->verifyCodeAndGenerateToken($this->request->all());
+        $token = $this->auth()->verifyCodeAndGenerateToken($this->request->all());
         $tokenData = JWT::decode($token, new Key(config('envSecret'), 'HS256'));
 
         return [
@@ -99,16 +94,25 @@ class Authentication extends AbstractRoute
     }
 
     /**
+     * @codeCoverageIgnore
+     * @return AuthManager
+     */
+    public function auth(): AuthManager
+    {
+        return new AuthManager();
+    }
+
+    /**
      * @return int
      * @throws ErrorException
      */
-    private function getAndCheckRenderingId(): int
+    protected function getAndCheckRenderingId(): int
     {
         if (! $renderingId = $this->request->get('renderingId')) {
             throw new ErrorException(ErrorMessages::MISSING_RENDERING_ID);
         }
 
-        if (! (is_string($renderingId) || is_int($renderingId))) {
+        if (! is_numeric($renderingId)) {
             throw new ErrorException(ErrorMessages::INVALID_RENDERING_ID);
         }
 
