@@ -37,25 +37,6 @@ function factoryAuthentication(): Authentication
     $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
     $_GET['timezone'] = 'Europe/Paris';
 
-//    $collectionUser = new Collection($datasource, 'User');
-//    $collectionUser->addFields(
-//        [
-//            'id'         => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-//            'first_name' => new ColumnSchema(columnType: PrimitiveType::STRING),
-//            'last_name'  => new ColumnSchema(columnType: PrimitiveType::STRING),
-//        ]
-//    );
-//
-//    if (isset($args['count'])) {
-//        $collectionUser = mock($collectionUser)
-//            ->shouldReceive('aggregate')
-//            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class))
-//            ->andReturn(count($args['count']))
-//            ->getMock();
-//    }
-//
-//    $datasource->addCollection($collectionUser);
-
     $options = [
         'projectDir'   => sys_get_temp_dir(),
         'envSecret'    => SECRET,
