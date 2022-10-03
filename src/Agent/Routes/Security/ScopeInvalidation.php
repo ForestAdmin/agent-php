@@ -13,7 +13,7 @@ class ScopeInvalidation extends AbstractAuthenticatedRoute
     public function setupRoutes(): self
     {
         $this->addRoute(
-            'scope-invalidation',
+            'forest.scope-invalidation',
             'post',
             '/scope-cache-invalidation',
             fn () => $this->handleRequest()
