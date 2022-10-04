@@ -17,6 +17,9 @@ class ForestResourceOwner implements ResourceOwnerInterface
 {
     use ArrayAccessorTrait;
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function __construct(private array $data, private int $renderingId, private string $secret)
     {
     }

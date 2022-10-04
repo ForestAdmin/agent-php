@@ -7,6 +7,9 @@ use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use Psr\Http\Message\ResponseInterface;
 
+/**
+  * @codeCoverageIgnore
+ */
 class ForestProvider extends AbstractProvider
 {
     use FormatGuzzle;
