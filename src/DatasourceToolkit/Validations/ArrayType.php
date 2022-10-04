@@ -26,5 +26,4 @@ final class ArrayType extends Enum
             'Empty'   => 'EmptyArray',
         ];
     }
-
 }
