@@ -6,6 +6,7 @@ use ErrorException;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use ForestAdmin\AgentPHP\Agent\Auth\AuthManager;
+use ForestAdmin\AgentPHP\Agent\Auth\OidcClientManager;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
 use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
@@ -99,7 +100,7 @@ class Authentication extends AbstractRoute
      */
     public function auth(): AuthManager
     {
-        return new AuthManager();
+        return new AuthManager(new OidcClientManager());
     }
 
     /**
