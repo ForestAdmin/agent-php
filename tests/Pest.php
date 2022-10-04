@@ -16,10 +16,6 @@ uses()
         }
     )->in('Agent', 'DatasourceToolkit');
 
-
-
-
-
 /**
  * Call protected/private property of a class.
  * @param object $object
@@ -39,4 +35,21 @@ function invokeProperty(object &$object, string $propertyName, $setData = null)
     }
 
     return $property->getValue($object);
+}
+
+/**
+ * Call protected/private method of a class.
+ * @param object $object
+ * @param string $methodName
+ * @param array  $parameters
+ * @return mixed
+ * @throws \ReflectionException
+ */
+function invokeMethod(object &$object, string $methodName, array $parameters = [])
+{
+    $reflection = new \ReflectionClass(get_class($object));
+    $method = $reflection->getMethod($methodName);
+    $method->setAccessible(true);
+
+    return $method->invokeArgs($object, $parameters);
 }
