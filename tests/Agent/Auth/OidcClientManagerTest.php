@@ -202,20 +202,3 @@ test('retrieve() throw when the call api failed', function () {
     expect(fn () => invokeMethod($oidc, 'retrieve'))
         ->toThrow(ErrorException::class, ErrorMessages::OIDC_CONFIGURATION_RETRIEVAL_FAILED);
 });
-
-
-
-//
-///**
-// * @throws \JsonException
-// * @throws \ReflectionException
-// * @return void
-// */
-//public function testRetrieveException(): void
-//{
-//    $this->expectException(\RuntimeException::class);
-//    $this->expectExceptionMessage(ErrorMessages::OIDC_CONFIGURATION_RETRIEVAL_FAILED);
-//    $this->oidc = new OidcClientManager($this->makeForestApiGetThrowException());
-//
-//    $this->invokeMethod($this->oidc, 'retrieve');
-//}
