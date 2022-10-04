@@ -17,7 +17,7 @@ class OidcClientManager
 
     public const TTL = 60 * 60 * 24;
 
-    private ForestApiRequester $forestApi;
+    protected ForestApiRequester $forestApi;
 
     public function __construct()
     {
