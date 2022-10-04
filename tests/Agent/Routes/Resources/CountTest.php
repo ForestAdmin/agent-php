@@ -64,14 +64,14 @@ function factoryCount($args = []): Count
         300
     );
 
-    $Count = mock(Count::class)
+    $count = mock(Count::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($Count, 'request', $request);
+    invokeProperty($count, 'request', $request);
 
-    return $Count;
+    return $count;
 }
 
 test('make() should return a new instance of Count with routes', function () {
