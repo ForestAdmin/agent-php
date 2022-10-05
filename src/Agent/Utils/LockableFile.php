@@ -5,6 +5,9 @@ namespace ForestAdmin\AgentPHP\Agent\Utils;
 use Exception;
 use Illuminate\Contracts\Filesystem\LockTimeoutException;
 
+/**
+ * @codeCoverageIgnore
+ */
 class LockableFile
 {
     /**
