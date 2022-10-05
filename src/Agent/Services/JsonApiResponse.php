@@ -53,7 +53,7 @@ class JsonApiResponse
         return $this->fractal->createData($resource)->toArray();
     }
 
-    public function renderItem($data, string $name, TransformerAbstract $transformer)
+    public function renderItem($data, TransformerAbstract $transformer, string $name)
     {
         $this->fractal->setSerializer(new JsonApiSerializer(config('agentUrl')));
         $resource = new Item($data, $transformer, $name);

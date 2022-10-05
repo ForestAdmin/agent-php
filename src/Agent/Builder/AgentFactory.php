@@ -54,8 +54,8 @@ class AgentFactory
                 'id'    => Uuid::uuid4(),
                 'value' => $chart->serialize(),
             ],
-            'stats',
-            new BasicArrayTransformer()
+            new BasicArrayTransformer(),
+            'stats'
         );
     }
 
