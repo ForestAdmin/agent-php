@@ -4,6 +4,9 @@ namespace ForestAdmin\AgentPHP\Agent\Facades;
 
 use RuntimeException;
 
+/**
+ * @codeCoverageIgnore
+ */
 abstract class Facade
 {
     /**
