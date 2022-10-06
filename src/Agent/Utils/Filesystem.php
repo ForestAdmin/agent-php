@@ -13,6 +13,9 @@ use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Mime\MimeTypes;
 
+/**
+ * @codeCoverageIgnore
+ */
 class Filesystem
 {
     use Macroable;
