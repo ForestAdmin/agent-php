@@ -33,7 +33,7 @@ class ConditionTreeParser
 
             return count($conditions) !== 1
                 ? new ConditionTreeBranch($aggregator, $conditions)
-                : $conditions->first();
+                : $conditions[0];
         }
 
         throw new \Exception('Failed to instantiate condition tree');
