@@ -8,13 +8,10 @@ use Exception;
 use ForestAdmin\AgentPHP\Agent\Contracts\Store;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\Agent\Utils\LockableFile;
-use ForestAdmin\AgentPHP\Agent\Utils\Traits\InteractsWithTime;
 use Illuminate\Contracts\Filesystem\LockTimeoutException;
 
 class CacheServices implements Store
 {
-    use InteractsWithTime;
-
     public function __construct(protected Filesystem $files, protected string $directory, protected ?int $filePermission = null)
     {
     }
@@ -351,5 +348,30 @@ class CacheServices implements Store
         return $delay instanceof DateTimeInterface
             ? $delay->getTimestamp()
             : Carbon::now()->addRealSeconds($delay)->getTimestamp();
+    }
+
+    /**
+     * If the given value is an interval, convert it to a DateTime instance.
+     *
+     * @param  \DateTimeInterface|\DateInterval|int  $delay
+     * @return \DateTimeInterface|int
+     */
+    protected function parseDateInterval($delay)
+    {
+        if ($delay instanceof DateInterval) {
+            $delay = Carbon::now()->add($delay);
+        }
+
+        return $delay;
+    }
+
+    /**
+     * Get the current system time as a UNIX timestamp.
+     *
+     * @return int
+     */
+    protected function currentTime()
+    {
+        return Carbon::now()->getTimestamp();
     }
 }
