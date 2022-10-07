@@ -12,6 +12,7 @@ use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\Mapping\MappingException;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\Transformer\EntityTransformer;
+use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\DataTypes;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\QueryCharts;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection as ForestCollection;
@@ -25,7 +26,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOne
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
 use Illuminate\Support\Str;
-use Nicolas\SymfonyForestAdmin\Utils\DataTypes;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class Collection extends ForestCollection

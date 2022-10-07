@@ -8,9 +8,9 @@ use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToOne;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BaseTransformer;
+use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\DataTypes;
 use Illuminate\Support\Str;
 use Nicolas\SymfonyForestAdmin\Datasource\Collection;
-use Nicolas\SymfonyForestAdmin\Utils\DataTypes;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class EntityTransformer extends BaseTransformer
