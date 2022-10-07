@@ -13,6 +13,9 @@ uses()
             $directory = sys_get_temp_dir() . '/forest-cache' ;
             $cache = new CacheServices($filesystem, $directory);
             $cache->flush();
+
+            $_GET = [];
+            $_POST = [];
         }
     )->in('Agent', 'DatasourceToolkit');
 
