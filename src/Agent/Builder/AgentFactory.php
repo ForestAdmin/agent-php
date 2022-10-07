@@ -12,7 +12,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContra
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 use function ForestAdmin\config;
-use function ForestAdmin\forget;
 
 use Ramsey\Uuid\Uuid;
 
@@ -29,6 +28,15 @@ class AgentFactory
         $this->compositeDatasource = new Datasource();
         $this->buildContainer($services);
         $this->buildCache($config);
+    }
+
+    public function addDatasource(Datasource $datasource): void
+    {
+        $datasource->getCollections()->each(
+            fn ($collection) => $this->compositeDatasource->addCollection($collection)
+        );
+
+        self::$container->set('datasource', $this->compositeDatasource);
     }
 
     public function addDatasources(array $datasources): void
@@ -59,9 +67,9 @@ class AgentFactory
         );
     }
 
-    public static function getContainer(): Container
+    public static function getContainer(): ?Container
     {
-        return static::$container;
+        return static::$container ?? null;
     }
 
     public static function get(string $key)
