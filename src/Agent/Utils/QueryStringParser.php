@@ -69,8 +69,9 @@ class QueryStringParser
                     $field = trim($field);
                     $column = $collection->getFields()->get($field);
 
-                    return $column->getType() === 'Column' ?
+                    return null !== $column && $column->getType() === 'Column' ?
                         $field : $field . ':' . $request->input("fields.$field");
+
                 }
             );
 
