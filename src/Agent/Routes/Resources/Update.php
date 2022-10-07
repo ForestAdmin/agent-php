@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
+use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
@@ -39,15 +40,11 @@ class Update extends AbstractCollectionRoute
             )
         );
 
+        $result = $this->collection->update($this->caller, $filter, $id, $this->request->get('data'));
+
         return [
-            'renderTransformer' => true,
             'name'              => $args['collectionName'],
-            'content'           => $this->collection->update(
-                $this->caller,
-                $filter,
-                $id,
-                $this->request->get('data')
-            ),
+            'content'           => JsonApi::render($result, $this->collection->makeTransformer(), $args['collectionName']),
         ];
     }
 }
