@@ -2,16 +2,18 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
+
 final class FrontendValidation
 {
     public const OPERATOR_VALIDATION_TYPE_MAP = [
-        'Present'     => 'is present',
-        'GreaterThan' => 'is greater than',
-        'LessThan'    => 'is less than',
-        'LongerThan'  => 'is longer than',
-        'ShorterThan' => 'is shorter than',
-        'Contains'    => 'contains',
-        'Like'        => 'is like',
+        Operators::PRESENT      => 'is present',
+        Operators::GREATER_THAN => 'is greater than',
+        Operators::LESS_THAN    => 'is less than',
+        Operators::LONGER_THAN  => 'is longer than',
+        Operators::SHORTER_THAN => 'is shorter than',
+        Operators::CONTAINS     => 'contains',
+        Operators::LIKE         => 'is like',
     ];
 
     public static function convertValidationList(array $predicates = []): array
@@ -22,11 +24,16 @@ final class FrontendValidation
 
         $result = [];
         foreach ($predicates as $predicate) {
-            if (is_array($predicate) && array_key_exists('operator', $predicate) && in_array($predicate['operator'], self::OPERATOR_VALIDATION_TYPE_MAP, true)) {
+            if (is_array($predicate)
+                && array_key_exists('operator', $predicate)
+                && array_key_exists($predicate['operator'], self::OPERATOR_VALIDATION_TYPE_MAP)
+                && $type = self::OPERATOR_VALIDATION_TYPE_MAP[$predicate['operator']]
+            ) {
+                $errorValue = $predicate['value'] ? '(' . $predicate['value'] . ')' : '';
                 $result[] = [
-                    $predicate,
+                    'type'    => $type,
                     'value'   => $predicate['value'],
-                    'message' => null,
+                    'message' => 'Failed validation rule: ' . $predicate['operator'] . $errorValue,
                 ];
             }
         }
