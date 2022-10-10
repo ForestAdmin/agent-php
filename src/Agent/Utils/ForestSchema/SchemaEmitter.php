@@ -18,7 +18,7 @@ class SchemaEmitter
      */
     public static function getSerializedSchema(Datasource $datasource)
     {
-        $schema = config('isProduction') ? self::loadFromDisk() : self::generate(config('prefix'), $datasource);
+        $schema = config('isProduction') ? self::loadFromDisk() : self::generate($datasource);
 
         if (! config('isProduction')) {
             // todo create json file
@@ -52,12 +52,12 @@ class SchemaEmitter
     {
     }
 
-    private static function generate(string $prefix, Datasource $datasource)
+    private static function generate(Datasource $datasource)
     {
         return $datasource
             ->getCollections()
             ->map(
-                fn ($collection) => GeneratorCollection::buildSchema($prefix, $collection)
+                fn ($collection) => GeneratorCollection::buildSchema($collection)
             )
             ->sortBy('name')
             ->values()

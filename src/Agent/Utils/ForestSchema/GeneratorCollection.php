@@ -6,7 +6,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 
 class GeneratorCollection
 {
-    public static function buildSchema(string $prefix, Collection $collection): array
+    public static function buildSchema(Collection $collection): array
     {
         return [
             'actions'              => [],

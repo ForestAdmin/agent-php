@@ -4,6 +4,7 @@ use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
 use ForestAdmin\AgentPHP\Agent\Services\JsonApiResponse;
+use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
@@ -31,6 +32,8 @@ function factoryJsonApi()
         'agentUrl'     => 'http://localhost/',
     ];
     (new AgentFactory($options, []))->addDatasources([$datasource]);
+
+    SchemaEmitter::getSerializedSchema($datasource);
 
     return $collectionPerson;
 }
