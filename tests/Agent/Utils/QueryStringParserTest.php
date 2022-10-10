@@ -16,6 +16,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveT
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 function factoryQueryStringParser()
 {
@@ -217,6 +218,15 @@ test('parseProjection() on a collection with relationships should convert the re
     expect($projection)->toEqual((new Projection(['id', 'model', 'user:last_name'])));
 });
 
+test('parseProjection() on a flat collection on a request with an unknown field should return a ForestException error', function () {
+    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+
+    $_GET['fields'] = ['Category' => 'foo'];
+
+    expect(fn () => QueryStringParser::parseProjection($collectionCategory, Request::createFromGlobals()))
+        ->toThrow(ForestException::class, '🌳🌳🌳 Invalid projection');
+});
+
 test('parseProjectionWithPks() when the request does not contain the primary keys should return the requested project with the primary keys', function () {
     $collectionCategory = factoryQueryStringParser()['collectionCategory'];
 
@@ -273,6 +283,15 @@ test('parseSearch() should work when passed in the body (actions)', function () 
     $parseSearch = QueryStringParser::parseSearch($collectionUser, Request::createFromGlobals());
 
     expect($parseSearch)->toEqual('searched argument');
+});
+
+test('parseSearch() on a Collection not searchable should return a ForestException error', function () {
+    $collectionCar = factoryQueryStringParser()['collectionCar'];
+
+    $_GET['data']['attributes']['all_records_subset_query']['search'] = 'searched argument';
+
+    expect(fn () => QueryStringParser::parseSearch($collectionCar, Request::createFromGlobals()))
+        ->toThrow(ForestException::class, '🌳🌳🌳 Collection is not searchable');
 });
 
 test('parseSearchExtended() should return the query searchExtended parameter', function () {
@@ -358,6 +377,14 @@ test('parseCaller() should throw a ValidationError when the timezone is invalid'
 
     expect(fn () => QueryStringParser::parseCaller(Request::createFromGlobals()))
         ->toThrow(ForestException::class, '🌳🌳🌳 Invalid timezone');
+});
+
+test('parseCaller() should throw a HttpException when the user is not connected', function () {
+    factoryQueryStringParser();
+    $_SERVER['HTTP_AUTHORIZATION'] = null;
+
+    expect(fn () => QueryStringParser::parseCaller(Request::createFromGlobals()))
+        ->toThrow(HttpException::class, 'You must be logged in to access at this resource');
 });
 
 test('parsePagination() should return the pagination parameters', function () {
