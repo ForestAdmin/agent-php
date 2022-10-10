@@ -45,7 +45,7 @@ class ConditionTreeParser
 
         if ($leaf['operator'] === 'In' && is_string($leaf['value'])) {
             $values = collect(explode(',', $leaf['value']))
-                ->each(fn ($item) => trim($item));
+                ->map(fn ($item) => trim($item));
 
             if ($schema->getColumnType() === PrimitiveType::BOOLEAN) {
                 // Cast values into bool
@@ -55,7 +55,7 @@ class ConditionTreeParser
 
             if ($schema->getColumnType() === PrimitiveType::NUMBER) {
                 return $values->each(fn ($item) => (float) $item)
-                    ->filter(fn ($number)       => ! is_nan($number) && is_finite($number))
+                    ->filter(fn ($number) => ! is_nan($number) && is_finite($number))
                     ->all();
             }
 
