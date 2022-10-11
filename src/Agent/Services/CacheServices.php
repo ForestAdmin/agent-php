@@ -10,6 +10,9 @@ use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\Agent\Utils\LockableFile;
 use Illuminate\Contracts\Filesystem\LockTimeoutException;
 
+/**
+ * @codeCoverageIgnore
+ */
 class CacheServices implements Store
 {
     public function __construct(protected Filesystem $files, protected string $directory, protected ?int $filePermission = null)
