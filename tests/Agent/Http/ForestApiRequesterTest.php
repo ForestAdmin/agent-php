@@ -94,16 +94,4 @@ test('validateUrl() should return an Exception when the url is not correctly for
 
     expect(fn () => $forestApi->get('/foo'))
         ->toThrow(\ErrorException::class, 'bad-url/foo seems to be an invalid url');
-
-//    $forestApi = mock(new ForestApiRequester());
-//    $forestApi->setClient(mockClientResponse());
-//
-//    $response = $forestApi->post('/foo', [], ['key' => 'value']);
-//
-//    expect($response)
-//        ->toBeInstanceOf(Response::class)
-//        ->and($response->getStatusCode())
-//        ->toEqual(200)
-//        ->and($response->hasHeader('foo'))
-//        ->toBeTrue();
 });
