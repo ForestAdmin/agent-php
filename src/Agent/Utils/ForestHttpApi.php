@@ -39,28 +39,15 @@ class ForestHttpApi
         }
     }
 
-    public static function getPermissions(int $renderingId)
+    /**
+     * @throws ForestException
+     */
+    public static function handleResponseError($e): void
     {
-        try {
-            $forestApi = new ForestApiRequester();
-            $response = $forestApi->get(
-                '/liana/v3/permissions',
-                compact('renderingId')
-            );
-            $body = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
-
-            if (isset($body['meta']['rolesACLActivated']) && ! $body['meta']['rolesACLActivated']) {
-                throw new ForestException('Roles V2 are unsupported');
-            }
-
-            return $body;
-        } catch (\Exception $e) {
-            self::handleResponseError($e);
+        if ($e instanceof ForestException) {
+            throw $e;
         }
-    }
 
-    public static function handleResponseError(\Exception $e)
-    {
         if (Str::contains($e->getMessage(), 'certificate')) {
             throw new ForestException('ForestAdmin server TLS certificate cannot be verified. Please check that your system time is set properly.');
         }

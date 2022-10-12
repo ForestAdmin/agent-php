@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Services;
 
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
+use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
@@ -10,6 +11,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection as IlluminateCollection;
 use Illuminate\Support\Str;
@@ -23,8 +25,11 @@ class Permissions
 
     public const ALLOWED_PERMISSION_LEVELS = ['admin', 'editor', 'developer'];
 
+    private ForestApiRequester $forestApi;
+
     public function __construct(protected Caller $caller)
     {
+        $this->forestApi = new ForestApiRequester();
     }
 
     public function getCacheKey(int $renderingId): string
@@ -120,18 +125,37 @@ class Permissions
         return Cache::remember(
             $this->getCacheKey($renderingId),
             function () use ($renderingId) {
-                $permissions = ForestHttpApi::getPermissions($renderingId);
+                $permissions = $this->getPermissions($renderingId);
 
                 return collect(
                     [
                         'actions' => $this->decodeActionPermissions($permissions),
                         'scopes'  => $this->decodeScopePermissions($permissions, $renderingId),
-                        'charts'  => $this->decodeChartPermissions($permissions)
+                        'charts'  => $this->decodeChartPermissions($permissions),
                     ]
                 );
             },
             self::TTL
         );
+    }
+
+    private function getPermissions(int $renderingId): array
+    {
+        try {
+            $response = $this->forestApi->get(
+                '/liana/v3/permissions',
+                compact('renderingId')
+            );
+            $body = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+
+            if (isset($body['meta']['rolesACLActivated']) && ! $body['meta']['rolesACLActivated']) {
+                throw new ForestException('Roles V2 are unsupported');
+            }
+
+            return $body;
+        } catch (\Exception $e) {
+            ForestHttpApi::handleResponseError($e);
+        }
     }
 
     private function decodeActionPermissions(array $rawPermissions): IlluminateCollection
