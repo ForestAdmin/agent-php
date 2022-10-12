@@ -1,48 +1,23 @@
 <?php
 
-/*
-|--------------------------------------------------------------------------
-| Test Case
-|--------------------------------------------------------------------------
-|
-| The closure you provide to your test functions is always bound to a specific PHPUnit test
-| case class. By default, that class is "PHPUnit\Framework\TestCase". Of course, you may
-| need to change it using the "uses()" function to bind a different classes or traits.
-|
-*/
+use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
+use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 
-// uses(Tests\TestCase::class)->in('Feature');
+const BEARER = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZW1haWwiOiJqb2huLmRvZUBkb21haW4uY29tIiwiZmlyc3ROYW1lIjoiSm9obiIsImxhc3ROYW1lIjoiRG9lIiwidGVhbSI6IkRldmVsb3BlcnMiLCJyZW5kZXJpbmdJZCI6IjEwIiwidGFncyI6eyJzb21ldGhpbmciOiJ0YWdWYWx1ZSJ9LCJ0aW1lem9uZSI6IkV1cm9wZS9QYXJpcyIsInBlcm1pc3Npb25MZXZlbCI6ImFkbWluIn0.yCAGVg2Ef4a6uDbM6_VjlFobFwACJnyFtjkbo5lkEi4';
+const SECRET = '34b6d9b573e160b957244c1082619bc5a9e36ee8abae5fe7d15991d08ac9f31d';
 
-/*
-|--------------------------------------------------------------------------
-| Expectations
-|--------------------------------------------------------------------------
-|
-| When you're writing tests, you often need to check that values meet certain conditions. The
-| "expect()" function gives you access to a set of "expectations" methods that you can use
-| to assert different things. Of course, you may extend the Expectation API at any time.
-|
-*/
+uses()
+    ->beforeEach(
+        function () {
+            $filesystem = new Filesystem();
+            $directory = sys_get_temp_dir() . '/forest-cache' ;
+            $cache = new CacheServices($filesystem, $directory);
+            $cache->flush();
 
-expect()->extend('toBeOne', function () {
-    return $this->toBe(1);
-});
-
-/*
-|--------------------------------------------------------------------------
-| Functions
-|--------------------------------------------------------------------------
-|
-| While Pest is very powerful out-of-the-box, you may have some testing code specific to your
-| project that you don't want to repeat in every file. Here you can also expose helpers as
-| global functions to help you to reduce the number of lines of code in your test files.
-|
-*/
-
-function something()
-{
-    // ..
-}
+            $_GET = [];
+            $_POST = [];
+        }
+    )->in('Agent', 'DatasourceToolkit');
 
 /**
  * Call protected/private property of a class.
@@ -63,4 +38,21 @@ function invokeProperty(object &$object, string $propertyName, $setData = null)
     }
 
     return $property->getValue($object);
+}
+
+/**
+ * Call protected/private method of a class.
+ * @param object $object
+ * @param string $methodName
+ * @param array  $parameters
+ * @return mixed
+ * @throws \ReflectionException
+ */
+function invokeMethod(object &$object, string $methodName, array $parameters = [])
+{
+    $reflection = new \ReflectionClass(get_class($object));
+    $method = $reflection->getMethod($methodName);
+    $method->setAccessible(true);
+
+    return $method->invokeArgs($object, $parameters);
 }

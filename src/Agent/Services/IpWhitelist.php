@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\Agent\Services;
 use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
 use ForestAdmin\AgentPHP\Agent\Utils\Traits\FormatGuzzle;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use IPLib\Factory as IpAddress;
 use IPLib\Range\Type as IpType;
 
@@ -18,15 +19,12 @@ class IpWhitelist
 
     public const RULE_MATCH_SUBNET = 2;
 
-    private bool $useIpWhitelist = false;
+    protected bool $useIpWhitelist = false;
 
-    private array $rules = [];
+    protected array $rules = [];
 
-    private ForestApiRequester $forestApi;
-
-    public function __construct()
+    public function __construct(protected ForestApiRequester $forestApi)
     {
-        $this->forestApi = new ForestApiRequester();
         $this->retrieve();
     }
 
@@ -125,7 +123,7 @@ class IpWhitelist
         try {
             $response = $this->forestApi->get('/liana/v1/ip-whitelist-rules');
         } catch (\RuntimeException $e) {
-            throw new ForestApiException(ErrorMessages::UNEXPECTED);
+            throw new ForestException(ErrorMessages::UNEXPECTED);
         }
 
         $ipWhitelistData = $this->getBody($response)['data']['attributes'];

@@ -75,16 +75,14 @@ class ListingRelated extends AbstractRelationRoute
             $this->caller,
             $filter,
             QueryStringParser::parseProjectionWithPks($this->childCollection, $this->request),
-            false
+            'export'
         );
 
         $filename = $this->request->input('filename', $this->childCollection->getName()) . '.csv';
         $header = explode(',', $this->request->get('header'));
 
         return [
-            'content' => [
-                Csv::make($rows, $header, $filename),
-            ],
+            'content' => Csv::make($rows, $header),
             'headers' => [
                 'Content-type'        => 'text/csv',
                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',

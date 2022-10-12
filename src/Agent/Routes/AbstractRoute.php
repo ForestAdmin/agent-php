@@ -8,9 +8,10 @@ abstract class AbstractRoute
 {
     protected Request $request;
 
-    public function __construct(
-        protected array $routes = []
-    ) {
+    protected array $routes = [];
+
+    public function __construct()
+    {
         $this->request = Request::createFromGlobals();
     }
 
@@ -19,14 +20,14 @@ abstract class AbstractRoute
         $this->routes[$name] = compact('methods', 'uri', 'closure');
     }
 
-    public function bootstrap(): void
+    public static function make(): self
     {
-        // Do nothing by default -> maybe this function is not necessary in PHP context
+        return (new static())->setupRoutes();
     }
 
-    public static function getRoutes(): array
+    public function getRoutes(): array
     {
-        return (new static())->setupRoutes()->routes;
+        return $this->routes;
     }
 
     abstract public function setupRoutes(): self;

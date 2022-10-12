@@ -4,7 +4,6 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\Agent\Utils\BodyParser;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
@@ -60,7 +59,7 @@ class Destroy extends AbstractCollectionRoute
     {
         $this->build($args);
         $this->permissions->can('delete:' . $this->collection->getName());
-        $selectionIds = BodyParser::parseSelectionIds($this->collection, $this->request);
+        $selectionIds = Id::parseSelectionIds($this->collection, $this->request);
         $conditionTreeIds = ConditionTreeFactory::matchIds($this->collection, $selectionIds['ids']);
         if ($selectionIds['areExcluded']) {
             $conditionTreeIds = $conditionTreeIds->inverse();

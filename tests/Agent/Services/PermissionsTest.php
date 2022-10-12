@@ -2,6 +2,7 @@
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
+use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Services\Permissions;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
@@ -11,12 +12,16 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operat
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Str;
+use Prophecy\Argument;
+use Prophecy\Prophet;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 function permissionsFactory($scopes = [], $post = []): Permissions
 {
-    $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZW1haWwiOiJqb2huLmRvZUBkb21haW4uY29tIiwiZmlyc3ROYW1lIjoiSm9obiIsImxhc3ROYW1lIjoiRG9lIiwidGVhbSI6IkRldmVsb3BlcnMiLCJyZW5kZXJpbmdJZCI6IjEwIiwidGFncyI6eyJzb21ldGhpbmciOiJ0YWdWYWx1ZSJ9LCJ0aW1lem9uZSI6IkV1cm9wZS9QYXJpcyJ9.iNiTlSoaCfUIOJ643E8AdhbsmIu45KB4L-TaCt0qNyU';
+    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
     $_GET = ['timezone' => 'Europe/Paris'];
     $_POST = $post;
     $datasource = new Datasource();
@@ -30,10 +35,10 @@ function permissionsFactory($scopes = [], $post = []): Permissions
     $datasource->addCollection($collectionBooking);
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => '34b6d9b573e160b957244c1082619bc5a9e36ee8abae5fe7d15991d08ac9f31d',
+        'envSecret'    => SECRET,
         'isProduction' => false,
     ];
-    (new AgentFactory($options))->addDatasources([$datasource]);
+    (new AgentFactory($options, []))->addDatasources([$datasource]);
 
     $request = Request::createFromGlobals();
     $permissions = new Permissions(QueryStringParser::parseCaller($request));
@@ -78,6 +83,7 @@ test('invalidate cache should delete the cache', function () {
 });
 
 test('can() should call getRenderingPermissions twice', function () {
+    permissionsFactory();
     $request = Request::createFromGlobals();
     $mockPermissions = mock(Permissions::class)
         ->makePartial()
@@ -136,6 +142,33 @@ test('canChart() should return true on allowed chart', function () {
     $request = Request::createFromGlobals();
 
     expect($permissions->canChart($request, false))->toBeTrue();
+});
+
+test('canChart() should call twice and return true on allowed chart', function () {
+    $post = [
+        'type'           => 'Pie',
+        'aggregate'      => 'Count',
+        'collection'     => 'books',
+        'group_by_field' => 'author:firstName',
+    ];
+    permissionsFactory([], $post);
+    $request = Request::createFromGlobals();
+    $mockPermissions = mock(Permissions::class)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('getRenderingPermissions')
+        ->with(10)
+        ->andReturn(
+            collect(['charts' => collect($post)]),
+            collect(['charts' => collect([strtolower(Str::plural($post['type'])) . ':' . sha1(json_encode(ksort($post), JSON_THROW_ON_ERROR))])])
+        )
+        ->getMock();
+    $mockPermissions->invalidateCache(10);
+    $caller = QueryStringParser::parseCaller($request);
+    invokeProperty($caller, 'permissionLevel', 'foo');
+    invokeProperty($mockPermissions, 'caller', $caller);
+
+    expect($mockPermissions->canChart($request))->toBeTrue();
 });
 
 test('canChart() should throw on forbidden chart', function () {
@@ -220,4 +253,107 @@ test('getScope() should fallback to jwt when cache broken for tags', function ()
     $conditionTree = $permissions->getScope(AgentFactory::get('datasource')->getCollection('Booking'));
 
     expect($conditionTree)->toEqual(new ConditionTreeLeaf('id', Operators::EQUAL, 'tagValue'));
+});
+
+test('getRenderingPermissions() should call fetch permissions if the cache is invalid', function () {
+    $chart = ['type' => 'Value', 'filter' => null, 'aggregator' => 'Count', 'aggregateFieldName' => null, 'sourceCollectionId' => 'Car'];
+    $prophet = new Prophet();
+    $forestApi = $prophet->prophesize(ForestApiRequester::class);
+    $forestApi
+        ->get(Argument::type('string'), Argument::type('array'))
+        ->shouldBeCalled()
+        ->willReturn(
+            new Response(200, [], json_encode(
+                [
+                    'data'  => [
+                        'collections' =>
+                            [
+                                'Booking' => [
+                                    'collection' => ['browseEnabled' => [1], 'readEnabled' => [1], 'editEnabled' => [1], 'addEnabled' => [1], 'deleteEnabled' => [1], 'exportEnabled' => [1]],
+                                    'actions'    => ['mySmartAction' => ['triggerEnabled' => [1]]],
+                                ],
+                            ],
+                        'renderings'  =>
+                            [
+                                10 => [
+                                    'Car' => [
+                                        'scope'    => [
+                                            'filter'              => [
+                                                'aggregator' => 'and',
+                                                'conditions' => [['field' => 'brand', 'operator' => 'contains', 'value' => 'et']],
+                                            ],
+                                            'dynamicScopesValues' => [],
+                                        ],
+                                        'segments' => [],
+                                    ],
+                                ],
+                            ],
+                    ],
+                    'stats' => [
+                        'queries'      => [],
+                        'leaderboards' => [],
+                        'lines'        => [],
+                        'objectives'   => [],
+                        'percentages'  => [],
+                        'pies'         => [],
+                        'values'       => [$chart],
+                    ],
+                ],
+                JSON_THROW_ON_ERROR
+            ))
+        );
+
+    $permissions = permissionsFactory();
+    invokeProperty($permissions, 'forestApi', $forestApi->reveal());
+    $permissions->invalidateCache(10);
+
+    expect(invokeMethod($permissions, 'getRenderingPermissions', [10]))
+        ->toEqual(
+            collect(
+                [
+                    'actions' => collect(
+                        [
+                            'browse:Booking'               => collect([1]),
+                            'read:Booking'                 => collect([1]),
+                            'edit:Booking'                 => collect([1]),
+                            'add:Booking'                  => collect([1]),
+                            'delete:Booking'               => collect([1]),
+                            'export:Booking'               => collect([1]),
+                            'custom:mySmartAction:Booking' => collect([1]),
+                        ]
+                    ),
+                    'scopes'  => collect(
+                        [
+                            'Car' => ['conditionTree' => new ConditionTreeLeaf('brand', Operators::CONTAINS, 'et'), 'dynamicScopeValues' => []],
+                        ]
+                    ),
+                    'charts'  => collect([strtolower(Str::plural($chart['type'])) . ':' . sha1(json_encode(ksort($chart), JSON_THROW_ON_ERROR))]),
+                ]
+            )
+        );
+});
+
+test('getRenderingPermissions() should throw when ACL not activated', function () {
+    $prophet = new Prophet();
+    $forestApi = $prophet->prophesize(ForestApiRequester::class);
+    $forestApi
+        ->get(Argument::type('string'), Argument::type('array'))
+        ->shouldBeCalled()
+        ->willReturn(
+            new Response(200, [], json_encode(
+                [
+                    'data'  => [],
+                    'stats' => [],
+                    'meta'  => ['rolesACLActivated' => false],
+                ],
+                JSON_THROW_ON_ERROR
+            ))
+        );
+
+    $permissions = permissionsFactory();
+    invokeProperty($permissions, 'forestApi', $forestApi->reveal());
+    $permissions->invalidateCache(10);
+
+    expect(static fn () => invokeMethod($permissions, 'getRenderingPermissions', [10]))
+        ->toThrow(ForestException::class, '🌳🌳🌳 Roles V2 are unsupported');
 });

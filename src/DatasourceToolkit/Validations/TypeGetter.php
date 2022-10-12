@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 
 class TypeGetter
 {
-    public static function get($value, string $typeContext): string | ArrayType
+    public static function get($value, ?string $typeContext = null): string | ArrayType
     {
         if (is_array($value)) {
             return self::getArrayType($value, $typeContext);
@@ -32,7 +32,7 @@ class TypeGetter
         return ArrayType::Null();
     }
 
-    private static function getTypeFromString($value, string $typeContext): string
+    private static function getTypeFromString($value, ?string $typeContext = null): string
     {
         if (in_array($typeContext, [PrimitiveType::ENUM, PrimitiveType::STRING], true)) {
             return $typeContext;
@@ -61,7 +61,7 @@ class TypeGetter
         return PrimitiveType::STRING;
     }
 
-    private static function isPoint(string $value, string $typeContext): bool
+    private static function isPoint(string $value, ?string $typeContext = null): bool
     {
         $potentialPoint = explode(',', $value);
 
@@ -70,7 +70,7 @@ class TypeGetter
             self::get(array_map(static fn ($item) => (float) $item, $potentialPoint), PrimitiveType::NUMBER) === ArrayType::Number();
     }
 
-    private static function getArrayType(array $value, string $typeContext): ArrayType
+    private static function getArrayType(array $value, ?string $typeContext = null): ArrayType
     {
         if (empty($value)) {
             return ArrayType::Empty();
@@ -99,7 +99,7 @@ class TypeGetter
         return ArrayType::Null();
     }
 
-    private static function isArrayOf(string $primitiveType, array $values, string $typeContext): bool
+    private static function isArrayOf(string $primitiveType, array $values, ?string $typeContext = null): bool
     {
         foreach ($values as $value) {
             if (self::get($value, $typeContext) !== $primitiveType) {

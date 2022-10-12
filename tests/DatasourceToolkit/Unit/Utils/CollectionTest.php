@@ -1,6 +1,12 @@
 <?php
 
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
@@ -8,12 +14,14 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToMan
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 
-dataset('dataSourceWithInverseRelationMissing', function () {
-    yield $datasource = new Datasource();
-    $collectionBooks = new Collection($datasource, 'books');
-    $collectionBooks->addFields(
+function dataSourceWithInverseRelationMissing(): Datasource
+{
+    $datasource = new Datasource();
+    $collectionBook = new Collection($datasource, 'Book');
+    $collectionBook->addFields(
         [
             'id'       => new ColumnSchema(
                 columnType: PrimitiveType::NUMBER,
@@ -22,15 +30,16 @@ dataset('dataSourceWithInverseRelationMissing', function () {
             'author'   => new ManyToOneSchema(
                 foreignKey: 'authorId',
                 foreignKeyTarget: 'id',
-                foreignCollection: 'persons',
+                foreignCollection: 'Person',
+                inverseRelationName: 'Book'
             ),
             'authorId' => new ColumnSchema(
                 columnType: PrimitiveType::UUID,
             ),
         ]
     );
-    $collectionPersons = new Collection($datasource, 'persons');
-    $collectionPersons->addFields(
+    $collectionPerson = new Collection($datasource, 'Person');
+    $collectionPerson->addFields(
         [
             'id' => new ColumnSchema(
                 columnType: PrimitiveType::NUMBER,
@@ -38,107 +47,389 @@ dataset('dataSourceWithInverseRelationMissing', function () {
             ),
         ]
     );
-    $datasource->addCollection($collectionBooks);
-    $datasource->addCollection($collectionPersons);
-});
+    $datasource->addCollection($collectionBook);
+    $datasource->addCollection($collectionPerson);
 
-dataset('datasourceWithAllRelations', function () {
-    yield $datasource = new Datasource();
-    $collectionBooks = new Collection($datasource, 'books');
-    $collectionBooks->addFields(
+    $options = [
+        'projectDir' => sys_get_temp_dir(), // only use for cache
+    ];
+    (new AgentFactory($options, []))->addDatasources([$datasource]);
+
+    return $datasource;
+}
+
+function datasourceWithAllRelations(array $args = []): Datasource
+{
+    $datasource = new Datasource();
+    $collectionBook = new Collection($datasource, 'Book');
+    $collectionBook->addFields(
         [
-            'id'       => new ColumnSchema(
+            'id'            => new ColumnSchema(
                 columnType: PrimitiveType::NUMBER,
+                filterOperators: [Operators::EQUAL, Operators::IN],
                 isPrimaryKey: true
             ),
-            'myPersons'   => new ManyToManySchema(
+            'reference'     => new ColumnSchema(
+                columnType: PrimitiveType::NUMBER,
+                filterOperators: [Operators::EQUAL, Operators::IN],
+                isPrimaryKey: true
+            ),
+            'title'         => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'myPersons'     => new ManyToManySchema(
+                originKey: 'bookId',
+                originKeyTarget: 'id',
+                throughTable: 'BookPerson',
                 foreignKey: 'personId',
                 foreignKeyTarget: 'id',
-                throughTable: 'bookPersons',
-                originKey: 'bookId',
-                originKeyTarget: 'id',
-                foreignCollection: 'persons',
+                foreignCollection: 'Person',
+                inverseRelationName: 'myPersons'
             ),
-            'myBookPersons'   => new OneToManySchema(
+            'myBookPersons' => new OneToManySchema(
                 originKey: 'bookId',
                 originKeyTarget: 'id',
-                foreignCollection: 'bookPersons',
+                foreignCollection: 'BookPerson',
+                inverseRelationName: 'bookPersons'
             ),
         ]
     );
-    $collectionBookPersons = new Collection($datasource, 'bookPersons');
-    $collectionBookPersons->addFields(
+    $collectionBookPerson = new Collection($datasource, 'BookPerson');
+    $collectionBookPerson->addFields(
         [
-            'bookId'       => new ColumnSchema(
+            'bookId'   => new ColumnSchema(
                 columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),
-            'personId'       => new ColumnSchema(
+            'personId' => new ColumnSchema(
                 columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),
             'myBook'   => new ManyToOneSchema(
                 foreignKey: 'bookId',
                 foreignKeyTarget: 'id',
-                foreignCollection: 'books',
+                foreignCollection: 'Book',
+                inverseRelationName: 'myBook'
             ),
-            'myPerson'   => new ManyToOneSchema(
+            'myPerson' => new ManyToOneSchema(
                 foreignKey: 'personId',
                 foreignKeyTarget: 'id',
-                foreignCollection: 'persons',
+                foreignCollection: 'Person',
+                inverseRelationName: 'myPerson'
             ),
         ]
     );
-    $collectionPersons = new Collection($datasource, 'persons');
-    $collectionPersons->addFields(
+    $collectionPerson = new Collection($datasource, 'Person');
+    $collectionPerson->addFields(
         [
-            'id' => new ColumnSchema(
+            'id'           => new ColumnSchema(
                 columnType: PrimitiveType::NUMBER,
+                filterOperators: [Operators::EQUAL, Operators::IN],
                 isPrimaryKey: true
             ),
-            'myBooks'   => new ManyToManySchema(
+            'name'         => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'myBooks'      => new ManyToManySchema(
+                originKey: 'personId',
+                originKeyTarget: 'id',
+                throughTable: 'BookPerson',
                 foreignKey: 'bookId',
                 foreignKeyTarget: 'id',
-                throughTable: 'bookPersons',
-                originKey: 'personId',
-                originKeyTarget: 'id',
-                foreignCollection: 'books',
+                foreignCollection: 'Book',
+                inverseRelationName: 'myBooks'
             ),
-            'myBookPerson'   => new OneToOneSchema(
+            'myBookPerson' => new OneToOneSchema(
                 originKey: 'personId',
                 originKeyTarget: 'id',
-                foreignCollection: 'bookPersons',
+                foreignCollection: 'BookPerson',
+                inverseRelationName: 'bookPersons'
             ),
         ]
     );
-    $datasource->addCollection($collectionBooks);
-    $datasource->addCollection($collectionBookPersons);
-    $datasource->addCollection($collectionPersons);
+
+    if (isset($args['Book']['list'])) {
+        $collectionBook = mock($collectionBook)
+            ->shouldReceive('list')
+            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
+            ->andReturn($args['Book']['list'])
+            ->getMock();
+    }
+
+    if (isset($args['BookPerson']['list'])) {
+        $collectionBookPerson = mock($collectionBookPerson)
+            ->shouldReceive('list')
+            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
+            ->andReturn($args['BookPerson']['list'])
+            ->getMock();
+    }
+
+    if (isset($args['Person']['list'])) {
+        $collectionPerson = mock($collectionPerson)
+            ->shouldReceive('list')
+            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
+            ->andReturn($args['Person']['list'])
+            ->getMock();
+    }
+
+    if (isset($args['BookPerson']['aggregate'])) {
+        $collectionBookPerson = mock($collectionBookPerson)
+            ->shouldReceive('aggregate')
+            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
+            ->andReturn($args['BookPerson']['aggregate'])
+            ->getMock();
+    }
+
+    if (isset($args['Person']['aggregate'])) {
+        $collectionPerson = mock($collectionPerson)
+            ->shouldReceive('aggregate')
+            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
+            ->andReturn($args['Person']['aggregate'])
+            ->getMock();
+    }
+
+    $datasource->addCollection($collectionBook);
+    $datasource->addCollection($collectionBookPerson);
+    $datasource->addCollection($collectionPerson);
+
+    $options = [
+        'projectDir' => sys_get_temp_dir(), // only use for cache
+    ];
+    (new AgentFactory($options, []))->addDatasources([$datasource]);
+
+    return $datasource;
+}
+
+test('getInverseRelation() should not find an inverse when inverse relations is missing', function () {
+    $datasource = dataSourceWithInverseRelationMissing();
+
+    expect(CollectionUtils::getInverseRelation($datasource->getCollection('Book'), 'author'))->toBeNull();
 });
 
-it('should not find an inverse when inverse relations is missing', function ($datasource) {
-    expect(CollectionUtils::getInverseRelation($datasource->getCollection('books'), 'author'))->toBeNull();
-})->with('dataSourceWithInverseRelationMissing');
+test('getInverseRelation() should inverse a one to many relation in both directions', function () {
+    $datasource = datasourceWithAllRelations();
 
-it('should inverse a one to many relation in both directions', function ($datasource) {
-    expect(CollectionUtils::getInverseRelation($datasource->getCollection('books'), 'myBookPersons'))->toEqual('myBook')
-        ->and(CollectionUtils::getInverseRelation($datasource->getCollection('bookPersons'), 'myBook'))->toEqual('myBookPersons');
-})->with('datasourceWithAllRelations');
+    expect(CollectionUtils::getInverseRelation($datasource->getCollection('Book'), 'myBookPersons'))->toEqual('myBook')
+        ->and(CollectionUtils::getInverseRelation($datasource->getCollection('BookPerson'), 'myBook'))->toEqual('myBookPersons');
+});
 
-// todo fix errors
-it('should inverse a many to many relation in both directions', function ($datasource) {
-    expect(CollectionUtils::getInverseRelation($datasource->getCollection('books'), 'myPersons'))->toEqual('myBooks')
-        ->and(CollectionUtils::getInverseRelation($datasource->getCollection('persons'), 'myBooks'))->toEqual('myPersons');
-})->with('datasourceWithAllRelations');
+test('getInverseRelation() should inverse a many to many relation in both directions', function () {
+    $datasource = datasourceWithAllRelations();
 
-it('should inverse a one to one relation in both directions', function ($datasource) {
-    expect(CollectionUtils::getInverseRelation($datasource->getCollection('persons'), 'myBookPerson'))->toEqual('myPerson')
-        ->and(CollectionUtils::getInverseRelation($datasource->getCollection('bookPersons'), 'myPerson'))->toEqual('myBookPerson');
-})->with('datasourceWithAllRelations');
+    expect(CollectionUtils::getInverseRelation($datasource->getCollection('Book'), 'myPersons'))->toEqual('myBooks')
+        ->and(CollectionUtils::getInverseRelation($datasource->getCollection('Person'), 'myBooks'))->toEqual('myPersons');
+});
 
+test('getInverseRelation() should inverse a one to one relation in both directions', function () {
+    $datasource = datasourceWithAllRelations();
 
+    expect(CollectionUtils::getInverseRelation($datasource->getCollection('Person'), 'myBookPerson'))->toEqual('myPerson')
+        ->and(CollectionUtils::getInverseRelation($datasource->getCollection('BookPerson'), 'myPerson'))->toEqual('myBookPerson');
+});
 
+test('isManyToManyInverse() should return false', function () {
+    $datasource = datasourceWithAllRelations();
+    /** @var Collection $collectionBook */
+    $collectionBook = $datasource->getCollection('Book');
+    $manyToManyRelation = new ManyToManySchema(
+        originKey: 'fooId',
+        originKeyTarget: 'id',
+        throughTable: 'bookFoo',
+        foreignKey: 'bookId',
+        foreignKeyTarget: 'id',
+        foreignCollection: 'Book',
+        inverseRelationName: 'persons'
+    );
 
+    expect(CollectionUtils::isManyToManyInverse($collectionBook->getFields()['myPersons'], $manyToManyRelation))->toBeFalse();
+});
 
+test('isManyToManyInverse() should return true', function () {
+    $datasource = datasourceWithAllRelations();
+    /** @var Collection $collectionBook */
+    $collectionBook = $datasource->getCollection('Book');
+    $collectionPerson = $datasource->getCollection('Person');
 
+    expect(CollectionUtils::isManyToManyInverse($collectionBook->getFields()['myPersons'], $collectionPerson->getFields()['myBooks']))->toBeTrue();
+});
 
+test('isManyToOneInverse() should return false', function () {
+    $datasource = datasourceWithAllRelations();
+    /** @var Collection $collectionBook */
+    $collectionBookPerson = $datasource->getCollection('BookPerson');
+    $collectionPerson = $datasource->getCollection('Person');
+
+    expect(CollectionUtils::isManyToOneInverse($collectionBookPerson->getFields()['myBook'], $collectionPerson->getFields()['myBookPerson']))->toBeFalse();
+});
+
+test('isManyToOneInverse() should return true', function () {
+    $datasource = datasourceWithAllRelations();
+    /** @var Collection $collectionBook */
+    $collectionBookPerson = $datasource->getCollection('BookPerson');
+    $collectionBook = $datasource->getCollection('Book');
+
+    expect(CollectionUtils::isManyToOneInverse($collectionBookPerson->getFields()['myBook'], $collectionBook->getFields()['myBookPersons']))->toBeTrue();
+});
+
+test('isOtherInverse() should return false', function () {
+    $datasource = datasourceWithAllRelations();
+    /** @var Collection $collectionBook */
+    $collectionBookPerson = $datasource->getCollection('BookPerson');
+    $collectionPerson = $datasource->getCollection('Person');
+
+    expect(CollectionUtils::isOtherInverse($collectionPerson->getFields()['myBookPerson'], $collectionBookPerson->getFields()['myBook']))->toBeFalse();
+});
+
+test('isOtherInverse() should return true', function () {
+    $datasource = datasourceWithAllRelations();
+    /** @var Collection $collectionBook */
+    $collectionBookPerson = $datasource->getCollection('BookPerson');
+    $collectionPerson = $datasource->getCollection('Person');
+
+    expect(CollectionUtils::isOtherInverse($collectionPerson->getFields()['myBookPerson'], $collectionBookPerson->getFields()['myPerson']))->toBeTrue();
+});
+
+test('getFieldSchema() should throw with unknown column', function () {
+    $datasource = datasourceWithAllRelations();
+    $collectionPerson = $datasource->getCollection('Person');
+
+    expect(static fn () => CollectionUtils::getFieldSchema($collectionPerson, 'foo'))
+        ->toThrow(ForestException::class, '🌳🌳🌳 Column not found Person.foo');
+});
+
+test('getFieldSchema() should work with simple column', function () {
+    $datasource = datasourceWithAllRelations();
+    $collectionPerson = $datasource->getCollection('Person');
+
+    expect(CollectionUtils::getFieldSchema($collectionPerson, 'name'))->toEqual(
+        new ColumnSchema(columnType: PrimitiveType::STRING)
+    );
+});
+
+test('getFieldSchema() should throw with unknown relation:column', function () {
+    $datasource = datasourceWithAllRelations();
+    $collectionPerson = $datasource->getCollection('Person');
+
+    expect(static fn () => CollectionUtils::getFieldSchema($collectionPerson, 'unknown:foo'))
+        ->toThrow(ForestException::class, '🌳🌳🌳 Relation not found Person.unknown');
+});
+
+test('getFieldSchema() should throw with invalid relation type', function () {
+    $datasource = datasourceWithAllRelations();
+    $collectionBook = $datasource->getCollection('Book');
+
+    expect(static fn () => CollectionUtils::getFieldSchema($collectionBook, 'myBookPersons:bookId'))
+        ->toThrow(ForestException::class, '🌳🌳🌳 Unexpected field type OneToMany: Book.myBookPersons');
+});
+
+test('getFieldSchema() should work with relation column', function () {
+    $datasource = datasourceWithAllRelations();
+    $collectionBookPerson = $datasource->getCollection('BookPerson');
+
+    expect(CollectionUtils::getFieldSchema($collectionBookPerson, 'myPerson:name'))->toEqual(
+        new ColumnSchema(columnType: PrimitiveType::STRING)
+    );
+});
+
+test('getThroughTarget() should throw with invalid relation type', function () {
+    $datasource = datasourceWithAllRelations();
+    $collectionBook = $datasource->getCollection('Book');
+
+    expect(static fn () => CollectionUtils::getThroughTarget($collectionBook, 'myBookPersons'))
+        ->toThrow(ForestException::class, '🌳🌳🌳 Relation must be many to man');
+});
+
+test('getThroughTarget() should work', function () {
+    $datasource = datasourceWithAllRelations();
+    $collectionBook = $datasource->getCollection('Book');
+
+    expect(CollectionUtils::getThroughTarget($collectionBook, 'myPersons'))
+        ->toEqual('Person');
+});
+
+test('getValue() should work', function (Caller $caller) {
+    $datasource = datasourceWithAllRelations(
+        [
+            'Person' => [
+                'list' => ['id' => 1, 'name' => 'foo'],
+            ],
+        ]
+    );
+    $collectionBook = $datasource->getCollection('Person');
+
+    expect(CollectionUtils::getValue($collectionBook, $caller, [1], 'name'))
+        ->toEqual('foo');
+})->with('caller');
+
+test('getValue() should work with composite id', function (Caller $caller) {
+    $datasource = datasourceWithAllRelations(
+        [
+            'Book' => [
+                'list' => ['id' => 1,'reference' => 'ref', 'title' => 'foo'],
+            ],
+        ]
+    );
+    $collectionBook = $datasource->getCollection('Book');
+
+    expect(CollectionUtils::getValue($collectionBook, $caller, [1, 'ref'], 'reference'))
+        ->toEqual('ref');
+})->with('caller');
+
+test('listRelation() should throw with unexpected format', function (Caller $caller) {
+    $datasource = datasourceWithAllRelations(
+        [
+            'Book' => [
+                'list' => ['id' => 1, 'title' => 'foo'],
+            ],
+        ]
+    );
+    $collectionBook = $datasource->getCollection('Book');
+    $filter = new Filter();
+
+    expect(static fn () => CollectionUtils::listRelation($collectionBook, [1], 'myPersons', $caller, $filter, new Projection(), 'foo-format'))
+        ->toThrow(ForestException::class, "🌳🌳🌳 Return format of collection unknown, only values 'list' or 'export' are allowed");
+})->with('caller');
+
+test('listRelation() should work with one to many relation', function (Caller $caller) {
+    $datasource = datasourceWithAllRelations(
+        [
+            'BookPerson' => [
+                'list' => ['bookId' => 1, 'personId' => 1],
+            ],
+        ]
+    );
+    $collectionBook = $datasource->getCollection('Book');
+    $filter = new Filter();
+
+    expect(CollectionUtils::listRelation($collectionBook, [1], 'myBookPersons', $caller, $filter, new Projection()))
+        ->toEqual(['bookId' => 1, 'personId' => 1]);
+})->with('caller');
+
+test('listRelation() should work with many to many relation', function (Caller $caller) {
+    $datasource = datasourceWithAllRelations(
+        [
+            'Person' => [
+                'list' => ['id' => 1, 'name' => 'foo'],
+            ],
+        ]
+    );
+    $collectionBook = $datasource->getCollection('Book');
+    $filter = new Filter();
+
+    expect(CollectionUtils::listRelation($collectionBook, [1], 'myPersons', $caller, $filter, new Projection()))
+        ->toEqual(['id' => 1, 'name' => 'foo']);
+})->with('caller');
+
+test('aggregateRelation() should work with one to many relation', function (Caller $caller) {
+    $datasource = datasourceWithAllRelations(['BookPerson' => ['aggregate' => 1]]);
+    $collectionBook = $datasource->getCollection('Book');
+    $filter = new Filter();
+
+    expect(CollectionUtils::aggregateRelation($collectionBook, [1], 'myBookPersons', $caller, $filter, new Aggregation('count')))
+        ->toEqual(1);
+})->with('caller');
+
+test('aggregateRelation() should work with many to many relation', function (Caller $caller) {
+    $datasource = datasourceWithAllRelations(['Person' => ['aggregate' => 1]]);
+    $collectionBook = $datasource->getCollection('Book');
+    $filter = new Filter();
+
+    expect(CollectionUtils::aggregateRelation($collectionBook, [1], 'myPersons', $caller, $filter, new Aggregation('count')))
+        ->toEqual(1);
+})->with('caller');

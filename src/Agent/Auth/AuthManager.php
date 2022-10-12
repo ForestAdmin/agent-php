@@ -2,8 +2,8 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Auth;
 
+use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
 use ForestAdmin\AgentPHP\Agent\Utils\Traits\FormatGuzzle;
-use ForestAdmin\LaravelForestAdmin\Utils\ErrorMessages;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
@@ -15,11 +15,8 @@ class AuthManager
 {
     use FormatGuzzle;
 
-    private OidcClientManager $oidc;
-
-    public function __construct()
+    public function __construct(private OidcClientManager $oidc)
     {
-        $this->oidc = new OidcClientManager();
     }
 
     /**
@@ -82,7 +79,7 @@ class AuthManager
         $state = json_decode($state, true, 512, JSON_THROW_ON_ERROR);
         $renderingId = $state['renderingId'];
 
-        if (! (is_string($renderingId) || is_int($renderingId))) {
+        if (! is_numeric($renderingId)) {
             throw new \ErrorException(ErrorMessages::INVALID_STATE_FORMAT);
         }
 

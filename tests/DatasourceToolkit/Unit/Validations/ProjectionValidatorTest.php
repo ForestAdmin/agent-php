@@ -8,7 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveT
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ProjectionValidator;
 
-dataset('collection', function () {
+dataset('projectionValidatorCollection', function () {
     yield $collection = new Collection(new Datasource(), 'books');
     $collection->addFields(
         [
@@ -20,6 +20,7 @@ dataset('collection', function () {
                 foreignKey: 'authorId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'persons',
+                inverseRelationName: 'books'
             ),
         ]
     );
@@ -27,9 +28,9 @@ dataset('collection', function () {
 
 it('should not throw if the field exist on the collection', function ($collection) {
     ProjectionValidator::validate($collection, new Projection(['id']));
-})->expectNotToPerformAssertions()->with('collection');
+})->expectNotToPerformAssertions()->with('projectionValidatorCollection');
 
 it('should throw if the field is not of column type', function ($collection) {
     ProjectionValidator::validate($collection, new Projection(['author']));
 })->throws(Exception::class, 'Unexpected field type: books.author (found ManyToOne expected \'Column\')')
-    ->with('collection');
+    ->with('projectionValidatorCollection');

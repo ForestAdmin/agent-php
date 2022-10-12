@@ -4,7 +4,6 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources\Related;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRelationRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\Agent\Utils\BodyParser;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
@@ -38,7 +37,7 @@ class DissociateRelated extends AbstractRelationRoute
 
         $id = Id::unpackId($this->collection, $args['id']);
         $isDeleteMode = $this->request->get('delete') ?? false;
-        $selectionIds = BodyParser::parseSelectionIds($this->childCollection, $this->request);
+        $selectionIds = Id::parseSelectionIds($this->childCollection, $this->request);
         $childFilter = $this->getBaseForeignFilter($selectionIds);
 
         $relation = Schema::getToManyRelation($this->collection, $args['relationName']);

@@ -29,15 +29,10 @@ class AgentFactory
         $this->compositeDatasource = new Datasource();
         $this->buildContainer($services);
         $this->buildCache($config);
-
     }
 
     public function addDatasources(array $datasources): void
     {
-        if (! config('isProduction')) {
-            forget('datasource');
-        }
-
         if (! self::$container->has('datasource') || ! config('isProduction')) {
             foreach ($datasources as $datasource) {
                 if (! $datasource instanceof DatasourceContract) {
@@ -59,8 +54,8 @@ class AgentFactory
                 'id'    => Uuid::uuid4(),
                 'value' => $chart->serialize(),
             ],
-            'stats',
-            new BasicArrayTransformer()
+            new BasicArrayTransformer(),
+            'stats'
         );
     }
 

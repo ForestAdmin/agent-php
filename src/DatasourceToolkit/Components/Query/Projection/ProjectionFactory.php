@@ -24,7 +24,7 @@ class ProjectionFactory
                         ...$memo,
                         ...$relationFields->keys()
                             ->filter(fn ($relationColumnName) => $relationFields->get($relationColumnName)->getType() === 'Column')
-                            ->map(fn ($relationColumnName)    => "$columnName:$relationColumnName"),
+                            ->map(fn ($relationColumnName) => "$columnName:$relationColumnName"),
                     ];
                 }
 

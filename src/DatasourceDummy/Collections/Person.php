@@ -30,11 +30,13 @@ class Person extends BaseCollection
                 originKey: 'authorId',
                 originKeyTarget: 'id',
                 foreignCollection: 'Book',
+                inverseRelationName: 'Person',
             ),
             'address' => new OneToOneSchema(
                 originKey: 'originKeyId',
                 originKeyTarget: 'id',
                 foreignCollection: 'Address',
+                inverseRelationName: 'Person',
             ),
         ];
 

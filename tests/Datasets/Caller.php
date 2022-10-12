@@ -12,6 +12,7 @@ dataset('caller', function () {
         renderingId: 1,
         tags: [],
         timezone: 'Europe/Paris',
+        permissionLevel: 'admin',
         role: 'dev'
     );
 });

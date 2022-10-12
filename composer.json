@@ -26,8 +26,9 @@
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.0",
         "pestphp/pest": "^1.21",
-        "symfony/var-dumper": "^6.0",
-        "pestphp/pest-plugin-mock": "^1.0"
+        "pestphp/pest-plugin-mock": "^1.0",
+        "phpspec/prophecy-phpunit": "^2.0",
+        "symfony/var-dumper": "^6.0"
     },
     "autoload": {
         "psr-4": {
@@ -39,7 +40,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Forestadmin\\AgentPHP\\Tests\\": "tests/"
+            "ForestAdmin\\AgentPHP\\Tests\\": "tests/"
         }
     },
     "minimum-stability": "dev",

@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes;
 
+use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Services\IpWhitelist;
 use ForestAdmin\AgentPHP\Agent\Services\Permissions;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
@@ -22,14 +23,14 @@ abstract class AbstractAuthenticatedRoute extends AbstractRoute
 
     public function build(array $args = []): void
     {
-        $this->checkIp();
+        $this->checkIp(new ForestApiRequester());
         $this->caller = QueryStringParser::parseCaller($this->request);
         $this->permissions = new Permissions($this->caller);
     }
 
-    public function checkIp(): void
+    public function checkIp(ForestApiRequester $forestApiRequester): void
     {
-        $ipWhitelist = new IpWhitelist();
+        $ipWhitelist = new IpWhitelist($forestApiRequester);
         if ($ipWhitelist->isEnabled()) {
             $ip = $this->request->getClientIp();
             if (! $ipWhitelist->isIpMatchesAnyRule($ip)) {

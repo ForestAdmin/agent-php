@@ -63,7 +63,7 @@ class Aggregation
             $nestedGroups = collect($this->groups)->map(fn ($item) => [
                 'field'     => $prefix . ':' . $item['field'],
                 'operation' => $item['operation'],
-            ]);
+            ])->toArray();
         }
 
         return new self(operation: $this->operation, field: $nestedField, groups: $nestedGroups);

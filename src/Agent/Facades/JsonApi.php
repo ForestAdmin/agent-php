@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  * Class Cache
  *
  * @method static array render($class, TransformerAbstract $transformer, string $name, array $metadata = [])
- * @method static array renderItem($data, string $name, TransformerAbstract $transformer)
+ * @method static array renderItem($data, TransformerAbstract $transformer, string $name)
  * @method static JsonResponse deactivateCountResponse()
  *
  * @see JsonApiResponse

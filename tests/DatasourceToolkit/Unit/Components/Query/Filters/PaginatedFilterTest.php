@@ -1,6 +1,7 @@
 <?php
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
@@ -9,14 +10,14 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 dataset('paginatedFilter', function () {
     yield $paginatedFilter = new PaginatedFilter(
-        conditionTree: new ConditionTreeLeaf('column', 'GreaterThan', 0),
+        conditionTree: new ConditionTreeLeaf('column', Operators::GREATER_THAN, 0),
         sort: new Sort(['column']),
         page: new Page(0, 20),
     );
 });
 
 test('override() should work', function (PaginatedFilter $paginatedFilter) {
-    $newLeaf = new ConditionTreeLeaf('column', 'LessThan', 0);
+    $newLeaf = new ConditionTreeLeaf('column', Operators::LESS_THAN, 0);
     $newFilter = $paginatedFilter->override(
         conditionTree: $newLeaf,
         page: new Page(0, 10),
@@ -37,11 +38,19 @@ test('nest() should work', function (PaginatedFilter $paginatedFilter) {
         ->and($nestedFilter)
         ->toEqual(
             new PaginatedFilter(
-                conditionTree: new ConditionTreeLeaf('prefix:column', 'GreaterThan', 0),
+                conditionTree: new ConditionTreeLeaf('prefix:column', Operators::GREATER_THAN, 0),
                 sort: new Sort(['prefix:column']),
                 page: new Page(0, 20),
             )
         );
+})->with('paginatedFilter');
+
+test('getSort() should work', function (PaginatedFilter $paginatedFilter) {
+    expect($paginatedFilter->getSort())->toEqual(new Sort(['column']));
+})->with('paginatedFilter');
+
+test('getPage() should work', function (PaginatedFilter $paginatedFilter) {
+    expect($paginatedFilter->getPage())->toEqual(new Page(0, 20));
 })->with('paginatedFilter');
 
 test('nest() should crash with a segment', function () {

@@ -28,11 +28,11 @@ class Schema
 
     public static function getToManyRelation(Collection $collection, string $relationName): RelationSchema
     {
-        $relation = $collection->getFields()[$relationName];
-
-        if (! $relation) {
+        if (! isset($collection->getFields()[$relationName])) {
             throw new ForestException("Relation $relationName not found");
         }
+
+        $relation = $collection->getFields()[$relationName];
 
         if ($relation->getType() !== 'OneToMany' && $relation->getType() !== 'ManyToMany') {
             throw new ForestException("Relation $relationName has invalid type should be one of OneToMany or ManyToMany.");

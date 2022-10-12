@@ -7,17 +7,19 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record as RecordUtils;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class ConditionTreeFactory
 {
-    public static function matchRecords(Collection $collection, IlluminateCollection $records): ConditionTree
+    public static function matchRecords(Collection $collection, array $records): ConditionTree
     {
-        // TODO
-        //const ids = records.map(r => RecordUtils.getPrimaryKey(schema, r));
+        $ids = collect($records)
+            ->map(fn ($record) => RecordUtils::getPrimaryKeys($collection, $record))
+            ->toArray();
 
-        //return ConditionTreeFactory.matchIds(schema, ids);
+        return self::matchIds($collection, $ids);
     }
 
     public static function matchIds(Collection $collection, array $ids): ConditionTree
@@ -31,7 +33,7 @@ class ConditionTreeFactory
         foreach ($primaryKeyNames as $name) {
             $operators = $collection->getFields()[$name]->getFilterOperators();
 
-            if (! in_array('Equal', $operators, true) || ! in_array('In', $operators, true)) {
+            if (! in_array(Operators::EQUAL, $operators, true) || ! in_array(Operators::IN, $operators, true)) {
                 throw new ForestException("Field '$name' must support operators: ['Equal', 'In']");
             }
         }

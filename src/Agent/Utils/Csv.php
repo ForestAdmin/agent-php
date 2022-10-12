@@ -38,9 +38,6 @@ class Csv
             if ($value instanceof \DateTime) {
                 $field[$key] = $value->format('Y-m-d h:i:s');
             }
-            if ($value instanceof \Date) {
-                $field[$key] = $value->format('Y-m-d');
-            }
         }
 
         return array_values($field);

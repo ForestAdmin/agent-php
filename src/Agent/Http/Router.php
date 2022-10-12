@@ -22,20 +22,20 @@ class Router
     private function getRootRoutes(): array
     {
         return array_merge(
-            HealthCheck::getRoutes(),
-            Authentication::getRoutes(),
-            Charts::getRoutes(),
-            ScopeInvalidation::getRoutes(),
-            Listing::getRoutes(),
-            Store::getRoutes(),
-            Count::getRoutes(),
-            Show::getRoutes(),
-            Update::getRoutes(),
-            Destroy::getRoutes(),
-            ListingRelated::getRoutes(),
-            AssociateRelated::getRoutes(),
-            DissociateRelated::getRoutes(),
-            CountRelated::getRoutes(),
+            HealthCheck::make()->getRoutes(),
+            Authentication::make()->getRoutes(),
+            Charts::make()->getRoutes(),
+            ScopeInvalidation::make()->getRoutes(),
+            Listing::make()->getRoutes(),
+            Store::make()->getRoutes(),
+            Count::make()->getRoutes(),
+            Show::make()->getRoutes(),
+            Update::make()->getRoutes(),
+            Destroy::make()->getRoutes(),
+            ListingRelated::make()->getRoutes(),
+            AssociateRelated::make()->getRoutes(),
+            DissociateRelated::make()->getRoutes(),
+            CountRelated::make()->getRoutes(),
         );
     }
 

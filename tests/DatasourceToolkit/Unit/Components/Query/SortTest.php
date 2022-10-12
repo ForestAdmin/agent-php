@@ -8,11 +8,9 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
 
-dataset('sort', function () {
-    yield $sort = new Sort(['column1', '-column2']);
-});
+test('getFields should work', function () {
+    $sort = new Sort(['column1', '-column2']);
 
-test('getFields should work', function (Sort $sort) {
     expect($sort->getFields())->toEqual(
         [
             [
@@ -25,9 +23,11 @@ test('getFields should work', function (Sort $sort) {
             ],
         ]
     );
-})->with('sort');
+});
 
-test('nest should work', function (Sort $sort) {
+test('nest should work', function () {
+    $sort = new Sort(['column1', '-column2']);
+
     expect($sort->nest('prefix')->getFields())->toEqual(
         [
             [
@@ -40,15 +40,19 @@ test('nest should work', function (Sort $sort) {
             ],
         ]
     );
-})->with('sort');
+});
 
-test('fieldIsAscending should return true with ascending field', function (Sort $sort) {
+test('fieldIsAscending should return true with ascending field', function () {
+    $sort = new Sort(['field']);
+
     expect($sort->fieldIsAscending('field'))->toBeTrue();
-})->with('sort');
+});
 
-test('fieldIsAscending should return true with descending field', function (Sort $sort) {
+test('fieldIsAscending should return false with descending field', function () {
+    $sort = new Sort(['field']);
+
     expect($sort->fieldIsAscending('-field'))->toBeFalse();
-})->with('sort');
+});
 
 test('SortFactory::byPrimaryKeys should work', function () {
     $collection = new Collection(new Datasource(), 'cars');

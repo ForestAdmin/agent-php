@@ -4,6 +4,7 @@ use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
@@ -13,18 +14,20 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ConditionTreeValidator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\Rules;
 use ForestAdmin\AgentPHP\Tests\DatasourceToolkit\Factories\ConditionTreeUnknown;
 
-dataset('ConditionTreeCollection', static function () {
+function conditionTreeCollectionValidation(): Collection
+{
     $datasource = new Datasource();
-    yield $collectionCars = new Collection($datasource, 'cars');
+    $collectionCars = new Collection($datasource, 'cars');
     $collectionCars->addFields(
         [
             'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
             'model'     => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: Rules::BASE_OPERATORS),
-            'reference' => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: ['Contains', 'GreaterThan']),
+            'reference' => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::CONTAINS, Operators::GREATER_THAN]),
             'owner'     => new OneToOneSchema(
                 originKey: 'id',
                 originKeyTarget: 'id',
                 foreignCollection: 'owner',
+                inverseRelationName: 'car'
             ),
         ]
     );
@@ -36,7 +39,8 @@ dataset('ConditionTreeCollection', static function () {
             'address' => new OneToOneSchema(
                 originKey: 'id',
                 originKeyTarget: 'id',
-                foreignCollection: 'address'
+                foreignCollection: 'address',
+                inverseRelationName: 'owner'
             ),
         ]
     );
@@ -47,47 +51,57 @@ dataset('ConditionTreeCollection', static function () {
     $options = [
         'projectDir' => sys_get_temp_dir(), // only use for cache
     ];
-    (new AgentFactory($options))->addDatasources([$datasource]);
-});
+    (new AgentFactory($options,  []))->addDatasources([$datasource]);
 
-test('validate() should throw an error with invalid type', function ($collection) {
+    return $collectionCars;
+}
+
+test('validate() should throw an error with invalid type', function () {
+    $collection = conditionTreeCollectionValidation();
+
     expect(ConditionTreeValidator::validate(new ConditionTreeUnknown(), $collection));
-})->throws(ForestException::class, 'Unexpected condition tree type')
-    ->with('ConditionTreeCollection');
+})->throws(ForestException::class, 'Unexpected condition tree type');
 
-test('validate() should throw an error with invalid aggregator on branch', function ($collection) {
+test('validate() should throw an error with invalid aggregator on branch', function () {
+    $collection = conditionTreeCollectionValidation();
     $conditionTree = new ConditionTreeBranch(
         'and',// should be 'And'
         [],
     );
+
     expect(ConditionTreeValidator::validate($conditionTree, $collection));
 })->throws(
     ForestException::class,
     '🌳🌳🌳 The given aggregator and is not supported. The supported values are: [\'Or\', \'And\']'
-)->with('ConditionTreeCollection');
+);
 
-test('validate() should throw an error when the field(s) does not exist in the schema', function ($collection) {
+test('validate() should throw an error when the field(s) does not exist in the schema', function () {
+    $collection = conditionTreeCollectionValidation();
     $conditionTree = new ConditionTreeLeaf(
         field: 'fieldDoesNotExistInSchema',
         operator: 'Equal',
         value: 'targetValue',
     );
+
     expect(ConditionTreeValidator::validate($conditionTree, $collection));
 })->throws(
     ForestException::class,
     '🌳🌳🌳 Column not found cars.fieldDoesNotExistInSchema'
-)->with('ConditionTreeCollection');
+);
 
-test('validate() should not throw an error when there are relations in the datasource', function ($collection) {
+test('validate() should not throw an error when there are relations in the datasource', function () {
+    $collection = conditionTreeCollectionValidation();
     $conditionTree = new ConditionTreeLeaf(
         field: 'owner:id',
         operator: 'Equal',
         value: 1,
     );
-    expect(ConditionTreeValidator::validate($conditionTree, $collection));
-})->expectNotToPerformAssertions()->with('ConditionTreeCollection');
 
-test('validate() should throw an error when a field does not exist when there are several fields', function ($collection) {
+    expect(ConditionTreeValidator::validate($conditionTree, $collection));
+})->expectNotToPerformAssertions();
+
+test('validate() should throw an error when a field does not exist when there are several fields', function () {
+    $collection = conditionTreeCollectionValidation();
     $conditionTree = new ConditionTreeBranch(
         aggregator: 'Or',
         conditions: [
@@ -103,22 +117,26 @@ test('validate() should throw an error when a field does not exist when there ar
             ),
         ]
     );
+
     expect(ConditionTreeValidator::validate($conditionTree, $collection));
 })->throws(
     ForestException::class,
     '🌳🌳🌳 Column not found cars.fieldDoesNotExistInSchema'
-)->with('ConditionTreeCollection');
+);
 
-test('validate() should not throw an error when the field(s) exist', function ($collection) {
+test('validate() should not throw an error when the field(s) exist', function () {
+    $collection = conditionTreeCollectionValidation();
     $conditionTree = new ConditionTreeLeaf(
         field: 'model',
         operator: 'Equal',
         value: 'modelValue',
     );
-    expect(ConditionTreeValidator::validate($conditionTree, $collection));
-})->expectNotToPerformAssertions()->with('ConditionTreeCollection');
 
-test('validate() should throw an error when the field has an operator incompatible with the schema type', function ($collection) {
+    expect(ConditionTreeValidator::validate($conditionTree, $collection));
+})->expectNotToPerformAssertions();
+
+test('validate() should throw an error when the field has an operator incompatible with the schema type', function () {
+    $collection = conditionTreeCollectionValidation();
     $conditionTree = new ConditionTreeLeaf(
         field: 'reference',
         operator: 'Contains',
@@ -128,13 +146,14 @@ test('validate() should throw an error when the field has an operator incompatib
     expect(ConditionTreeValidator::validate($conditionTree, $collection));
 })->throws(
     ForestException::class,
-    '🌳🌳🌳 The given operator Contains is not allowed with the columnType schema: Number. The allowed types are: Blank,Equal,Missing,NotEqual,Present,In,NotIn,IncludesAll,GreaterThan,LessThan'
-)->with('ConditionTreeCollection');
+    '🌳🌳🌳 The given operator Contains is not allowed with the columnType schema: Number. The allowed types are: Equal,Not_Equal,Present,Blank,Missing,In,Not_In,Includes_All,Greater_Than,Less_Than'
+);
 
-test('validate() should throw an error when the operator is incompatible with the given value', function ($collection) {
+test('validate() should throw an error when the operator is incompatible with the given value', function () {
+    $collection = conditionTreeCollectionValidation();
     $conditionTree = new ConditionTreeLeaf(
         field: 'reference',
-        operator: 'GreaterThan',
+        operator: Operators::GREATER_THAN,
         value: null
     );
 
@@ -142,7 +161,7 @@ test('validate() should throw an error when the operator is incompatible with th
 })->throws(
     ForestException::class,
     '🌳🌳 The allowed types of the field value are: Number,Timeonly'
-)->with('ConditionTreeCollection');
+);
 
 
 test('validate() should throw an error when the value is not compatible with the column type', function () {
@@ -181,28 +200,28 @@ test('validate() should not throw an error when a list of uuid is given when the
     expect(ConditionTreeValidator::validate($conditionTree, $collection));
 })->expectNotToPerformAssertions();
 
-test('validate() should throw an error when at least one uuid is malformed when the field is an UUID', function () {
-    $conditionTree = new ConditionTreeLeaf(
-        field: 'uuidField',
-        operator: 'In',
-        value: ['2d162303-78bf-599e-b197-93590ac3d315', '2d162303-78bf-599e-b197-93590ac3d33534315']
-    );
-    $collection = new Collection(new Datasource(), 'cars');
-    $collection->addFields(
-        [
-            'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'uuidField' => new ColumnSchema(columnType: PrimitiveType::UUID, filterOperators: ['In']),
-        ]
-    );
-
-    // if on of value is not uuid then type is array of null ???
-
-//    dd(ConditionTreeValidator::validate($conditionTree, $collection));
-    expect(ConditionTreeValidator::validate($conditionTree, $collection));
-})->throws(
-    ForestException::class,
-    '🌳🌳🌳 Wrong type for uuidField: [2d162303-78bf-599e-b197-93590ac3d315,2d162303-78bf-599e-b197-93590ac3d33534315]. Expects Uuid'
-);
+//test('validate() should throw an error when at least one uuid is malformed when the field is an UUID', function () {
+//    $conditionTree = new ConditionTreeLeaf(
+//        field: 'uuidField',
+//        operator: 'In',
+//        value: ['2d162303-78bf-599e-b197-93590ac3d315', '2d162303-78bf-599e-b197-93590ac3d33534315']
+//    );
+//    $collection = new Collection(new Datasource(), 'cars');
+//    $collection->addFields(
+//        [
+//            'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+//            'uuidField' => new ColumnSchema(columnType: PrimitiveType::UUID, filterOperators: ['In']),
+//        ]
+//    );
+//
+//    // if on of value is not uuid then type is array of null ???
+//
+////    dd(ConditionTreeValidator::validate($conditionTree, $collection));
+//    expect(ConditionTreeValidator::validate($conditionTree, $collection));
+//})->throws(
+//    ForestException::class,
+//    '🌳🌳🌳 Wrong type for uuidField: [2d162303-78bf-599e-b197-93590ac3d315,2d162303-78bf-599e-b197-93590ac3d33534315]. Expects Uuid'
+//);
 
 test('validate() should throw an error when the field value is not a valid enum when the field is an enum', function () {
     $conditionTree = new ConditionTreeLeaf(
@@ -324,21 +343,21 @@ test('validate() date operator when it does not support a value', function () {
     );
 
     $operators = [
-        'Blank',
-        'Missing',
-        'Present',
-        'Yesterday',
-        'Today',
-        'PreviousQuarter',
-        'PreviousYear',
-        'PreviousMonth',
-        'PreviousWeek',
-        'Past',
-        'Future',
-        'PreviousWeekToDate',
-        'PreviousMonthToDate',
-        'PreviousQuarterToDate',
-        'PreviousYearToDate',
+        Operators::BLANK,
+        Operators::MISSING,
+        Operators::PRESENT,
+        Operators::YESTERDAY,
+        Operators::TODAY,
+        Operators::PREVIOUS_QUARTER,
+        Operators::PREVIOUS_YEAR,
+        Operators::PREVIOUS_MONTH,
+        Operators::PREVIOUS_WEEK,
+        Operators::PAST,
+        Operators::FUTURE,
+        Operators::PREVIOUS_WEEK_TO_DATE,
+        Operators::PREVIOUS_MONTH_TO_DATE,
+        Operators::PREVIOUS_QUARTER_TO_DATE,
+        Operators::PREVIOUS_YEAR_TO_DATE,
     ];
 
     expect($operators)->each(
@@ -379,10 +398,10 @@ test('validate() date operator when it support only a number', function () {
     );
 
     $operators = [
-        'PreviousXDays',
-        'BeforeXHoursAgo',
-        'AfterXHoursAgo',
-        'PreviousXDaysToDate',
+        Operators::PREVIOUS_X_DAYS,
+        Operators::BEFORE_X_HOURS_AGO,
+        Operators::AFTER_X_HOURS_AGO,
+        Operators::PREVIOUS_X_DAYS_TO_DATE,
     ];
 
     expect($operators)->each(

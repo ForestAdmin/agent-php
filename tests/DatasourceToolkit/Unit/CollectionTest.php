@@ -12,10 +12,9 @@ it('should prevent instantiation when adding action with duplicated name', funct
     $collection = new Collection(new Datasource(), '__collection__');
     $collection->addAction('__duplicated__', $action);
     $collection->addAction('__duplicated__', $action);
-
 })->throws(Exception::class, 'Action __duplicated__ already defined in collection');
 
-it('should add action with unique name',  function() {
+it('should add action with unique name',  function () {
     $expectedAction = new ActionSchema(scope: ActionScope::single(), staticForm: true);
     $collection = new Collection(new Datasource(), '__collection__');
     $collection->addAction('__action__', $expectedAction);
@@ -24,15 +23,14 @@ it('should add action with unique name',  function() {
         ->and($collection->getActions()['__action__'])->toEqual($expectedAction);
 });
 
-it('should prevent instantiation when adding field with duplicated name', function() {
+it('should prevent instantiation when adding field with duplicated name', function () {
     $field = new ColumnSchema(columnType: PrimitiveType::STRING);
     $collection = new Collection(new Datasource(), '__collection__');
     $collection->addField('__duplicated__', $field);
     $collection->addField('__duplicated__', $field);
-
 })->throws(Exception::class, 'Field __duplicated__ already defined in collection');
 
-it('should add field with unique name',  function() {
+it('should add field with unique name',  function () {
     $expectedField = new ColumnSchema(columnType: PrimitiveType::STRING);
     $collection = new Collection(new Datasource(), '__collection__');
     $collection->addField('__field__', $expectedField);
@@ -41,7 +39,7 @@ it('should add field with unique name',  function() {
         ->and($collection->getFields()->toArray())->toMatchArray($expectedField);
 });
 
-it('should add all fields',  function() {
+it('should add all fields',  function () {
     $expectedFields = [
         '__first__' => new ColumnSchema(
             columnType: PrimitiveType::NUMBER,
@@ -58,16 +56,16 @@ it('should add all fields',  function() {
         ->and($collection->getFields()->toArray())->toMatchArray($expectedFields);
 });
 
-it('should add all segments',  function() {
+it('should add all segments',  function () {
     $expectedSegments = ['__first__', '__second__'];
     $collection = new Collection(new Datasource(), '__collection__');
-    $collection->addSegments($expectedSegments);
+    $collection->setSegments($expectedSegments);
 
     expect($collection)->toBeInstanceOf(Collection::class)
         ->and($collection->getSegments()->toArray())->toMatchArray($expectedSegments);
 });
 
-it('should set searchable to true',  function() {
+it('should set searchable to true',  function () {
     $collection = new Collection(new Datasource(), '__collection__');
     $collection->setSearchable(true);
 
