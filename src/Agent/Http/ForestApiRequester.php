@@ -3,11 +3,13 @@
 namespace ForestAdmin\AgentPHP\Agent\Http;
 
 use ErrorException;
+
+use function ForestAdmin\config;
+
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Response;
-use function ForestAdmin\config;
 
 class ForestApiRequester
 {
@@ -139,9 +141,9 @@ class ForestApiRequester
             $route = config('forestServerUrl') . $route;
         }
 
-//        if (!config('app.debug')) {
-//            $this->validateUrl($route);
-//        }
+        if (! config('debug')) {
+            $this->validateUrl($route);
+        }
 
         return $route;
     }
@@ -153,7 +155,7 @@ class ForestApiRequester
      * @return bool
      * @throws \ErrorException
      */
-    private function validateUrl(string $url): bool
+    protected function validateUrl(string $url): bool
     {
         if ((bool) filter_var($url, FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED) !== true) {
             throw new \ErrorException("$url seems to be an invalid url");
