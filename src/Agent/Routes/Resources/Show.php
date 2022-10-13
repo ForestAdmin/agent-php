@@ -48,7 +48,7 @@ class Show extends AbstractCollectionRoute
 
         return [
             'name'              => $args['collectionName'],
-            'content'           => JsonApi::render($result, $this->collection->makeTransformer(), $args['collectionName']),
+            'content'           => JsonApi::renderItem($result, $this->collection->makeTransformer(), $args['collectionName']),
         ];
     }
 }

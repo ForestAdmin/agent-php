@@ -45,7 +45,7 @@ class Listing extends AbstractCollectionRoute
 
         return [
             'name'              => $args['collectionName'],
-            'content'           => JsonApi::render($results, $this->collection->makeTransformer(), $args['collectionName']),
+            'content'           => JsonApi::renderCollection($results, $this->collection->makeTransformer(), $args['collectionName']),
         ];
     }
 

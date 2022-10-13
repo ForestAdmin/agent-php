@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Listing;
 use ForestAdmin\AgentPHP\Agent\Services\Permissions;
+use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
@@ -56,10 +57,12 @@ function factoryListing($args = []): Listing
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
+        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
         'envSecret'    => SECRET,
         'isProduction' => false,
     ];
     (new AgentFactory($options, []))->addDatasources([$datasource]);
+    SchemaEmitter::getSerializedSchema($datasource);
 
     $request = Request::createFromGlobals();
     $permissions = new Permissions(QueryStringParser::parseCaller($request));
@@ -124,15 +127,38 @@ test('handleRequest() should return a response 200', function () {
             'active'     => true,
         ],
     ];
+
     $listing = factoryListing(['listing' => $data]);
 
     expect($listing->handleRequest(['collectionName' => 'User']))
         ->toBeArray()
         ->toEqual(
             [
-                'renderTransformer' => true,
                 'name'              => 'User',
-                'content'           => $data,
+                'content'           => [
+                    'data' => [
+                        [
+                            'type'       => 'User',
+                            'id'         => '1',
+                            'attributes' => [
+                                'first_name' => 'John',
+                                'last_name'  => 'Doe',
+                                'birthday'   => '1980-01-01',
+                                'active'     => true,
+                            ],
+                        ],
+                        [
+                            'type'       => 'User',
+                            'id'         => '2',
+                            'attributes' => [
+                                'first_name' => 'Jane',
+                                'last_name'  => 'Doe',
+                                'birthday'   => '1984-01-01',
+                                'active'     => true,
+                            ],
+                        ],
+                    ],
+                ],
             ]
         );
 });
