@@ -34,7 +34,7 @@ class Collection extends ForestCollection
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function __construct(protected Datasource $datasource, protected ClassMetadata $entityMetadata)
+    public function __construct(protected DoctrineDatasource $datasource, protected ClassMetadata $entityMetadata)
     {
         parent::__construct($datasource, $entityMetadata->reflClass->getShortName());
 
