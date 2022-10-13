@@ -55,18 +55,6 @@ class AgentFactory
         }
     }
 
-    public function renderChart(Chart $chart): array
-    {
-        return JsonApi::renderItem(
-            [
-                'id'    => Uuid::uuid4(),
-                'value' => $chart->serialize(),
-            ],
-            new BasicArrayTransformer(),
-            'stats'
-        );
-    }
-
     public static function getContainer(): ?Container
     {
         return static::$container ?? null;

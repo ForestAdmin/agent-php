@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
 use ForestAdmin\AgentPHP\Agent\Services\JsonApiResponse;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ValueChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
@@ -38,7 +39,7 @@ function factoryJsonApi()
     return $collectionPerson;
 }
 
-test('render() should return a JsonApiResponse render', function () {
+test('renderCollection() should return a JsonApiResponse render', function () {
     factoryJsonApi();
     $content = [
         [
@@ -53,9 +54,9 @@ test('render() should return a JsonApiResponse render', function () {
         ],
     ];
 
-    $render = JsonApi::render($content, new BasicArrayTransformer(), 'Person');
+    $render = JsonApi::renderCollection($content, new BasicArrayTransformer(), 'Person');
 
-    expect($render)->toEqual((new JsonApiResponse())->render($content, new BasicArrayTransformer(), 'Person'));
+    expect($render)->toEqual((new JsonApiResponse())->renderCollection($content, new BasicArrayTransformer(), 'Person'));
 });
 
 test('renderItem() should return a JsonApiResponse renderItem', function () {
@@ -74,4 +75,17 @@ test('deactivateCountResponse() should return a JsonApiResponse deactivateCountR
     factoryJsonApi();
 
     expect(JsonApi::deactivateCountResponse())->toEqual((new JsonApiResponse())->deactivateCountResponse());
+});
+
+test('renderChart() should add a datasource to the container', function () {
+    $chart = new ValueChart(100, 10);
+    $result = JsonApi::renderChart($chart);
+
+    expect($result)
+        ->toBeArray()
+        ->toHaveKey('data')
+        ->and($result['data'])
+        ->toHaveKey('id')
+        ->toHaveKey('value', (new JsonApiResponse())->renderChart($chart)['data']['value'])
+        ->and($result['data']['id']);
 });

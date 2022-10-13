@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\Charts;
 
+use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
@@ -53,10 +54,7 @@ class Charts extends AbstractCollectionRoute
         $this->setType($this->request->get('type'));
         $this->setCaller(QueryStringParser::parseCaller($this->request));
 
-        return [
-            'renderChart' => true,
-            'content'     => $this->{'make' . $this->type}(),
-        ];
+        return ['content' => JsonApi::renderChart($this->{'make' . $this->type}())];
     }
 
     public function getType(): string

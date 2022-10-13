@@ -2,7 +2,6 @@
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ValueChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
@@ -48,22 +47,4 @@ test('addDatasources() should throw an Exception on a invalid datasource', funct
 
     expect(fn () => $agentFactory->addDatasources([$datasource]))
         ->toThrow(\Exception::class, 'Invalid datasource');
-});
-
-test('renderChart() should add a datasource to the container', function () {
-    $datasource = new Datasource();
-
-    $agentFactory = new AgentFactory(factoryAgentFactoryOptions(), []);
-    $agentFactory->addDatasources([$datasource]);
-    $chart = new ValueChart(100, 10);
-
-    expect($agentFactory->renderChart($chart)['data']['attributes'])
-        ->toEqual(
-            [
-                'value' => [
-                    'countCurrent'  => 100,
-                    'countPrevious' => 10,
-                ],
-            ]
-        );
 });

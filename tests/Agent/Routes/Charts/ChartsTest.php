@@ -2,6 +2,7 @@
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
+use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
 use ForestAdmin\AgentPHP\Agent\Services\Permissions;
@@ -163,15 +164,18 @@ test('makeValue() should return a ValueChart', function () {
             ],
         ]
     );
+    $result = $chart->handleRequest(['collectionName' => 'Book']);
 
-    expect($chart->handleRequest(['collectionName' => 'Book']))
+    expect($result)
         ->toBeArray()
-        ->toEqual(
-            [
-                'renderChart' => true,
-                'content'     => new ValueChart(10),
-            ]
-        );
+        ->toHaveKey('content')
+        ->and($result['content'])
+        ->toBeArray()
+        ->toHaveKey('data')
+        ->and($result['content']['data'])
+        ->toHaveKey('id')
+        ->toHaveKey('value', (new ValueChart(10))->serialize())
+        ->and($result['content']['data']['id']);
 });
 
 test('makeValue() with previous filter should return a ValueChart', function () {
@@ -194,15 +198,18 @@ test('makeValue() with previous filter should return a ValueChart', function () 
             ],
         ]
     );
+    $result = $chart->handleRequest(['collectionName' => 'Book']);
 
-    expect($chart->handleRequest(['collectionName' => 'Book']))
+    expect($result)
         ->toBeArray()
-        ->toEqual(
-            [
-                'renderChart' => true,
-                'content'     => new ValueChart(10, 5),
-            ]
-        );
+        ->toHaveKey('content')
+        ->and($result['content'])
+        ->toBeArray()
+        ->toHaveKey('data')
+        ->and($result['content']['data'])
+        ->toHaveKey('id')
+        ->toHaveKey('value', (new ValueChart(10, 5))->serialize())
+        ->and($result['content']['data']['id']);
 });
 
 test('makeObjective() should return a ObjectiveChart', function () {
@@ -225,15 +232,18 @@ test('makeObjective() should return a ObjectiveChart', function () {
             ],
         ],
     );
+    $result = $chart->handleRequest(['collectionName' => 'Book']);
 
-    expect($chart->handleRequest(['collectionName' => 'Book']))
+    expect($result)
         ->toBeArray()
-        ->toEqual(
-            [
-                'renderChart' => true,
-                'content'     => new ObjectiveChart(10),
-            ]
-        );
+        ->toHaveKey('content')
+        ->and($result['content'])
+        ->toBeArray()
+        ->toHaveKey('data')
+        ->and($result['content']['data'])
+        ->toHaveKey('id')
+        ->toHaveKey('value', (new ObjectiveChart(10))->serialize())
+        ->and($result['content']['data']['id']);
 });
 
 test('makePie() should return a PieChart', function () {
@@ -260,24 +270,28 @@ test('makePie() should return a PieChart', function () {
             ],
         ],
     );
+    $result = $chart->handleRequest(['collectionName' => 'Book']);
 
-    expect($chart->handleRequest(['collectionName' => 'Book']))
+    expect($result)
         ->toBeArray()
-        ->toEqual(
+        ->toHaveKey('content')
+        ->and($result['content'])
+        ->toBeArray()
+        ->toHaveKey('data')
+        ->and($result['content']['data'])
+        ->toHaveKey('id')
+        ->toHaveKey('value', (new PieChart([
             [
-                'renderChart' => true,
-                'content'     => new PieChart([
-                    [
-                        'key'   => 2021,
-                        'value' => 100,
-                    ],
-                    [
-                        'key'   => 2022,
-                        'value' => 150,
-                    ],
-                ]),
-            ]
-        );
+                'key'   => 2021,
+                'value' => 100,
+            ],
+            [
+                'key'   => 2022,
+                'value' => 150,
+            ],
+        ]))->serialize())
+        ->and($result['content']['data']['id']);
+
 });
 
 test('makeLine() with day filter should return a LineChart', function () {
@@ -305,24 +319,27 @@ test('makeLine() with day filter should return a LineChart', function () {
             ],
         ]
     );
+    $result = $chart->handleRequest(['collectionName' => 'Book']);
 
-    expect($chart->handleRequest(['collectionName' => 'Book']))
+    expect($result)
         ->toBeArray()
-        ->toEqual(
+        ->toHaveKey('content')
+        ->and($result['content'])
+        ->toBeArray()
+        ->toHaveKey('data')
+        ->and($result['content']['data'])
+        ->toHaveKey('id')
+        ->toHaveKey('value', (new LineChart([
             [
-                'renderChart' => true,
-                'content'     => new LineChart([
-                    [
-                        'label'  => '03/01/2022',
-                        'values' => 10,
-                    ],
-                    [
-                        'label'  => '10/01/2022',
-                        'values' => 15,
-                    ],
-                ]),
-            ]
-        );
+                'label'  => '03/01/2022',
+                'values' => 10,
+            ],
+            [
+                'label'  => '10/01/2022',
+                'values' => 15,
+            ],
+        ]))->serialize())
+        ->and($result['content']['data']['id']);
 });
 
 test('makeLine() with week filter should return a LineChart', function () {
@@ -350,24 +367,27 @@ test('makeLine() with week filter should return a LineChart', function () {
             ],
         ]
     );
+    $result = $chart->handleRequest(['collectionName' => 'Book']);
 
-    expect($chart->handleRequest(['collectionName' => 'Book']))
+    expect($result)
         ->toBeArray()
-        ->toEqual(
+        ->toHaveKey('content')
+        ->and($result['content'])
+        ->toBeArray()
+        ->toHaveKey('data')
+        ->and($result['content']['data'])
+        ->toHaveKey('id')
+        ->toHaveKey('value', (new LineChart([
             [
-                'renderChart' => true,
-                'content'     => new LineChart([
-                    [
-                        'label'  => 'W01-2022',
-                        'values' => 10,
-                    ],
-                    [
-                        'label'  => 'W02-2022',
-                        'values' => 15,
-                    ],
-                ]),
-            ]
-        );
+                'label'  => 'W01-2022',
+                'values' => 10,
+            ],
+            [
+                'label'  => 'W02-2022',
+                'values' => 15,
+            ],
+        ]))->serialize())
+        ->and($result['content']['data']['id']);
 });
 
 test('makeLine() with month filter should return a LineChart', function () {
@@ -395,24 +415,27 @@ test('makeLine() with month filter should return a LineChart', function () {
             ],
         ]
     );
+    $result = $chart->handleRequest(['collectionName' => 'Book']);
 
-    expect($chart->handleRequest(['collectionName' => 'Book']))
+    expect($result)
         ->toBeArray()
-        ->toEqual(
+        ->toHaveKey('content')
+        ->and($result['content'])
+        ->toBeArray()
+        ->toHaveKey('data')
+        ->and($result['content']['data'])
+        ->toHaveKey('id')
+        ->toHaveKey('value', (new LineChart([
             [
-                'renderChart' => true,
-                'content'     => new LineChart([
-                    [
-                        'label'  => 'Jan 2022',
-                        'values' => 10,
-                    ],
-                    [
-                        'label'  => 'Feb 2022',
-                        'values' => 15,
-                    ],
-                ]),
-            ]
-        );
+                'label'  => 'Jan 2022',
+                'values' => 10,
+            ],
+            [
+                'label'  => 'Feb 2022',
+                'values' => 15,
+            ],
+        ]))->serialize())
+        ->and($result['content']['data']['id']);
 });
 
 test('makeLine() with month year should return a LineChart', function () {
@@ -440,24 +463,27 @@ test('makeLine() with month year should return a LineChart', function () {
             ],
         ]
     );
+    $result = $chart->handleRequest(['collectionName' => 'Book']);
 
-    expect($chart->handleRequest(['collectionName' => 'Book']))
+    expect($result)
         ->toBeArray()
-        ->toEqual(
+        ->toHaveKey('content')
+        ->and($result['content'])
+        ->toBeArray()
+        ->toHaveKey('data')
+        ->and($result['content']['data'])
+        ->toHaveKey('id')
+        ->toHaveKey('value', (new LineChart([
             [
-                'renderChart' => true,
-                'content'     => new LineChart([
-                    [
-                        'label'  => '2022',
-                        'values' => 10,
-                    ],
-                    [
-                        'label'  => '2023',
-                        'values' => 15,
-                    ],
-                ]),
-            ]
-        );
+                'label'  => '2022',
+                'values' => 10,
+            ],
+            [
+                'label'  => '2023',
+                'values' => 15,
+            ],
+        ]))->serialize())
+        ->and($result['content']['data']['id']);
 });
 
 test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation', function () {
@@ -485,24 +511,27 @@ test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation
             ],
         ],
     );
+    $result = $chart->handleRequest(['collectionName' => 'Book']);
 
-    expect($chart->handleRequest(['collectionName' => 'Book']))
+    expect($result)
         ->toBeArray()
-        ->toEqual(
+        ->toHaveKey('content')
+        ->and($result['content'])
+        ->toBeArray()
+        ->toHaveKey('data')
+        ->and($result['content']['data'])
+        ->toHaveKey('id')
+        ->toHaveKey('value', (new LeaderboardChart([
             [
-                'renderChart' => true,
-                'content'     => new LeaderboardChart([
-                    [
-                        'key'   => 'Foundation',
-                        'value' => 15,
-                    ],
-                    [
-                        'key'   => 'Harry Potter',
-                        'value' => 20,
-                    ],
-                ]),
-            ]
-        );
+                'key'   => 'Foundation',
+                'value' => 15,
+            ],
+            [
+                'key'   => 'Harry Potter',
+                'value' => 20,
+            ],
+        ]))->serialize())
+        ->and($result['content']['data']['id']);
 });
 
 test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relation', function () {
@@ -530,24 +559,27 @@ test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relatio
             ],
         ],
     );
+    $result = $chart->handleRequest(['collectionName' => 'Book']);
 
-    expect($chart->handleRequest(['collectionName' => 'Book']))
+    expect($result)
         ->toBeArray()
-        ->toEqual(
+        ->toHaveKey('content')
+        ->and($result['content'])
+        ->toBeArray()
+        ->toHaveKey('data')
+        ->and($result['content']['data'])
+        ->toHaveKey('id')
+        ->toHaveKey('value', (new LeaderboardChart([
             [
-                'renderChart' => true,
-                'content'     => new LeaderboardChart([
-                    [
-                        'key'   => 'Foundation',
-                        'value' => 15,
-                    ],
-                    [
-                        'key'   => 'Harry Potter',
-                        'value' => 20,
-                    ],
-                ]),
-            ]
-        );
+                'key'   => 'Foundation',
+                'value' => 15,
+            ],
+            [
+                'key'   => 'Harry Potter',
+                'value' => 20,
+            ],
+        ]))->serialize())
+        ->and($result['content']['data']['id']);
 });
 
 test('makeLeaderboard() should throw a ForestException when the request is not filled correctly', function () {
