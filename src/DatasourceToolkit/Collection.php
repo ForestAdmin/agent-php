@@ -56,12 +56,7 @@ class Collection implements CollectionContract
         return $this->className;
     }
 
-    public function hydrate(array $args): void
-    {
-        //
-    }
-
-    public function execute(/*Caller $caller, */string $name, array $formValues, ?Filter $filter = null): ActionResult
+    public function execute(Caller $caller, string $name, array $formValues, ?Filter $filter = null): ActionResult
     {
         // TODO: Implement execute() method.
         if (! $this->actions->get($name)) {
@@ -71,7 +66,7 @@ class Collection implements CollectionContract
         // TODO QUESTION HOW TO RETURN ACTIONRESULT + CHECK DUMMYDATA SOURCE PARAMETERS ARE MISSING ? (base.ts -> override async execute(): Promise<ActionResult>)
     }
 
-    public function getForm(/*Caller $caller, */string $name, ?array $formValues = null, ?Filter $filter = null): array
+    public function getForm(Caller $caller, string $name, ?array $formValues = null, ?Filter $filter = null): array
     {
         return [];
     }

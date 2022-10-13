@@ -23,7 +23,6 @@ abstract class AbstractRelationRoute extends AbstractAuthenticatedRoute
 
         $this->datasource = AgentFactory::get('datasource');
         $this->collection = $this->datasource->getCollection($args['collectionName']);
-        $this->collection->hydrate($args);
 
         $relation = Schema::getToManyRelation($this->collection, $args['relationName']);
         $this->childCollection = $this->datasource->getCollection($relation->getForeignCollection());
