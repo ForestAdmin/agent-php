@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Decorators;
 
+use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\GeneratorCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
@@ -17,8 +18,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToMany
 
 class CollectionDecorator implements CollectionContract
 {
-    private $lastSchema; //: CollectionSchema;
-    private $lastSubSchema;  //: CollectionSchema;
+    private array $lastSchema; //: CollectionSchema;
+    private array $lastSubSchema;  //: CollectionSchema;
 
     public function __construct(protected Collection $childCollection, protected Datasource $dataSource)
     {
@@ -26,7 +27,7 @@ class CollectionDecorator implements CollectionContract
 
     public function getSchema(): CollectionSchema
     {
-        $subSchema = $this->childCollection->getFields(); // const subSchema = this.childCollection.schema;
+        $subSchema = GeneratorCollection::buildSchema($this->childCollection); // const subSchema = this.childCollection.schema;
 
         if (! $this->lastSchema || $this->lastSubSchema !== $subSchema) {
             $this->lastSchema = $this->refineSchema($subSchema);
