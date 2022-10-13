@@ -7,42 +7,57 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ActionSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\ActionScope;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
 
 class Book extends BaseCollection
 {
+    protected $records = [
+        [
+            'id'          => 1,
+            'title'       => 'title1',
+            'publication' => '2022-01-01',
+            'author'      => 'dsfqdsf',
+        ],
+        [
+            'id'          => 2,
+            'title'       => 'title2',
+            'publication' => '2022-01-02',
+            'author'      => 'fdsdf',
+        ],
+        [
+            'id'          => 3,
+            'title'       => 'title3',
+            'publication' => '2022-01-03',
+            'author'      => 'qsdfsdf',
+        ],
+    ];
+
     public function __construct(DatasourceContract $dataSource)
     {
         $fields = [
-            'id' => new ColumnSchema(
+            'id'          => new ColumnSchema(
                 columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),
-            'title' => new ColumnSchema(
+            'title'       => new ColumnSchema(
                 columnType: PrimitiveType::STRING,
                 defaultValue: 'Foo'
             ),
             'publication' => new ColumnSchema(
                 columnType: PrimitiveType::DATE,
             ),
-            'authorId' => new ColumnSchema(
-                columnType: PrimitiveType::NUMBER,
-            ),
-            'author' => new ManyToOneSchema( // TODO CHECK IT'S GOOD ?
-                foreignKey: 'authorId',
-                foreignKeyTarget: 'id',
-                foreignCollection: 'Person'
+            'author'      => new ColumnSchema(
+                columnType: PrimitiveType::STRING,
             ),
         ];
         parent::__construct($dataSource, 'Book', $fields);
 
         $this->dataSource = $dataSource;
 
-        $this->addAction('Mark as live', new ActionSchema(scope: ActionScope::single(), staticForm: true));
-
-        $this->addSegment('Active books');
-        $this->addSegment('Deleted books');
-
-        $this->setSearchable(true);
+//        $this->addAction('Mark as live', new ActionSchema(scope: ActionScope::single(), staticForm: true));
+//
+//        $this->addSegment('Active books');
+//        $this->addSegment('Deleted books');
+//
+//        $this->setSearchable(true);
     }
 }

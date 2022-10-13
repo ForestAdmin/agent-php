@@ -3,12 +3,17 @@
 namespace ForestAdmin\AgentPHP\DatasourceDummy\Collections;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 
 class BaseCollection extends Collection
 {
+    protected $records = [];
+
     /**
      * @param DatasourceContract $dataSource
      * @param string                                                               $name
@@ -18,5 +23,10 @@ class BaseCollection extends Collection
     {
         parent::__construct($dataSource, $name);
         $this->addFields($fields);
+    }
+
+    public function list(Caller $caller, Filter $filter, Projection $projection): array
+    {
+        return $this->records;
     }
 }

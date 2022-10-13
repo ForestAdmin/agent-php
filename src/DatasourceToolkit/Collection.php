@@ -2,6 +2,8 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
+use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BaseTransformer;
+use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
@@ -118,6 +120,11 @@ class Collection implements CollectionContract
     public function dissociate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void
     {
         // TODO: Implement dissociate() method.
+    }
+
+    public function makeTransformer()
+    {
+        return new BasicArrayTransformer();
     }
 
     public function addFields(array $fields): void

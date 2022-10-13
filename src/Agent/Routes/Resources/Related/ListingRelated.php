@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\Resources\Related;
 
+use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRelationRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
@@ -41,7 +42,7 @@ class ListingRelated extends AbstractRelationRoute
 
         $id = Id::unpackId($this->collection, $args['id']);
 
-        $records = CollectionUtils::listRelation(
+        $results = CollectionUtils::listRelation(
             $this->collection,
             $id,
             $args['relationName'],
@@ -51,9 +52,8 @@ class ListingRelated extends AbstractRelationRoute
         );
 
         return [
-            'renderTransformer' => true,
             'name'              => $this->childCollection->getName(),
-            'content'           => $records,
+            'content'           => JsonApi::renderCollection($results, $this->collection->makeTransformer(), $this->childCollection->getName()),
         ];
     }
 

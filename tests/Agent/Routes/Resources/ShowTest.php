@@ -5,6 +5,7 @@ use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Show;
 use ForestAdmin\AgentPHP\Agent\Services\Permissions;
+use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
@@ -42,10 +43,12 @@ function factoryShow($args = []): Show
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
+        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
         'envSecret'    => SECRET,
         'isProduction' => false,
     ];
     (new AgentFactory($options, []))->addDatasources([$datasource]);
+    SchemaEmitter::getSerializedSchema($datasource);
 
     $request = Request::createFromGlobals();
     $permissions = new Permissions(QueryStringParser::parseCaller($request));
@@ -98,9 +101,17 @@ test('handleRequest() should return a response 200', function () {
         ->toBeArray()
         ->toEqual(
             [
-                'renderTransformer' => true,
-                'name'              => 'Car',
-                'content'           => $data,
+                'name'    => 'Car',
+                'content' => [
+                    'data' => [
+                        'type'       => 'Car',
+                        'id'         => '1',
+                        'attributes' => [
+                            'model' => 'F8',
+                            'brand' => 'Ferrari',
+                        ],
+                    ],
+                ],
             ]
         );
 });

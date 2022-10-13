@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
+use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 
@@ -23,11 +24,11 @@ class Store extends AbstractCollectionRoute
     {
         $this->build($args);
         $this->permissions->can('add:' . $this->collection->getName());
+        $result = $this->collection->create($this->caller, $this->request->get('data'));
 
         return [
-            'renderTransformer' => true,
             'name'              => $args['collectionName'],
-            'content'           => $this->collection->create($this->caller, $this->request->get('data')),
+            'content'           => JsonApi::renderItem($result, $this->collection->makeTransformer(), $args['collectionName']),
         ];
     }
 }

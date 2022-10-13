@@ -19,7 +19,7 @@ use ForestAdmin\AgentPHP\Agent\Routes\Security\ScopeInvalidation;
 
 class Router
 {
-    private function getRootRoutes(): array
+    public static function getRoutes(): array
     {
         return array_merge(
             HealthCheck::make()->getRoutes(),
@@ -36,13 +36,6 @@ class Router
             AssociateRelated::make()->getRoutes(),
             DissociateRelated::make()->getRoutes(),
             CountRelated::make()->getRoutes(),
-        );
-    }
-
-    public function makeRoutes()
-    {
-        return array_merge(
-            $this->getRootRoutes()
         );
     }
 }
