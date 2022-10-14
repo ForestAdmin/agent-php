@@ -15,6 +15,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results\ActionResult;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
+use Illuminate\Support\Collection as IlluminateCollection;
 
 class CollectionDecorator implements CollectionContract
 {
@@ -25,7 +26,7 @@ class CollectionDecorator implements CollectionContract
     {
     }
 
-    public function getSchema(): CollectionSchema
+    public function getSchema(): IlluminateCollection
     {
         $subSchema = GeneratorCollection::buildSchema($this->childCollection); // const subSchema = this.childCollection.schema;
 
