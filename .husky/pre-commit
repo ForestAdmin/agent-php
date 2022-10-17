@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+FILES=` git status --porcelain | grep -e '^\s*[AM]\(.*\).php$' | cut -c 3- | tr '\n' ' '`
+if [ -z "$FILES" ]
+then
+    echo "php files not found."
+else
+    vendor/bin/php-cs-fixer fix ${FILES}
+    git add ${FILES}
+fi

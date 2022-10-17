@@ -3,7 +3,6 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Utils;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 class Record

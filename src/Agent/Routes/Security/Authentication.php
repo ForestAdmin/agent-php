@@ -8,13 +8,14 @@ use Firebase\JWT\Key;
 use ForestAdmin\AgentPHP\Agent\Auth\AuthManager;
 use ForestAdmin\AgentPHP\Agent\Auth\OidcClientManager;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\Agent\Services\ForestAdminHttpDriverServices;
 use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
-use GuzzleHttp\Exception\GuzzleException;
-use JsonException;
-use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 
 use function ForestAdmin\config;
+
+use GuzzleHttp\Exception\GuzzleException;
+use JsonException;
+
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 
 class Authentication extends AbstractRoute
 {

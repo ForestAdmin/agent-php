@@ -6,9 +6,11 @@ use ForestAdmin\AgentPHP\Agent\Auth\OAuth2\ForestProvider;
 use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
 use ForestAdmin\AgentPHP\Agent\Utils\Traits\FormatGuzzle;
+
+use function ForestAdmin\cache;
 use function ForestAdmin\cacheRemember;
 use function ForestAdmin\config;
-use function ForestAdmin\cache;
+
 use GuzzleHttp\Exception\GuzzleException;
 
 class OidcClientManager

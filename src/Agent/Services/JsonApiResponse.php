@@ -3,18 +3,19 @@
 namespace ForestAdmin\AgentPHP\Agent\Services;
 
 use ForestAdmin\AgentPHP\Agent\Facades\ForestSchema;
-use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Serializer\JsonApiSerializer;
 
 use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
-use Ramsey\Uuid\Uuid;
+
 use function ForestAdmin\config;
 
 use Illuminate\Support\Collection as BaseCollection;
+
 use League\Fractal\Manager;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\Item;
 use League\Fractal\TransformerAbstract;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class JsonApiResponse

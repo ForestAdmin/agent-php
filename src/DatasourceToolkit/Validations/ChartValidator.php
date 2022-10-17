@@ -14,6 +14,7 @@ class ChartValidator
 
         if ($condition) {
             $resultKeys = $result->keys()->implode(',');
+
             throw new ForestException("The result columns must be named '$keyNames' instead of '$resultKeys'");
         }
 

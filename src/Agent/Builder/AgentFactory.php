@@ -3,17 +3,12 @@
 namespace ForestAdmin\AgentPHP\Agent\Builder;
 
 use DI\Container;
-use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
-use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\Chart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 use function ForestAdmin\config;
-
-use Ramsey\Uuid\Uuid;
 
 class AgentFactory
 {

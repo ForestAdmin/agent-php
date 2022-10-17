@@ -16,7 +16,6 @@ class ForestAdminHttpDriver
         if (! $schemaIsKnown) {
             // TODO this.options.logger('Info', 'Schema was updated, sending new version');
             ForestHttpApi::uploadSchema($schema);
-
         } else {
             // TODO this.options.logger('Info', 'Schema was not updated since last run');
         }

@@ -11,7 +11,6 @@ use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use Illuminate\Support\Str;
-use League\Csv\Writer;
 
 class ListingRelated extends AbstractRelationRoute
 {

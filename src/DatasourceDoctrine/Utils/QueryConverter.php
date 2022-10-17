@@ -41,8 +41,7 @@ class QueryConverter
         protected ClassMetadata          $entityMetadata,
         protected string                 $timezone,
         protected ?Projection            $projection = null,
-    )
-    {
+    ) {
         $this->mainAlias = Str::lower($this->entityMetadata->reflClass->getShortName());
         $this->repository = $this->entityManager->getRepository($this->entityMetadata->getName());
 
@@ -59,6 +58,7 @@ class QueryConverter
         $static = new static($filter, $entityManager, $entityMetadata, $projection);
         $sortData = $static->getSortData();
         $paginationData = $static->getPaginationData();
+
         return $static
             ->repository
             ->findBy(
@@ -106,7 +106,6 @@ class QueryConverter
                     } else {
                         $projectionGrouped[$relation][] = Str::after($field, ':');
                     }
-
                 } else {
                     $projectionGrouped[$this->mainAlias][] = $field;
                 }
@@ -125,7 +124,7 @@ class QueryConverter
         /** @var Sort $sort */
         if (method_exists($this->filter, 'getSort') && $sort = $this->filter->getSort()) {
             foreach ($sort->getFields() as $value) {
-                if (!Str::contains($value['field'], ':')) {
+                if (! Str::contains($value['field'], ':')) {
                     $this->queryBuilder->orderBy($this->mainAlias . '.' . $value['field'], $value['order']);
                 } else {
                     $this->queryBuilder->orderBy(
@@ -297,7 +296,7 @@ class QueryConverter
                     $from,
                     $to
                 );
-            default :
+            default:
                 throw new \RuntimeException('Unknown operator');
         }
     }
@@ -342,9 +341,11 @@ class QueryConverter
                 return $expr->notLike($field, $expr->literal('%' . $value . '%'));
             case 'In':
                 $value = is_array($value) ? $value : array_map('trim', explode(',', $value));
+
                 return $expr->in($field, $value);
             case 'Not_In':
                 $value = is_array($value) ? $value : array_map('trim', explode(',', $value));
+
                 return $expr->notIn($field, $value);
             case 'Starts_With':
                 return $expr->like($field, $expr->literal($value . '%'));
@@ -362,7 +363,7 @@ class QueryConverter
                 );
             case 'Missing':
                 //todo what is it ?
-            default :
+            default:
                 throw new \RuntimeException('Unknown operator');
         };
     }

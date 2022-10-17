@@ -24,6 +24,7 @@ class SuccessResult extends ActionResult
     public function setInvalidated(string $invalidated): SuccessResult
     {
         $this->invalidated = $invalidated;
+
         return $this;
     }
 }

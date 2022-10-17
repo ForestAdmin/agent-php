@@ -3,7 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Services;
 
 use function ForestAdmin\config;
-use Illuminate\Support\Str;
+
 use JsonPath\JsonObject;
 
 class ForestSchemaInstrospection

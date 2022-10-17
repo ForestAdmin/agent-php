@@ -7,11 +7,8 @@ use FilesystemIterator;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Traits\Macroable;
-use RuntimeException;
 use SplFileObject;
-use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Mime\MimeTypes;
 
 /**
  * @codeCoverageIgnore

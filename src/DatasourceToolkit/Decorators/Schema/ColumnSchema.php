@@ -2,8 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
-
 class ColumnSchema
 {
     /**
@@ -111,5 +109,4 @@ class ColumnSchema
     {
         return $this->validation;
     }
-
 }
