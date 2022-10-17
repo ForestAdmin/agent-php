@@ -182,20 +182,25 @@ class QueryConverter
         /** @var ConditionTreeLeaf $conditionTree */
         if (Str::contains($conditionTree->getField(), ':')) {
             $relation = Str::before($conditionTree->getField(), ':');
-            $addJoin = true;
-            foreach ($this->queryBuilder->getDQLPart('join')[$this->mainAlias] as $join) {
-                if ($join->getAlias() === $relation) {
-                    $addJoin = false;
-                }
-            }
-            if ($addJoin) {
-                $this->queryBuilder->leftJoin($this->mainAlias . '.' . $relation, $relation);
-            }
+            $this->addJoin($relation);
         }
         if (in_array($conditionTree->getOperator(), FrontendFilterable::BASE_DATEONLY_OPERATORS, true)) {
             return $this->computeDateOperator($conditionTree);
         } else {
             return $this->computeMainOperator($conditionTree);
+        }
+    }
+
+    private function addJoin(string $relation): void
+    {
+        $addJoin = true;
+        foreach ($this->queryBuilder->getDQLPart('join')[$this->mainAlias] as $join) {
+            if ($join->getAlias() === $relation) {
+                $addJoin = false;
+            }
+        }
+        if ($addJoin) {
+            $this->queryBuilder->leftJoin($this->mainAlias . '.' . $relation, $relation);
         }
     }
 
