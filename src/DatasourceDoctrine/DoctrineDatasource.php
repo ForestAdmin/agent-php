@@ -2,8 +2,8 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceDoctrine;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource as ForestDatasource;
 use Doctrine\ORM\EntityManagerInterface;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource as ForestDatasource;
 
 class DoctrineDatasource extends ForestDatasource
 {

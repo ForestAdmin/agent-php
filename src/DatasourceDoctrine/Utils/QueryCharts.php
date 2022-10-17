@@ -17,7 +17,8 @@ class QueryCharts
         protected ClassMetadata $entityMetadata,
         protected QueryBuilder $builder,
         protected Aggregation $aggregation,
-        protected ?int $limit = null)
+        protected ?int $limit = null
+    )
     {
         $this->aggregate = strtolower($aggregation->getOperation());
         $this->field = Str::contains($aggregation->getField(), ':')

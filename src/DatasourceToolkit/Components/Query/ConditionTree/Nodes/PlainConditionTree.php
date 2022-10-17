@@ -4,5 +4,4 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\
 
 abstract class PlainConditionTree
 {
-
 }

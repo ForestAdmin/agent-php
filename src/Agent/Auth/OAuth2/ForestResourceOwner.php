@@ -40,7 +40,6 @@ class ForestResourceOwner implements ResourceOwnerInterface
         return $this->data;
     }
 
-
     /**
      * @return int
      */

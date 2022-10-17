@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+
 use function ForestAdmin\config;
 
 class SchemaEmitter

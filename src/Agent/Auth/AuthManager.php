@@ -4,12 +4,14 @@ namespace ForestAdmin\AgentPHP\Agent\Auth;
 
 use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
 use ForestAdmin\AgentPHP\Agent\Utils\Traits\FormatGuzzle;
+
+use function ForestAdmin\config;
+
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use JsonException;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
-use function ForestAdmin\config;
 
 class AuthManager
 {

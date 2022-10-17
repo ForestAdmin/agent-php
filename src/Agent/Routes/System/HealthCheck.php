@@ -6,8 +6,6 @@ use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\ForestAdminHttpDriver;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 
-use function ForestAdmin\cache;
-
 class HealthCheck extends AbstractRoute
 {
     /**

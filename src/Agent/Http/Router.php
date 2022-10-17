@@ -14,8 +14,8 @@ use ForestAdmin\AgentPHP\Agent\Routes\Resources\Show;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Store;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Update;
 use ForestAdmin\AgentPHP\Agent\Routes\Security\Authentication;
-use ForestAdmin\AgentPHP\Agent\Routes\System\HealthCheck;
 use ForestAdmin\AgentPHP\Agent\Routes\Security\ScopeInvalidation;
+use ForestAdmin\AgentPHP\Agent\Routes\System\HealthCheck;
 
 class Router
 {

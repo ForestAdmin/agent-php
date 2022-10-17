@@ -26,5 +26,4 @@ final class Relation extends Enum
     {
         return array_flip(self::toArray())[$key];
     }
-
 }

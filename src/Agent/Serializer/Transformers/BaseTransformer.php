@@ -2,7 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Serializer\Transformers;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use Illuminate\Support\Str;
 use League\Fractal\TransformerAbstract;
 

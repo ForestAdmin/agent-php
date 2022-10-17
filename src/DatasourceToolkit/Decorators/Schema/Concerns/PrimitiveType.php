@@ -14,5 +14,4 @@ final class PrimitiveType
     public const STRING = 'String';
     public const TIMEONLY = 'Timeonly';
     public const UUID = 'Uuid';
-
 }
