@@ -211,7 +211,7 @@ class QueryConverter
             : $this->mainAlias . '.' . $conditionTreeLeaf->getField();
         $value = $conditionTreeLeaf->getValue();
         $operator = $conditionTreeLeaf->getOperator();
-        $expr = $this->queryBuilder->expr();
+        $baseExpr = $this->queryBuilder->expr();
         switch ($operator) {
             case 'Today':
                 $this->addParameter(Carbon::now($this->timezone)->startOfDay());
@@ -219,19 +219,25 @@ class QueryConverter
                 $this->addParameter(Carbon::now($this->timezone)->endOfDay());
                 $to = "?$this->parameterIterator";
 
-                return $expr->between(
+                $expr = $baseExpr->between(
                     $field,
                     $from,
                     $to
                 );
+
+                break;
             case 'Before':
                 $this->addParameter(new Carbon(new \DateTime($value), $this->timezone));
 
-                return $expr->lt($field, "?$this->parameterIterator");
+                $expr = $baseExpr->lt($field, "?$this->parameterIterator");
+
+                break;
             case 'After':
                 $this->addParameter(new Carbon(new \DateTime($value), $this->timezone));
 
-                return $expr->gt($field, "?$this->parameterIterator");
+                $expr = $baseExpr->gt($field, "?$this->parameterIterator");
+
+                break;
             case'Previous_X_Days':
                 //$this->ensureIntegerValue($value);
                 // todo verify that the check below is done into the PHP agent
@@ -240,11 +246,13 @@ class QueryConverter
                 $this->addParameter(Carbon::now($this->timezone)->subDay()->endOfDay());
                 $to = "?$this->parameterIterator";
 
-                return $expr->between(
+                $expr = $baseExpr->between(
                     $field,
                     $from,
                     $to
                 );
+
+                break;
             case'Previous_X_Days_To_Date':
                 //$this->ensureIntegerValue($value);
                 // todo verify that the check below is done into the PHP agent
@@ -253,31 +261,41 @@ class QueryConverter
                 $this->addParameter(Carbon::now($this->timezone)->endOfDay());
                 $to = "?$this->parameterIterator";
 
-                return $expr->between(
+                $expr = $baseExpr->between(
                     $field,
                     $from,
                     $to
                 );
+
+                break;
             case'Past':
                 $this->addParameter(new Carbon($this->timezone));
 
-                return $expr->lte($field, "?$this->parameterIterator");
+                $expr = $baseExpr->lte($field, "?$this->parameterIterator");
+
+                break;
             case'Future':
                 $this->addParameter(new Carbon($this->timezone));
 
-                return $expr->gte($field, "?$this->parameterIterator");
+                $expr = $baseExpr->gte($field, "?$this->parameterIterator");
+
+                break;
             case'Before_X_Hours_Ago':
                 //$this->ensureIntegerValue($value);
                 // todo verify that the check below is done into the PHP agent
                 $this->addParameter(Carbon::now($this->timezone)->subHours($value));
 
-                return $expr->lt($field, "?$this->parameterIterator");
+                $expr = $baseExpr->lt($field, "?$this->parameterIterator");
+
+                break;
             case'After_X_Hours_Ago':
                 //$this->ensureIntegerValue($value);
                 // todo verify that the check below is done into the PHP agent
                 $this->addParameter(Carbon::now($this->timezone)->subHours($value));
 
-                return $expr->gt($field, "?$this->parameterIterator");
+                $expr = $baseExpr->gt($field, "?$this->parameterIterator");
+
+                break;
             case 'Yesterday':
             case 'Previous_Week':
             case 'Previous_Month':
@@ -303,14 +321,18 @@ class QueryConverter
                     $to = "?$this->parameterIterator";
                 }
 
-                return $expr->between(
+                $expr = $baseExpr->between(
                     $field,
                     $from,
                     $to
                 );
+
+                break;
             default:
                 throw new \RuntimeException('Unknown operator');
         }
+
+        return $expr;
     }
 
     private function computeMainOperator(ConditionTreeLeaf $conditionTreeLeaf): string|Query\Expr\Func|Query\Expr\Comparison
@@ -319,65 +341,95 @@ class QueryConverter
             ? Str::replace(':', '.', $conditionTreeLeaf->getField())
             : $this->mainAlias . '.' . $conditionTreeLeaf->getField();
         $value = $conditionTreeLeaf->getValue();
-        $expr = $this->queryBuilder->expr();
+        $baseExpr = $this->queryBuilder->expr();
 
         switch ($conditionTreeLeaf->getOperator()) {
             case 'Blank':
-                return $expr->isNull($field);
+                $expr = $baseExpr->isNull($field);
+
+                break;
             case 'Present':
-                return $expr->isNotNull($field);
+                $expr = $baseExpr->isNotNull($field);
+
+                break;
             case 'Equal':
                 $this->addParameter($value);
 
-                return $expr->eq($field, "?$this->parameterIterator");
+                $expr = $baseExpr->eq($field, "?$this->parameterIterator");
+
+                break;
             case  'Not_Equal':
                 $this->addParameter($value);
 
-                return $expr->neq($field, "?$this->parameterIterator");
+                $expr = $baseExpr->neq($field, "?$this->parameterIterator");
+
+                break;
             case 'Greater_Than':
                 $this->addParameter($value);
 
-                return $expr->gt($field, "?$this->parameterIterator");
+                $expr = $baseExpr->gt($field, "?$this->parameterIterator");
+
+                break;
             case 'Less_Than':
                 $this->addParameter($value);
 
-                return $expr->lt($field, "?$this->parameterIterator");
+                $expr = $baseExpr->lt($field, "?$this->parameterIterator");
+
+                break;
             case 'IContains':
-                return $expr->like(
-                    $expr->lower($field),
-                    $expr->lower($expr->literal('%' . $value . '%'))
+                $expr = $baseExpr->like(
+                    $baseExpr->lower($field),
+                    $baseExpr->lower($baseExpr->literal('%' . $value . '%'))
                 );
+
+                break;
             case 'Contains':
-                return $expr->like($field, $expr->literal('%' . $value . '%'));
+                $expr = $baseExpr->like($field, $baseExpr->literal('%' . $value . '%'));
+
+                break;
             case 'Not_Contains':
-                return $expr->notLike($field, $expr->literal('%' . $value . '%'));
+                $expr = $baseExpr->notLike($field, $baseExpr->literal('%' . $value . '%'));
+
+                break;
             case 'In':
                 $value = is_array($value) ? $value : array_map('trim', explode(',', $value));
 
-                return $expr->in($field, $value);
+                $expr = $baseExpr->in($field, $value);
+
+                break;
             case 'Not_In':
                 $value = is_array($value) ? $value : array_map('trim', explode(',', $value));
 
-                return $expr->notIn($field, $value);
+                $expr = $baseExpr->notIn($field, $value);
+
+                break;
             case 'Starts_With':
-                return $expr->like($field, $expr->literal($value . '%'));
+                $expr = $baseExpr->like($field, $baseExpr->literal($value . '%'));
+
+                break;
             case 'Ends_With':
-                return $expr->like($field, $expr->literal('%' . $value));
+                $expr = $baseExpr->like($field, $baseExpr->literal('%' . $value));
+
+                break;
             case 'IStarts_With':
-                return $expr->like(
-                    $expr->lower($field),
-                    $expr->lower($expr->literal($value . '%'))
+                $expr = $baseExpr->like(
+                    $baseExpr->lower($field),
+                    $baseExpr->lower($baseExpr->literal($value . '%'))
                 );
+
+                break;
             case 'IEnds_With':
-                return $expr->like(
-                    $expr->lower($field),
-                    $expr->lower($expr->literal('%' . $value))
+                $expr = $baseExpr->like(
+                    $baseExpr->lower($field),
+                    $baseExpr->lower($baseExpr->literal('%' . $value))
                 );
-            case 'Missing':
-                //todo what is it ?
+
+                break;
             default:
                 throw new \RuntimeException('Unknown operator');
-        };
+        }
+
+        return $expr;
     }
 
     private function addParameter($value): void
