@@ -90,26 +90,7 @@ class QueryConverter
             foreach (array_keys($this->projection->relations()) as $relation) {
                 $this->queryBuilder->leftJoin($this->mainAlias . '.' . $relation, $relation);
             }
-            $projectionGrouped = [];
-            foreach ($this->projection as $field) {
-                if (Str::contains($field, ':')) {
-                    $relation = Str::before($field, ':');
-                    $field = Str::after($field, ':');
-                    $className = $this->entityMetadata->getAssociationMapping($relation)['targetEntity'];
-                    $relationMetadata = AgentFactory::get('orm')->getMetadataFactory()->getMetadataFor($className);
-
-                    if (! in_array($field, $relationMetadata->getIdentifier(), true)) {
-                        $projectionGrouped[$relation] = array_merge(
-                            $projectionGrouped[$relation],
-                            $relationMetadata->getIdentifier()
-                        );
-                    } else {
-                        $projectionGrouped[$relation][] = Str::after($field, ':');
-                    }
-                } else {
-                    $projectionGrouped[$this->mainAlias][] = $field;
-                }
-            }
+            $projectionGrouped = $this->groupProjection();
 
             foreach ($projectionGrouped as $alias => $projection) {
                 $this->queryBuilder->addSelect('partial ' . $alias . '.{' . implode(',', $projection) . '}');
@@ -117,6 +98,32 @@ class QueryConverter
         } else {
             $this->queryBuilder->select($this->mainAlias);
         }
+    }
+
+    private function groupProjection(): array
+    {
+        $projectionGrouped = [];
+        foreach ($this->projection as $field) {
+            if (Str::contains($field, ':')) {
+                $relation = Str::before($field, ':');
+                $field = Str::after($field, ':');
+                $className = $this->entityMetadata->getAssociationMapping($relation)['targetEntity'];
+                $relationMetadata = AgentFactory::get('orm')->getMetadataFactory()->getMetadataFor($className);
+
+                if (! in_array($field, $relationMetadata->getIdentifier(), true)) {
+                    $projectionGrouped[$relation] = array_merge(
+                        $projectionGrouped[$relation],
+                        $relationMetadata->getIdentifier()
+                    );
+                } else {
+                    $projectionGrouped[$relation][] = Str::after($field, ':');
+                }
+            } else {
+                $projectionGrouped[$this->mainAlias][] = $field;
+            }
+        }
+
+        return $projectionGrouped;
     }
 
     private function applySort(): void
