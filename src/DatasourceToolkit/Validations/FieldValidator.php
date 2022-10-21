@@ -4,6 +4,7 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Validations;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
@@ -14,7 +15,7 @@ class FieldValidator
     /**
      * @throws ForestException
      */
-    public static function validate(Collection $collection, string $field, $values = null)
+    public static function validate(CollectionContract $collection, string $field, $values = null)
     {
         if (! Str::contains($field, ':')) {
             $column = $collection->getFields()->get($field);

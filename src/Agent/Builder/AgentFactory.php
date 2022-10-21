@@ -5,10 +5,8 @@ namespace ForestAdmin\AgentPHP\Agent\Builder;
 use DI\Container;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-
-use function ForestAdmin\config;
+use Illuminate\Support\Collection as IlluminateCollection;
 
 class AgentFactory
 {
@@ -18,36 +16,52 @@ class AgentFactory
 
     protected Datasource $compositeDatasource;
 
+    protected DecoratorsStack $stack;
+
+    protected IlluminateCollection $customizations;
+
     public function __construct(array $config, array $services)
     {
         $this->compositeDatasource = new Datasource();
+        $this->stack = new DecoratorsStack($this->compositeDatasource);
+        $this->customizations = new IlluminateCollection();
         $this->buildContainer($services);
         $this->buildCache($config);
     }
 
-    public function addDatasource(Datasource $datasource): void
+    public function addDatasource(Datasource $datasource): self
     {
         $datasource->getCollections()->each(
             fn ($collection) => $this->compositeDatasource->addCollection($collection)
         );
+//        self::$container->set('datasource', $this->compositeDatasource);
 
-        self::$container->set('datasource', $this->compositeDatasource);
+        $this->stack->build();
+
+        return $this;
     }
 
-    public function addDatasources(array $datasources): void
+    public function build(): void
     {
-        if (! self::$container->has('datasource') || ! config('isProduction')) {
-            foreach ($datasources as $datasource) {
-                if (! $datasource instanceof DatasourceContract) {
-                    throw new \Exception('Invalid datasource');
-                }
-                // todo add logger
-                $datasource->getCollections()->each(
-                    fn ($collection) => $this->compositeDatasource->addCollection($collection)
-                );
-            }
-            self::$container->set('datasource', $this->compositeDatasource);
+        self::$container->set('datasource', $this->stack->dataSource);
+    }
+
+    /**
+     * Allow to interact with a decorated collection
+     * @example
+     * .customizeCollection('books', books => books.renameField('xx', 'yy'))
+     * @param string   $name the name of the collection to manipulate
+     * @param \Closure $handle a function that provide a
+     *   collection builder on the given collection name
+     * @return $this
+     */
+    public function customizeCollection(string $name, \Closure $handle): self
+    {
+        if ($this->stack->dataSource->getCollection($name)) {
+            $handle(new CollectionBuilder($this->stack, $name));
         }
+
+        return $this;
     }
 
     public static function getContainer(): ?Container

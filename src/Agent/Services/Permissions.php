@@ -6,8 +6,8 @@ use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
@@ -92,7 +92,7 @@ class Permissions
         return $isAllowed;
     }
 
-    public function getScope(Collection $collection): ?ConditionTree
+    public function getScope(CollectionContract $collection): ?ConditionTree
     {
         $permissions = $this->getRenderingPermissions($this->caller->getRenderingId());
         $scopes = $permissions->get('scopes')->get($collection->getName());

@@ -2,12 +2,15 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 
 class GeneratorCollection
 {
-    public static function buildSchema(Collection $collection): array
+    public static function buildSchema(CollectionContract $collection): array
     {
+        if ($collection->getName() === 'Book') {
+//            dd($collection);
+        }
         return [
             'actions'              => [],
             'fields'               => $collection->getFields()->map(fn ($field, $name) => GeneratorField::buildSchema($collection, $name))->values()->toArray(),

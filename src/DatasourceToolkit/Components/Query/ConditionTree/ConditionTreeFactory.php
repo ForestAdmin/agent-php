@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
@@ -13,7 +14,7 @@ use Illuminate\Support\Collection as IlluminateCollection;
 
 class ConditionTreeFactory
 {
-    public static function matchRecords(Collection $collection, array $records): ConditionTree
+    public static function matchRecords(CollectionContract $collection, array $records): ConditionTree
     {
         $ids = collect($records)
             ->map(fn ($record) => RecordUtils::getPrimaryKeys($collection, $record))
@@ -22,7 +23,7 @@ class ConditionTreeFactory
         return self::matchIds($collection, $ids);
     }
 
-    public static function matchIds(Collection $collection, array $ids): ConditionTree
+    public static function matchIds(CollectionContract $collection, array $ids): ConditionTree
     {
         $primaryKeyNames = SchemaUtils::getPrimaryKeys($collection);
 

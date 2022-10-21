@@ -3,7 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Decorators;
 
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\GeneratorCollection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\CollectionMethods;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
@@ -19,11 +19,22 @@ use Illuminate\Support\Collection as IlluminateCollection;
 
 class CollectionDecorator implements CollectionContract
 {
-    private array $lastSchema; //: CollectionSchema;
+    use CollectionMethods;
+
+    private ?array $lastSchema; //: CollectionSchema;
+
     private array $lastSubSchema;  //: CollectionSchema;
 
-    public function __construct(protected Collection $childCollection, protected Datasource $dataSource)
+    public function __construct(protected CollectionContract|CollectionDecorator $childCollection, protected Datasource $dataSource)
     {
+        $this->fields = new IlluminateCollection();
+        $this->actions = new IlluminateCollection();
+        $this->segments = new IlluminateCollection();
+    }
+
+    public function getFields(): IlluminateCollection
+    {
+        return $this->childCollection->getFields();
     }
 
     public function getSchema(): IlluminateCollection
@@ -100,15 +111,26 @@ class CollectionDecorator implements CollectionContract
         return $subSchema;
     }
 
+    public function getName(): string
+    {
+        return $this->childCollection->getName();
+    }
+
+    public function makeTransformer()
+    {
+        return $this->childCollection->makeTransformer();
+    }
+
+    public function toArray($record): array
+    {
+        return $this->childCollection->toArray($record);
+    }
+
+
 ///// METHODS of CollectionContract
     public function getDataSource(): DatasourceContract
     {
         // TODO: Implement getDataSource() method.
-    }
-
-    public function getName(): string
-    {
-        // TODO: Implement getName() method.
     }
 
     public function getClassName(): string

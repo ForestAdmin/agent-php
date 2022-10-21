@@ -3,18 +3,18 @@
 namespace ForestAdmin\AgentPHP\Agent\Routes;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 abstract class AbstractCollectionRoute extends AbstractAuthenticatedRoute
 {
-    protected Collection $collection;
+    protected CollectionContract $collection;
 
     // todo remove attribute
     protected Filter $filter;
 
-    protected Datasource $datasource;
+    protected DatasourceContract $datasource;
 
     abstract public function handleRequest(array $args = []): array;
 

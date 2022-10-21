@@ -2,22 +2,36 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Computed;
 
+use Closure;
+
 class ComputedDefinition
 {
     public function __construct(
         protected string $columnType,
         protected array $dependencies,
+        protected Closure $values,
+        protected bool $isBeforeRelation = false,
         protected ?string $defaultValue = null,
-        protected ?array $enumValues = null
+        protected array $enumValues = []
     ) {
     }
 
-    /* todo
-     getValues(
-    records: TRow<S, N>[],
-    context: CollectionCustomizationContext<S, N>,
-  ): Promise<unknown[]> | unknown[];
+    /**
+     * @return Closure
      */
+    public function getValues(): Closure
+    {
+        // todo, maybe execute closure directly
+        return $this->values;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isBeforeRelation(): bool
+    {
+        return $this->isBeforeRelation;
+    }
 
     /**
      * @return string

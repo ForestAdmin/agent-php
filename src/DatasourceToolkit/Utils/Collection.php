@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Utils;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection as MainCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
@@ -20,7 +21,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 class Collection
 {
-    public static function getInverseRelation(MainCollection $collection, string $relationName): ?string
+    public static function getInverseRelation(CollectionContract $collection, string $relationName): ?string
     {
         // TODO useful ? because we have the attribute inverseRelationName into our RelationSchema
         /** @var RelationSchema $relation */
@@ -84,7 +85,7 @@ class Collection
         return false;
     }
 
-    public static function getFieldSchema(MainCollection $collection, string $fieldName): ColumnSchema|RelationSchema
+    public static function getFieldSchema(CollectionContract $collection, string $fieldName): ColumnSchema|RelationSchema
     {
         $fields = $collection->getFields();
         if (! $index = strpos($fieldName, ':')) {
@@ -111,7 +112,7 @@ class Collection
         return self::getFieldSchema(AgentFactory::get('datasource')->getCollection($relationSchema->getForeignCollection()), substr($fieldName, $index + 1));
     }
 
-    public static function getValue(MainCollection $collection, Caller $caller, array $id, string $field)
+    public static function getValue(CollectionContract $collection, Caller $caller, array $id, string $field)
     {
         $index = array_search($field, Schema::getPrimaryKeys($collection), true);
 
@@ -128,7 +129,7 @@ class Collection
         return $record[$field];
     }
 
-    public static function getThroughTarget(MainCollection $collection, string $relationName): ?string
+    public static function getThroughTarget(CollectionContract $collection, string $relationName): ?string
     {
         /** @var ManyToManySchema $relation */
         $relation = $collection->getFields()[$relationName];
@@ -141,7 +142,7 @@ class Collection
     }
 
     public static function listRelation(
-        MainCollection $collection,
+        CollectionContract $collection,
         $id,
         string $relationName,
         Caller $caller,
@@ -175,7 +176,7 @@ class Collection
     }
 
     public static function aggregateRelation(
-        MainCollection $collection,
+        CollectionContract $collection,
         $id,
         string $relationName,
         Caller $caller,
