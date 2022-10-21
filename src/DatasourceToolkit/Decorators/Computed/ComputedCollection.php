@@ -9,6 +9,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFil
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\FieldValidator;
 use Illuminate\Support\Collection as IlluminateCollection;
@@ -20,10 +21,10 @@ class ComputedCollection extends CollectionDecorator
 //    protected computeds: Record<string, ComputedDefinition> = {};
     protected array $computeds = [];
 
-    public function getComputed(string $path) //ComputedDefinition
+    public function getComputed(string $path): ?ComputedDefinition
     {
         if (! Str::contains($path, ':')) {
-            return $this->computeds[$path];
+            return $this->computeds[$path] ?? null;
         } else {
             $foreignCollection = $this->getSchema()->get(Str::before($path, ':'));
             $association = $this->dataSource->getCollection($foreignCollection);
@@ -71,7 +72,11 @@ class ComputedCollection extends CollectionDecorator
         //$records = $this->childCollection->list($caller, $filter, $childProjection);
         //$context = null; /*new CollectionCustomizationContext($this, $caller);*/
         /*return computeFromRecords($context, $this, $childProjection, $projection, $records);*/
-        $records = $this->childCollection->list($caller, $filter, $projection);
+        $childProjection = $projection->replaceItem(fn ($path) => $this->rewriteField($this, $path));
+        $records = $this->childCollection->list($caller, $filter, $childProjection);
+        dd($records);
+
+
 //        dd($this->computeds);
 //        foreach ($records as &$record) {
 //            $this->childCollection->computeFromRecords($record);
@@ -113,5 +118,26 @@ class ComputedCollection extends CollectionDecorator
         }
 
         return $schema;
+    }
+
+    protected function rewriteField(ComputedCollection $collection, string $path): Projection
+    {
+        if (Str::contains($path, ':')) {
+            $prefix = explode(':', $path);
+            /** @var RelationSchema $schema */
+            $schema = $collection->getFields()->get($prefix[0]);
+            $association = $collection->getDataSource()->getCollection($schema->getForeignCollection());
+
+            return (new Projection($path))
+                ->unnest()
+                ->replaceItem(fn ($subPath) => $this->rewriteField($association, $subPath))
+                ->nest($prefix[0]);
+        }
+
+        $computed = $collection->getComputed($path);
+
+        return $computed
+            ? (new Projection(...$computed->getDependencies()))->replaceItem(fn ($depPath) => $this->rewriteField($collection, $depPath))
+            : new Projection($path);
     }
 }

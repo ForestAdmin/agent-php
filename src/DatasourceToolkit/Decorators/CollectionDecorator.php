@@ -130,7 +130,7 @@ class CollectionDecorator implements CollectionContract
 ///// METHODS of CollectionContract
     public function getDataSource(): DatasourceContract
     {
-        // TODO: Implement getDataSource() method.
+        return $this->dataSource;
     }
 
     public function getClassName(): string

@@ -41,7 +41,7 @@ class Projection extends IlluminateCollection
 
     public function replaceItem(Closure $callback)
     {
-        return collect($this)
+        return $this
             ->map($callback)
             ->reduce(
                 static function (Projection $memo, $path) {
