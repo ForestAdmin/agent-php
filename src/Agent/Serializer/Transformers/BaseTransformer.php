@@ -2,11 +2,20 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Serializer\Transformers;
 
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Serializer\DataTypes;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
 use Illuminate\Support\Str;
 use League\Fractal\TransformerAbstract;
 
 class BaseTransformer extends TransformerAbstract
 {
+    public function __construct(private string $name)
+    {
+    }
+
     /**
      * @param          $name
      * @param callable $callable
@@ -28,24 +37,36 @@ class BaseTransformer extends TransformerAbstract
     }
 
     /**
-     * @param $collection
+     * @param $data
      * @return mixed
      */
-    public function transform($collection)
+    public function transform($data)
     {
-        /*if (method_exists($model, 'handleSmartFields')) {
-            $model->handleSmartFields()->handleSmartRelationships();
-        }
-
-        $relations = collect($model->getRelations())->filter()->all();
-        $this->setDefaultIncludes(array_keys($relations));
+        $forestCollection = AgentFactory::get('datasource')->getCollection($this->name);
+        $relations = $forestCollection
+            ->getFields()
+            ->filter(fn ($field) => $field instanceof ManyToOneSchema || $field instanceof OneToOneSchema);
 
         foreach ($relations as $key => $value) {
-            $this->addMethod('include' . Str::ucfirst($key), fn() => $this->item($value, new ChildTransformer(), class_basename($value)));
-        }*/
+            if (isset($data[$key])) {
+                $this->defaultIncludes[] = $key;
+                $this->addMethod(
+                    'include' . Str::ucfirst($key),
+                    fn () => $this->item($data[$key], new BaseTransformer($value->getForeignCollection()), $value->getForeignCollection())
+                );
+            } else {
+                $this->addMethod('include' . Str::ucfirst($key), fn () => $this->null());
+            }
+            unset($data[$key]);
+        }
 
-        //dd($collection);
+        $fields = $forestCollection->getFields();
+        foreach ($data as $key => &$value) {
+            /** @var ColumnSchema $columnSchema */
+            $columnSchema = $fields[$key];
+            $value = DataTypes::renderValue($columnSchema->getColumnType(), $value);
+        }
 
-        return $collection->attributesToArray();
+        return $data;
     }
 }

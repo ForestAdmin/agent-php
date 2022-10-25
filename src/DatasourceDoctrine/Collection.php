@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping\OneToOne;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\Mapping\MappingException;
+use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BaseTransformer;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\Transformer\EntityTransformer;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\DataTypes;
@@ -106,7 +107,7 @@ class Collection extends ForestCollection
     {
         return QueryConverter::of($filter, $this->datasource->getEntityManager(), $this->entityMetadata, $caller->getTimezone(), $projection)
             ->getQuery()
-            ->getResult();
+            ->getArrayResult();
     }
 
     public function export(Caller $caller, Filter $filter, Projection $projection): array
@@ -419,21 +420,24 @@ class Collection extends ForestCollection
         $this->addField($name, $relationField);
     }
 
-    public function toArray($entity): array
+    public function toArray($record, ?Projection $projection = null): array
     {
-        // Todo use Projection for serialize only the fields selected
-        $entityMetadata = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor(get_class($entity));
+        $entityMetadata = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor(get_class($record));
+        $fields = $projection ?? $entityMetadata->getFieldNames();
         $propertyAccessor = PropertyAccess::createPropertyAccessor();
         $serialized = [];
-        foreach ($entityMetadata->getFieldNames() as $fieldName) {
-            $serialized[$fieldName] = $propertyAccessor->getValue($entity, $fieldName);
+
+        foreach ($fields as $field) {
+            if (Str::contains($field, ':')) {
+                $fieldName = Str::before($field, ':');
+                $value = $propertyAccessor->getValue($record, $fieldName);
+                $serialized[$fieldName] = $value ? $this->toArray($value, new Projection(Str::after($field, ':'))) : null;
+            } else {
+                $value = $propertyAccessor->getValue($record, $field);
+                $serialized[$field] = $value;
+            }
         }
 
         return $serialized;
-    }
-
-    public function makeTransformer()
-    {
-        return new EntityTransformer($this->datasource->getEntityManager());
     }
 }

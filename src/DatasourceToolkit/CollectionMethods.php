@@ -3,6 +3,8 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ActionSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection as IlluminateCollection;
 
@@ -88,8 +90,22 @@ trait CollectionMethods
         return $this;
     }
 
-    public function computeFromRecords($record)
+    /**
+     * @throws ForestException
+     */
+    public function addField(string $name, ColumnSchema|RelationSchema $field): void
     {
-        // todo
+        if ($this->fields->has($name)) {
+            throw new ForestException('Field ' . $name . ' already defined in collection');
+        }
+
+        $this->fields->put($name, $field);
+    }
+
+    public function addFields(array $fields): void
+    {
+        foreach ($fields as $key => $value) {
+            $this->addField($key, $value);
+        }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
+use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BaseTransformer;
 use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
@@ -112,29 +113,10 @@ class Collection implements CollectionContract
 
     public function makeTransformer()
     {
-        return new BasicArrayTransformer();
+        return new BaseTransformer($this->name);
     }
 
-    public function addFields(array $fields): void
-    {
-        foreach ($fields as $key => $value) {
-            $this->addField($key, $value);
-        }
-    }
-
-    /**
-     * @throws ForestException
-     */
-    public function addField(string $name, ColumnSchema|RelationSchema $field): void
-    {
-        if ($this->fields->has($name)) {
-            throw new ForestException('Field ' . $name . ' already defined in collection');
-        }
-
-        $this->fields->put($name, $field);
-    }
-
-    public function toArray($record): array
+    public function toArray($record, ?Projection $projection = null): array
     {
         // by default $record is an array
         return $record;
