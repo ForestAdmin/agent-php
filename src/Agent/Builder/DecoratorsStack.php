@@ -23,8 +23,8 @@ class DecoratorsStack
         // Step 1: Computed-Relation-Computed sandwich (needed because some emulated relations depend
         // on computed fields, and some computed fields depend on relation...)
         // Note that replacement goes before emulation, as replacements may use emulated operators.
-        $earlyComputed = new DataSourceDecorator($last, ComputedCollection::class);
-        $last = $this->earlyComputed = &$earlyComputed;
+//        $earlyComputed = new DataSourceDecorator($last, ComputedCollection::class);
+//        $last = $this->earlyComputed = &$earlyComputed;
 
         $lateComputed = new DataSourceDecorator($last, ComputedCollection::class);
         $last = $this->lateComputed = &$lateComputed;
@@ -35,7 +35,7 @@ class DecoratorsStack
 
     public function build(): void
     {
-        $this->earlyComputed->build();
+//        $this->earlyComputed->build();
         $this->dataSource->build();
     }
 }

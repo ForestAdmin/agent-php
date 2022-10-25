@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\CollectionDecorator;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Computed\Utils\Flattener;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
@@ -74,15 +75,19 @@ class ComputedCollection extends CollectionDecorator
         /*return computeFromRecords($context, $this, $childProjection, $projection, $records);*/
         $childProjection = $projection->replaceItem(fn ($path) => $this->rewriteField($this, $path));
         $records = $this->childCollection->list($caller, $filter, $childProjection);
-        dd($records);
+//
+//        $flatten = Flattener::flatten($records, $childProjection);
+//        dd($records , Flattener::unFlatten($flatten, $childProjection));
 
-
-//        dd($this->computeds);
-//        foreach ($records as &$record) {
-//            $this->childCollection->computeFromRecords($record);
+//        /**
+//         * @var string $fieldName
+//         * @var ComputedDefinition $computedDefinition
+//         */
+//        foreach ($this->computeds as $fieldName => $computedDefinition) {
+//            $records = call_user_func($computedDefinition->getValues(), $records);
 //        }
 //
-//        dd($records);
+//        dd($this->childCollection->toArray($records[0], $childProjection));
 
         return $records;
     }
