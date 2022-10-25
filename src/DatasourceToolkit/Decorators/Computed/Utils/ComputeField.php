@@ -18,10 +18,12 @@ class ComputeField
         $paths = clone $recordsProjection;
         $flatten = Flattener::flatten($records, $paths);
 
-        $desiredProjection->each(fn ($path) => self::queueField($collection, $path, $paths, $flatten));
+        foreach ($desiredProjection as $path) {
+            self::queueField($collection, $path, $paths, $flatten);
+        }
 
         return Flattener::unFlatten(
-            $desiredProjection->map(fn ($path) => $flatten[$paths->search($path)]),
+            $desiredProjection->map(fn ($path) => $flatten[$paths->search($path)])->toArray(),
             $desiredProjection
         );
     }
@@ -37,13 +39,13 @@ class ComputeField
             $nestedDependencies = (new Projection($computed->getDependencies()))
                 ->nest(Str::contains($newPath, ':') ? Str::before($newPath, ':') : null);
 
-            $nestedDependencies->each(fn ($path) => self::queueField($collection, $path, $paths, $flatten));
+            foreach ($nestedDependencies as $path) {
+                self::queueField($collection, $path, $paths, $flatten);
+            }
+
             $dependencyValues = $nestedDependencies->map(fn ($path) => $flatten[$paths->search($path)])->toArray();
             $paths->push($newPath);
 
-            //dd($nestedDependencies, $dependencyValues);
-//            dd($computed, $nestedDependencies, $dependencyValues, $paths);
-//            promises.push(computeField(ctx, computed, computed.dependencies, dependencyValues));
             $flatten[] = self::computeField($computed, $computed->getDependencies(), $dependencyValues);
         }
     }
@@ -53,7 +55,10 @@ class ComputeField
         array              $computedDependencies,
         array              &$flatten
     ): array {
-        return self::transformUniqueValues(Flattener::unFlatten($flatten, new Projection($computedDependencies)), fn ($uniquePartials) => $computed->getValues($uniquePartials));
+        return self::transformUniqueValues(
+            Flattener::unFlatten($flatten, new Projection($computedDependencies)),
+            static fn ($uniquePartials) => $computed->getValues($uniquePartials)
+        );
     }
 
     public static function transformUniqueValues(
@@ -81,33 +86,4 @@ class ComputeField
 
         return collect($mapping)->map(fn ($index) => $index !== -1 ? $uniqueOutputs[$index] : null)->toArray();
     }
-
-
-//    export default async function transformUniqueValues<Input, Output>(
-//      inputs: Input[],
-//      callback: (inputs: Input[]) => Promise<Output[]>,
-//    ): Promise<Output[]> {
-//      const indexes: Record<string, number> = {};
-//    const mapping: number[] = [];
-//      const uniqueInputs: Input[] = [];
-//
-//      for (const input of inputs) {
-//        if (input !== null) {
-//            const hash = hashRecord(input);
-//
-//            if (indexes[hash] === undefined) {
-//                indexes[hash] = uniqueInputs.length;
-//                uniqueInputs.push(input);
-//            }
-//
-//            mapping.push(indexes[hash]);
-//        } else {
-//            mapping.push(-1);
-//        }
-//    }
-//
-//      const uniqueOutputs = await callback(uniqueInputs);
-//
-//      return mapping.map(index => (index !== -1 ? uniqueOutputs[index] : null));
-//
 }

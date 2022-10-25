@@ -70,20 +70,10 @@ class ComputedCollection extends CollectionDecorator
 
     public function list(Caller $caller, PaginatedFilter|Filter $filter, Projection $projection): array
     {
-        //$childProjection = $projection->replace(/*path => rewriteField(this, path)*/);
-        //$records = $this->childCollection->list($caller, $filter, $childProjection);
-        //$context = null; /*new CollectionCustomizationContext($this, $caller);*/
-        /*return computeFromRecords($context, $this, $childProjection, $projection, $records);*/
         $childProjection = $projection->replaceItem(fn ($path) => $this->rewriteField($this, $path));
         $records = $this->childCollection->list($caller, $filter, $childProjection);
 
-        dd(ComputeField::computeFromRecords($this, $childProjection, $projection, $records));
-
-//        $flatten = Flattener::flatten($records, $childProjection);
-//        dd($records , Flattener::unFlatten($flatten, $childProjection));
-
-
-        return $records;
+        return ComputeField::computeFromRecords($this, $childProjection, $projection, $records);
     }
 
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
