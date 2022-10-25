@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\CollectionDecorator;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Computed\Utils\ComputeField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Computed\Utils\Flattener;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
@@ -75,19 +76,12 @@ class ComputedCollection extends CollectionDecorator
         /*return computeFromRecords($context, $this, $childProjection, $projection, $records);*/
         $childProjection = $projection->replaceItem(fn ($path) => $this->rewriteField($this, $path));
         $records = $this->childCollection->list($caller, $filter, $childProjection);
-//
+
+        dd(ComputeField::computeFromRecords($this, $childProjection, $projection, $records));
+
 //        $flatten = Flattener::flatten($records, $childProjection);
 //        dd($records , Flattener::unFlatten($flatten, $childProjection));
 
-//        /**
-//         * @var string $fieldName
-//         * @var ComputedDefinition $computedDefinition
-//         */
-//        foreach ($this->computeds as $fieldName => $computedDefinition) {
-//            $records = call_user_func($computedDefinition->getValues(), $records);
-//        }
-//
-//        dd($this->childCollection->toArray($records[0], $childProjection));
 
         return $records;
     }

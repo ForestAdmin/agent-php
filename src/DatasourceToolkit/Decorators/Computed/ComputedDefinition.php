@@ -16,13 +16,9 @@ class ComputedDefinition
     ) {
     }
 
-    /**
-     * @return Closure
-     */
-    public function getValues(): Closure
+    public function getValues(...$args)
     {
-        // todo, maybe execute closure directly
-        return $this->values;
+        return call_user_func($this->values, $args);
     }
 
     /**
