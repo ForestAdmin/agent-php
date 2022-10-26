@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection;
 use Closure;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 use Illuminate\Support\Collection as IlluminateCollection;
@@ -74,7 +75,7 @@ class Projection extends IlluminateCollection
         return collect($records)->map(fn ($record) => $this->reproject($record));
     }
 
-    public function withPks(Collection $collection): Projection
+    public function withPks(CollectionContract $collection): Projection
     {
         foreach (SchemaUtils::getPrimaryKeys($collection) as $primaryKey) {
             if (! $this->contains($primaryKey)) {

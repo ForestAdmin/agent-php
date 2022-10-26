@@ -40,7 +40,7 @@ class Listing extends AbstractCollectionRoute
         $results = $this->collection->list(
             $this->caller,
             $this->filter,
-            QueryStringParser::parseProjection($this->collection, $this->request)
+            QueryStringParser::parseProjectionWithPks($this->collection, $this->request)
         );
 
         return [
