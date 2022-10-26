@@ -18,8 +18,7 @@ class QueryCharts
         protected QueryBuilder $builder,
         protected Aggregation $aggregation,
         protected ?int $limit = null
-    )
-    {
+    ) {
         $this->aggregate = strtolower($aggregation->getOperation());
         $this->field = Str::contains($aggregation->getField(), ':')
             ? Str::replace(':', '.', $aggregation->getField())

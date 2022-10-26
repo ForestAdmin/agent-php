@@ -78,12 +78,12 @@ class ComputedCollection extends CollectionDecorator
 
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
     {
-        if (! $aggregation->getProjection()->some(/*field => this.getComputed(field))*/)) {
-            return $this->childCollection->aggregate($caller, $filter, $aggregation, $limit);
+        if (! $aggregation->getProjection()->some(fn ($field) => $this->getComputed($field))) {
+            return $this->childCollection->aggregate($caller, $filter, $aggregation, $limit, $chartType);
         }
 
-        return $aggregation->apply( /* faire methode apply sur Aggregation */
-            $this->list($caller, $filter, $aggregation->getProjection()),
+        return $aggregation->apply(
+            $this->list($caller, $filter, $aggregation->getProjection()->withPks($this)),
             $caller->getTimezone(),
             $limit
         );
