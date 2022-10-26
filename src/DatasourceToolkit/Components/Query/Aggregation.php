@@ -146,7 +146,7 @@ class Aggregation
         return $group;
     }
 
-    private function applyDateOperation(?string $value, /*?string*/ $operation, string $timezone): string
+    private function applyDateOperation(?string $value, ?string $operation, string $timezone): string
     {
         return match ($operation) {
             'Year'  => (new \DateTime($value, new \DateTimeZone($timezone)))->format('Y-01-01'),
