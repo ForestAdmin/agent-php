@@ -19,8 +19,6 @@ use Illuminate\Support\Str;
 
 class ComputedCollection extends CollectionDecorator
 {
-//    override readonly dataSource: DataSourceDecorator<ComputedCollection>;
-//    protected computeds: Record<string, ComputedDefinition> = {};
     protected array $computeds = [];
 
     public function getComputed(string $path): ?ComputedDefinition
@@ -56,9 +54,9 @@ class ComputedCollection extends CollectionDecorator
 
     public function registerComputed(string $name, ComputedDefinition $computed): void
     {
-//        foreach ($computed['dependencies'] as $field) {
-//            FieldValidator::validate($this, $field);
-//        }
+        foreach ($computed->getDependencies() as $field) {
+            FieldValidator::validate($this, $field);
+        }
 
         if (count($computed->getDependencies()) === 0) {
             throw new ForestException('Computed field ' . $this->getName() . '.' . $name . ' must have at least one dependency.');
