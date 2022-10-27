@@ -62,8 +62,11 @@ class CollectionBuilder
     {
     }
 
-    public function addSegment(string $name, $definition)
+    public function addSegment(string $name, \Closure $definition)
     {
+        $this->stack->segment->getCollection($this->name)->addSegment($name, $definition);
+
+        return $this;
     }
 
     public function emulateFieldSorting($name)

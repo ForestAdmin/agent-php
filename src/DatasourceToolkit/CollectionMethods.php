@@ -73,11 +73,6 @@ trait CollectionMethods
         return $this;
     }
 
-    public function addSegment($segment): void
-    {
-        $this->segments = $this->segments->push($segment);
-    }
-
     public function getSegments(): IlluminateCollection
     {
         return $this->segments;

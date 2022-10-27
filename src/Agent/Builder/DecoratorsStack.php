@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContra
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Computed\ComputedCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\DatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Search\SearchCollection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Segment\SegmentCollection;
 
 class DecoratorsStack
 {
@@ -13,6 +14,7 @@ class DecoratorsStack
     public DatasourceDecorator $earlyComputed;
     public DatasourceDecorator $lateComputed;
     public DatasourceDecorator $search;
+    public DatasourceDecorator $segment;
 
     public function __construct(DatasourceContract $dataSource)
     {
@@ -32,7 +34,7 @@ class DecoratorsStack
 
         // Step 2: Those need access to all fields. They can be loaded in any order.
         $last = $this->search = new DataSourceDecorator($last, SearchCollection::class);
-//        last = this.segment = new DataSourceDecorator(last, SegmentCollectionDecorator);
+        $last = $this->segment =  new DataSourceDecorator($last, SegmentCollection::class);
 //        last = this.sortEmulate = new DataSourceDecorator(last, SortEmulateCollectionDecorator);
 //        last = this.write = new DataSourceDecorator(last, WriteCollectionDecorator);
 
@@ -44,6 +46,7 @@ class DecoratorsStack
     {
         $this->lateComputed->build();
         $this->search->build();
+        $this->segment->build();
         $this->dataSource->build();
     }
 }
