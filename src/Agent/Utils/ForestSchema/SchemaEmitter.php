@@ -73,13 +73,17 @@ class SchemaEmitter
     private static function serialize(array $schema, string $hash): array
     {
         $data = [];
+        $included = [];
         $meta = self::meta();
         $meta['schemaFileHash'] = $hash;
 
         foreach ($schema as $collection) {
-//            $collectionActions = $collection['actions'];
-//            $collectionSegments = $collection['segments'];
+            $collectionActions = $collection['actions'];
+            $collectionSegments = $collection['segments'];
             unset($collection['actions'], $collection['segments']);
+
+            $included[] = self::getSmartFeaturesByCollection('actions', $collectionActions, true);
+            $included[] = self::getSmartFeaturesByCollection('segments', $collectionSegments, true);
 
             $data[] = [
                 'id'            => $collection['name'],
@@ -87,10 +91,10 @@ class SchemaEmitter
                 'attributes'    => $collection,
                 'relationships' => [
                     'actions'  => [
-                        'data' => [],
+                        'data' => self::getSmartFeaturesByCollection('actions', $collectionActions),
                     ],
                     'segments' => [
-                        'data' => [],
+                        'data' => self::getSmartFeaturesByCollection('segments', $collectionSegments),
                     ],
                 ],
             ];
@@ -98,8 +102,32 @@ class SchemaEmitter
 
         return [
             'data'     => $data,
-            'included' => [], // todo
+            'included' => array_merge(...$included),
             'meta'     => $meta,
         ];
+    }
+
+    /**
+     * @param string $type
+     * @param array  $data
+     * @param bool   $withAttributes
+     * @return array
+     */
+    private static function getSmartFeaturesByCollection(string $type, array $data, bool $withAttributes = false): array
+    {
+        $smartFeatures = [];
+
+        foreach ($data as $value) {
+            $smartFeature = [
+                'id'   => $value['id'],
+                'type' => $type,
+            ];
+            if ($withAttributes) {
+                $smartFeature['attributes'] = $value;
+            }
+            $smartFeatures[] = $smartFeature;
+        }
+
+        return $smartFeatures;
     }
 }
