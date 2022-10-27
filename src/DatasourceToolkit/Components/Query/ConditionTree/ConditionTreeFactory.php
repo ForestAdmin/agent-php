@@ -67,7 +67,7 @@ class ConditionTreeFactory
         if (self::isBranch($tree)) {
             $conditions = [];
             foreach ($tree['conditions'] as $condition) {
-                $conditions[] = new ConditionTreeLeaf($condition['field'], ucwords($condition['operator'], '_'), $condition['value']);
+                $conditions[] = self::fromArray($condition);
             }
             $branch = new ConditionTreeBranch(ucfirst($tree['aggregator']), $conditions);
 

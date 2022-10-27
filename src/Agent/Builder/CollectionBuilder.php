@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Builder;
 
+use Closure;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Computed\ComputedDefinition;
 
 class CollectionBuilder
@@ -89,8 +90,14 @@ class CollectionBuilder
     {
     }
 
-    public function replaceSearch($definition)
+    public function replaceSearch(Closure $closure)
     {
+        $this->stack
+            ->search
+            ->getCollection($this->name)
+            ->replaceSearch($closure);
+
+        return $this;
     }
 
     public function addHook()
