@@ -93,7 +93,7 @@ class CollectionDecorator implements CollectionContract
     {
         $refinedFilter = $this->refineFilter($caller, $filter);
 
-        $this->childCollection->aggregate($caller, $refinedFilter, $aggregation, $limit, $chartType);
+        return $this->childCollection->aggregate($caller, $refinedFilter, $aggregation, $limit, $chartType);
     }
 
     protected function markSchemaAsDirty(): void
@@ -101,7 +101,7 @@ class CollectionDecorator implements CollectionContract
         $this->lastSchema = null;
     }
 
-    protected function refineFilter(Caller $caller, ?PaginatedFilter $filter): ?PaginatedFilter
+    protected function refineFilter(Caller $caller, ?Filter $filter): ?Filter
     {
         return $filter;
     }

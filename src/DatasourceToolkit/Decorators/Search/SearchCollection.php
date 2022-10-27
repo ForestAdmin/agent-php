@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Condit
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
@@ -40,7 +41,7 @@ class SearchCollection extends CollectionDecorator
         // todo
     }
 
-    public function refineFilter(Caller $caller, ?PaginatedFilter $filter): PaginatedFilter
+    public function refineFilter(Caller $caller, ?Filter $filter): Filter
     {
         if (trim($filter->getSearch()) === '') {
             return $filter->override(search: null);
