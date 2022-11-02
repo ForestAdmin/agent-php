@@ -109,14 +109,13 @@ class QueryConverter
                 $field = Str::after($field, ':');
                 $className = $this->entityMetadata->getAssociationMapping($relation)['targetEntity'];
                 $relationMetadata = AgentFactory::get('orm')->getMetadataFactory()->getMetadataFor($className);
+                $projectionGrouped[$relation][] = Str::after($field, ':');
 
                 if (! in_array($field, $relationMetadata->getIdentifier(), true)) {
                     $projectionGrouped[$relation] = array_merge(
-                        $projectionGrouped[$relation],
+                        $projectionGrouped[$relation] ?? [],
                         $relationMetadata->getIdentifier()
                     );
-                } else {
-                    $projectionGrouped[$relation][] = Str::after($field, ':');
                 }
             } else {
                 $projectionGrouped[$this->mainAlias][] = $field;
