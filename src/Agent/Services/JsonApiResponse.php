@@ -45,8 +45,11 @@ class JsonApiResponse
     public function renderChart($chart)
     {
         $data = [
-            'id'    => Uuid::uuid4(),
-            'value' => $chart->serialize(),
+            'id'         => Uuid::uuid4(),
+            'type'       => 'stats',
+            'attributes' => [
+                'value' => $chart->serialize(),
+            ],
         ];
 
         return $this->fractal->createData(new Item($data,  new BasicArrayTransformer(), 'stats'))->toArray();
