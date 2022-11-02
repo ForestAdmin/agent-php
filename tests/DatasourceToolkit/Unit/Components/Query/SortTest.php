@@ -2,57 +2,152 @@
 
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort\SortFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
-test('getFields should work', function () {
-    $sort = new Sort(['column1', '-column2']);
+test('new sort should work', function () {
+    $sort = new Sort(
+        [
+            ['field' => 'column1', 'ascending' => true],
+            ['field' => 'column2', 'ascending' => false],
+        ]
+    );
 
-    expect($sort->getFields())->toEqual(
+    expect($sort->toArray())->toEqual(
         [
             [
-                'field' => 'column1',
-                'order' => 'ASC',
+                'field'     => 'column1',
+                'ascending' => true,
             ],
             [
-                'field' => 'column2',
-                'order' => 'DESC',
+                'field'     => 'column2',
+                'ascending' => false,
             ],
         ]
     );
 });
+
+test('getProjection() should work', function () {
+    $sort = new Sort(
+        [
+            ['field' => 'column1', 'ascending' => true],
+            ['field' => 'column2', 'ascending' => false],
+        ]
+    );
+
+    expect($sort->getProjection())->toEqual(new Projection(['column1', 'column2']));
+});
+
 
 test('nest should work', function () {
-    $sort = new Sort(['column1', '-column2']);
+    $sort = new Sort(
+        [
+            ['field' => 'column1', 'ascending' => true],
+            ['field' => 'column2', 'ascending' => false],
+        ]
+    );
 
-    expect($sort->nest('prefix')->getFields())->toEqual(
+    expect($sort->nest('prefix')->toArray())->toEqual(
         [
             [
-                'field' => 'prefix:column1',
-                'order' => 'ASC',
+                'field'     => 'prefix:column1',
+                'ascending' => true,
             ],
             [
-                'field' => 'prefix:column2',
-                'order' => 'DESC',
+                'field'     => 'prefix:column2',
+                'ascending' => false,
             ],
         ]
     );
 });
 
-test('fieldIsAscending should return true with ascending field', function () {
-    $sort = new Sort(['field']);
+test('unnest should work', function () {
+    $sort = new Sort(
+        [
+            ['field' => 'column1', 'ascending' => true],
+            ['field' => 'column2', 'ascending' => false],
+        ]
+    );
 
-    expect($sort->fieldIsAscending('field'))->toBeTrue();
+    expect($sort->nest('prefix')->unnest()->toArray())->toEqual(
+        [
+            [
+                'field'     => 'column1',
+                'ascending' => true,
+            ],
+            [
+                'field'     => 'column2',
+                'ascending' => false,
+            ],
+        ]
+    );
 });
 
-test('fieldIsAscending should return false with descending field', function () {
-    $sort = new Sort(['field']);
+test('unnest should throw', function () {
+    $sort = new Sort(
+        [
+            ['field' => 'prefix:column1', 'ascending' => true],
+            ['field' => 'column2', 'ascending' => false],
+        ]
+    );
 
-    expect($sort->fieldIsAscending('-field'))->toBeFalse();
+    expect(fn () => $sort->unnest())->toThrow(ForestException::class, '🌳🌳🌳 Cannot unnest sort.');
 });
+
+test('inverse should work', function () {
+    $sort = new Sort(
+        [
+            ['field' => 'column1', 'ascending' => true],
+            ['field' => 'column2', 'ascending' => false],
+        ]
+    );
+
+    expect($sort->inverse()->toArray())->toEqual(
+        [
+            [
+                'field'     => 'column1',
+                'ascending' => false,
+            ],
+            [
+                'field'     => 'column2',
+                'ascending' => true,
+            ],
+        ]
+    );
+});
+
+test('apply() should sort records', function () {
+    $sort = new Sort(
+        [
+            ['field' => 'column1', 'ascending' => true],
+            ['field' => 'column2', 'ascending' => false],
+        ]
+    );
+    $records = [
+      [ 'column1' => 2, 'column2' => 2 ],
+      [ 'column1' => 1, 'column2' => 1 ],
+      [ 'column1' => 1, 'column2' => 1 ],
+      [ 'column1' => 1, 'column2' => 2 ],
+      [ 'column1' => 2, 'column2' => 1 ],
+    ];
+
+    expect(array_values($sort->apply($records)))
+        ->toEqual(
+            [
+                [ 'column1' => 1, 'column2' => 2 ],
+                [ 'column1' => 1, 'column2' => 1 ],
+                [ 'column1' => 1, 'column2' => 1 ],
+                [ 'column1' => 2, 'column2' => 2 ],
+                [ 'column1' => 2, 'column2' => 1 ],
+            ]
+        );
+});
+
 
 test('SortFactory::byPrimaryKeys should work', function () {
     $collection = new Collection(new Datasource(), 'cars');
@@ -62,5 +157,5 @@ test('SortFactory::byPrimaryKeys should work', function () {
             'name'  => new ColumnSchema(columnType: PrimitiveType::STRING),
         ]
     );
-    expect(SortFactory::byPrimaryKeys($collection))->toEqual(new Sort(['id']));
+    expect(SortFactory::byPrimaryKeys($collection))->toEqual(new Sort([['field' => 'id', 'ascending' => true]]));
 });

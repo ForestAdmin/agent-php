@@ -11,7 +11,9 @@ class SortFactory
     public static function byPrimaryKeys(CollectionContract $collection): Sort
     {
         return new Sort(
-            Schema::getPrimaryKeys($collection)
+            collect(Schema::getPrimaryKeys($collection))
+                ->map(fn ($pk) => ['field' => $pk, 'ascending' => true])
+                ->toArray()
         );
     }
 }
