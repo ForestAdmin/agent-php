@@ -10,7 +10,7 @@ function factoryAgentFactoryOptions(): array
 {
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => SECRET,
+        'envSecret'    => AUTH_SECRET,
         'isProduction' => false,
     ];
 
@@ -30,7 +30,7 @@ test('addDatasources() should add datasource & service to the container', functi
     $datasource->addCollection($collectionUser);
 
     $agentFactory = new AgentFactory(factoryAgentFactoryOptions(), ['my-service' => 'foo']);
-    $agentFactory->addDatasources([$datasource]);
+    $agentFactory->addDatasource($datasource)->build();
 
     expect($agentFactory->get('datasource'))
         ->toEqual($datasource)
@@ -45,6 +45,6 @@ test('addDatasources() should throw an Exception on a invalid datasource', funct
 
     $agentFactory = new AgentFactory(factoryAgentFactoryOptions(), []);
 
-    expect(fn () => $agentFactory->addDatasources([$datasource]))
+    expect(fn () => $agentFactory->addDatasource($datasource)->build())
         ->toThrow(\Exception::class, 'Invalid datasource');
 });

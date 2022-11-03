@@ -16,7 +16,7 @@ function makeAgentForOidc()
 {
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => SECRET,
+        'envSecret'    => AUTH_SECRET,
         'isProduction' => false,
     ];
     new AgentFactory($options, []);
@@ -119,7 +119,7 @@ test('makeForestProvider() should return a new ForestProvider & the associate ca
 
     expect($clientForCallbackUrl)
         ->toBeInstanceOf(ForestProvider::class)
-        ->and(cache(SECRET . '-client-data'))
+        ->and(cache(AUTH_SECRET . '-client-data'))
             ->toBeArray()
             ->toEqual(['client_id' => 1, 'issuer' => mockedConfig()['issuer'], 'redirect_uri' => 'http://backend.api']);
 });

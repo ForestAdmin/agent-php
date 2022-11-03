@@ -47,10 +47,10 @@ function GeneratorFieldWithOneToOneRelation(): Datasource
     $datasource->addCollection($collectionPerson);
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => SECRET,
+        'envSecret'    => AUTH_SECRET,
         'isProduction' => false,
     ];
-    (new AgentFactory($options, []))->addDatasources([$datasource]);
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
 
     return $datasource;
 }
@@ -90,10 +90,10 @@ function GeneratorFieldWithOneToManyRelation(): Datasource
     $datasource->addCollection($collectionPerson);
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => SECRET,
+        'envSecret'    => AUTH_SECRET,
         'isProduction' => false,
     ];
-    (new AgentFactory($options, []))->addDatasources([$datasource]);
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
 
     return $datasource;
 }
@@ -159,10 +159,10 @@ function GeneratorFieldWithManyToManyRelation(): Datasource
     $datasource->addCollection($collectionPerson);
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => SECRET,
+        'envSecret'    => AUTH_SECRET,
         'isProduction' => false,
     ];
-    (new AgentFactory($options, []))->addDatasources([$datasource]);
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
 
     return $datasource;
 }

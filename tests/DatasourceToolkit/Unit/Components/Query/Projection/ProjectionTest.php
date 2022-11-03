@@ -66,7 +66,7 @@ function projectionDatasource(): Datasource
     $options = [
         'projectDir'      => sys_get_temp_dir(), // only use for cache
     ];
-    (new AgentFactory($options,  []))->addDatasources([$datasource]);
+    (new AgentFactory($options,  []))->addDatasource($datasource)->build();
 
     return $datasource;
 }

@@ -3,6 +3,9 @@
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use ForestAdmin\AgentPHP\Agent\Auth\OAuth2\ForestResourceOwner;
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+
+use function ForestAdmin\config;
 
 dataset('forestResourceOwner', function () {
     yield new ForestResourceOwner(
@@ -26,7 +29,6 @@ dataset('forestResourceOwner', function () {
             'permission_level'                  => 'admin',
         ],
         1234,
-        SECRET
     );
 });
 
@@ -63,10 +65,14 @@ test('expirationInSeconds() should return a timestamp', function (ForestResource
     expect($forestResourceOwner->expirationInSeconds())->toBeInt();
 })->with('forestResourceOwner');
 
-test('mkeJwt() should return a JWT token', function (ForestResourceOwner $forestResourceOwner) {
-    $result = JWT::decode($forestResourceOwner->makeJwt(), new Key(SECRET, 'HS256'));
+test('makeJwt() should return a JWT token', function (ForestResourceOwner $forestResourceOwner) {
+    $options = [
+        'projectDir' => sys_get_temp_dir(),
+        'authSecret' => AUTH_SECRET,
+    ];
+    (new AgentFactory($options, []));
+
+    $result = JWT::decode($forestResourceOwner->makeJwt(), new Key(AUTH_SECRET, 'HS256'));
 
     expect($result->id)->toEqual(1);
 })->with('forestResourceOwner');
-
-

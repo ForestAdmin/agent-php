@@ -90,10 +90,10 @@ function factoryChart($args = []): Charts
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => SECRET,
+        'envSecret'    => AUTH_SECRET,
         'isProduction' => false,
     ];
-    (new Agentfactory($options, []))->addDatasources([$datasource]);
+    (new Agentfactory($options, []))->addDatasource($datasource)->build();
 
     $_GET = $args['payload'];
     $request = Request::createFromGlobals();

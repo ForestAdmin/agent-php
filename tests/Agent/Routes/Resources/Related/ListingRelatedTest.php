@@ -76,10 +76,10 @@ function factoryListingRelated($args = []): ListingRelated
     $options = [
         'projectDir'   => sys_get_temp_dir(),
         'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'envSecret'    => SECRET,
+        'envSecret'    => AUTH_SECRET,
         'isProduction' => false,
     ];
-    (new AgentFactory($options, []))->addDatasources([$datasource]);
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
     SchemaEmitter::getSerializedSchema($datasource);
 
     $request = Request::createFromGlobals();

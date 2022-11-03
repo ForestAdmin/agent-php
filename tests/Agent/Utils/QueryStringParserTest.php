@@ -68,10 +68,10 @@ function factoryQueryStringParser()
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => SECRET,
+        'envSecret'    => AUTH_SECRET,
         'isProduction' => false,
     ];
-    (new AgentFactory($options, []))->addDatasources([$datasource]);
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
 
     return compact('collectionCategory', 'collectionUser', 'collectionCar');
 }

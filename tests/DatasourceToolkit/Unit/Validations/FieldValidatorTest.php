@@ -45,7 +45,7 @@ dataset('FieldValidatorCollection', function () {
     $options = [
         'projectDir' => sys_get_temp_dir(), // only use for cache
     ];
-    (new AgentFactory($options, []))->addDatasources([$datasource]);
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
 });
 
 test('validate() should not throw if the field exist on the collection', function ($collection) {
