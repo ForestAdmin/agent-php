@@ -97,6 +97,15 @@ trait CollectionMethods
         $this->fields->put($name, $field);
     }
 
+    /**
+     * @throws ForestException
+     */
+    public function setField(string $name, ColumnSchema|RelationSchema $field): void
+    {
+        $this->fields->put($name, $field);
+    }
+
+
     public function addFields(array $fields): void
     {
         foreach ($fields as $key => $value) {

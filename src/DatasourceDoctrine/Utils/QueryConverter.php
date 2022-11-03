@@ -129,13 +129,13 @@ class QueryConverter
     {
         /** @var Sort $sort */
         if (method_exists($this->filter, 'getSort') && $sort = $this->filter->getSort()) {
-            foreach ($sort->getFields() as $value) {
+            foreach ($sort as $value) {
                 if (! Str::contains($value['field'], ':')) {
-                    $this->queryBuilder->orderBy($this->mainAlias . '.' . $value['field'], $value['order']);
+                    $this->queryBuilder->orderBy($this->mainAlias . '.' . $value['field'], $value['ascending'] ? 'ASC' : 'DESC');
                 } else {
                     $this->queryBuilder->orderBy(
                         Str::before($value['field'], ':') . '.' . Str::after($value['field'], ':'),
-                        $value['order']
+                        $value['ascending'] ? 'ASC' : 'DESC'
                     );
                 }
             }

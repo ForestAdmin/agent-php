@@ -76,9 +76,9 @@ class Collection extends ForestCollection
                 columnType: DataTypes::getType($value['type']),
                 filterOperators: FrontendFilterable::getRequiredOperators(DataTypes::getType($value['type'])),
                 isPrimaryKey: in_array($value['fieldName'], $this->entityMetadata->getIdentifierFieldNames(), true),
-                isReadOnly: false, // todo
-                isSortable: false, // todo
-                type: 'Column', // ok
+                isReadOnly: false,
+                isSortable: true,
+                type: 'Column',
                 defaultValue: array_key_exists('options', $value) && array_key_exists('default', $value['options']) ? $value['options']['default'] : null,
                 enumValues: [], // todo
                 validation: [], // todo

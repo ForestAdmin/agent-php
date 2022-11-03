@@ -13,8 +13,8 @@ class SortValidator
      */
     public static function validate(CollectionContract $collection, Sort $sort): void
     {
-        foreach ($sort->getFields() as $field) {
-            FieldValidator::validate($collection, $field['field']);
+        foreach ($sort as $clause) {
+            FieldValidator::validate($collection, $clause['field']);
         }
     }
 }

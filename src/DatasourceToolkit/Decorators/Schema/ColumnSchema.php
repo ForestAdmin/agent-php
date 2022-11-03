@@ -21,7 +21,7 @@ class ColumnSchema
         protected array $filterOperators = [],
         protected bool $isPrimaryKey = false,
         protected bool $isReadOnly = false,
-        protected bool $isSortable = false,
+        protected bool $isSortable = true,
         protected string $type = 'Column',
         protected ?string $defaultValue = null,
         protected ?string $namespace = null,
@@ -68,6 +68,17 @@ class ColumnSchema
     public function isSortable(): bool
     {
         return $this->isSortable;
+    }
+
+    /**
+     * @param bool $sortable
+     * @return ColumnSchema
+     */
+    public function setSortable(bool $sortable): self
+    {
+        $this->isSortable = $sortable;
+
+        return $this;
     }
 
     /**

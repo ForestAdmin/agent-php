@@ -36,9 +36,9 @@ class Sort extends IlluminateCollection
             ->map(fn ($clause) => $closure($clause))
             ->reduce(
                 function ($memo, $closureResult) {
-                    return is_array($closureResult) ? new Sort([...$memo, ...$closureResult]) : new Sort([...$memo, $closureResult]);
+                    return new Sort([...$memo, ...$closureResult]);
                 },
-                new Sort()
+                collect()
             );
     }
 

@@ -13,8 +13,10 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFil
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results\ActionResult;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class CollectionDecorator implements CollectionContract
@@ -35,6 +37,11 @@ class CollectionDecorator implements CollectionContract
     public function getFields(): IlluminateCollection
     {
         return $this->childCollection->getFields();
+    }
+
+    public function putField(string $name, ColumnSchema|RelationSchema $field): IlluminateCollection
+    {
+        return $this->childCollection->putField($name, $field);
     }
 
     public function getSchema(): IlluminateCollection

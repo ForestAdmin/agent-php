@@ -31,7 +31,7 @@ class CollectionBuilder
     {
     }
 
-    public function addField(string $fieldName, ComputedDefinition $definition)
+    public function addField(string $fieldName, ComputedDefinition $definition): self
     {
         $collection = $definition->isBeforeRelation()
             ? $this->stack->earlyComputed->getCollection($this->name)
@@ -69,12 +69,18 @@ class CollectionBuilder
         return $this;
     }
 
-    public function emulateFieldSorting($name)
+    public function emulateFieldSorting($name): self
     {
+        $this->stack->sort->getCollection($this->name)->replaceFieldSorting($name, null);
+
+        return $this;
     }
 
-    public function replaceFieldSorting($name, $equivalentSort)
+    public function replaceFieldSorting($name, $equivalentSort): self
     {
+        $this->stack->sort->getCollection($this->name)->replaceFieldSorting($name, $equivalentSort);
+
+        return $this;
     }
 
     public function emulateFieldFiltering($name)
@@ -93,7 +99,7 @@ class CollectionBuilder
     {
     }
 
-    public function replaceSearch(Closure $closure)
+    public function replaceSearch(Closure $closure): self
     {
         $this->stack
             ->search

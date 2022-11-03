@@ -5,7 +5,6 @@ namespace ForestAdmin\AgentPHP\Agent\Utils;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
@@ -20,6 +19,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ProjectionValidator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\SortValidator;
 
 use function ForestAdmin\config;
+
+use Illuminate\Support\Str;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -187,10 +188,18 @@ class QueryStringParser
         }
 
         try {
-            $sort = new Sort([$sortString]);
+            $sort = new Sort(
+                [
+                    [
+                        'field'     => Str::replace('-', '', $sortString),
+                        'ascending' => ! Str::contains($sortString, '-'),
+                    ],
+                ]
+            );
+
             SortValidator::validate($collection, $sort);
 
-            return  $sort;
+            return $sort;
         } catch (\RuntimeException $e) {
             throw new ForestException("Invalid sort: $sortString");
         }
