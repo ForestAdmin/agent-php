@@ -148,7 +148,7 @@ class QueryStringParser
             throw new ForestException("Invalid timezone: $timezone");
         }
 
-        $tokenData = JWT::decode($request->bearerToken(), new Key(config('envSecret'), 'HS256'));
+        $tokenData = JWT::decode($request->bearerToken(), new Key(config('authSecret'), 'HS256'));
 
         return Caller::makeFromRequestData($tokenData, $timezone);
     }
