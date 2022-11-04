@@ -55,6 +55,7 @@ function factoryListingRelated($args = []): ListingRelated
     );
 
     if (isset($args['listing'])) {
+        $_GET['fields']['Car'] = implode(',', array_keys($args['listing'][0]));
         $collectionCar = mock($collectionCar)
             ->shouldReceive('list')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
@@ -74,10 +75,10 @@ function factoryListingRelated($args = []): ListingRelated
     $datasource->addCollection($collectionCar);
 
     $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
+        'projectDir'    => sys_get_temp_dir(),
+        'schemaPath'    => sys_get_temp_dir() . '/.forestadmin-schema.json',
         'authSecret'    => AUTH_SECRET,
-        'isProduction' => false,
+        'isProduction'  => false,
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();
     SchemaEmitter::getSerializedSchema($datasource);
@@ -134,6 +135,7 @@ test('handleRequest() should return a response 200', function () {
         ],
     ];
     $listing = factoryListingRelated(['listing' => $data]);
+
     expect($listing->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'cars']))
         ->toBeArray()
         ->toEqual(

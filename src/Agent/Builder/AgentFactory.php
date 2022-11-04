@@ -34,7 +34,6 @@ class AgentFactory
         $datasource->getCollections()->each(
             fn ($collection) => $this->compositeDatasource->addCollection($collection)
         );
-//        self::$container->set('datasource', $this->compositeDatasource);
 
         $this->stack->build();
 
