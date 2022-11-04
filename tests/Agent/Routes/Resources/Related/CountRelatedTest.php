@@ -56,7 +56,7 @@ function factoryCountRelated($args = []): CountRelated
     if (isset($args['count'])) {
         $collectionCar = mock($collectionCar)
             ->shouldReceive('aggregate')
-            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
+            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null, null)
             ->andReturn(count($args['count']))
             ->getMock();
     }
@@ -66,7 +66,7 @@ function factoryCountRelated($args = []): CountRelated
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'authSecret'    => AUTH_SECRET,
+        'authSecret'   => AUTH_SECRET,
         'isProduction' => false,
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();
