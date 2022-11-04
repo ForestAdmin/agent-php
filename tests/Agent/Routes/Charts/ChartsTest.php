@@ -173,6 +173,8 @@ test('makeValue() should return a ValueChart', function () {
         ->toHaveKey('data')
         ->and($result['content']['data'])
         ->toHaveKey('id')
+        ->toHaveKey('attributes')
+        ->and($result['content']['data']['attributes'])
         ->toHaveKey('value', (new ValueChart(10))->serialize())
         ->and($result['content']['data']['id']);
 });
@@ -207,6 +209,8 @@ test('makeValue() with previous filter should return a ValueChart', function () 
         ->toHaveKey('data')
         ->and($result['content']['data'])
         ->toHaveKey('id')
+        ->toHaveKey('attributes')
+        ->and($result['content']['data']['attributes'])
         ->toHaveKey('value', (new ValueChart(10, 5))->serialize())
         ->and($result['content']['data']['id']);
 });
@@ -241,6 +245,8 @@ test('makeObjective() should return a ObjectiveChart', function () {
         ->toHaveKey('data')
         ->and($result['content']['data'])
         ->toHaveKey('id')
+        ->toHaveKey('attributes')
+        ->and($result['content']['data']['attributes'])
         ->toHaveKey('value', (new ObjectiveChart(10))->serialize())
         ->and($result['content']['data']['id']);
 });
@@ -279,6 +285,8 @@ test('makePie() should return a PieChart', function () {
         ->toHaveKey('data')
         ->and($result['content']['data'])
         ->toHaveKey('id')
+        ->toHaveKey('attributes')
+        ->and($result['content']['data']['attributes'])
         ->toHaveKey('value', (new PieChart([
             [
                 'key'   => 2021,
@@ -327,6 +335,8 @@ test('makeLine() with day filter should return a LineChart', function () {
         ->toHaveKey('data')
         ->and($result['content']['data'])
         ->toHaveKey('id')
+        ->toHaveKey('attributes')
+        ->and($result['content']['data']['attributes'])
         ->toHaveKey('value', (new LineChart([
             [
                 'label'  => '03/01/2022',
@@ -375,6 +385,8 @@ test('makeLine() with week filter should return a LineChart', function () {
         ->toHaveKey('data')
         ->and($result['content']['data'])
         ->toHaveKey('id')
+        ->toHaveKey('attributes')
+        ->and($result['content']['data']['attributes'])
         ->toHaveKey('value', (new LineChart([
             [
                 'label'  => 'W01-2022',
@@ -423,6 +435,8 @@ test('makeLine() with month filter should return a LineChart', function () {
         ->toHaveKey('data')
         ->and($result['content']['data'])
         ->toHaveKey('id')
+        ->toHaveKey('attributes')
+        ->and($result['content']['data']['attributes'])
         ->toHaveKey('value', (new LineChart([
             [
                 'label'  => 'Jan 2022',
@@ -471,6 +485,8 @@ test('makeLine() with month year should return a LineChart', function () {
         ->toHaveKey('data')
         ->and($result['content']['data'])
         ->toHaveKey('id')
+        ->toHaveKey('attributes')
+        ->and($result['content']['data']['attributes'])
         ->toHaveKey('value', (new LineChart([
             [
                 'label'  => '2022',
@@ -519,6 +535,8 @@ test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation
         ->toHaveKey('data')
         ->and($result['content']['data'])
         ->toHaveKey('id')
+        ->toHaveKey('attributes')
+        ->and($result['content']['data']['attributes'])
         ->toHaveKey('value', (new LeaderboardChart([
             [
                 'key'   => 'Foundation',
@@ -567,6 +585,8 @@ test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relatio
         ->toHaveKey('data')
         ->and($result['content']['data'])
         ->toHaveKey('id')
+        ->toHaveKey('attributes')
+        ->and($result['content']['data']['attributes'])
         ->toHaveKey('value', (new LeaderboardChart([
             [
                 'key'   => 'Foundation',
