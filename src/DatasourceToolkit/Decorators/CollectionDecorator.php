@@ -133,7 +133,6 @@ class CollectionDecorator implements CollectionContract
         return $this->childCollection->toArray($record);
     }
 
-
 ///// METHODS of CollectionContract
     public function getDataSource(): DatasourceContract
     {
@@ -150,9 +149,9 @@ class CollectionDecorator implements CollectionContract
         // TODO: Implement show() method.
     }
 
-    public function export(Caller $caller, PaginatedFilter $filter, Projection $projection): array
+    public function export(Caller $caller, Filter $filter, Projection $projection): array
     {
-        // TODO: Implement export() method.
+       return $this->childCollection->export($caller, $filter, $projection);
     }
 
     public function associate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void
