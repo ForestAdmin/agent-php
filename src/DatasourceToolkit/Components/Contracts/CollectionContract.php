@@ -27,7 +27,7 @@ interface CollectionContract
 
     public function create(Caller $caller, array $data);
 
-    public function show(Caller $caller, PaginatedFilter $filter, $id, Projection $projection);
+    public function show(Caller $caller, Filter $filter, $id, Projection $projection);
 
     public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array;
 

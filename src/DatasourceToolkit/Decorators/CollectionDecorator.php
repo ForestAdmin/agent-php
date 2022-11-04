@@ -144,14 +144,14 @@ class CollectionDecorator implements CollectionContract
         // TODO: Implement getClassName() method.
     }
 
-    public function show(Caller $caller, PaginatedFilter $filter, $id, Projection $projection)
+    public function show(Caller $caller, Filter $filter, $id, Projection $projection)
     {
-        // TODO: Implement show() method.
+        return $this->childCollection->show($caller, $filter, $id, $projection);
     }
 
     public function export(Caller $caller, Filter $filter, Projection $projection): array
     {
-       return $this->childCollection->export($caller, $filter, $projection);
+        return $this->childCollection->export($caller, $filter, $projection);
     }
 
     public function associate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void
