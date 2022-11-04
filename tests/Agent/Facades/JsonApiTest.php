@@ -28,7 +28,7 @@ function factoryJsonApi()
     $options = [
         'projectDir'   => sys_get_temp_dir(),
         'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'envSecret'    => AUTH_SECRET,
+        'authSecret'    => AUTH_SECRET,
         'isProduction' => false,
         'agentUrl'     => 'http://localhost/',
     ];
@@ -77,7 +77,7 @@ test('deactivateCountResponse() should return a JsonApiResponse deactivateCountR
     expect(JsonApi::deactivateCountResponse())->toEqual((new JsonApiResponse())->deactivateCountResponse());
 });
 
-test('renderChart() should add a datasource to the container', function () {
+test('renderChart() should return a JsonApiResponse', function () {
     $chart = new ValueChart(100, 10);
     $result = JsonApi::renderChart($chart);
 
@@ -86,6 +86,8 @@ test('renderChart() should add a datasource to the container', function () {
         ->toHaveKey('data')
         ->and($result['data'])
         ->toHaveKey('id')
-        ->toHaveKey('value', (new JsonApiResponse())->renderChart($chart)['data']['value'])
+        ->toHaveKey('attributes')
+        ->and($result['data']['attributes'])
+        ->toHaveKey('value', (new JsonApiResponse())->renderChart($chart)['data']['attributes']['value'])
         ->and($result['data']['id']);
 });

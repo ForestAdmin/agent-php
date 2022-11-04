@@ -15,7 +15,7 @@ function factoryForestApiRequester($url = 'https://api.development.forestadmin.c
 
     $options = [
         'projectDir'      => sys_get_temp_dir(),
-        'envSecret'       => AUTH_SECRET,
+        'authSecret'       => AUTH_SECRET,
         'isProduction'    => false,
         'debug'           => false,
         'forestServerUrl' => $url,

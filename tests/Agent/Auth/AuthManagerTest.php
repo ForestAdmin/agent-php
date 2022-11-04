@@ -66,7 +66,7 @@ test('start() should return the renderingId', function () {
 test('verifyCodeAndGenerateToken() should return the token', function () {
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => AUTH_SECRET,
+        'authSecret'    => AUTH_SECRET,
         'isProduction' => false,
         'debug'        => false,
     ];

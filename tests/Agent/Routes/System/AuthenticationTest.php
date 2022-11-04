@@ -39,7 +39,7 @@ function factoryAuthentication(): Authentication
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => AUTH_SECRET,
+        'authSecret'    => AUTH_SECRET,
         'isProduction' => false,
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();

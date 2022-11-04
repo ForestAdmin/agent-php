@@ -58,7 +58,7 @@ function factoryListing($args = []): Listing
     $options = [
         'projectDir'   => sys_get_temp_dir(),
         'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'envSecret'    => AUTH_SECRET,
+        'authSecret'    => AUTH_SECRET,
         'isProduction' => false,
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();

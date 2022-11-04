@@ -2,7 +2,6 @@
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
-use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
 use ForestAdmin\AgentPHP\Agent\Services\Permissions;
@@ -89,9 +88,9 @@ function factoryChart($args = []): Charts
     $datasource->addCollection($collectionReviews);
 
     $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => AUTH_SECRET,
-        'isProduction' => false,
+        'projectDir'    => sys_get_temp_dir(),
+        'authSecret'    => AUTH_SECRET,
+        'isProduction'  => false,
     ];
     (new Agentfactory($options, []))->addDatasource($datasource)->build();
 
@@ -291,7 +290,6 @@ test('makePie() should return a PieChart', function () {
             ],
         ]))->serialize())
         ->and($result['content']['data']['id']);
-
 });
 
 test('makeLine() with day filter should return a LineChart', function () {
