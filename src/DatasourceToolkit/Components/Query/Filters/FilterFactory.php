@@ -87,7 +87,8 @@ class FilterFactory
             /** @var Collection $foreignCollection */
             $foreignCollection = AgentFactory::get('datasource')->getCollection($relation->getForeignCollection());
             $throughTree = new ConditionTreeLeaf($relation->getInverseRelationName(), Operators::EQUAL, $originValue);
-            $records = $foreignCollection->list($caller, new Filter(conditionTree: $throughTree), new Projection([$relation->getForeignKey()]));
+
+            $records = $foreignCollection->list($caller, new PaginatedFilter(conditionTree: $throughTree), new Projection([$relation->getForeignKeyTarget()]));
             $originTree = new ConditionTreeLeaf(
                 $relation->getOriginKeyTarget(),
                 Operators::IN,

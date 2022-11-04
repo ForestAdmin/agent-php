@@ -43,7 +43,7 @@ class SearchCollection extends CollectionDecorator
 
     public function refineFilter(Caller $caller, ?Filter $filter): Filter
     {
-        if (trim($filter->getSearch()) === '') {
+        if ($filter->getSearch() === null || trim($filter->getSearch()) === '') {
             return $filter->override(search: null);
         }
 
