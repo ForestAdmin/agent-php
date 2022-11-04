@@ -64,6 +64,7 @@ class OidcClientManager
             [
                 'clientId'    => cache($cacheKey)['client_id'],
                 'redirectUri' => cache($cacheKey)['redirect_uri'],
+                'envSecret'   => config('envSecret'),
             ]
         );
     }
