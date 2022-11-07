@@ -11,11 +11,8 @@
   - [Create your agent](getting-started/install/create-your-agent.md)
   - Expose an HTTP endpoint
     - [For standalone agents](getting-started/install/expose/using-standalone.md)
-    - [On Express](getting-started/install/expose/using-express.md)
-    - [On Koa](getting-started/install/expose/using-koa.md)
-    - [On Fastify](getting-started/install/expose/using-fastify.md)
-    - [On NestJS](getting-started/install/expose/using-nest.md)
-  - [Autocompletion & Typings](getting-started/install/autocompletion-and-typings.md)
+    - [On Laravel](getting-started/install/expose/laravel.md)
+    - [On Symfony](getting-started/install/expose/symfony.md)
   - [Troubleshooting](getting-started/install/troubleshooting.md)
 
 ## Data Sources
