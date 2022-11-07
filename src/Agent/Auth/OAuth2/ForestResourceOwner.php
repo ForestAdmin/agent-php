@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\Agent\Auth\OAuth2;
 use Firebase\JWT\JWT;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Tool\ArrayAccessorTrait;
+use function ForestAdmin\config;
 
 /**
  * Class ForestResourceOwner
@@ -20,7 +21,7 @@ class ForestResourceOwner implements ResourceOwnerInterface
     /**
      * @codeCoverageIgnore
      */
-    public function __construct(private array $data, private int $renderingId, private string $secret)
+    public function __construct(private array $data, private int $renderingId)
     {
     }
 
@@ -67,6 +68,6 @@ class ForestResourceOwner implements ResourceOwnerInterface
             'permission_level' => $this->data['permission_level'],
         ];
 
-        return JWT::encode($user, $this->secret, 'HS256');
+        return JWT::encode($user, config('authSecret'), 'HS256');
     }
 }

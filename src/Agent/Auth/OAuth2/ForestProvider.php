@@ -114,7 +114,7 @@ class ForestProvider extends AbstractProvider
      */
     protected function createResourceOwner(array $response, AccessToken $token)
     {
-        return new ForestResourceOwner($response, $this->renderingId, $this->options['envSecret']);
+        return new ForestResourceOwner($response, $this->renderingId);
     }
 
     /**

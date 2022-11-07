@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Validations;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
@@ -16,7 +16,7 @@ class ConditionTreeValidator
     /**
      * @throws ForestException
      */
-    public static function validate(ConditionTree $conditionTree, Collection $collection): void
+    public static function validate(ConditionTree $conditionTree, CollectionContract $collection): void
     {
         if ($conditionTree instanceof ConditionTreeBranch) {
             self::validateBranch($conditionTree, $collection);
@@ -30,7 +30,7 @@ class ConditionTreeValidator
     /**
      * @throws ForestException
      */
-    private static function validateBranch(ConditionTreeBranch $branch, Collection $collection): void
+    private static function validateBranch(ConditionTreeBranch $branch, CollectionContract $collection): void
     {
         if (! in_array($branch->getAggregator(), ['And', 'Or'])) {
             throw new ForestException('The given aggregator ' . $branch->getAggregator() . ' is not supported. The supported values are: [\'Or\', \'And\']');
@@ -44,7 +44,7 @@ class ConditionTreeValidator
     /**
      * @throws ForestException
      */
-    private static function validateLeaf(ConditionTreeLeaf $leaf, Collection $collection): void
+    private static function validateLeaf(ConditionTreeLeaf $leaf, CollectionContract $collection): void
     {
         $fieldSchema = CollectionUtils::getFieldSchema($collection, $leaf->getField());
 

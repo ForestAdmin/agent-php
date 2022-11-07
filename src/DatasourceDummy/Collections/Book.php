@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceDummy\Collections;
 
+use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ActionSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
@@ -52,12 +53,10 @@ class Book extends BaseCollection
         parent::__construct($dataSource, 'Book', $fields);
 
         $this->dataSource = $dataSource;
+    }
 
-//        $this->addAction('Mark as live', new ActionSchema(scope: ActionScope::single(), staticForm: true));
-//
-//        $this->addSegment('Active books');
-//        $this->addSegment('Deleted books');
-//
-//        $this->setSearchable(true);
+    public function makeTransformer()
+    {
+        return new BasicArrayTransformer();
     }
 }

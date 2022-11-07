@@ -1,8 +1,8 @@
 # Forest Admin agent PHP
 
-![Build Status](https://github.com/forestadmin/agent-php/actions/workflows/build.yml/badge.svg)
-[![Maintainability](https://api.codeclimate.com/v1/badges/4a2fec6538a84441e4db/maintainability)](https://codeclimate.com/repos/618a8bfec6f5cf49e90039d6/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/4a2fec6538a84441e4db/test_coverage)](https://codeclimate.com/repos/618a8bfec6f5cf49e90039d6/test_coverage)
+[Build Status](https://github.com/forestadmin/agent-php/actions/workflows/build.yml/badge.svg)
+[![Maintainability](https://api.codeclimate.com/v1/badges/78369262a90ae3e6bcf6/maintainability)](https://codeclimate.com/repos/634d0eb56f60194800002874/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/78369262a90ae3e6bcf6/test_coverage)](https://codeclimate.com/repos/634d0eb56f60194800002874/test_coverage)
 
 Forest Admin provides an off-the-shelf administration panel based on a highly-extensible API plugged into your application.
 

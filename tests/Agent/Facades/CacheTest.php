@@ -10,11 +10,11 @@ function factoryCache()
     $options = [
         'projectDir'   => sys_get_temp_dir(),
         'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'envSecret'    => SECRET,
+        'authSecret'    => AUTH_SECRET,
         'isProduction' => false,
         'agentUrl'     => 'http://localhost/',
     ];
-    (new AgentFactory($options, []))->addDatasources([$datasource]);
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
 }
 
 afterEach(fn () => Cache::forget('foo'));

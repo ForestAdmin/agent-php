@@ -3,11 +3,11 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 
 class ProjectionFactory
 {
-    public static function all(Collection $collection): Projection
+    public static function all(CollectionContract $collection): Projection
     {
         $fields = $collection->getFields();
         $projectionFields = $fields->reduce(

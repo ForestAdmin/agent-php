@@ -23,4 +23,9 @@ class Page
     {
         return $this->limit;
     }
+
+    public function apply(array $records): array
+    {
+        return array_slice($records, $this->offset, $this->limit);
+    }
 }

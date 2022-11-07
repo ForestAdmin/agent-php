@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Concerns\Relation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
@@ -17,7 +18,7 @@ class GeneratorField
     /**
      * @throws \Exception
      */
-    public static function buildSchema(Collection $collection, string $name): array
+    public static function buildSchema(CollectionContract $collection, string $name): array
     {
         $field = $collection->getFields()->get($name);
 
@@ -31,7 +32,7 @@ class GeneratorField
         return $fieldSchema;
     }
 
-    public static function buildColumnSchema(Collection $collection, string $name)
+    public static function buildColumnSchema(CollectionContract $collection, string $name)
     {
         /** @var ColumnSchema $column */
         $column = $collection->getFields()->get($name);
@@ -54,7 +55,7 @@ class GeneratorField
         ];
     }
 
-    public static function buildRelationSchema(Collection $collection, string $name): array
+    public static function buildRelationSchema(CollectionContract $collection, string $name): array
     {
         /** @var RelationSchema $relation */
         $relation = $collection->getFields()->get($name);
@@ -73,7 +74,7 @@ class GeneratorField
         return match ($relation->getType()) {
             'ManyToMany', 'OneToMany' => self::buildToManyRelationSchema($relation, $collection, $foreignCollection, $relationSchema),
             'OneToOne'                => self::buildOneToOneSchema($relation, $collection, $foreignCollection, $relationSchema),
-            default                   => self::buildManyToOneSchema($relation, $collection, $foreignCollection, $relationSchema),
+            default                   => self::buildManyToOneSchema($relation, $foreignCollection, $relationSchema),
         };
     }
 
@@ -90,7 +91,7 @@ class GeneratorField
         // todo return object like agent-js
     }
 
-    public static function buildToManyRelationSchema(RelationSchema $relation, Collection $collection, Collection $foreignCollection, array $baseSchema): array
+    public static function buildToManyRelationSchema(RelationSchema $relation, CollectionContract $collection, CollectionContract $foreignCollection, array $baseSchema): array
     {
         if (is_a($relation, OneToManySchema::class)) {
             $key = $relation->getOriginKeyTarget();
@@ -116,7 +117,7 @@ class GeneratorField
         );
     }
 
-    public static function buildOneToOneSchema(OneToOneSchema $relation, Collection $collection, Collection $foreignCollection, array $baseSchema): array
+    public static function buildOneToOneSchema(OneToOneSchema $relation, CollectionContract $collection, CollectionContract $foreignCollection, array $baseSchema): array
     {
         $key = $relation->getOriginKeyTarget();
         /** @var ColumnSchema $column */
@@ -137,7 +138,7 @@ class GeneratorField
         );
     }
 
-    public static function buildManyToOneSchema(ManyToOneSchema $relation, Collection $collection, Collection $foreignCollection, array $baseSchema): array
+    public static function buildManyToOneSchema(ManyToOneSchema $relation, CollectionContract $foreignCollection, array $baseSchema): array
     {
         $key = $relation->getForeignKeyTarget();
         $foreignTargetColumn = $foreignCollection->getFields()->get($key);
@@ -157,7 +158,7 @@ class GeneratorField
         );
     }
 
-    public static function isForeignCollectionFilterable(Collection $foreignCollection): bool
+    public static function isForeignCollectionFilterable(CollectionContract $foreignCollection): bool
     {
         return $foreignCollection->getFields()->some(
             fn ($column) => $column->getType() === 'Column' && FrontendFilterable::isFilterable($column->getColumnType(), $column->getFilterOperators())

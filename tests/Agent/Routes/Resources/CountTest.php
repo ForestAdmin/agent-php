@@ -32,7 +32,7 @@ function factoryCount($args = []): Count
     if (isset($args['count'])) {
         $collectionUser = mock($collectionUser)
             ->shouldReceive('aggregate')
-            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class))
+            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null, null)
             ->andReturn(count($args['count']))
             ->getMock();
     }
@@ -41,10 +41,10 @@ function factoryCount($args = []): Count
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => SECRET,
+        'authSecret'   => AUTH_SECRET,
         'isProduction' => false,
     ];
-    (new AgentFactory($options, []))->addDatasources([$datasource]);
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
 
     $request = Request::createFromGlobals();
     $permissions = new Permissions(QueryStringParser::parseCaller($request));

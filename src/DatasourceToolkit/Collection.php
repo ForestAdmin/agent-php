@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
+use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BaseTransformer;
 use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
@@ -20,13 +21,7 @@ use Illuminate\Support\Collection as IlluminateCollection;
 
 class Collection implements CollectionContract
 {
-    protected IlluminateCollection $fields;
-
-    protected IlluminateCollection $actions;
-
-    protected bool $searchable = false;
-
-    protected IlluminateCollection $segments;
+    use CollectionMethods;
 
     protected string $className;
 
@@ -56,12 +51,7 @@ class Collection implements CollectionContract
         return $this->className;
     }
 
-    public function hydrate(array $args): void
-    {
-        //
-    }
-
-    public function execute(/*Caller $caller, */string $name, array $formValues, ?Filter $filter = null): ActionResult
+    public function execute(Caller $caller, string $name, array $formValues, ?Filter $filter = null): ActionResult
     {
         // TODO: Implement execute() method.
         if (! $this->actions->get($name)) {
@@ -71,7 +61,7 @@ class Collection implements CollectionContract
         // TODO QUESTION HOW TO RETURN ACTIONRESULT + CHECK DUMMYDATA SOURCE PARAMETERS ARE MISSING ? (base.ts -> override async execute(): Promise<ActionResult>)
     }
 
-    public function getForm(/*Caller $caller, */string $name, ?array $formValues = null, ?Filter $filter = null): array
+    public function getForm(Caller $caller, string $name, ?array $formValues = null, ?Filter $filter = null): array
     {
         return [];
     }
@@ -123,101 +113,10 @@ class Collection implements CollectionContract
 
     public function makeTransformer()
     {
-        return new BasicArrayTransformer();
+        return new BaseTransformer($this->name);
     }
 
-    public function addFields(array $fields): void
-    {
-        foreach ($fields as $key => $value) {
-            $this->addField($key, $value);
-        }
-    }
-
-    /**
-     * @throws ForestException
-     */
-    public function addField(string $name, ColumnSchema|RelationSchema $field): void
-    {
-        if ($this->fields->has($name)) {
-            throw new ForestException('Field ' . $name . ' already defined in collection');
-        }
-
-        $this->fields->put($name, $field);
-    }
-
-    public function getFields(): IlluminateCollection
-    {
-        return $this->fields;
-    }
-
-    public function setFields(array $fields): Collection
-    {
-        $this->fields = $fields;
-
-        return $this;
-    }
-
-    public function addActions(array $actions): void
-    {
-        foreach ($actions as $key => $value) {
-            $this->addAction($key, $value);
-        }
-    }
-
-    /**
-     * @throws ForestException
-     */
-    public function addAction(string $name, ActionSchema $action): void
-    {
-        if ($this->actions->has($name)) {
-            throw new ForestException('Action ' . $name . ' already defined in collection');
-        }
-
-        $this->actions->put($name, $action);
-    }
-
-    public function getActions(): IlluminateCollection
-    {
-        return $this->actions;
-    }
-
-    public function setActions(array $actions): Collection
-    {
-        $this->actions = $actions;
-
-        return $this;
-    }
-
-    public function isSearchable(): bool
-    {
-        return $this->searchable;
-    }
-
-    public function setSearchable(bool $searchable): Collection
-    {
-        $this->searchable = $searchable;
-
-        return $this;
-    }
-
-    public function addSegment($segment): void
-    {
-        $this->segments = $this->segments->push($segment);
-    }
-
-    public function getSegments(): IlluminateCollection
-    {
-        return $this->segments;
-    }
-
-    public function setSegments(array $segments): Collection
-    {
-        $this->segments = collect($segments);
-
-        return $this;
-    }
-
-    public function toArray($record): array
+    public function toArray($record, ?Projection $projection = null): array
     {
         // by default $record is an array
         return $record;

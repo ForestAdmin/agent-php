@@ -2,49 +2,89 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query;
 
+use Closure;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record as RecordUtils;
+use Illuminate\Support\Collection as IlluminateCollection;
 use Illuminate\Support\Str;
 
-class Sort
+class Sort extends IlluminateCollection
 {
-    private array $fields;
-
-    public function __construct(array $items)
+    public function __construct($items = [])
     {
         foreach ($items as $item) {
-            $item = Str::replace('.', ':', $item);
-            if ($this->fieldIsAscending($item)) {
-                $field = ['field' => $item, 'order' => 'ASC'];
-            } else {
-                $field = ['field' => substr($item, 1), 'order' => 'DESC'];
+            if (! isset($item['field'], $item['ascending'])
+                || ! is_string($item['field'])
+                || ! is_bool($item['ascending'])
+            ) {
+                throw new ForestException('Invalid sort clause, key "field" and "ascending" must be present and of type string and boolean.');
             }
-            $this->fields[] = $field;
-        }
-    }
-
-    /**
-     * @param $value
-     * @return bool
-     */
-    public function fieldIsAscending($value): bool
-    {
-        if ($value[0] === '-') {
-            return false;
         }
 
-        return true;
+        parent::__construct($items);
     }
 
-    public function getFields(): array
+    public function getProjection(): Projection
     {
-        return $this->fields;
+        return new Projection($this->collect()->map(fn ($clause) => $clause['field'])->toArray());
     }
 
-    public function nest(string $prefix = ''): self
+    public function replaceClauses(Closure $closure): Sort
     {
-        foreach ($this->fields as &$field) {
-            $field['field'] = $prefix . ':' . $field['field'];
+        return $this->collect()
+            ->map(fn ($clause) => $closure($clause))
+            ->reduce(
+                function ($memo, $closureResult) {
+                    return new Sort([...$memo, ...$closureResult]);
+                },
+                collect()
+            );
+    }
+
+    public function nest(string $prefix): Sort
+    {
+        return $prefix !== '' ? $this->map(fn ($clause) => ['field' => $prefix . ':' . $clause['field'], 'ascending' => $clause['ascending']]) : $this;
+    }
+
+    public function inverse(): Sort
+    {
+        return $this->map(fn ($clause) => ['field' => $clause['field'], 'ascending' => ! $clause['ascending']]);
+    }
+
+    public function unnest(): Sort
+    {
+        $prefix = Str::before($this->first()['field'], ':');
+
+        if (! $this->every(fn ($clause) => Str::startsWith($clause['field'], $prefix))) {
+            throw new ForestException('Cannot unnest sort.');
         }
 
-        return $this;
+        return $this->map(fn ($clause) => ['field' => Str::after($clause['field'], ':'), 'ascending' => $clause['ascending']]);
+    }
+
+    public function apply(array $records): array
+    {
+        $length = $this->count();
+
+        return collect($records)->sort(
+            function ($a, $b) use ($length) {
+                for ($i = 0; $i < $length; $i++) {
+                    $clause = $this->get($i);
+                    $valueOnA = RecordUtils::getFieldValue($a, $clause['field']);
+                    $valueOnB = RecordUtils::getFieldValue($b, $clause['field']);
+
+                    if ($valueOnA < $valueOnB) {
+                        return $clause['ascending'] ? -1 : 1;
+                    }
+
+                    if ($valueOnA > $valueOnB) {
+                        return $clause['ascending'] ? 1 : -1;
+                    }
+                }
+
+                return 0;
+            }
+        )->toArray();
     }
 }

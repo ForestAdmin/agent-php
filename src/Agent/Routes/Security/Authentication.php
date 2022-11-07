@@ -77,7 +77,7 @@ class Authentication extends AbstractRoute
     public function handleAuthenticationCallback(): array
     {
         $token = $this->auth()->verifyCodeAndGenerateToken($this->request->all());
-        $tokenData = JWT::decode($token, new Key(config('envSecret'), 'HS256'));
+        $tokenData = JWT::decode($token, new Key(config('authSecret'), 'HS256'));
 
         return [
             'content' => [

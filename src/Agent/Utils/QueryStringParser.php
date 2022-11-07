@@ -5,8 +5,8 @@ namespace ForestAdmin\AgentPHP\Agent\Utils;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
@@ -20,6 +20,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\SortValidator;
 
 use function ForestAdmin\config;
 
+use Illuminate\Support\Str;
+
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -32,7 +34,7 @@ class QueryStringParser
     /**
      * @throws ForestException
      */
-    public static function parseConditionTree(Collection $collection, Request $request): ?ConditionTree
+    public static function parseConditionTree(CollectionContract $collection, Request $request): ?ConditionTree
     {
         $filters = $request->input('data.attributes.all_records_subset_query.filters') ?? $request->input('filters');
 
@@ -54,7 +56,7 @@ class QueryStringParser
     /**
      * @throws ForestException
      */
-    public static function parseProjection(Collection $collection, Request $request): Projection
+    public static function parseProjection(CollectionContract $collection, Request $request): Projection
     {
         try {
             $fields = $request->input('fields.' . $collection->getName());
@@ -81,7 +83,7 @@ class QueryStringParser
         }
     }
 
-    public static function parseProjectionWithPks(Collection $collection, Request $request): Projection
+    public static function parseProjectionWithPks(CollectionContract $collection, Request $request): Projection
     {
         $projection = self::parseProjection($collection, $request);
 
@@ -91,7 +93,7 @@ class QueryStringParser
     /**
      * @throws ForestException
      */
-    public static function parseSearch(Collection $collection, Request $request): ?string
+    public static function parseSearch(CollectionContract $collection, Request $request): ?string
     {
         $search = $request->input('data.attributes.all_records_subset_query.search') ?? $request->get('search');
 
@@ -112,7 +114,7 @@ class QueryStringParser
     /**
      * @throws ForestException
      */
-    public static function parseSegment(Collection $collection, Request $request): ?string
+    public static function parseSegment(CollectionContract $collection, Request $request): ?string
     {
         $segment = $request->input('data.attributes.all_records_subset_query.segment') ?? $request->get('segment');
 
@@ -147,7 +149,7 @@ class QueryStringParser
             throw new ForestException("Invalid timezone: $timezone");
         }
 
-        $tokenData = JWT::decode($request->bearerToken(), new Key(config('envSecret'), 'HS256'));
+        $tokenData = JWT::decode($request->bearerToken(), new Key(config('authSecret'), 'HS256'));
 
         return Caller::makeFromRequestData($tokenData, $timezone);
     }
@@ -177,7 +179,7 @@ class QueryStringParser
         return new Page($offset, $queryItemsPerPage);
     }
 
-    public static function parseSort(Collection $collection, Request $request): Sort
+    public static function parseSort(CollectionContract $collection, Request $request): Sort
     {
         $sortString = $request->input('data.attributes.all_records_subset_query.sort') ?? $request->get('sort');
 
@@ -186,10 +188,18 @@ class QueryStringParser
         }
 
         try {
-            $sort = new Sort([$sortString]);
+            $sort = new Sort(
+                [
+                    [
+                        'field'     => Str::replace('-', '', $sortString),
+                        'ascending' => ! Str::contains($sortString, '-'),
+                    ],
+                ]
+            );
+
             SortValidator::validate($collection, $sort);
 
-            return  $sort;
+            return $sort;
         } catch (\RuntimeException $e) {
             throw new ForestException("Invalid sort: $sortString");
         }

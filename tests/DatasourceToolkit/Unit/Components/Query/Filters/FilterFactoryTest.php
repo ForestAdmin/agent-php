@@ -81,7 +81,7 @@ dataset('DatasourceForFilterFactory', dataset: function () {
         'projectDir'   => sys_get_temp_dir(),
         'isProduction' => false,
     ];
-    (new AgentFactory($options,  []))->addDatasources([$datasource]);
+    (new AgentFactory($options,  []))->addDatasource($datasource)->build();
 });
 
 function createDatasourceForFilterFactory(): Datasource
@@ -147,7 +147,7 @@ function createDatasourceForFilterFactory(): Datasource
         'projectDir'   => sys_get_temp_dir(),
         'isProduction' => false,
     ];
-    $agent = (new AgentFactory($options,  []))->addDatasources([$datasource]);
+    (new AgentFactory($options,  []))->addDatasource($datasource)->build();
 
     return $datasource;
 }

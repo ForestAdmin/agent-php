@@ -6,6 +6,7 @@ use DateTime;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
@@ -54,7 +55,7 @@ class FilterFactory
         );
     }
 
-    public static function makeThroughFilter(Collection $collection, array $id, string $relationName, Caller $caller, Filter $baseForeignFilter): Filter
+    public static function makeThroughFilter(CollectionContract $collection, array $id, string $relationName, Caller $caller, Filter $baseForeignFilter): Filter
     {
         $relation = $collection->getFields()[$relationName];
         $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getOriginKeyTarget());
@@ -75,7 +76,7 @@ class FilterFactory
      * - can apply on the target collection of the relation
      */
     // todo check this method - it's useful for our agent ?
-    public static function makeForeignFilter(Collection $collection, array $id, string $relationName, Caller $caller, Filter $baseForeignFilter): Filter
+    public static function makeForeignFilter(CollectionContract $collection, array $id, string $relationName, Caller $caller, Filter $baseForeignFilter): Filter
     {
         $relation = SchemaUtils::getToManyRelation($collection, $relationName);
         $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getOriginKeyTarget());
@@ -87,7 +88,8 @@ class FilterFactory
             /** @var Collection $foreignCollection */
             $foreignCollection = AgentFactory::get('datasource')->getCollection($relation->getForeignCollection());
             $throughTree = new ConditionTreeLeaf($relation->getInverseRelationName(), Operators::EQUAL, $originValue);
-            $records = $foreignCollection->list($caller, new Filter(conditionTree: $throughTree), new Projection([$relation->getForeignKey()]));
+
+            $records = $foreignCollection->list($caller, new PaginatedFilter(conditionTree: $throughTree), new Projection([$relation->getForeignKeyTarget()]));
             $originTree = new ConditionTreeLeaf(
                 $relation->getOriginKeyTarget(),
                 Operators::IN,

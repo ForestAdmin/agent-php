@@ -28,7 +28,7 @@ function factoryQueryStringParser()
             'label' => new ColumnSchema(columnType: PrimitiveType::STRING),
         ]
     );
-    $collectionCategory->addSegment('fake-segment');
+    $collectionCategory->setSegments(['fake-segment']);
 
     $collectionUser = new Collection($datasource, 'User');
     $collectionUser->addFields(
@@ -67,11 +67,11 @@ function factoryQueryStringParser()
     $datasource->addCollection($collectionCar);
 
     $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => SECRET,
-        'isProduction' => false,
+        'projectDir'    => sys_get_temp_dir(),
+        'authSecret'    => AUTH_SECRET,
+        'isProduction'  => false,
     ];
-    (new AgentFactory($options, []))->addDatasources([$datasource]);
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
 
     return compact('collectionCategory', 'collectionUser', 'collectionCar');
 }
@@ -381,7 +381,7 @@ test('parseCaller() should throw a ValidationError when the timezone is invalid'
 
 test('parseCaller() should throw a HttpException when the user is not connected', function () {
     factoryQueryStringParser();
-    $_SERVER['HTTP_AUTHORIZATION'] = null;
+    $_SERVER['HTTP_AUTHORIZATION'] = '';
 
     expect(fn () => QueryStringParser::parseCaller(Request::createFromGlobals()))
         ->toThrow(HttpException::class, 'You must be logged in to access at this resource');
@@ -423,7 +423,7 @@ test('parseSort() should sort by pk ascending when not sort is given', function 
 
     $sort = QueryStringParser::parseSort($collectionCategory, Request::createFromGlobals());
 
-    expect($sort)->toEqual(new Sort(['id']));
+    expect($sort)->toEqual(new Sort([['field' => 'id', 'ascending' => true]]));
 });
 
 test('parseSort() should sort by the request field and order when given', function () {
@@ -431,7 +431,7 @@ test('parseSort() should sort by the request field and order when given', functi
     $_GET['sort'] = '-label';
     $sort = QueryStringParser::parseSort($collectionCategory, Request::createFromGlobals());
 
-    expect($sort)->toEqual(new Sort(['-label']));
+    expect($sort)->toEqual(new Sort([['field' => 'label', 'ascending' => false]]));
 });
 
 test('parseSort() should throw a ForestException when the requested sort is invalid', function () {

@@ -4,13 +4,14 @@ namespace ForestAdmin\AgentPHP\Agent\Utils;
 
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\FieldValidator;
 
 class Id
 {
-    public static function packId(Collection $collection, array $record): string
+    public static function packId(CollectionContract $collection, array $record): string
     {
         $primaryKeyNames = SchemaUtils::getPrimaryKeys($collection);
 
@@ -21,14 +22,14 @@ class Id
         return collect($primaryKeyNames)->map(fn ($pk) => $record[$pk])->join('|');
     }
 
-    public static function packIds(Collection $collection, array $records): array
+    public static function packIds(CollectionContract $collection, array $records): array
     {
         $values = collect($records)->map(fn ($item) => self::packId($collection, $item))->flatten();
 
         return $values->all();
     }
 
-    public static function unpackId(Collection $collection, string $packedId, bool $withKey = false): array
+    public static function unpackId(CollectionContract $collection, string $packedId, bool $withKey = false): array
     {
         $primaryKeyNames = SchemaUtils::getPrimaryKeys($collection);
         $primaryKeyValues = explode('|', $packedId);
@@ -49,14 +50,14 @@ class Id
         return $values->all();
     }
 
-    public static function unpackIds(Collection $collection, array $packedIds): array
+    public static function unpackIds(CollectionContract $collection, array $packedIds): array
     {
         $values = collect($packedIds)->map(fn ($item) => self::unpackId($collection, $item));
 
         return $values->all();
     }
 
-    public static function parseSelectionIds(Collection $collection, Request $request): array
+    public static function parseSelectionIds(CollectionContract $collection, Request $request): array
     {
         $attributes = $request->input('data.attributes');
 

@@ -19,19 +19,19 @@ interface CollectionContract
 
     public function getClassName(): string;
 
-    public function hydrate(array $args): void;
+    public function execute(Caller $caller, string $name, array $formValues, ?Filter $filter = null): ActionResult;
 
-    public function execute(/*Caller $caller, */string $name, array $formValues, ?Filter $filter = null): ActionResult;
+    public function getForm(Caller $caller, string $name, ?array $formValues = null, ?Filter $filter = null): array;
 
-    public function getForm(/*Caller $caller, */string $name, ?array $formValues = null, ?Filter $filter = null): array;
+    public function toArray($record): array;
 
     public function create(Caller $caller, array $data);
 
-    public function show(Caller $caller, PaginatedFilter $filter, $id, Projection $projection);
+    public function show(Caller $caller, Filter $filter, $id, Projection $projection);
 
     public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array;
 
-    public function export(Caller $caller, PaginatedFilter $filter, Projection $projection): array;
+    public function export(Caller $caller, Filter $filter, Projection $projection): array;
 
     public function update(Caller $caller, Filter $filter, $id, array $patch);
 

@@ -12,6 +12,7 @@ class ForestAdminHttpDriver
     {
         $schema = SchemaEmitter::getSerializedSchema($datasource);
         $schemaIsKnown = ForestHttpApi::hasSchema($schema['meta']['schemaFileHash']);
+        $schemaIsKnown = false;
 
         if (! $schemaIsKnown) {
             // TODO this.options.logger('Info', 'Schema was updated, sending new version');

@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
@@ -14,7 +14,7 @@ class ConditionTreeParser
     /**
      * @throws \Exception
      */
-    public static function fromPLainObject(Collection $collection, array $filters): ConditionTree
+    public static function fromPLainObject(CollectionContract $collection, array $filters): ConditionTree
     {
         if (self::isLeaf($filters)) {
             $operator = ucwords($filters['operator'], '_');
@@ -39,7 +39,7 @@ class ConditionTreeParser
         throw new \Exception('Failed to instantiate condition tree');
     }
 
-    private static function parseValue(Collection $collection, array $leaf)
+    private static function parseValue(CollectionContract $collection, array $leaf)
     {
         $schema = CollectionUtils::getFieldSchema($collection, $leaf['field']);
 

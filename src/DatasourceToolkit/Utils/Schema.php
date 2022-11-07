@@ -2,14 +2,14 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Utils;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 class Schema
 {
-    public static function getPrimaryKeys(Collection $schema): array
+    public static function getPrimaryKeys(CollectionContract $schema): array
     {
         return $schema
             ->getFields()
@@ -26,7 +26,7 @@ class Schema
             ->all();
     }
 
-    public static function getToManyRelation(Collection $collection, string $relationName): RelationSchema
+    public static function getToManyRelation(CollectionContract $collection, string $relationName): RelationSchema
     {
         if (! isset($collection->getFields()[$relationName])) {
             throw new ForestException("Relation $relationName not found");

@@ -26,7 +26,7 @@ test('validate() should throw', function () {
         ]
     );
 
-    expect(static fn () => SortValidator::validate($collection, new Sort(['foo'])))
+    expect(static fn () => SortValidator::validate($collection, new Sort([['field' => 'foo', 'ascending' => true]])))
         ->toThrow(ForestException::class, "🌳🌳🌳 Column not found: books.foo");
 });
 
@@ -47,5 +47,5 @@ test('validate() should not throw', function () {
         ]
     );
 
-    expect(SortValidator::validate($collection, new Sort(['id'])))->toBeNull();
+    expect(SortValidator::validate($collection, new Sort([['field' => 'id', 'ascending' => true]])))->toBeNull();
 });

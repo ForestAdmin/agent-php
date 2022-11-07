@@ -6,13 +6,13 @@ use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LeaderboardChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LineChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ObjectiveChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\PieChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ValueChart;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
@@ -24,7 +24,7 @@ use Illuminate\Support\Str;
 
 class Charts extends AbstractCollectionRoute
 {
-    protected Collection $collection;
+    protected CollectionContract $collection;
 
     protected Filter $filter;
 

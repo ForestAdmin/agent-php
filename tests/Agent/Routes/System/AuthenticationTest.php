@@ -39,10 +39,10 @@ function factoryAuthentication(): Authentication
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => SECRET,
+        'authSecret'    => AUTH_SECRET,
         'isProduction' => false,
     ];
-    (new AgentFactory($options, []))->addDatasources([$datasource]);
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
 
     $request = Request::createFromGlobals();
 
@@ -55,7 +55,7 @@ function factoryAuthentication(): Authentication
 
     $auth->verifyCodeAndGenerateToken(Argument::any())
         ->shouldBeCalled()
-        ->willReturn(JWT::encode(user(), SECRET, 'HS256'));
+        ->willReturn(JWT::encode(user(), AUTH_SECRET, 'HS256'));
 
     $authentication = mock(Authentication::class)
         ->makePartial()
@@ -96,7 +96,7 @@ test('handleAuthentication() should return a response 200', function () {
 test('handleAuthenticationCallback() should return a response 200', function () {
     $_GET['renderingId'] = 1;
     $authentication = factoryAuthentication();
-    $token = JWT::encode(user(), SECRET, 'HS256');
+    $token = JWT::encode(user(), AUTH_SECRET, 'HS256');
 
     expect($authentication->handleAuthenticationCallback())
         ->toBeArray()
@@ -104,7 +104,7 @@ test('handleAuthenticationCallback() should return a response 200', function () 
             [
                 'content' => [
                     'token'     => $token,
-                    'tokenData' => JWT::decode($token, new Key(SECRET, 'HS256')),
+                    'tokenData' => JWT::decode($token, new Key(AUTH_SECRET, 'HS256')),
                 ],
             ]
         );

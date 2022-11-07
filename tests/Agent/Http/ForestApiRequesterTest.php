@@ -15,17 +15,17 @@ function factoryForestApiRequester($url = 'https://api.development.forestadmin.c
 
     $options = [
         'projectDir'      => sys_get_temp_dir(),
-        'envSecret'       => SECRET,
+        'authSecret'      => AUTH_SECRET,
         'isProduction'    => false,
         'debug'           => false,
         'forestServerUrl' => $url,
     ];
-    (new AgentFactory($options, []))->addDatasources([$datasource]);
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
 }
 
 function mockClientResponse(): Client
 {
-    $mock = new MockHandler([new Response(200, ['forest-secret-key' => SECRET], 'ok'),]);
+    $mock = new MockHandler([new Response(200, ['forest-secret-key' => AUTH_SECRET], 'ok'),]);
     $handlerStack = HandlerStack::create($mock);
 
     return new Client(['handler' => $handlerStack]);
@@ -50,8 +50,8 @@ test('get() should return a Response with a 200 status code', function () {
         ->toBeInstanceOf(Response::class)
         ->and($response->getStatusCode())
         ->toEqual(200)
-        ->and($forestApi->getHeaders()['forest-secret-key'])
-        ->toEqual(SECRET);
+        ->and($response->getHeaders()['forest-secret-key'][0])
+        ->toEqual(AUTH_SECRET);
 });
 
 test('post() should return a Response with a 200 status code', function () {
@@ -65,8 +65,8 @@ test('post() should return a Response with a 200 status code', function () {
         ->toBeInstanceOf(Response::class)
         ->and($response->getStatusCode())
         ->toEqual(200)
-        ->and($forestApi->getHeaders()['forest-secret-key'])
-        ->toEqual(SECRET);
+        ->and($response->getHeaders()['forest-secret-key'][0])
+        ->toEqual(AUTH_SECRET);
 });
 
 test('get() should throw a exception when the Response can\'t reach the server', function () {

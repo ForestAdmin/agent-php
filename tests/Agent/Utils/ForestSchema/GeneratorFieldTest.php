@@ -46,11 +46,11 @@ function GeneratorFieldWithOneToOneRelation(): Datasource
     $datasource->addCollection($collectionBook);
     $datasource->addCollection($collectionPerson);
     $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => SECRET,
-        'isProduction' => false,
+        'projectDir'    => sys_get_temp_dir(),
+        'authSecret'    => AUTH_SECRET,
+        'isProduction'  => false,
     ];
-    (new AgentFactory($options, []))->addDatasources([$datasource]);
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
 
     return $datasource;
 }
@@ -89,11 +89,11 @@ function GeneratorFieldWithOneToManyRelation(): Datasource
     $datasource->addCollection($collectionBook);
     $datasource->addCollection($collectionPerson);
     $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => SECRET,
-        'isProduction' => false,
+        'projectDir'    => sys_get_temp_dir(),
+        'authSecret'    => AUTH_SECRET,
+        'isProduction'  => false,
     ];
-    (new AgentFactory($options, []))->addDatasources([$datasource]);
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
 
     return $datasource;
 }
@@ -158,11 +158,11 @@ function GeneratorFieldWithManyToManyRelation(): Datasource
     $datasource->addCollection($collectionBookPerson);
     $datasource->addCollection($collectionPerson);
     $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'envSecret'    => SECRET,
-        'isProduction' => false,
+        'projectDir'    => sys_get_temp_dir(),
+        'authSecret'    => AUTH_SECRET,
+        'isProduction'  => false,
     ];
-    (new AgentFactory($options, []))->addDatasources([$datasource]);
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
 
     return $datasource;
 }
@@ -184,7 +184,7 @@ test('buildSchema() should generate relation One to One', function () {
             'isPrimaryKey' => false,
             'isReadOnly'   => false,
             'isRequired'   => false,
-            'isSortable'   => false,
+            'isSortable'   => true,
             'isVirtual'    => false,
             'reference'    => 'Book.id',
             'relationship' => 'HasOne',
