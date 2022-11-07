@@ -133,7 +133,6 @@ class CollectionDecorator implements CollectionContract
         return $this->childCollection->toArray($record);
     }
 
-///// METHODS of CollectionContract
     public function getDataSource(): DatasourceContract
     {
         return $this->dataSource;
@@ -141,7 +140,7 @@ class CollectionDecorator implements CollectionContract
 
     public function getClassName(): string
     {
-        // TODO: Implement getClassName() method.
+        return $this->childCollection->getClassName();
     }
 
     public function show(Caller $caller, Filter $filter, $id, Projection $projection)
@@ -156,11 +155,11 @@ class CollectionDecorator implements CollectionContract
 
     public function associate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void
     {
-        // TODO: Implement associate() method.
+        $this->childCollection->associate($caller, $parentFilter, $childFilter, $relation);
     }
 
     public function dissociate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void
     {
-        // TODO: Implement dissociate() method.
+        $this->childCollection->dissociate($caller, $parentFilter, $childFilter, $relation);
     }
 }
