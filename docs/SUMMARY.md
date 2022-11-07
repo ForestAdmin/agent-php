@@ -6,28 +6,34 @@
 
 - [How it works](getting-started/how-it-works.md)
 - [Quick start](getting-started/quick-start.md)
-- [Install](getting-started/install.md)
-- [Autocompletion & Typings](getting-started/autocompletion-and-typings.md)
+- [Install](getting-started/install/README.md)
+
+  - [Create your agent](getting-started/install/create-your-agent.md)
+  - Expose an HTTP endpoint
+    - [For standalone agents](getting-started/install/expose/using-standalone.md)
+    - [On Express](getting-started/install/expose/using-express.md)
+    - [On Koa](getting-started/install/expose/using-koa.md)
+    - [On Fastify](getting-started/install/expose/using-fastify.md)
+    - [On NestJS](getting-started/install/expose/using-nest.md)
+  - [Autocompletion & Typings](getting-started/install/autocompletion-and-typings.md)
+  - [Troubleshooting](getting-started/install/troubleshooting.md)
 
 ## Data Sources
 
-- [Usage](datasources/README.md)
-- [Provided datasources](datasources/provided/README.md)
-
+- [Connecting data sources](datasources/connection/README.md)
+  - [Collection selection](datasources/connection/partial-imports.md)
+  - [Naming conflicts](datasources/connection/naming-conflicts.md)
+  - [Cross-data source relationships](datasources/connection/relationships.md)
+- Provided data sources
   - [SQL (without ORM)](datasources/provided/sql.md)
   - [Sequelize](datasources/provided/sequelize.md)
   - [Mongoose](datasources/provided/mongoose.md)
-
 - [Write your own](datasources/custom/README.md)
   - [Structure declaration](datasources/custom/structure.md)
-  - [Using a local cache](datasources/custom/local-cache/README.md)
-    - [Read implementation](datasources/custom/local-cache/read-only.md)
-    - [Write implementation](datasources/custom/local-cache/read-write.md)
-  - [Using query translation](datasources/custom/query-translation/README.md)
-    - [Capabilities declaration](datasources/custom/query-translation/capabilities.md)
-    - [Read implementation](datasources/custom/query-translation/read-only.md)
-    - [Write implementation](datasources/custom/query-translation/read-write.md)
-    - [Intra-datasource Relationships](datasources/custom/query-translation/relationships.md)
+  - [Capabilities declaration](datasources/custom/capabilities.md)
+  - [Read implementation](datasources/custom/read-only.md)
+  - [Write implementation](datasources/custom/read-write.md)
+  - [Intra-data source Relationships](datasources/custom/relationships.md)
   - [Contribute](datasources/contribute.md)
 
 ## Agent customization
@@ -35,15 +41,28 @@
 - [Actions](agent-customization/actions/README.md)
   - [Responses](agent-customization/actions/responses.md)
   - [Forms](agent-customization/actions/forms.md)
-- [Charts](agent-customization/charts.md)
+- [Charts](agent-customization/charts/README.md)
+
+  - [Value](agent-customization/charts/value.md)
+  - [Objective](agent-customization/charts/objective.md)
+  - [Percentage](agent-customization/charts/percentage.md)
+  - [Distribution](agent-customization/charts/distribution.md)
+  - [Leaderboard](agent-customization/charts/leaderboard.md)
+  - [Time-based](agent-customization/charts/time.md)
+
 - [Fields](agent-customization/fields/README.md)
 
-  - [Computed Fields](agent-customization/fields/computed.md)
-  - [Write overrides](agent-customization/fields/write.md)
-  - [Filter overrides](agent-customization/fields/filter.md)
-  - [Sort overrides](agent-customization/fields/sort.md)
+  - [Add fields](agent-customization/fields/computed.md)
+  - [Move, rename and delete fields](agent-customization/fields/import-rename-delete.md)
+  - [Override writing behavior](agent-customization/fields/write.md)
+  - [Override filtering behavior](agent-customization/fields/filter.md)
+  - [Override sorting behavior](agent-customization/fields/sort.md)
+  - [Validation](agent-customization/fields/validation.md)
 
 - [Hooks](agent-customization/hooks/README.md)
+- [Plugins](agent-customization/plugins/README.md)
+  - [Write your own](agent-customization/plugins/custom.md)
+  - [Import all the fields](agent-customization/plugins/provided/import-fields.md)
 - [Relationships](agent-customization/relationships/README.md)
   - [To a single record](agent-customization/relationships/single-record.md)
   - [To multiple records](agent-customization/relationships/multiple-records.md)
@@ -72,6 +91,9 @@
 ## Deploying to production
 
 - [Environments](deployment/environments.md)
+  - [Deploy on Heroku](deployment/cloud/deploy-on-heroku.md)
+  - [Deploy on GCP](deployment/cloud/deploy-on-gcp.md)
+  - [Deploy on Ubuntu](deployment/cloud/deploy-on-ubuntu.md)
 - [Development workflow](deployment/development-workflow.md)
 - [Using branches](deployment/using-branches.md)
 - [Deploying your changes](deployment/deploying-your-changes.md)
@@ -80,13 +102,19 @@
   - [login](deployment/forest-cli-commands/login.md)
   - [branch](deployment/forest-cli-commands/branch.md)
   - [switch](deployment/forest-cli-commands/switch.md)
+  - [set-origin](deployment/forest-cli-commands/set-origin.md)
   - [push](deployment/forest-cli-commands/push.md)
   - [environments:reset](deployment/forest-cli-commands/environments-reset.md)
   - [deploy](deployment/forest-cli-commands/deploy.md)
 
+## Examples
+
+- [Upload a file to S3](agent-customization/examples/upload-file-to-s3.md)
+
 ## Under the hood
 
-- [Data Model](under-the-hood/data-model/README.md)
+- [.forestadmin-schema.json](under-the-hood/forestadmin-schema.md)
+- [Data Model](under-the-hood/data-model)
   - [Typing](under-the-hood/data-model/typing.md)
   - [Relationships](under-the-hood/data-model/relationships.md)
 - [Query interface](under-the-hood/queries/README.md)
