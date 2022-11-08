@@ -5,6 +5,8 @@ namespace ForestAdmin\AgentPHP\Agent\Builder;
 use DI\Container;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\CollectionCustomizer;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DecoratorsStack;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use Illuminate\Support\Collection as IlluminateCollection;
 
@@ -57,7 +59,7 @@ class AgentFactory
     public function customizeCollection(string $name, \Closure $handle): self
     {
         if ($this->stack->dataSource->getCollection($name)) {
-            $handle(new CollectionBuilder($this->stack, $name));
+            $handle(new CollectionCustomizer($this->stack, $name));
         }
 
         return $this;

@@ -2,9 +2,9 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ActionSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\ActionSchema;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection as IlluminateCollection;
 

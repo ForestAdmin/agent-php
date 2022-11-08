@@ -3,8 +3,8 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Utils;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 class Schema

@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceDoctrine\Utils;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Concerns\PrimitiveType;
 
 class DataTypes
 {
