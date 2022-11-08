@@ -2,8 +2,8 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\Utils;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\Projection\Projection;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Utils\Record;
 
 class Flattener
 {

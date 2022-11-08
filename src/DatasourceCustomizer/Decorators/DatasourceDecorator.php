@@ -2,10 +2,10 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Contracts\CollectionContract;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Contracts\DatasourceContract;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 class DatasourceDecorator extends Datasource
 {
