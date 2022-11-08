@@ -6,6 +6,7 @@ use DI\Container;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class AgentFactory
@@ -86,6 +87,29 @@ class AgentFactory
         $filesystem = new Filesystem();
         $directory = $config['projectDir'] . '/forest-cache' ;
         self::$container->set('cache', new CacheServices($filesystem, $directory));
-        self::$container->get('cache')->add('config', $config, self::TTL);
+        self::$container->get('cache')->add('config', $config, $config['permissionsCacheDurationInSeconds']);
+    }
+
+    private function loadOptions(array $options): array
+    {
+        if (! isset($options['authSecret'], $options['envSecret'], $options['isProduction'])) {
+            throw new ForestException('the keys authSecret, envSecret, isProduction are mandatory.');
+        }
+
+        return [
+            'authSecret'                        => $options['authSecret'],
+            'envSecret'                         => $options['envSecret'],
+            'isProduction'                      => $options['isProduction'],
+            'appUrl'                            => $options['appUrl'],
+            'customizeErrorMessage'             => $options['customizeErrorMessage'] ?? null,
+            'forestServerUrl'                   => $options['customizeErrorMessage'] ?? 'https://api.forestadmin.com',
+            'logger'                            => $options['customizeErrorMessage'] ?? null,
+            'loggerLevel'                       => $options['customizeErrorMessage'] ?? 'Info',
+            'permissionsCacheDurationInSeconds' => $options['customizeErrorMessage'] ?? 15 * 60,
+            'prefix'                            => $options['prefix'] ?? '', // todo fix because prefix is empty by default => prefix is before forest
+            'schemaPath'                        => $options['prefix'] ?? '.forestadmin-schema.json',
+            'projectDir'                        => $options['projectDir'],
+            'debug'                             => $options['debug'],
+        ];
     }
 }

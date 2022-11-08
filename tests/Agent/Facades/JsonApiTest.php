@@ -30,7 +30,7 @@ function factoryJsonApi()
         'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
         'authSecret'    => AUTH_SECRET,
         'isProduction' => false,
-        'agentUrl'     => 'http://localhost/',
+        'appUrl'     => 'http://localhost/',
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();
 

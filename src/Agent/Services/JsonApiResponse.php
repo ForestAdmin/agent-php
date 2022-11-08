@@ -29,7 +29,7 @@ class JsonApiResponse
 
     public function renderCollection($class, TransformerAbstract $transformer, string $name)
     {
-        $this->fractal->setSerializer(new JsonApiSerializer(config('agentUrl')));
+        $this->fractal->setSerializer(new JsonApiSerializer(config('appUrl')));
         $transformer->setAvailableIncludes(ForestSchema::getRelatedData($name));
 
         return $this->fractal->createData(new Collection($class, $transformer, $name))->toArray();
@@ -37,7 +37,7 @@ class JsonApiResponse
 
     public function renderItem($data, TransformerAbstract $transformer, string $name)
     {
-        $this->fractal->setSerializer(new JsonApiSerializer(config('agentUrl')));
+        $this->fractal->setSerializer(new JsonApiSerializer(config('appUrl')));
 
         return $this->fractal->createData(new Item($data, $transformer, $name))->toArray();
     }
