@@ -3,7 +3,8 @@
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DecoratorsStack;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\DataSourceSchema;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\PublicationCollectionDatasourceDecorator;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\DataSourceSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\Chart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
@@ -11,7 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContra
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use Illuminate\Support\Collection as IlluminateCollection;
 
-class DatasourceCustomizer implements DatasourceContract
+class DatasourceCustomizer
 {
     protected Datasource $compositeDatasource;
 
@@ -23,37 +24,52 @@ class DatasourceCustomizer implements DatasourceContract
         $this->stack = new DecoratorsStack($this->compositeDatasource);
     }
 
-    public function addDatasource(DatasourceContract $datasource, array $options = [])
+    public function addDatasource(DatasourceContract $datasource, array $options = []): self
     {
         if (isset($options['include']) || isset($options['exclude'])) {
-
+            $datasource = new PublicationCollectionDatasourceDecorator($datasource);
+            $datasource->build();
+            $datasource->keepCollectionsMatching($options['include'] ?? [], $options['exclude'] ?? []);
         }
+
+        if (isset($options['rename'])) {
+//                $datasource =.....
+//                const renamedDecorator = new RenameCollectionDataSourceDecorator(dataSource);
+//                renamedDecorator.renameCollections(options?.rename);
+        }
+
+        $datasource->getCollections()->each(
+            fn ($collection) => $this->compositeDatasource->addCollection($collection)
+        );
+
+        $this->stack->build();
+
+        return $this;
     }
 
-
-    public function getCollections(): IlluminateCollection
+    /**
+     * Allow to interact with a decorated collection
+     * @example
+     * .customizeCollection('books', books => books.renameField('xx', 'yy'))
+     * @param string   $name the name of the collection to manipulate
+     * @param \Closure $handle a function that provide a
+     *   collection builder on the given collection name
+     * @return $this
+     */
+    public function customizeCollection(string $name, \Closure $handle): self
     {
-        // TODO: Implement getCollections() method.
+        if ($this->stack->dataSource->getCollection($name)) {
+            $handle(new CollectionCustomizer($this->stack, $name));
+        }
+
+        return $this;
     }
 
-    public function getSchema(): DataSourceSchema
+    /**
+     * @return DecoratorsStack
+     */
+    public function getStack(): DecoratorsStack
     {
-        // TODO: Implement getSchema() method.
+        return $this->stack;
     }
-
-    public function getCollection(string $name): CollectionContract
-    {
-        // TODO: Implement getCollection() method.
-    }
-
-    public function addCollection(CollectionContract $collection): void
-    {
-        // TODO: Implement addCollection() method.
-    }
-
-    public function renderChart(Caller $caller, string $name): Chart
-    {
-        // TODO: Implement renderChart() method.
-    }
-
 }

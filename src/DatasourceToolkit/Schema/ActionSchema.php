@@ -1,8 +1,8 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema;
+namespace ForestAdmin\AgentPHP\DatasourceToolkit\Schema;
 
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Concerns\ActionScope;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\ActionScope;
 
 class ActionSchema
 {

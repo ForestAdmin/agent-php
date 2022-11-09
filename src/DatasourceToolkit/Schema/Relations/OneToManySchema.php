@@ -1,8 +1,8 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Relations;
+namespace ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations;
 
-class OneToOneSchema extends SingleRelationSchema
+class OneToManySchema extends SingleRelationSchema
 {
     public function __construct(
         protected string $originKey,
@@ -10,7 +10,7 @@ class OneToOneSchema extends SingleRelationSchema
         protected string $foreignCollection,
         protected string $inverseRelationName,
     ) {
-        parent::__construct($originKey, $originKeyTarget, $foreignCollection, 'OneToOne', $inverseRelationName);
+        parent::__construct($originKey, $originKeyTarget, $foreignCollection, 'OneToMany', $inverseRelationName);
     }
 
     public function getForeignCollection(): string

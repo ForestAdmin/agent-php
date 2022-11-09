@@ -5,10 +5,8 @@ namespace ForestAdmin\AgentPHP\Agent\Builder;
 use DI\Container;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\CollectionCustomizer;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DecoratorsStack;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use Illuminate\Support\Collection as IlluminateCollection;
 
 class AgentFactory
 {
@@ -16,35 +14,25 @@ class AgentFactory
 
     protected static Container $container;
 
-    protected Datasource $compositeDatasource;
-
-    protected DecoratorsStack $stack;
-
-    protected IlluminateCollection $customizations;
+    protected DatasourceCustomizer $customizer;
 
     public function __construct(array $config, array $services)
     {
-        $this->compositeDatasource = new Datasource();
-        $this->stack = new DecoratorsStack($this->compositeDatasource);
-        $this->customizations = new IlluminateCollection();
+        $this->customizer = new DatasourceCustomizer();
         $this->buildContainer($services);
         $this->buildCache($config);
     }
 
-    public function addDatasource(Datasource $datasource): self
+    public function addDatasource(Datasource $datasource, array $options = []): self
     {
-        $datasource->getCollections()->each(
-            fn ($collection) => $this->compositeDatasource->addCollection($collection)
-        );
-
-        $this->stack->build();
+        $this->customizer->addDatasource($datasource, $options);
 
         return $this;
     }
 
     public function build(): void
     {
-        self::$container->set('datasource', $this->stack->dataSource);
+        self::$container->set('datasource', $this->customizer->getStack()->dataSource);
     }
 
     /**
@@ -58,9 +46,7 @@ class AgentFactory
      */
     public function customizeCollection(string $name, \Closure $handle): self
     {
-        if ($this->stack->dataSource->getCollection($name)) {
-            $handle(new CollectionCustomizer($this->stack, $name));
-        }
+        $this->customizer->customizeCollection($name, $handle);
 
         return $this;
     }

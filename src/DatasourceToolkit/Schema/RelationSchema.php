@@ -1,6 +1,6 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema;
+namespace ForestAdmin\AgentPHP\DatasourceToolkit\Schema;
 
 abstract class RelationSchema
 {

@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use Illuminate\Support\Collection as IlluminateCollection;
 

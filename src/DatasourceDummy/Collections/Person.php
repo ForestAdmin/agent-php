@@ -3,10 +3,10 @@
 namespace ForestAdmin\AgentPHP\DatasourceDummy\Collections;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Concerns\PrimitiveType;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Relations\OneToManySchema;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
 class Person extends BaseCollection
 {

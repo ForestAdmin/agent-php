@@ -4,8 +4,8 @@ namespace ForestAdmin\AgentPHP\Agent\Serializer\Transformers;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Serializer\DataTypes;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Relations\ManyToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use Illuminate\Support\Str;
 use League\Fractal\TransformerAbstract;
 

@@ -2,18 +2,17 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed;
 
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Caller;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\Aggregation;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\Filters\Filter;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\Filters\PaginatedFilter;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\Utils\ComputeField;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\Utils\Flattener;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\RelationSchema;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Exceptions\ForestException;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Validations\FieldValidator;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\FieldValidator;
 use Illuminate\Support\Collection as IlluminateCollection;
 use Illuminate\Support\Str;
 

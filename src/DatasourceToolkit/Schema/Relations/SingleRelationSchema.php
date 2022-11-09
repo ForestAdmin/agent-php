@@ -1,8 +1,8 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Relations;
+namespace ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations;
 
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 
 abstract class SingleRelationSchema extends RelationSchema
 {

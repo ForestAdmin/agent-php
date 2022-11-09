@@ -30,13 +30,13 @@ class DecoratorsStack
         // Note that replacement goes before emulation, as replacements may use emulated operators.
 //        $earlyComputed = new DataSourceDecorator($last, ComputedCollection::class);
 //        $last = $this->earlyComputed = &$earlyComputed;
-        $lateComputed = new DataSourceDecorator($last, ComputedCollection::class);
+        $lateComputed = new DatasourceDecorator($last, ComputedCollection::class);
         $last = $this->lateComputed = &$lateComputed;
 
         // Step 2: Those need access to all fields. They can be loaded in any order.
-        $last = $this->search = new DataSourceDecorator($last, SearchCollection::class);
-        $last = $this->segment = new DataSourceDecorator($last, SegmentCollection::class);
-        $last = $this->sort = new DataSourceDecorator($last, SortCollection::class);
+        $last = $this->search = new DatasourceDecorator($last, SearchCollection::class);
+        $last = $this->segment = new DatasourceDecorator($last, SegmentCollection::class);
+        $last = $this->sort = new DatasourceDecorator($last, SortCollection::class);
 //        last = this.write = new DataSourceDecorator(last, WriteCollectionDecorator);
 
 

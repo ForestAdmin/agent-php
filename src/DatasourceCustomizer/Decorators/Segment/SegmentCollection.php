@@ -2,11 +2,12 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Segment;
 
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Caller;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\ConditionTree\ConditionTreeFactory;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\Filters\Filter;
+use Closure;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Validations\ConditionTreeValidator;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ConditionTreeValidator;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class SegmentCollection extends CollectionDecorator
@@ -21,7 +22,7 @@ class SegmentCollection extends CollectionDecorator
         return $merged;
     }
 
-    public function addSegment(string $name, \Closure $definition)
+    public function addSegment(string $name, Closure $definition)
     {
         $this->computedSegments[$name] = $definition;
         $this->markSchemaAsDirty();
@@ -37,7 +38,7 @@ class SegmentCollection extends CollectionDecorator
 
         if ($segment && $this->computedSegments[$segment]) {
             $definition = $this->computedSegments[$segment];
-            $result = call_user_func($definition);
+            $result = $definition();
 
             $conditionTreeSegment = ConditionTreeFactory::fromArray($result);
             ConditionTreeValidator::validate($conditionTreeSegment, $this);

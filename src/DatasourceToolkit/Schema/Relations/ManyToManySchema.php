@@ -1,6 +1,6 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Relations;
+namespace ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations;
 
 class ManyToManySchema extends ManyRelationSchema
 {

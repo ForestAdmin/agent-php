@@ -2,9 +2,9 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\Utils;
 
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedDefinition;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use Illuminate\Support\Str;
 
 class ComputeField

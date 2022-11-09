@@ -3,7 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\ActionSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ActionSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Concerns\ActionFieldType;

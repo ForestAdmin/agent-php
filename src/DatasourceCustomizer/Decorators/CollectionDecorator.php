@@ -3,20 +3,20 @@
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators;
 
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\GeneratorCollection;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\CollectionMethods;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Caller;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Contracts\CollectionContract;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Contracts\DatasourceContract;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\Aggregation;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\Filters\Filter;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\Filters\PaginatedFilter;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\Projection\Projection;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Results\ActionResult;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Datasource;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Relations\ManyToManySchema;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Relations\OneToManySchema;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\CollectionMethods;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results\ActionResult;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class CollectionDecorator implements CollectionContract

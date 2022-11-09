@@ -3,18 +3,17 @@
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Search;
 
 use Closure;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Caller;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\ConditionTree\ConditionTreeFactory;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\ConditionTree\Nodes\ConditionTree;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\ConditionTree\Operators;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\Filters\Filter;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Concerns\PrimitiveType;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Relations\ManyToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use Illuminate\Support\Collection as IlluminateCollection;
 use Illuminate\Support\Str;
 

@@ -2,10 +2,10 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection;
 
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DatasourceDecorator;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 class PublicationCollectionDatasourceDecorator extends DatasourceDecorator
@@ -28,8 +28,8 @@ class PublicationCollectionDatasourceDecorator extends DatasourceDecorator
         /** @var PublicationCollectionDecorator $collection */
         foreach ($this->collections as $collection) {
             foreach ($collection->getFields() as $key => $field) {
-                if ((! $field instanceof ColumnSchema && in_array($field->getForeignCollection()->getName(),  $deleted, true))
-                    || ($field instanceof ManyToManySchema && in_array($field->getForeignCollection()->getName(), $deleted, true))
+                if ((! $field instanceof ColumnSchema && in_array($field->getForeignCollection(),  $deleted, true))
+                    || ($field instanceof ManyToManySchema && in_array($field->getForeignCollection(), $deleted, true))
                 ) {
                     $collection->changeFieldVisibility($key, false);
                 }
