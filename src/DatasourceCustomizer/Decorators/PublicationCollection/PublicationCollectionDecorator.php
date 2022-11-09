@@ -4,12 +4,12 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollec
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class PublicationCollectionDecorator extends CollectionDecorator
@@ -63,6 +63,7 @@ class PublicationCollectionDecorator extends CollectionDecorator
             return ! isset($this->unpublished[$name]);
         } else {
             return false;
+
             return $this->isPublishedRelation($name, $field);
         }
     }
