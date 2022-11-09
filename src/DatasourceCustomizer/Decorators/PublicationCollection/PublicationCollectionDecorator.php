@@ -2,7 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection;
 
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;

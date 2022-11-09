@@ -49,7 +49,6 @@ class DecoratorsStack
         $last = $this->segment = new DatasourceDecorator($last, SegmentCollection::class);
         $last = $this->sort = new DatasourceDecorator($last, SortCollection::class);
 
-
         $this->dataSource = &$last;
     }
 

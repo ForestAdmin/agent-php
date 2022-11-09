@@ -7,10 +7,7 @@ use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use Illuminate\Database\Capsule\Manager;
-use Illuminate\Database\Events\StatementPrepared;
 use Illuminate\Events\Dispatcher;
-
 
 class AgentFactory
 {
