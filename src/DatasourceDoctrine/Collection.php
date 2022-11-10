@@ -30,6 +30,8 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class Collection extends ForestCollection
 {
+    protected string $model;
+
     /**
      * @throws \ReflectionException
      * @throws \Exception

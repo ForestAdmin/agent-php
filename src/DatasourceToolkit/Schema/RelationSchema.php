@@ -21,6 +21,11 @@ abstract class RelationSchema
         return $this->foreignCollection;
     }
 
+    public function setForeignCollection(string $foreignCollection): void
+    {
+        $this->foreignCollection = $foreignCollection;
+    }
+
     public function getInverseRelationName(): string
     {
         return $this->inverseRelationName;

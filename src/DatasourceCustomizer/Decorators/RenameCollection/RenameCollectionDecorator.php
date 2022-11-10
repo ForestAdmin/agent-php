@@ -1,14 +1,8 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection;
+namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\RenameCollection;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use Illuminate\Support\Collection as IlluminateCollection;
 
@@ -29,5 +23,33 @@ class RenameCollectionDecorator extends CollectionDecorator
         foreach ($this->dataSource->getCollections() as $collection) {
             $collection->markSchemaAsDirty();
         }
+    }
+
+    public function getFields(): IlluminateCollection
+    {
+        $fields = collect();
+
+        foreach ($this->childCollection->getFields() as $fieldName => $schema) {
+            if ($schema instanceof RelationSchema) {
+                $schema->setForeignCollection($this->getNewName($schema->getForeignCollection()));
+            }
+
+            $fields->put($fieldName, $schema);
+        }
+
+        return $fields;
+    }
+
+    public function makeTransformer()
+    {
+        $transformer = $this->childCollection->makeTransformer();
+        $transformer->setName($this->getName());
+
+        return $transformer;
+    }
+
+    private function getNewName(string $oldName): string
+    {
+        return $this->dataSource->getCollections()->first(fn ($c) => $c->childCollection->getName() === $oldName)->getName();
     }
 }

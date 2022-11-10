@@ -162,4 +162,9 @@ class CollectionDecorator implements CollectionContract
     {
         $this->childCollection->dissociate($caller, $parentFilter, $childFilter, $relation);
     }
+
+    public function getSegments()
+    {
+        return $this->childCollection->getSegments();
+    }
 }

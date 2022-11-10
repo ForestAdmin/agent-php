@@ -4,13 +4,9 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DecoratorsStack;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\PublicationCollectionDatasourceDecorator;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\DataSourceSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\Chart;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\RenameCollection\RenameCollectionDatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use Illuminate\Support\Collection as IlluminateCollection;
 
 class DatasourceCustomizer
 {
@@ -33,9 +29,9 @@ class DatasourceCustomizer
         }
 
         if (isset($options['rename'])) {
-//                $datasource =.....
-//                const renamedDecorator = new RenameCollectionDataSourceDecorator(dataSource);
-//                renamedDecorator.renameCollections(options?.rename);
+            $datasource = new RenameCollectionDatasourceDecorator($datasource);
+            $datasource->build();
+            $datasource->renameCollections($options['rename'] ?? []);
         }
 
         $datasource->getCollections()->each(

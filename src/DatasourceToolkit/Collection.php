@@ -113,7 +113,7 @@ class Collection implements CollectionContract
 
     public function makeTransformer()
     {
-        return new BaseTransformer($this->name);
+        return new BaseTransformer($this->getName());
     }
 
     public function toArray($record, ?Projection $projection = null): array
