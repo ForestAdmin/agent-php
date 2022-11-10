@@ -4,6 +4,8 @@ namespace ForestAdmin\AgentPHP\Agent\Serializer\Transformers;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Serializer\DataTypes;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use Illuminate\Support\Str;
@@ -59,6 +61,30 @@ class BaseTransformer extends TransformerAbstract
             unset($data[$key]);
         }
 
+        $fields = $forestCollection->getFields();
+        foreach ($data as $key => &$value) {
+            /** @var ColumnSchema $columnSchema */
+            $columnSchema = $fields[$key];
+            $value = $this->renderValue($columnSchema->getColumnType(), $value);
+        }
+
+
+
         return $data;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
+    private function renderValue(string $originalType, $content)
+    {
+        return match ($originalType) {
+            PrimitiveType::DATEONLY => $content->format('Y-m-d'),
+            PrimitiveType::DATE     => $content->format('Y-m-d H:i:s'),
+            PrimitiveType::TIMEONLY => $content->format('H:i:s'),
+            default                 => $content,
+        };
     }
 }
