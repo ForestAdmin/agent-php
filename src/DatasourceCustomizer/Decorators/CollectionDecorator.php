@@ -108,7 +108,7 @@ class CollectionDecorator implements CollectionContract
         $this->lastSchema = null;
     }
 
-    protected function refineFilter(Caller $caller, ?Filter $filter): ?Filter
+    protected function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
     {
         return $filter;
     }
