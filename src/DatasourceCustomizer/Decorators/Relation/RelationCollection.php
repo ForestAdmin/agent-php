@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
@@ -17,6 +18,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record as RecordUtils;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection as IlluminateCollection;
@@ -97,7 +99,56 @@ class RelationCollection extends CollectionDecorator
 
     private function rewriteLeaf(Caller $caller, ConditionTreeLeaf $leaf): ConditionTree
     {
-        // todo
+        $prefix = Str::before($leaf->getField(), ':');
+        $schema = $this->getFields()[$prefix];
+
+        if ($schema instanceof ColumnSchema) {
+            return $leaf;
+        }
+
+        /** @var RelationCollection $relation */
+        $relation = $this->dataSource->getCollection($schema->getForeignCollection());
+        if (! $this->relations[$prefix]) {
+            return ($relation->rewriteLeaf($caller, $leaf->unnest()))->nest($prefix);
+        } elseif ($schema instanceof ManyToOneSchema) {
+            $records = $relation->list(
+                $caller,
+                new PaginatedFilter(conditionTree: $leaf->unnest()),
+                new Projection($schema->getForeignKeyTarget())
+            );
+
+            return new ConditionTreeLeaf(
+                field: $schema->getForeignKey(),
+                operator: Operators::IN,
+                value: [
+                    ...collect($records)->map(
+                        fn ($record) => RecordUtils::getFieldValue($record, $schema->getForeignKeyTarget())
+                    )
+                        ->filter()
+                        ->toArray(),
+                ]
+            );
+        } elseif ($schema instanceof OneToOneSchema) {
+            $records = $relation->list(
+                $caller,
+                new PaginatedFilter(conditionTree: $leaf->unnest()),
+                new Projection($schema->getOriginKey())
+            );
+
+            return new ConditionTreeLeaf(
+                field: $schema->getOriginKeyTarget(),
+                operator: Operators::IN,
+                value: [
+                    ...collect($records)->map(
+                        fn ($record) => RecordUtils::getFieldValue($record, $schema->getOriginKey())
+                    )
+                        ->filter()
+                        ->toArray(),
+                ]
+            );
+        }
+
+        return $leaf;
     }
 
     private function checkForeignKeys(RelationSchema $relation): void
