@@ -17,6 +17,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\SingleRelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record as RecordUtils;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema;
@@ -240,6 +241,43 @@ class RelationCollection extends CollectionDecorator
 
         if (! in_array(Operators::IN, $column->getFilterOperators(), true)) {
             throw new ForestException('Column does not support the In operator: ' . $owner->getName() . '.' . $name);
+        }
+    }
+
+    private function reprojectInPlace(Caller $caller, array $records, Projection $projection): void
+    {
+        $projection
+            ->relations()
+            ->map(fn ($subProjection, $prefix) => $this->reprojectRelationInPlace($caller, $records, $prefix, $subProjection))
+            ->all();
+    }
+
+    private function reprojectRelationInPlace(Caller $caller, array $records, string $name, Projection $projection): void
+    {
+        /** @var RelationSchema $schema */
+        $schema = $this->getFields()[$name];
+        $association = $this->dataSource->getCollection($schema->getForeignCollection());
+
+        if (! isset($this->relations[$name])) {
+            $association->reprojectInPlace($caller, collect($records)->map(fn ($r) => $r[$name])->filter(), $projection);
+        } elseif ($schema instanceof ManyToOneSchema) {
+            $ids = $records->map(fn ($record) => $record[$schema->getForeignKey()])->filter();
+            $subFilter = new Filter(
+                new ConditionTreeLeaf($schema->getForeignKeyTarget(), Operators::IN, $ids->all())
+            );
+            $subRecords = $association->list($caller, $subFilter, $projection->union([$schema->getForeignKeyTarget()]));
+            foreach ($records as $record) {
+                $record[$name] = collect($subRecords)->first(fn ($sr) => $sr[$schema->getForeignKeyTarget()] === $record[$schema->getForeignKey()]);
+            }
+        } elseif ($schema instanceof SingleRelationSchema) {
+            $ids = $records->map(fn ($record) => $record[$schema->getOriginKeyTarget()])->filter();
+            $subFilter = new Filter(
+                new ConditionTreeLeaf($schema->getOriginKey(), Operators::IN, $ids->all())
+            );
+            $subRecords = $association->list($caller, $subFilter, $projection->union([$schema->getOriginKey()]));
+            foreach ($records as $record) {
+                $record[$name] = collect($subRecords)->first(fn ($sr) => $sr[$schema->getOriginKey()] === $record[$schema->getOriginKeyTarget()]);
+            }
         }
     }
 }
