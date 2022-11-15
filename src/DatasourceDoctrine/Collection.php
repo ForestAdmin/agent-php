@@ -101,7 +101,7 @@ class Collection extends ForestCollection
     {
         return QueryConverter::of($filter, $this->datasource->getEntityManager(), $this->entityMetadata, $caller->getTimezone(), $projection)
             ->getQuery()
-            ->getSingleResult();
+            ->getArrayResult()[0];
     }
 
     public function list(Caller $caller, Filter $filter, Projection $projection): array

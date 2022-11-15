@@ -22,7 +22,7 @@ class Projection extends IlluminateCollection
 
     public function relations()
     {
-        return $this->reduce(
+        return collect($this->reduce(
             static function ($memo, $path) {
                 if (Str::contains($path, ':')) {
                     $relation = Str::before($path, ':');
@@ -37,10 +37,10 @@ class Projection extends IlluminateCollection
                 return $memo;
             },
             []
-        );
+        ));
     }
 
-    public function replaceItem(Closure $callback)
+    public function replaceItem(Closure $callback): Projection
     {
         return $this
             ->map($callback)

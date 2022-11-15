@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedCollection;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Relation\RelationCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Search\SearchCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Segment\SegmentCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Sort\SortCollection;
@@ -16,6 +17,7 @@ class DecoratorsStack
     public DatasourceDecorator $search;
     public DatasourceDecorator $segment;
     public DatasourceDecorator $sort;
+    public DatasourceDecorator $relation;
 
     public function __construct(DatasourceContract $dataSource)
     {
@@ -30,8 +32,11 @@ class DecoratorsStack
         // Note that replacement goes before emulation, as replacements may use emulated operators.
 //        $earlyComputed = new DataSourceDecorator($last, ComputedCollection::class);
 //        $last = $this->earlyComputed = &$earlyComputed;
-        $lateComputed = new DatasourceDecorator($last, ComputedCollection::class);
-        $last = $this->lateComputed = &$lateComputed;
+        $last = $this->earlyComputed = new DatasourceDecorator($last, ComputedCollection::class);
+        $last = $this->relation = new DatasourceDecorator($last, RelationCollection::class);
+        $last = $this->lateComputed = new DatasourceDecorator($last, ComputedCollection::class);
+//        $lateComputed = new DatasourceDecorator($last, ComputedCollection::class);
+//        $last = $this->lateComputed = &$lateComputed;
 
         // Step 2: Those need access to all fields. They can be loaded in any order.
         $last = $this->search = new DatasourceDecorator($last, SearchCollection::class);
@@ -45,6 +50,8 @@ class DecoratorsStack
 
     public function build(): void
     {
+        $this->earlyComputed->build();
+        $this->relation->build();
         $this->lateComputed->build();
         $this->search->build();
         $this->segment->build();

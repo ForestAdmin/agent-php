@@ -87,7 +87,7 @@ class QueryConverter
     private function applyProjection(): void
     {
         if ($this->projection) {
-            foreach (array_keys($this->projection->relations()) as $relation) {
+            foreach ($this->projection->relations()->keys() as $relation) {
                 $this->queryBuilder->leftJoin($this->mainAlias . '.' . $relation, $relation);
             }
             $projectionGrouped = $this->groupProjection();

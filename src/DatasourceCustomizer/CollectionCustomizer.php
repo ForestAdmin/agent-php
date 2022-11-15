@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer;
 use Closure;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedDefinition;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DecoratorsStack;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 
 class CollectionCustomizer
 {
@@ -47,8 +48,30 @@ class CollectionCustomizer
     {
     }
 
-    public function addOneToManyRelation()
+    /**
+     * Add a one to many relation to the collection
+     *
+     * @param string      $name
+     * @param string      $foreignCollection
+     * @param string      $originKey
+     * @param string|null $originKeyTarget
+     * @return CollectionCustomizer
+     * @example
+     * persons.addOneToManyRelation('writtenBooks', 'books', { originKey: 'authorId' })
+     */
+    public function addOneToManyRelation(string $name, string $foreignCollection, string $originKey, ?string $originKeyTarget = null): self
     {
+        $this->pushRelation(
+            $name,
+            [
+                'type'              => 'OneToMany',
+                'foreignCollection' => $foreignCollection,
+                'originKey'         => $originKey,
+                'originKeyTarget'   => $originKeyTarget,
+            ]
+        );
+
+        return $this;
     }
 
     public function addOneToOneRelation()
@@ -114,7 +137,10 @@ class CollectionCustomizer
     {
     }
 
-    private function addRelation(string $name, $definition)
+    private function pushRelation(string $name, array $definition): self
     {
+        $this->stack->relation->getCollection($this->name)->addRelation($name, $definition);
+
+        return $this;
     }
 }

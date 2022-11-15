@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Relation;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
@@ -49,6 +50,34 @@ class RelationCollection extends CollectionDecorator
         return $fields;
     }
 
+    public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array
+    {
+        dump($filter);
+        $newFilter = $this->refineFilter($caller, $filter);
+        $newProjection = $projection->replaceItem(fn ($field) => $this->rewriteField($field))->withPks($this);
+        $records = $this->childCollection->list($caller, $newFilter, $newProjection);
+        $records = $this->reprojectInPlace($caller, $records, $projection);
+
+        return $projection->apply($records)->all();
+    }
+
+    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
+    {
+        $newFilter = $this->refineFilter($caller, $filter);
+
+        // No emulated relations are used in the aggregation
+        if ($aggregation->getProjection()->relations()->every(fn ($prefix) => ! $this->relations[$prefix])) {
+            return $this->childCollection->aggregate($caller, $newFilter, $aggregation, $limit);
+        }
+
+        // Fallback to full emulation.
+        return $aggregation->apply(
+            $this->list($caller, $filter, $aggregation->getProjection()),
+            $caller->getTimezone(),
+            $limit,
+        );
+    }
+
     public function refineFilter(Caller $caller, PaginatedFilter|Filter|null $filter): PaginatedFilter|Filter|null
     {
         return $filter->override(
@@ -76,7 +105,7 @@ class RelationCollection extends CollectionDecorator
         $prefix = Str::before($field, ':');
         $schema = $this->getFields()[$prefix];
         if ($schema instanceof ColumnSchema) {
-            return [$field];
+            return collect($field);
         }
 
         $relation = $this->dataSource->getCollection($schema->getForeignCollection);
@@ -101,8 +130,12 @@ class RelationCollection extends CollectionDecorator
     private function rewriteLeaf(Caller $caller, ConditionTreeLeaf $leaf): ConditionTree
     {
         $prefix = Str::before($leaf->getField(), ':');
-        $schema = $this->getFields()[$prefix];
+        dump($leaf->getField());
+        if ($prefix === '') {
+            dd($leaf);
+        }
 
+        $schema = $this->getFields()[$prefix];
         if ($schema instanceof ColumnSchema) {
             return $leaf;
         }
@@ -244,29 +277,34 @@ class RelationCollection extends CollectionDecorator
         }
     }
 
-    private function reprojectInPlace(Caller $caller, array $records, Projection $projection): void
+    private function reprojectInPlace(Caller $caller, array $records, Projection $projection): array
     {
-        $projection
-            ->relations()
-            ->map(fn ($subProjection, $prefix) => $this->reprojectRelationInPlace($caller, $records, $prefix, $subProjection))
-            ->all();
+        foreach ($projection->relations() as $prefix => $subProjection) {
+            $records = $this->reprojectRelationInPlace($caller, $records, $prefix, $subProjection);
+        }
+
+        return $records;
+
+//        return $projection
+//            ->relations()
+//            ->map(fn ($subProjection, $prefix) => $this->reprojectRelationInPlace($caller, $records, $prefix, $subProjection));
     }
 
-    private function reprojectRelationInPlace(Caller $caller, array $records, string $name, Projection $projection): void
+    private function reprojectRelationInPlace(Caller $caller, array $records, string $name, Projection $projection): array
     {
         /** @var RelationSchema $schema */
         $schema = $this->getFields()[$name];
         $association = $this->dataSource->getCollection($schema->getForeignCollection());
 
         if (! isset($this->relations[$name])) {
-            $association->reprojectInPlace($caller, collect($records)->map(fn ($r) => $r[$name])->filter(), $projection);
+            return $association->reprojectInPlace($caller, collect($records)->map(fn ($r) => $r[$name])->filter(), $projection);
         } elseif ($schema instanceof ManyToOneSchema) {
             $ids = $records->map(fn ($record) => $record[$schema->getForeignKey()])->filter();
             $subFilter = new Filter(
                 new ConditionTreeLeaf($schema->getForeignKeyTarget(), Operators::IN, $ids->all())
             );
             $subRecords = $association->list($caller, $subFilter, $projection->union([$schema->getForeignKeyTarget()]));
-            foreach ($records as $record) {
+            foreach ($records as &$record) {
                 $record[$name] = collect($subRecords)->first(fn ($sr) => $sr[$schema->getForeignKeyTarget()] === $record[$schema->getForeignKey()]);
             }
         } elseif ($schema instanceof SingleRelationSchema) {
@@ -275,9 +313,11 @@ class RelationCollection extends CollectionDecorator
                 new ConditionTreeLeaf($schema->getOriginKey(), Operators::IN, $ids->all())
             );
             $subRecords = $association->list($caller, $subFilter, $projection->union([$schema->getOriginKey()]));
-            foreach ($records as $record) {
+            foreach ($records as &$record) {
                 $record[$name] = collect($subRecords)->first(fn ($sr) => $sr[$schema->getOriginKey()] === $record[$schema->getOriginKeyTarget()]);
             }
         }
+
+        return $records;
     }
 }
