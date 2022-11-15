@@ -119,6 +119,7 @@ class FilterFactory
     public static function makeForeignFilter(CollectionContract $collection, array $id, string $relationName, Caller $caller, Filter $baseForeignFilter): Filter
     {
         $relation = SchemaUtils::getToManyRelation($collection, $relationName);
+        dd($relation);
         $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getOriginKeyTarget());
         if ($relation instanceof OneToManySchema) {
             $originTree = new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue);
