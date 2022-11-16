@@ -26,7 +26,7 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class Collection extends BaseCollection
 {
-    protected string $model;
+    protected string $tableName;
 
     /**
      * @throws \ReflectionException
