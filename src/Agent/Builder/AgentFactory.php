@@ -7,6 +7,10 @@ use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use Illuminate\Database\Capsule\Manager;
+use Illuminate\Database\Events\StatementPrepared;
+use Illuminate\Events\Dispatcher;
+
 
 class AgentFactory
 {
@@ -16,7 +20,7 @@ class AgentFactory
 
     protected DatasourceCustomizer $customizer;
 
-    public function __construct(array $config, array $services)
+    public function __construct(array $config, array $services = [])
     {
         $this->customizer = new DatasourceCustomizer();
         $this->buildContainer($services);
@@ -64,6 +68,7 @@ class AgentFactory
     private function buildContainer(array $services): void
     {
         self::$container = new Container();
+
         foreach ($services as $key => $value) {
             self::$container->set($key, $value);
         }

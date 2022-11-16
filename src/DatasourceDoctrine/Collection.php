@@ -11,26 +11,26 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\Mapping\MappingException;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceDoctrine\Transformer\EntityTransformer;
+use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\DataTypes;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\QueryCharts;
-use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection as ForestCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class Collection extends ForestCollection
 {
-    protected string $model;
+    protected string $tableName;
 
     /**
      * @throws \ReflectionException
@@ -41,6 +41,7 @@ class Collection extends ForestCollection
         parent::__construct($datasource, $entityMetadata->reflClass->getShortName());
 
         $this->className = $entityMetadata->getName();
+        $this->tableName = $this->entityMetadata->getTableName();
         $this->addFields($this->entityMetadata->fieldMappings);
         $this->mapRelationshipsToFields();
         $this->searchable = true;
@@ -72,7 +73,7 @@ class Collection extends ForestCollection
      */
     public function addFields(array $fields): void
     {
-        foreach ($fields as $key => $value) {
+        foreach ($fields as $value) {
             $field = new ColumnSchema(
                 columnType: DataTypes::getType($value['type']),
                 filterOperators: FrontendFilterable::getRequiredOperators(DataTypes::getType($value['type'])),
@@ -84,7 +85,7 @@ class Collection extends ForestCollection
                 enumValues: [], // todo
                 validation: [], // todo
             );
-            $this->addField($key, $field);
+            $this->addField($value['columnName'], $field);
         }
     }
 
@@ -93,22 +94,17 @@ class Collection extends ForestCollection
         return $this->entityMetadata->getSingleIdReflectionProperty()->getName();
     }
 
-    /**
-     * @throws NonUniqueResultException
-     * @throws NoResultException
-     */
     public function show(Caller $caller, Filter $filter, $id, Projection $projection)
     {
-        return QueryConverter::of($filter, $this->datasource->getEntityManager(), $this->entityMetadata, $caller->getTimezone(), $projection)
-            ->getQuery()
-            ->getArrayResult()[0];
+        return Arr::undot(QueryConverter::of($this, $filter, $caller->getTimezone(), $projection)->first());
     }
 
     public function list(Caller $caller, Filter $filter, Projection $projection): array
     {
-        return QueryConverter::of($filter, $this->datasource->getEntityManager(), $this->entityMetadata, $caller->getTimezone(), $projection)
-            ->getQuery()
-            ->getArrayResult();
+        return QueryConverter::of($this, $filter, $caller->getTimezone(), $projection)
+            ->get()
+            ->map(fn ($record) => Arr::undot($record))
+            ->toArray();
     }
 
     public function export(Caller $caller, Filter $filter, Projection $projection): array
@@ -303,7 +299,7 @@ class Collection extends ForestCollection
     {
         $relatedMeta = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor($related);
         $relationField = new ManyToOneSchema(
-            foreignKey: $name,
+            foreignKey: $joinColumn['name'],
             foreignKeyTarget: $relatedMeta->fieldNames[$joinColumn['referencedColumnName']],
             foreignCollection: (new \ReflectionClass($related))->getShortName(),
             inverseRelationName: $inverseName,
@@ -333,14 +329,14 @@ class Collection extends ForestCollection
 
             $joinColumn = $relatedMeta->associationMappings[$mappedField]['joinColumns'];
             $relationField = new OneToOneSchema(
-                originKey: $name,
+                originKey: $joinColumn[0]['name'],
                 originKeyTarget: $this->entityMetadata->fieldNames[$joinColumn[0]['referencedColumnName']],
                 foreignCollection: (new \ReflectionClass($related))->getShortName(),
                 inverseRelationName: $inverseName
             );
         } else {
             $relationField = new OneToOneSchema(
-                originKey: $name,
+                originKey: $joinColumn[0]['name'],
                 originKeyTarget: $relatedMeta->fieldNames[$joinColumn[0]['referencedColumnName']],
                 foreignCollection: (new \ReflectionClass($related))->getShortName(),
                 inverseRelationName: $inverseName
@@ -412,7 +408,7 @@ class Collection extends ForestCollection
 
         $joinColumn = $relatedMeta->associationMappings[$mappedField]['joinColumns'][0];
         $relationField = new OneToManySchema(
-            originKey: $name,
+            originKey: $joinColumn['name'],
             originKeyTarget: $this->entityMetadata->fieldNames[$joinColumn['referencedColumnName']],
             foreignCollection: (new \ReflectionClass($related))->getShortName(),
             inverseRelationName: $mappedField,
@@ -440,5 +436,13 @@ class Collection extends ForestCollection
         }
 
         return $serialized;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTableName(): string
+    {
+        return $this->tableName;
     }
 }
