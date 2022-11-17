@@ -12,6 +12,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 use Illuminate\Support\Carbon;
@@ -79,11 +81,11 @@ class FilterFactory
     public static function makeForeignFilter(CollectionContract $collection, array $id, string $relationName, Caller $caller, Filter $baseForeignFilter): Filter
     {
         $relation = SchemaUtils::getToManyRelation($collection, $relationName);
-        dd($relation);
         $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getOriginKeyTarget());
-        if ($relation->getType() === 'OneToMany') {
-            $originTree = new ConditionTreeLeaf($relation->getInverseRelationName(), Operators::EQUAL, $originValue);
+        if ($relation instanceof OneToManySchema) {
+            $originTree = new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue);
         } else {
+            /** @var ManyToManySchema $relation */
             // ManyToMany case
             // todo useful ?
             /** @var Collection $foreignCollection */
