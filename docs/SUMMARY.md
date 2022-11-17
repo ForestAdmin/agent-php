@@ -22,9 +22,10 @@
   - [Naming conflicts](datasources/connection/naming-conflicts.md)
   - [Cross-data source relationships](datasources/connection/relationships.md)
 - Provided data sources
+TODO REPLACE BY OUR DATASTOURCES
   - [SQL (without ORM)](datasources/provided/sql.md)
-  - [Sequelize](datasources/provided/sequelize.md)
-  - [Mongoose](datasources/provided/mongoose.md)
+  - [Doctrine](datasources/provided/doctrine.md)
+  - [Eloquent](datasources/provided/eloquent.md)
 - [Write your own](datasources/custom/README.md)
   - [Structure declaration](datasources/custom/structure.md)
   - [Capabilities declaration](datasources/custom/capabilities.md)
