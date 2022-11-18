@@ -17,6 +17,8 @@ use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\DataTypes;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection as ForestCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
@@ -128,10 +130,16 @@ class Collection extends ForestCollection
 
     public function create(Caller $caller, array $data)
     {
-        $entity = $this->setAttributesAndPersist(new $this->className(), $data);
-        $propertyAccessor = PropertyAccess::createPropertyAccessor();
+        $data = $this->formatAttributes($data);
+        $data[$this->getIdentifier()] = $this->entityMetadata->idGenerator->generateId($this->datasource->getEntityManager(), new $this->className());
+        $query = QueryConverter::of($this, $caller->getTimezone());
+        $id = $query->insertGetId($data);
 
-        return $this->datasource->getEntityManager()->getRepository($this->className)->find($propertyAccessor->getValue($entity, $this->getIdentifier()));
+        $filter = new Filter(
+            conditionTree: new ConditionTreeLeaf($this->getIdentifier(), Operators::EQUAL, $id)
+        );
+
+        return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->first());
     }
 
     /**
@@ -140,11 +148,10 @@ class Collection extends ForestCollection
      */
     public function update(Caller $caller, Filter $filter, $id, array $patch)
     {
-        $record = QueryConverter::of($filter, $this->datasource->getEntityManager(), $this->entityMetadata, $caller->getTimezone())
-            ->getQuery()
-            ->getSingleResult();
+        $data = $this->formatAttributes($patch);
+        QueryConverter::of($this, $caller->getTimezone(), $filter)->update($data);
 
-        return $this->setAttributesAndPersist($record, $patch);
+        return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->first());
     }
 
     public function delete(Caller $caller, Filter $filter, $id): void
@@ -245,29 +252,24 @@ class Collection extends ForestCollection
         }
     }
 
-    protected function setAttributesAndPersist($entity, array $data)
+    protected function formatAttributes(array $data)
     {
+        $entityAttributes = [];
         $attributes = $data['attributes'];
         $relationships = $data['relationships'] ?? [];
-        $propertyAccessor = PropertyAccess::createPropertyAccessor();
         foreach ($attributes as $key => $value) {
-            $propertyAccessor->setValue($entity, $key, $value);
+            $entityAttributes[$key] = $value;
         }
 
         foreach ($relationships as $key => $value) {
-            $type = $this->getRelationType($this->entityMetadata->reflFields[$key]->getAttributes());
+            $relation = $this->getFields()[$key];
             $attributes = $value['data'];
-            if ($type === 'ManyToOne') {
-                $targetEntity = $this->entityMetadata->getAssociationMapping($key)['targetEntity'];
-                $related = $this->datasource->getEntityManager()->getRepository($targetEntity)->find($attributes['id']);
-                $propertyAccessor->setValue($entity, $key, $related);
+            if ($relation instanceof ManyToOneSchema) {
+                $entityAttributes[$relation->getForeignKey()] = $attributes[$relation->getForeignKeyTarget()];
             }
         }
 
-        $this->datasource->getEntityManager()->persist($entity);
-        $this->datasource->getEntityManager()->flush();
-
-        return $entity;
+        return $entityAttributes;
     }
 
     /**

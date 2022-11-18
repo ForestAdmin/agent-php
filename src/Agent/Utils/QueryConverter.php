@@ -69,9 +69,8 @@ class QueryConverter
 
     private function applyProjection(): void
     {
-        $selectRaw = '';
         if ($this->projection) {
-            $selectRaw .= collect($this->projection->columns())
+            $selectRaw = collect($this->projection->columns())
                 ->map(fn ($field) => "\"$this->tableName\".\"$field\"")
                 ->implode(', ');
 
@@ -82,11 +81,7 @@ class QueryConverter
                 $this->addJoinRelation($relationSchema, $relationTableName);
                 $selectRaw .= ', ' . $relationFields->map(fn ($field) => "\"$relationTableName\".\"$field\" as \"$relation.$field\"")->implode(', ');
             }
-        } else {
-            $selectRaw = "$this->tableName.*";
-        }
 
-        if ($selectRaw !== '') {
             $this->query->selectRaw($selectRaw);
         }
     }
