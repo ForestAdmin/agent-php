@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
 use Doctrine\Persistence\Mapping\MappingException;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
+use ForestAdmin\AgentPHP\Agent\Utils\QueryCharts;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\DataTypes;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
