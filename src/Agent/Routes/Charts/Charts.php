@@ -189,22 +189,14 @@ class Charts extends AbstractCollectionRoute
     private function mapArrayToKeyValueAggregateDate($array, string $aggregate, string $aggregateIsADate): array
     {
         return collect($array)
-            ->map(function ($item) use ($aggregate, $aggregateIsADate) {
-                // @codeCoverageIgnoreStart
-                $keys = array_keys($item);
-                if ($keys[0] === Str::lower($aggregate)) {
-                    $label = $item[$keys[1]];
-                    $values = $item[$keys[0]];
-                } else {
-                    $label = $item[$keys[0]];
-                    $values = $item[$keys[1]];
-                }
-                // @codeCoverageIgnoreEnd
-
-                $label = $label->format($this->getDateFormat($aggregateIsADate));
-
-                return compact('label', 'values');
-            })->toArray();
+            ->map(function ($value, $label) {
+                return [
+                    'label'  => $label,
+                    'values' => compact('value'),
+                ];
+            })
+            ->values()
+            ->toArray();
     }
 
     private function getDateFormat(string $field): string

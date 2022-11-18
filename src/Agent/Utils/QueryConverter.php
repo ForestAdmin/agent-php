@@ -35,17 +35,17 @@ class QueryConverter
 
     public function __construct(
         protected Collection  $collection,
-        protected Filter      $filter,
         protected string      $timezone,
+        protected ?Filter      $filter = null,
         protected ?Projection $projection = null,
     ) {
         $this->tableName = $this->collection->getTableName();
         $this->build();
     }
 
-    public static function of(Collection $collection, Filter $filter, string $timezone, ?Projection $projection = null): Builder
+    public static function of(Collection $collection, string $timezone, ?Filter $filter = null, ?Projection $projection = null): Builder
     {
-        return (new static($collection, $filter, $timezone, $projection))->query;
+        return (new static($collection, $timezone, $filter, $projection))->query;
     }
 
     private function build(): void
@@ -58,18 +58,23 @@ class QueryConverter
 
         $this->applyProjection();
 
-        $this->applySort();
+        if ($this->filter) {
+            $this->applySort();
 
-        $this->applyPagination();
+            $this->applyPagination();
 
-        $this->applyConditionTree();
+            $this->applyConditionTree();
+        }
     }
 
     private function applyProjection(): void
     {
         $selectRaw = '';
         if ($this->projection) {
-            $selectRaw .= collect($this->projection->columns())->map(fn ($field) => "\"$this->tableName\".\"$field\"")->implode(', ');
+            $selectRaw .= collect($this->projection->columns())
+                ->map(fn ($field) => "\"$this->tableName\".\"$field\"")
+                ->implode(', ');
+
             foreach ($this->projection->relations() as $relation => $relationFields) {
                 /** @var RelationSchema $relation */
                 $relationSchema = $this->collection->getFields()[$relation];
@@ -81,7 +86,9 @@ class QueryConverter
             $selectRaw = "$this->tableName.*";
         }
 
-        $this->query->selectRaw($selectRaw);
+        if ($selectRaw !== '') {
+            $this->query->selectRaw($selectRaw);
+        }
     }
 
     private function addJoinRelation(RelationSchema $relation, string $relationTableName): void

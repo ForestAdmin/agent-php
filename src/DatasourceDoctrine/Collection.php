@@ -11,9 +11,9 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\Mapping\MappingException;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
+use ForestAdmin\AgentPHP\Agent\Utils\QueryCharts;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\DataTypes;
-use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\QueryCharts;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection as ForestCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
@@ -96,12 +96,12 @@ class Collection extends ForestCollection
 
     public function show(Caller $caller, Filter $filter, $id, Projection $projection)
     {
-        return Arr::undot(QueryConverter::of($this, $filter, $caller->getTimezone(), $projection)->first());
+        return Arr::undot(QueryConverter::of($this, $caller->getTimezone(), $filter, $projection)->first());
     }
 
     public function list(Caller $caller, Filter $filter, Projection $projection): array
     {
-        return QueryConverter::of($this, $filter, $caller->getTimezone(), $projection)
+        return QueryConverter::of($this, $caller->getTimezone(), $filter, $projection)
             ->get()
             ->map(fn ($record) => Arr::undot($record))
             ->toArray();
@@ -109,11 +109,12 @@ class Collection extends ForestCollection
 
     public function export(Caller $caller, Filter $filter, Projection $projection): array
     {
-        $results = QueryConverter::of($filter, $this->datasource->getEntityManager(), $this->entityMetadata, $caller->getTimezone(), $projection)
-            ->getQuery()
-            ->getArrayResult();
+        $results = QueryConverter::of($this, $caller->getTimezone(), $filter, $projection)
+            ->get()
+            ->map(fn ($record) => Arr::undot($record))
+            ->toArray();
 
-        $relations = array_keys($projection->relations());
+        $relations = $projection->relations()->keys()->toArray();
         foreach ($results as &$result) {
             foreach ($result as $field => $value) {
                 if (is_array($value) && in_array($field, $relations, true)) {
@@ -164,17 +165,15 @@ class Collection extends ForestCollection
      */
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
     {
-        $qb = QueryConverter::of($filter, $this->datasource->getEntityManager(), $this->entityMetadata, $caller->getTimezone(), $aggregation->getProjection());
+        $query = QueryConverter::of($this, $caller->getTimezone(), $filter, new Projection());
 
         if ($chartType) {
-            return QueryCharts::of($this->entityMetadata, $qb, $aggregation, $limit)
+            return QueryCharts::of($this, $query, $aggregation, $limit)
                 ->{'query' . $chartType}()
-                ->getQuery()
-                ->getArrayResult();
+                ->map(fn ($result) => is_array($result) || is_object($result) ? Arr::undot($result) : $result)
+                ->toArray();
         } else {
-            return $qb->select(Str::lower($aggregation->getOperation()) . '(' . $qb->getRootAliases()[0] . ')')
-                ->getQuery()
-                ->getSingleScalarResult();
+            return $query->count();
         }
     }
 

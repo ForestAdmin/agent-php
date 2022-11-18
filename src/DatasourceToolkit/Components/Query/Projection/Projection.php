@@ -20,7 +20,7 @@ class Projection extends IlluminateCollection
         return $columns->all();
     }
 
-    public function relations()
+    public function relations(): IlluminateCollection
     {
         return collect($this->reduce(
             static function ($memo, $path) {
