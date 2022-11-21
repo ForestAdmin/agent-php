@@ -143,7 +143,6 @@ class RelationCollection extends CollectionDecorator
     private function rewriteLeaf(Caller $caller, ConditionTreeLeaf $leaf): ConditionTree
     {
         $prefix = Str::before($leaf->getField(), ':');
-        dump($leaf->getField());
         if ($prefix === '') {
             dd($leaf);
         }
