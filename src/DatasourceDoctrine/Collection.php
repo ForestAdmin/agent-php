@@ -156,15 +156,7 @@ class Collection extends ForestCollection
 
     public function delete(Caller $caller, Filter $filter, $id): void
     {
-        $records = QueryConverter::of($filter, $this->datasource->getEntityManager(), $this->entityMetadata, $caller->getTimezone())
-            ->getQuery()
-            ->getResult();
-
-        foreach ($records as $record) {
-            $this->datasource->getEntityManager()->remove($record);
-        }
-
-        $this->datasource->getEntityManager()->flush();
+        QueryConverter::of($this, $caller->getTimezone(), $filter)->delete();
     }
 
     /**
