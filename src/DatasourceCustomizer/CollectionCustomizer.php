@@ -5,7 +5,6 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer;
 use Closure;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedDefinition;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DecoratorsStack;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 
 class CollectionCustomizer
 {
@@ -44,8 +43,19 @@ class CollectionCustomizer
         return $this;
     }
 
-    public function addManyToOneRelation()
+    public function addManyToOneRelation(string $name, string $foreignCollection, string $foreignKey, ?string $foreignKeyTarget = null)
     {
+        $this->pushRelation(
+            $name,
+            [
+                'type'              => 'ManyToOne',
+                'foreignCollection' => $foreignCollection,
+                'foreignKey'        => $foreignKey,
+                'foreignKeyTarget'  => $foreignKeyTarget,
+            ]
+        );
+
+        return $this;
     }
 
     /**
@@ -74,8 +84,19 @@ class CollectionCustomizer
         return $this;
     }
 
-    public function addOneToOneRelation()
+    public function addOneToOneRelation(string $name, string $foreignCollection, string $originKey, ?string $originKeyTarget = null)
     {
+        $this->pushRelation(
+            $name,
+            [
+                'type'              => 'OneToOne',
+                'foreignCollection' => $foreignCollection,
+                'originKey'         => $originKey,
+                'originKeyTarget'   => $originKeyTarget,
+            ]
+        );
+
+        return $this;
     }
 
     public function addManyToManyRelation()

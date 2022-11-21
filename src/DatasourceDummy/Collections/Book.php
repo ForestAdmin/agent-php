@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceDummy\Collections;
 
+use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BaseTransformer;
 use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
@@ -54,6 +55,7 @@ class Book extends BaseCollection
             ),
             'user_id'      => new ColumnSchema(
                 columnType: PrimitiveType::NUMBER,
+                filterOperators: Operators::getAllOperators(),
             ),
         ];
         parent::__construct($dataSource, 'Book', $fields);
@@ -63,6 +65,6 @@ class Book extends BaseCollection
 
     public function makeTransformer()
     {
-        return new BasicArrayTransformer();
+        return new BaseTransformer($this->name);
     }
 }

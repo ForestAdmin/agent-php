@@ -34,6 +34,11 @@ class CollectionDecorator implements CollectionContract
         $this->segments = new IlluminateCollection();
     }
 
+    public function isSearchable(): bool
+    {
+        return $this->childCollection->isSearchable();
+    }
+
     public function getFields(): IlluminateCollection
     {
         return $this->childCollection->getFields();
