@@ -282,6 +282,7 @@ class Collection extends BaseCollection
         }
 
         $joinColumn = $relatedMeta->associationMappings[$mappedField]['joinColumns'][0];
+//        dd($joinColumn, $this->getName(), $name);
         $relationField = new OneToManySchema(
             originKey: $joinColumn['name'],
             originKeyTarget: $this->entityMetadata->fieldNames[$joinColumn['referencedColumnName']],
