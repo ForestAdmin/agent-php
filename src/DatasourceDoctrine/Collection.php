@@ -22,6 +22,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operat
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
@@ -298,6 +299,19 @@ class Collection extends ForestCollection
             inverseRelationName: $inverseName,
         );
 
+        $columnSchema = new ColumnSchema(
+            columnType: PrimitiveType::NUMBER,
+            filterOperators: FrontendFilterable::getRequiredOperators(PrimitiveType::NUMBER),
+            isPrimaryKey: false,
+            isReadOnly: false,
+            isSortable: true,
+            type: 'Column',
+            defaultValue: null,
+            enumValues: [],
+            validation: []
+        );
+
+        $this->addField($joinColumn['name'], $columnSchema);
         $this->addField($name, $relationField);
     }
 
@@ -400,6 +414,7 @@ class Collection extends ForestCollection
         }
 
         $joinColumn = $relatedMeta->associationMappings[$mappedField]['joinColumns'][0];
+//        dd($joinColumn, $this->getName(), $name);
         $relationField = new OneToManySchema(
             originKey: $joinColumn['name'],
             originKeyTarget: $this->entityMetadata->fieldNames[$joinColumn['referencedColumnName']],

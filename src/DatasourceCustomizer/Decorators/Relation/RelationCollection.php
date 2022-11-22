@@ -129,18 +129,15 @@ class RelationCollection extends CollectionDecorator
     private function rewriteLeaf(Caller $caller, ConditionTreeLeaf $leaf): ConditionTree
     {
         $prefix = Str::before($leaf->getField(), ':');
-        if ($prefix === '') {
-            dd($leaf);
-        }
-
         $schema = $this->getFields()[$prefix];
+
         if ($schema instanceof ColumnSchema) {
             return $leaf;
         }
 
         /** @var RelationCollection $relation */
         $relation = $this->dataSource->getCollection($schema->getForeignCollection());
-        if (! $this->relations[$prefix]) {
+        if (! isset($this->relations[$prefix])) {
             return ($relation->rewriteLeaf($caller, $leaf->unnest()))->nest($prefix);
         } elseif ($schema instanceof ManyToOneSchema) {
             $records = $relation->list(
@@ -282,10 +279,6 @@ class RelationCollection extends CollectionDecorator
         }
 
         return $records;
-
-//        return $projection
-//            ->relations()
-//            ->map(fn ($subProjection, $prefix) => $this->reprojectRelationInPlace($caller, $records, $prefix, $subProjection));
     }
 
     private function reprojectRelationInPlace(Caller $caller, array $records, string $name, Projection $projection): array
@@ -294,7 +287,7 @@ class RelationCollection extends CollectionDecorator
         $schema = $this->getFields()[$name];
         $association = $this->dataSource->getCollection($schema->getForeignCollection());
         if (! isset($this->relations[$name])) {
-            return $association->reprojectInPlace($caller, collect($records)->map(fn ($r) => $r[$name])->filter(), $projection);
+            return $records;
         } elseif ($schema instanceof ManyToOneSchema) {
             $ids = collect($records)->map(fn ($record) => $record[$schema->getForeignKey()])->filter();
             $subFilter = new PaginatedFilter(
@@ -305,8 +298,8 @@ class RelationCollection extends CollectionDecorator
                 $record[$name] = collect($subRecords)->first(fn ($subRecord) => $subRecord[$schema->getForeignKeyTarget()] === $record[$schema->getForeignKey()]);
             }
         } elseif ($schema instanceof SingleRelationSchema) {
-            $ids = $records->map(fn ($record) => $record[$schema->getOriginKeyTarget()])->filter();
-            $subFilter = new Filter(
+            $ids = collect($records)->map(fn ($record) => $record[$schema->getOriginKeyTarget()])->filter();
+            $subFilter = new PaginatedFilter(
                 new ConditionTreeLeaf($schema->getOriginKey(), Operators::IN, $ids->all())
             );
             $subRecords = $association->list($caller, $subFilter, $projection->union([$schema->getOriginKey()]));
