@@ -2,7 +2,7 @@
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\DataSourceSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\DataSourceSchema;
 
 it('should instantiate properly when extended', function () {
     class ConcreteDataSource extends Datasource
