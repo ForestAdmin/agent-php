@@ -277,7 +277,7 @@ test("makeForeignFilter() should add the fk condition one to many", closure: fun
                     aggregator: 'And',
                     conditions: [
                         new ConditionTreeLeaf(field: 'someField', operator: Operators::EQUAL, value: 1),
-                        new ConditionTreeLeaf(field: 'books', operator: Operators::EQUAL, value: 1),
+                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
                     ]
                 ),
                 segment: 'some-segment'

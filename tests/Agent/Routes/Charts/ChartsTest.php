@@ -74,7 +74,6 @@ function factoryChart($args = []): Charts
         $collectionBooks = mock($collectionBooks)
             ->shouldReceive('aggregate')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null, \Mockery::type('string'));
-
         if (isset($args['books']['previous'])) {
             $collectionBooks = $collectionBooks->andReturn($args['books']['results'][0], $args['books']['results'][1])
                 ->getMock();
@@ -305,14 +304,8 @@ test('makeLine() with day filter should return a LineChart', function () {
         [
             'books'   => [
                 'results' => [
-                    [
-                        'label' => new \DateTime('2022-01-03 00:00:00'),
-                        'value' => 10,
-                    ],
-                    [
-                        'label' => new \DateTime('2022-01-10 00:00:00'),
-                        'value' => 15,
-                    ],
+                    '03/01/2022' => 10,
+                    '10/01/2022' => 15,
                 ],
             ],
             'payload' => [
@@ -340,11 +333,11 @@ test('makeLine() with day filter should return a LineChart', function () {
         ->toHaveKey('value', (new LineChart([
             [
                 'label'  => '03/01/2022',
-                'values' => 10,
+                'values' => ['value' => 10],
             ],
             [
                 'label'  => '10/01/2022',
-                'values' => 15,
+                'values' => ['value' => 15],
             ],
         ]))->serialize())
         ->and($result['content']['data']['id']);
@@ -355,14 +348,8 @@ test('makeLine() with week filter should return a LineChart', function () {
         [
             'books'   => [
                 'results' => [
-                    [
-                        'label' => new \DateTime('2022-01-03 00:00:00'),
-                        'value' => 10,
-                    ],
-                    [
-                        'label' => new \DateTime('2022-01-10 00:00:00'),
-                        'value' => 15,
-                    ],
+                    'W01-2022' => 10,
+                    'W02-2022' => 15,
                 ],
             ],
             'payload' => [
@@ -390,11 +377,11 @@ test('makeLine() with week filter should return a LineChart', function () {
         ->toHaveKey('value', (new LineChart([
             [
                 'label'  => 'W01-2022',
-                'values' => 10,
+                'values' => ['value' => 10],
             ],
             [
                 'label'  => 'W02-2022',
-                'values' => 15,
+                'values' => ['value' => 15],
             ],
         ]))->serialize())
         ->and($result['content']['data']['id']);
@@ -405,14 +392,8 @@ test('makeLine() with month filter should return a LineChart', function () {
         [
             'books'   => [
                 'results' => [
-                    [
-                        'label' => new \DateTime('2022-01-01 00:00:00'),
-                        'value' => 10,
-                    ],
-                    [
-                        'label' => new \DateTime('2022-02-01 00:00:00'),
-                        'value' => 15,
-                    ],
+                    'Jan 2022' => 10,
+                    'Feb 2022' => 15,
                 ],
             ],
             'payload' => [
@@ -440,11 +421,11 @@ test('makeLine() with month filter should return a LineChart', function () {
         ->toHaveKey('value', (new LineChart([
             [
                 'label'  => 'Jan 2022',
-                'values' => 10,
+                'values' => ['value' => 10],
             ],
             [
                 'label'  => 'Feb 2022',
-                'values' => 15,
+                'values' => ['value' => 15],
             ],
         ]))->serialize())
         ->and($result['content']['data']['id']);
@@ -455,14 +436,8 @@ test('makeLine() with month year should return a LineChart', function () {
         [
             'books'   => [
                 'results' => [
-                    [
-                        'label' => new \DateTime('2022-01-01 00:00:00'),
-                        'value' => 10,
-                    ],
-                    [
-                        'label' => new \DateTime('2023-01-01 00:00:00'),
-                        'value' => 15,
-                    ],
+                    '2022' => 10,
+                    '2023' => 15,
                 ],
             ],
             'payload' => [
@@ -490,11 +465,11 @@ test('makeLine() with month year should return a LineChart', function () {
         ->toHaveKey('value', (new LineChart([
             [
                 'label'  => '2022',
-                'values' => 10,
+                'values' => ['value' => 10],
             ],
             [
                 'label'  => '2023',
-                'values' => 15,
+                'values' => ['value' => 15],
             ],
         ]))->serialize())
         ->and($result['content']['data']['id']);
