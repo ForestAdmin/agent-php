@@ -186,7 +186,7 @@ class Charts extends AbstractCollectionRoute
             })->toArray();
     }
 
-    private function mapArrayToKeyValueAggregateDate($array, string $aggregate, string $aggregateIsADate): array
+    private function mapArrayToKeyValueAggregateDate($array): array
     {
         return collect($array)
             ->map(function ($value, $label) {

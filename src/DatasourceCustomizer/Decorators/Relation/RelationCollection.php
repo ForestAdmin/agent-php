@@ -66,7 +66,7 @@ class RelationCollection extends CollectionDecorator
 
         // No emulated relations are used in the aggregation
         if ($aggregation->getProjection()->relations()->every(fn ($prefix) => ! $this->relations[$prefix])) {
-            return $this->childCollection->aggregate($caller, $newFilter, $aggregation, $limit);
+            return $this->childCollection->aggregate($caller, $newFilter, $aggregation, $limit, $chartType);
         }
 
         // Fallback to full emulation.
@@ -79,6 +79,14 @@ class RelationCollection extends CollectionDecorator
 
     public function refineFilter(Caller $caller, PaginatedFilter|Filter|null $filter): PaginatedFilter|Filter|null
     {
+        if ($filter instanceof Filter) {
+            return $filter->override(
+                conditionTree: $filter->getConditionTree()?->replaceLeafs(
+                    fn ($leaf) => $this->rewriteLeaf($caller, $leaf),
+                )
+            );
+        }
+
         return $filter->override(
             conditionTree: $filter->getConditionTree()?->replaceLeafs(
                 fn ($leaf) => $this->rewriteLeaf($caller, $leaf),
