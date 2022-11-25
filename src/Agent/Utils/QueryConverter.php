@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Utils;
 
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
+use ForestAdmin\AgentPHP\DatasourceDoctrine\BaseCollection;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
@@ -34,7 +35,7 @@ class QueryConverter
     ];
 
     public function __construct(
-        protected Collection  $collection,
+        protected BaseCollection  $collection,
         protected string      $timezone,
         protected ?Filter      $filter = null,
         protected ?Projection $projection = null,
@@ -43,7 +44,7 @@ class QueryConverter
         $this->build();
     }
 
-    public static function of(Collection $collection, string $timezone, ?Filter $filter = null, ?Projection $projection = null): Builder
+    public static function of(BaseCollection $collection, string $timezone, ?Filter $filter = null, ?Projection $projection = null): Builder
     {
         return (new static($collection, $timezone, $filter, $projection))->query;
     }
@@ -103,7 +104,21 @@ class QueryConverter
                 $relationTableName . '.' . $relation->getForeignKeyTarget()
             );
         } else {
-            // ManyToMany case
+            /** @var ManyToManySchema $relation */
+            $throughTable = $relation->getThroughTable();
+            $this->query
+                ->leftJoin(
+                    "$throughTable as $throughTable",
+                    $this->tableName . '.' . $relation->getOriginKeyTarget(),
+                    '=',
+                    $throughTable . '.' . $relation->getOriginKey()
+                )
+                ->leftJoin(
+                    "$relationTableName as $relationTableName",
+                    $throughTable . '.' . $relation->getForeignKey(),
+                    '=',
+                    $relationTableName . '.' . $relation->getForeignKeyTarget()
+                );
         }
     }
 

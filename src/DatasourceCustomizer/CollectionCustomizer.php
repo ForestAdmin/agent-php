@@ -58,17 +58,6 @@ class CollectionCustomizer
         return $this;
     }
 
-    /**
-     * Add a one to many relation to the collection
-     *
-     * @param string      $name
-     * @param string      $foreignCollection
-     * @param string      $originKey
-     * @param string|null $originKeyTarget
-     * @return CollectionCustomizer
-     * @example
-     * persons.addOneToManyRelation('writtenBooks', 'books', { originKey: 'authorId' })
-     */
     public function addOneToManyRelation(string $name, string $foreignCollection, string $originKey, ?string $originKeyTarget = null): self
     {
         $this->pushRelation(
@@ -99,8 +88,31 @@ class CollectionCustomizer
         return $this;
     }
 
-    public function addManyToManyRelation()
-    {
+    public function addManyToManyRelation(
+        string  $name,
+        string  $foreignCollection,
+        string  $throughTable,
+        string  $throughCollection,
+        string  $originKey,
+        string  $foreignKey,
+        ?string $originKeyTarget = null,
+        ?string $foreignKeyTarget = null
+    ) {
+        $this->pushRelation(
+            $name,
+            [
+                'type'                   => 'ManyToMany',
+                'foreignCollection'      => $foreignCollection,
+                'throughTable'           => $throughTable,
+                'throughCollection'      => $throughCollection,
+                'originKey'              => $originKey,
+                'originKeyTarget'        => $originKeyTarget,
+                'foreignKey'             => $foreignKey,
+                'foreignKeyTarget'       => $foreignKeyTarget,
+            ]
+        );
+
+        return $this;
     }
 
     public function addExternalRelation(string $name, $definition)
