@@ -53,10 +53,10 @@ class Datasource implements DatasourceContract
      */
     public function addCollection(CollectionContract $collection): void
     {
-        if ($this->collections->first(fn ($item) => $item->getName() === $collection->getName())) {
+        if ($this->collections->has($collection->getName())) {
             throw new ForestException('Collection ' . $collection->getName() . ' already defined in datasource');
         }
-        $this->collections->push($collection);
+        $this->collections->put($collection->getName(), $collection);
     }
 
     public function renderChart(Caller $caller, string $name): Chart

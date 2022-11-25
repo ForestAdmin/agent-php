@@ -121,6 +121,10 @@ class GeneratorField
         $key = $relation->getOriginKeyTarget();
         /** @var ColumnSchema $column */
         $column = $collection->getFields()->get($relation->getOriginKeyTarget());
+        if ($column === null) {
+            // inverse OneToOne case
+            $column = $collection->getFields()->get($relation->getOriginKey());
+        }
 
         return array_merge(
             $baseSchema,

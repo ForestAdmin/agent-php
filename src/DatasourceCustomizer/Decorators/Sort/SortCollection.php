@@ -125,8 +125,9 @@ class SortCollection extends CollectionDecorator
             return isset($this->sorts[$path]);
         }
 
-        $foreignCollection = $this->getFields()[Str::before($path, ':')];
-        $association = $this->dataSource->getCollection($foreignCollection);
+        /** @var RelationSchema $relation */
+        $relation = $this->getFields()[Str::before($path, ':')];
+        $association = $this->dataSource->getCollection($relation->getForeignCollection());
 
         return $association->isEmulated(Str::after($path, ':'));
     }

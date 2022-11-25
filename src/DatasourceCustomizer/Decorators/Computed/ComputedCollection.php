@@ -25,8 +25,8 @@ class ComputedCollection extends CollectionDecorator
         if (! Str::contains($path, ':')) {
             return $this->computeds[$path] ?? null;
         } else {
-            $foreignCollection = $this->getSchema()->get(Str::before($path, ':'));
-            $association = $this->dataSource->getCollection($foreignCollection);
+            $schema = $this->getFields()->get(Str::before($path, ':'));
+            $association = $this->dataSource->getCollection($schema->getForeignCollection());
 
             return $association->getComputed(Str::after($path, ':'));
         }

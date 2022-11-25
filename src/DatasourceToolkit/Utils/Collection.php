@@ -131,14 +131,23 @@ class Collection
 
     public static function getThroughTarget(CollectionContract $collection, string $relationName): ?string
     {
-        /** @var ManyToManySchema $relation */
         $relation = $collection->getFields()[$relationName];
-
-        if ($relation->getType() !== 'ManyToMany') {
+        if (! $relation instanceof ManyToManySchema) {
             throw new ForestException('Relation must be many to many');
         }
 
-        return $relation->getForeignCollection();
+        $throughCollection = $collection->getDataSource()->getCollection($relation->getThroughCollection());
+        foreach ($throughCollection->getFields() as $fieldName => $field) {
+            if ($field instanceof ManyToOneSchema &&
+                $field->getForeignCollection() === $relation->getForeignCollection() &&
+                $field->getForeignKey() === $relation->getForeignKey() &&
+                $field->getForeignKeyTarget() === $relation->getForeignKeyTarget()
+            ) {
+                return $fieldName;
+            }
+        }
+
+        return null;
     }
 
     public static function listRelation(
@@ -155,16 +164,19 @@ class Collection
         }
         $relation = Schema::getToManyRelation($collection, $relationName);
         $foreignCollection = $collection->getDataSource()->getCollection($relation->getForeignCollection());
-        if ($relation->getType() === 'ManyToMany' && $foreignFilter->isNestable()) {
+        if ($relation instanceof ManyToManySchema && $foreignFilter->isNestable()) {
             $foreignRelation = self::getThroughTarget($collection, $relationName);
-            $projection->push($relation->getOriginKey() . ':' . $relation->getOriginKeyTarget());
 
-            if ($foreignRelation === $foreignCollection->getName()) {
-                return $foreignCollection->$format(
+            if ($foreignRelation) {
+                $throughCollection = $collection->getDataSource()->getCollection($relation->getThroughCollection());
+
+                $records = $throughCollection->$format(
                     $caller,
                     FilterFactory::makeThroughFilter($collection, $id, $relationName, $caller, $foreignFilter),
-                    $projection
+                    $projection->nest($foreignRelation)
                 );
+
+                return collect($records)->map(fn ($record) => $record[$foreignRelation])->toArray();
             }
         }
 
@@ -184,22 +196,20 @@ class Collection
         Aggregation $aggregation,
         ?int $limit = null
     ) {
+        // TODO
         $relation = Schema::getToManyRelation($collection, $relationName);
         $foreignCollection = $collection->getDataSource()->getCollection($relation->getForeignCollection());
 
-        if ($relation->getType() === 'ManyToMany' && $foreignFilter->isNestable()) {
+        if ($relation instanceof ManyToManySchema && $foreignFilter->isNestable()) {
             $foreignRelation = self::getThroughTarget($collection, $relationName);
-            $aggregation = $aggregation->override(field: $relation->getOriginKey() . ':' . $relation->getOriginKeyTarget());
-
+            $aggregation = $aggregation->override(field: self::getInverseRelation($collection, $relationName) . ':' . $relation->getOriginKeyTarget());
             if ($foreignRelation === $foreignCollection->getName()) {
-                $records = $foreignCollection->aggregate(
+                return $foreignCollection->aggregate(
                     $caller,
                     FilterFactory::makeThroughFilter($collection, $id, $relationName, $caller, $foreignFilter),
                     $aggregation,
                     $limit
                 );
-
-                return $records;
             }
         }
 

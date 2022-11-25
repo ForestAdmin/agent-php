@@ -21,6 +21,11 @@ class ManyToManySchema extends ManyRelationSchema
         return $this->throughTable;
     }
 
+    public function getThroughCollection(): string
+    {
+        return $this->throughCollection;
+    }
+
     public function getOriginKey(): string
     {
         return $this->originKey;

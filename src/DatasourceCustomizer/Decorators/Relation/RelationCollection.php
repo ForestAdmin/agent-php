@@ -79,7 +79,7 @@ class RelationCollection extends CollectionDecorator
 
     public function refineFilter(Caller $caller, PaginatedFilter|Filter|null $filter): PaginatedFilter|Filter|null
     {
-        if ($filter instanceof Filter || $filter instanceof PaginatedFilter) {
+        if ($filter instanceof Filter) {
             return $filter->override(
                 conditionTree: $filter->getConditionTree()?->replaceLeafs(
                     fn ($leaf) => $this->rewriteLeaf($caller, $leaf),
@@ -184,57 +184,40 @@ class RelationCollection extends CollectionDecorator
                 ]
             );
         }
-//        dd($prefix, $schema, $this->relations);
 
         return $leaf;
     }
 
     private function checkForeignKeys(RelationSchema $relation): void
     {
-        if ($relation instanceof ManyToOneSchema) {
+        if ($relation instanceof ManyToOneSchema || $relation instanceof ManyToManySchema) {
             self::checkKeys(
-                $this,
+                $relation instanceof ManyToManySchema
+                    ? $this->dataSource->getCollection($relation->getThroughCollection())
+                    : $this,
                 $this->dataSource->getCollection($relation->getForeignCollection()),
                 $relation->getForeignKey(),
                 $relation->getForeignKeyTarget()
             );
         }
-//        if ($relation instanceof ManyToOneSchema || $relation instanceof ManyToManySchema) {
-//            self::checkKeys(
-//                $this,
-//                $this->dataSource->getCollection($relation->getForeignCollection()),
-//                $relation->getForeignKey(),
-//                $relation->getForeignKeyTarget()
-//            );
-//        }
     }
 
     private function checkOriginKeys(RelationSchema $relation): void
     {
         if (
             $relation instanceof OneToManySchema ||
-            $relation instanceof OneToOneSchema
+            $relation instanceof OneToOneSchema ||
+            $relation instanceof ManyToManySchema
         ) {
             self::checkKeys(
-                $this->dataSource->getCollection($relation->getForeignCollection()),
+                $relation instanceof ManyToManySchema
+                    ? $this->dataSource->getCollection($relation->getThroughCollection())
+                    : $this->dataSource->getCollection($relation->getForeignCollection()),
                 $this,
                 $relation->getOriginKey(),
                 $relation->getOriginKeyTarget()
             );
         }
-
-//        if (
-//            $relation instanceof OneToManySchema ||
-//            $relation instanceof OneToOneSchema ||
-//            $relation instanceof ManyToManySchema
-//        ) {
-//            self::checkKeys(
-//                $this->dataSource->getCollection($relation->getForeignCollection()),
-//                $this,
-//                $relation->getOriginKey(),
-//                $relation->getOriginKeyTarget()
-//            );
-//        }
     }
 
     private function relationWithOptionalFields(array $partialJoin): RelationSchema

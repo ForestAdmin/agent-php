@@ -59,14 +59,52 @@ class FilterFactory
 
     public static function makeThroughFilter(CollectionContract $collection, array $id, string $relationName, Caller $caller, Filter $baseForeignFilter): Filter
     {
+        /** @var ManyToManySchema $relation */
         $relation = $collection->getFields()[$relationName];
         $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getOriginKeyTarget());
 
-        return $baseForeignFilter->override(
+        $foreignRelation = CollectionUtils::getThroughTarget($collection, $relationName);
+        // Optimization for many to many when there is not search/segment (saves one query)
+        if ($foreignRelation && $baseForeignFilter->isNestable()) {
+            $baseThroughFilter = $baseForeignFilter->nest($foreignRelation);
+
+            return $baseThroughFilter->override(
+                conditionTree: ConditionTreeFactory::intersect(
+                    [
+                      new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue),
+                      new ConditionTreeLeaf($relation->getForeignKey(), Operators::PRESENT),
+                      $baseThroughFilter->getConditionTree(),
+                    ]
+                )
+            );
+        }
+
+        // Otherwise we have no choice but to call the target collection so that search and segment
+        // are correctly apply, and then match ids in the though collection.
+        $target = $collection->getDataSource()->getCollection($relation->getForeignCollection());
+        $records = $target->list(
+            $caller,
+            self::makeForeignFilter(
+                $collection,
+                $id,
+                $relationName,
+                $caller,
+                $baseForeignFilter,
+            ),
+            new Projection($relation->getForeignKeyTarget()),
+        );
+
+        return new Filter(
             conditionTree: ConditionTreeFactory::intersect(
                 [
-                    new ConditionTreeLeaf($relation->getInverseRelationName() . ':' . $relation->getOriginKeyTarget(), Operators::EQUAL, $originValue),
-                    $baseForeignFilter->getConditionTree(),
+                    // only children of parent
+                    new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue),
+                    // only the children which match the conditions in baseForeignFilter
+                    new ConditionTreeLeaf(
+                        $relation->getForeignKey(),
+                        Operators::IN,
+                        collect($records)->map(fn ($record) => $record[$relation->getForeignKeyTarget()])->toArray()
+                    ),
                 ]
             )
         );
@@ -86,18 +124,21 @@ class FilterFactory
             $originTree = new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue);
         } else {
             /** @var ManyToManySchema $relation */
-            // ManyToMany case
-            // todo useful ?
             /** @var Collection $foreignCollection */
-            $foreignCollection = AgentFactory::get('datasource')->getCollection($relation->getForeignCollection());
-            $throughTree = new ConditionTreeLeaf($relation->getInverseRelationName(), Operators::EQUAL, $originValue);
+            $throughCollection = AgentFactory::get('datasource')->getCollection($relation->getThroughCollection());
+            $throughTree = ConditionTreeFactory::intersect(
+                [
+                    new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue),
+                    new ConditionTreeLeaf($relation->getForeignKey(), Operators::PRESENT),
+                ]
+            );
+            $records = $throughCollection->list($caller, new PaginatedFilter(conditionTree: $throughTree), new Projection([$relation->getForeignKey()]));
 
-            $records = $foreignCollection->list($caller, new PaginatedFilter(conditionTree: $throughTree), new Projection([$relation->getForeignKeyTarget()]));
             $originTree = new ConditionTreeLeaf(
-                $relation->getOriginKeyTarget(),
+                $relation->getForeignKeyTarget(),
                 Operators::IN,
                 collect($records)
-                    ->map(fn ($record) => $collection->toArray($record)[$relation->getForeignKeyTarget()])
+                    ->map(fn ($record) => $record[$relation->getForeignKey()])
                     ->toArray()
             );
         }
