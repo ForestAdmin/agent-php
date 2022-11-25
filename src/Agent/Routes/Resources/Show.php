@@ -45,7 +45,6 @@ class Show extends AbstractCollectionRoute
             $filter,
             QueryStringParser::parseProjection($this->collection, $this->request)
         )[0] ?? [];
-
         return [
             'name'              => $args['collectionName'],
             'content'           => JsonApi::renderItem($result, $this->collection->makeTransformer(), $args['collectionName']),
