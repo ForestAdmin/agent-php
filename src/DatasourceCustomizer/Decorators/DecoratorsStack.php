@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedCollection;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsReplace\OperatorsReplaceCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Relation\RelationCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Search\SearchCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Segment\SegmentCollection;
@@ -13,7 +14,9 @@ class DecoratorsStack
 {
     public DatasourceContract|DatasourceDecorator $dataSource;
     public DatasourceDecorator $earlyComputed;
+    public DatasourceDecorator $earlyOpReplace;
     public DatasourceDecorator $lateComputed;
+    public DatasourceDecorator $lateOpReplace;
     public DatasourceDecorator $search;
     public DatasourceDecorator $segment;
     public DatasourceDecorator $sort;
@@ -33,8 +36,10 @@ class DecoratorsStack
 //        $earlyComputed = new DataSourceDecorator($last, ComputedCollection::class);
 //        $last = $this->earlyComputed = &$earlyComputed;
         $last = $this->earlyComputed = new DatasourceDecorator($last, ComputedCollection::class);
+        $last = $this->earlyOpReplace = new DatasourceDecorator($last, OperatorsReplaceCollection::class);
         $last = $this->relation = new DatasourceDecorator($last, RelationCollection::class);
         $last = $this->lateComputed = new DatasourceDecorator($last, ComputedCollection::class);
+        $last = $this->lateOpReplace = new DatasourceDecorator($last, OperatorsReplaceCollection::class);
 //        $lateComputed = new DatasourceDecorator($last, ComputedCollection::class);
 //        $last = $this->lateComputed = &$lateComputed;
 

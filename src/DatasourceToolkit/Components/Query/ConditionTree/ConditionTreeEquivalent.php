@@ -12,9 +12,9 @@ class ConditionTreeEquivalent
 {
     private static ?array $alternatives = null;
 
-    public static function getEquivalentTree(ConditionTreeLeaf $leaf, array $operators, string $columnType)
+    public static function getEquivalentTree(ConditionTreeLeaf $leaf, array $operators, string $columnType, string $timezone)
     {
-        return self::getReplacer($leaf->getOperator(), $operators, $columnType);
+        return self::getReplacer($leaf->getOperator(), $operators, $columnType)($leaf, $timezone);
     }
 
     public static function hasEquivalentTree(string $operator, array $operators, string $columnType): bool
