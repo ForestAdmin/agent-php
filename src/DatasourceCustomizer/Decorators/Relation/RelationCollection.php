@@ -69,6 +69,12 @@ class RelationCollection extends CollectionDecorator
             return $this->childCollection->aggregate($caller, $newFilter, $aggregation, $limit, $chartType);
         }
 
+        $filter = new PaginatedFilter(
+            $filter->getConditionTree(),
+            $filter->getSearch(),
+            $filter->getSearchExtended(),
+            $filter->getSegment()
+        );
         // Fallback to full emulation.
         return $aggregation->apply(
             $this->list($caller, $filter, $aggregation->getProjection()),
