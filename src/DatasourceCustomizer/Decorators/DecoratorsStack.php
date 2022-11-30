@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedCollection;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsEmulate\OperatorsEmulateCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsReplace\OperatorsReplaceCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Relation\RelationCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Search\SearchCollection;
@@ -14,8 +15,10 @@ class DecoratorsStack
 {
     public DatasourceContract|DatasourceDecorator $dataSource;
     public DatasourceDecorator $earlyComputed;
+    public DatasourceDecorator $earlyOpEmulate;
     public DatasourceDecorator $earlyOpReplace;
     public DatasourceDecorator $lateComputed;
+    public DatasourceDecorator $lateOpEmulate;
     public DatasourceDecorator $lateOpReplace;
     public DatasourceDecorator $search;
     public DatasourceDecorator $segment;
@@ -34,9 +37,11 @@ class DecoratorsStack
         // on computed fields, and some computed fields depend on relation...)
         // Note that replacement goes before emulation, as replacements may use emulated operators.
         $last = $this->earlyComputed = new DatasourceDecorator($last, ComputedCollection::class);
+        $last = $this->earlyOpEmulate = new DatasourceDecorator($last, OperatorsEmulateCollection::class);
         $last = $this->earlyOpReplace = new DatasourceDecorator($last, OperatorsReplaceCollection::class);
         $last = $this->relation = new DatasourceDecorator($last, RelationCollection::class);
         $last = $this->lateComputed = new DatasourceDecorator($last, ComputedCollection::class);
+        $last = $this->lateOpEmulate = new DatasourceDecorator($last, OperatorsEmulateCollection::class);
         $last = $this->lateOpReplace = new DatasourceDecorator($last, OperatorsReplaceCollection::class);
 
 
@@ -53,9 +58,11 @@ class DecoratorsStack
     public function build(): void
     {
         $this->earlyComputed->build();
+        $this->earlyOpEmulate->build();
         $this->earlyOpReplace->build();
         $this->relation->build();
         $this->lateComputed->build();
+        $this->lateOpEmulate->build();
         $this->lateOpReplace->build();
         $this->search->build();
         $this->segment->build();

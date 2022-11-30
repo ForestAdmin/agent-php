@@ -120,4 +120,12 @@ class ColumnSchema
     {
         return $this->validation;
     }
+
+    /**
+     * @param array $filterOperators
+     */
+    public function setFilterOperators(array $filterOperators): void
+    {
+        $this->filterOperators = $filterOperators;
+    }
 }
