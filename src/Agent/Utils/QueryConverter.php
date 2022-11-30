@@ -4,7 +4,6 @@ namespace ForestAdmin\AgentPHP\Agent\Utils;
 
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\BaseCollection;
-use ForestAdmin\AgentPHP\DatasourceDoctrine\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
@@ -13,6 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
@@ -70,11 +70,10 @@ class QueryConverter
 
     private function applyProjection(): void
     {
-        if ($this->projection) {
+        if ($this->projection && $this->projection->isNotEmpty()) {
             $selectRaw = collect($this->projection->columns())
                 ->map(fn ($field) => "\"$this->tableName\".\"$field\"")
                 ->implode(', ');
-
             foreach ($this->projection->relations() as $relation => $relationFields) {
                 /** @var RelationSchema $relation */
                 $relationSchema = $this->collection->getFields()[$relation];
@@ -178,9 +177,7 @@ class QueryConverter
 
     private function computeDateOperator(ConditionTreeLeaf $conditionTreeLeaf, Builder $query, string $aggregator): void
     {
-        $field = Str::contains($conditionTreeLeaf->getField(), ':')
-            ? Str::replace(':', '.', $conditionTreeLeaf->getField())
-            : $this->tableName . '.' . $conditionTreeLeaf->getField();
+        $field = $this->getFieldFromLeaf($conditionTreeLeaf);
         $value = $conditionTreeLeaf->getValue();
         $operator = $conditionTreeLeaf->getOperator();
 
@@ -284,9 +281,7 @@ class QueryConverter
 
     private function computeMainOperator(ConditionTreeLeaf $conditionTreeLeaf, Builder $query, string $aggregator): void
     {
-        $field = Str::contains($conditionTreeLeaf->getField(), ':')
-            ? Str::replace(':', '.', $conditionTreeLeaf->getField())
-            : $this->tableName . '.' . $conditionTreeLeaf->getField();
+        $field = $this->getFieldFromLeaf($conditionTreeLeaf);
         $value = $conditionTreeLeaf->getValue();
         switch ($conditionTreeLeaf->getOperator()) {
             case 'Blank':
@@ -345,5 +340,19 @@ class QueryConverter
             default:
                 throw new ForestException('Unknown operator');
         }
+    }
+
+    private function getFieldFromLeaf(ConditionTreeLeaf $leaf): string
+    {
+        if (Str::contains($leaf->getField(), ':')) {
+            $relation = $this->collection->getFields()[Str::before($leaf->getField(), ':')];
+            $tableName = $this->collection
+                ->getDataSource()
+                ->getCollection($relation->getForeignCollection())->getTableName();
+
+            return $tableName . '.' . Str::after($leaf->getField(), ':');
+        }
+
+        return $this->tableName . '.' . $leaf->getField();
     }
 }
