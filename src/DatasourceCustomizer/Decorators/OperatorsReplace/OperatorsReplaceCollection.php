@@ -38,7 +38,7 @@ class OperatorsReplaceCollection extends CollectionDecorator
     protected function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
     {
         return $filter?->override(
-            conditionTree: $filter->getConditionTree()?->replaceLeafs(function ($leaf) {
+            conditionTree: $filter->getConditionTree()?->replaceLeafs(function ($leaf) use ($caller) {
                 $schema = CollectionUtils::getFieldSchema($this->childCollection, $leaf->getField());
 
                 return ConditionTreeEquivalent::getEquivalentTree($leaf, $schema->getFilterOperators(), $schema->getColumnType(), $caller->getTimezone());
