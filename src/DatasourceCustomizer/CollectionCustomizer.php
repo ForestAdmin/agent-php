@@ -98,7 +98,8 @@ class CollectionCustomizer
         string  $foreignKey,
         ?string $originKeyTarget = null,
         ?string $foreignKeyTarget = null
-    ) {
+    )
+    {
         $this->pushRelation(
             $name,
             [
