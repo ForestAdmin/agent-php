@@ -45,11 +45,8 @@ class DatasourceCustomizer
 
     /**
      * Allow to interact with a decorated collection
-     * @example
-     * .customizeCollection('books', books => books.renameField('xx', 'yy'))
      * @param string   $name the name of the collection to manipulate
-     * @param \Closure $handle a function that provide a
-     *   collection builder on the given collection name
+     * @param \Closure $handle a function that provide a collection builder on the given collection name
      * @return $this
      */
     public function customizeCollection(string $name, \Closure $handle): self

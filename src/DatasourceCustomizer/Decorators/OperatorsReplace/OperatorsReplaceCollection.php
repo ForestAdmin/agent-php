@@ -10,29 +10,30 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
+use Illuminate\Support\Collection as IlluminateCollection;
 
 class OperatorsReplaceCollection extends CollectionDecorator
 {
-    protected function refineSchema($childSchema)
+    public function getFields(): IlluminateCollection
     {
-        $fields = [];
+        $fields = $this->childCollection->getFields();
 
         /**
          * @var ColumnSchema $schema
-         * @var string $name
          */
-        foreach ($childSchema->getFields() as $schema => $name) {
-            if ($schema->getType() === 'Column') {
+        foreach ($fields as $schema) {
+            if ($schema instanceof ColumnSchema) {
                 $newOperators = collect(Operators::getAllOperators())
                     ->filter(fn ($operator) => ConditionTreeEquivalent::hasEquivalentTree($operator, $schema->getFilterOperators(), $schema->getColumnType()));
 
-                $fields[$name] = [...$schema, 'filterOperators' => $newOperators];
-            } else {
-                $fields[$name] = $schema;
+                $schema->setFilterOperators([
+                    ...$schema->getFilterOperators(),
+                    ...$newOperators,
+                ]);
             }
         }
 
-        return [...$childSchema, $fields];
+        return $fields;
     }
 
     protected function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null

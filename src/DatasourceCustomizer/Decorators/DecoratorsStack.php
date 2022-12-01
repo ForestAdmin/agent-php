@@ -68,5 +68,7 @@ class DecoratorsStack
         $this->segment->build();
         $this->sort->build();
         $this->dataSource->build();
+
+
     }
 }
