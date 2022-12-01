@@ -27,7 +27,7 @@ class OperatorsEmulateCollection extends CollectionDecorator
         self::replaceFieldOperator($name, $operator, null);
     }
 
-    public function replaceFieldOperator(string $name, string $operator, ?string $replaceBy): void
+    public function replaceFieldOperator(string $name, string $operator, ?\Closure $replaceBy = null): void
     {
         $pks = SchemaUtils::getPrimaryKeys($this->childCollection);
 
@@ -97,7 +97,7 @@ class OperatorsEmulateCollection extends CollectionDecorator
             return $associationLeaf->nest($prefix);
         }
 
-        return $this->getFields()->get($leaf->getField())?->contains($leaf->getOperator())
+        return isset($this->emulateOperators[$leaf->getField()]) && in_array($leaf->getOperator(), array_keys($this->emulateOperators[$leaf->getField()]), true)
             ? $this->computeEquivalent($caller, $leaf, $replacements)
             : $leaf;
     }
@@ -126,7 +126,7 @@ class OperatorsEmulateCollection extends CollectionDecorator
         }
 
         return ConditionTreeFactory::matchRecords(
-            $this->getSchema(),
+            $this,
             $leaf->apply(
                 $this->list($caller, new PaginatedFilter(), $leaf->getProjection()->withPks($this)),
                 $this,

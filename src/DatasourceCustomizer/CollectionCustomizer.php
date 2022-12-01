@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer;
 use Closure;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedDefinition;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DecoratorsStack;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsEmulate\OperatorsEmulateCollection;
 
 class CollectionCustomizer
 {
@@ -97,18 +98,19 @@ class CollectionCustomizer
         string  $foreignKey,
         ?string $originKeyTarget = null,
         ?string $foreignKeyTarget = null
-    ) {
+    )
+    {
         $this->pushRelation(
             $name,
             [
-                'type'                   => 'ManyToMany',
-                'foreignCollection'      => $foreignCollection,
-                'throughTable'           => $throughTable,
-                'throughCollection'      => $throughCollection,
-                'originKey'              => $originKey,
-                'originKeyTarget'        => $originKeyTarget,
-                'foreignKey'             => $foreignKey,
-                'foreignKeyTarget'       => $foreignKeyTarget,
+                'type'              => 'ManyToMany',
+                'foreignCollection' => $foreignCollection,
+                'throughTable'      => $throughTable,
+                'throughCollection' => $throughCollection,
+                'originKey'         => $originKey,
+                'originKeyTarget'   => $originKeyTarget,
+                'foreignKey'        => $foreignKey,
+                'foreignKeyTarget'  => $foreignKeyTarget,
             ]
         );
 
@@ -144,12 +146,28 @@ class CollectionCustomizer
     {
     }
 
-    public function emulateFieldOperator($name, $operator)
+    public function emulateFieldOperator(string $name, string $operator): self
     {
+        /** @var OperatorsEmulateCollection $collection */
+        $collection = $this->stack->earlyOpEmulate->getCollection($this->name)->getFields()->get($name)
+            ? $this->stack->earlyOpEmulate->getCollection($this->name)
+            : $this->stack->lateOpEmulate->getCollection($name);
+
+        $collection->emulateFieldOperator($name, $operator);
+
+        return $this;
     }
 
-    public function replaceFieldOperator()
+    public function replaceFieldOperator(string $name, string $operator, ?\Closure $replaceBy = null): self
     {
+        /** @var OperatorsEmulateCollection $collection */
+        $collection = $this->stack->earlyOpEmulate->getCollection($this->name)->getFields()->get($name)
+            ? $this->stack->earlyOpEmulate->getCollection($this->name)
+            : $this->stack->lateOpEmulate->getCollection($name);
+
+        $collection->replaceFieldOperator($name, $operator, $replaceBy);
+
+        return $this;
     }
 
     public function replaceFieldWriting()
