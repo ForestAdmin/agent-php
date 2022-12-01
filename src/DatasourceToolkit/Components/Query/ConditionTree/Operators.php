@@ -69,4 +69,20 @@ class Operators
             (new \ReflectionClass(self::class))->getConstants()
         );
     }
+
+    public static function getUniqueOperators(): array
+    {
+        return [
+            self::EQUAL,
+            self::NOT_EQUAL,
+            self::LESS_THAN,
+            self::GREATER_THAN,
+            self::LIKE,
+            self::ILIKE,
+            self::NOT_CONTAINS,
+            self::LONGER_THAN,
+            self::SHORTER_THAN,
+            self::INCLUDES_ALL,
+        ];
+    }
 }
