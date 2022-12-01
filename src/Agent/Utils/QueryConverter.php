@@ -137,7 +137,7 @@ class QueryConverter
         /** @var Sort $sort */
         if (method_exists($this->filter, 'getSort') && $sort = $this->filter->getSort()) {
             foreach ($sort as $value) {
-                if (! Str::contains($value['field'], ':')) {
+                if (!Str::contains($value['field'], ':')) {
                     $this->query->orderBy($this->tableName . '.' . $value['field'], $value['ascending'] ? 'ASC' : 'DESC');
                 } else {
                     $this->query->orderBy(
