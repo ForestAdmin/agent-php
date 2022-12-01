@@ -7,6 +7,7 @@ use ForestAdmin\AgentPHP\DatasourceDoctrine\BaseCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
@@ -28,17 +29,17 @@ class QueryConverter
     protected string $tableName;
 
     protected array $basicSymbols = [
-        'Equal'        => '=',
-        'Not_Equal'    => '!=',
-        'Greater_Than' => '>',
-        'Less_Than'    => '<',
+        Operators::EQUAL        => '=',
+        Operators::NOT_EQUAL    => '!=',
+        Operators::GREATER_THAN => '>',
+        Operators::LESS_THAN    => '<',
     ];
 
     public function __construct(
-        protected BaseCollection  $collection,
-        protected string      $timezone,
-        protected ?Filter      $filter = null,
-        protected ?Projection $projection = null,
+        protected BaseCollection $collection,
+        protected string         $timezone,
+        protected ?Filter        $filter = null,
+        protected ?Projection    $projection = null,
     ) {
         $this->tableName = $this->collection->getTableName();
         $this->build();
@@ -126,7 +127,7 @@ class QueryConverter
         /** @var Sort $sort */
         if (method_exists($this->filter, 'getSort') && $sort = $this->filter->getSort()) {
             foreach ($sort as $value) {
-                if (! Str::contains($value['field'], ':')) {
+                if (!Str::contains($value['field'], ':')) {
                     $this->query->orderBy($this->tableName . '.' . $value['field'], $value['ascending'] ? 'ASC' : 'DESC');
                 } else {
                     $this->query->orderBy(
@@ -182,21 +183,7 @@ class QueryConverter
         $operator = $conditionTreeLeaf->getOperator();
 
         switch ($operator) {
-            case 'yesterday':
-            case 'previous_week':
-            case 'previous_month':
-            case 'previous_quarter':
-            case 'previous_year':
-            case 'previous_week_to_date':
-            case 'previous_month_to_date':
-            case 'previous_quarter_to_date':
-            case 'previous_year_to_date':
-
-                break;
-        }
-
-        switch ($operator) {
-            case 'Today':
+            case Operators::TODAY:
                 $query->whereBetween(
                     $field,
                     [
@@ -207,15 +194,15 @@ class QueryConverter
                 );
 
                 break;
-            case 'Before':
+            case Operators::BEFORE:
                 $query->where($field, '<', new Carbon(new \DateTime($value), $this->timezone), $aggregator);
 
                 break;
-            case 'After':
+            case Operators::AFTER:
                 $query->where($field, '>', new Carbon(new \DateTime($value), $this->timezone), $aggregator);
 
                 break;
-            case'Previous_X_Days':
+            case Operators::PREVIOUS_X_DAYS:
                 $query->whereBetween(
                     $field,
                     [
@@ -226,7 +213,7 @@ class QueryConverter
                 );
 
                 break;
-            case'Previous_X_Days_To_Date':
+            case Operators::PREVIOUS_X_DAYS_TO_DATE:
                 $query->whereBetween(
                     $field,
                     [
@@ -237,32 +224,32 @@ class QueryConverter
                 );
 
                 break;
-            case'Past':
+            case Operators::PAST:
                 $query->where($field, '<=', Carbon::now(), $aggregator);
 
                 break;
-            case'Future':
+            case Operators::FUTURE:
                 $query->where($field, '>=', Carbon::now(), $aggregator);
 
                 break;
-            case'Before_X_Hours_Ago':
+            case Operators::BEFORE_X_HOURS_AGO:
                 $query->where($field, '<', Carbon::now($this->timezone)->subHours($value), $aggregator);
 
                 break;
-            case'After_X_Hours_Ago':
+            case Operators::AFTER_X_HOURS_AGO:
                 $query->where($field, '>', Carbon::now($this->timezone)->subHours($value), $aggregator);
 
                 break;
-            case 'Yesterday':
-            case 'Previous_Week':
-            case 'Previous_Month':
-            case 'Previous_Quarter':
-            case 'Previous_Year':
-            case 'Previous_Week_To_Date':
-            case 'Previous_Month_To_Date':
-            case 'Previous_Quarter_To_Date':
-            case 'Previous_Year_To_Date':
-                $period = $operator === 'Yesterday' ? 'Day' : Str::ucfirst(Str::of($operator)->explode('_')->get(1));
+            case Operators::YESTERDAY:
+            case Operators::PREVIOUS_WEEK:
+            case Operators::PREVIOUS_MONTH:
+            case Operators::PREVIOUS_QUARTER:
+            case Operators::PREVIOUS_YEAR:
+            case Operators::PREVIOUS_WEEK_TO_DATE:
+            case Operators::PREVIOUS_MONTH_TO_DATE:
+            case Operators::PREVIOUS_QUARTER_TO_DATE:
+            case Operators::PREVIOUS_YEAR_TO_DATE:
+                $period = $operator === Operators::YESTERDAY ? 'Day' : Str::ucfirst(Str::of($operator)->explode('_')->get(1));
                 $sub = 'sub' . $period;
                 $start = 'startOf' . $period;
                 $end = 'endOf' . $period;
@@ -284,56 +271,56 @@ class QueryConverter
         $field = $this->getFieldFromLeaf($conditionTreeLeaf);
         $value = $conditionTreeLeaf->getValue();
         switch ($conditionTreeLeaf->getOperator()) {
-            case 'Blank':
+            case Operators::BLANK:
                 $query->whereNull($field, $aggregator);
 
                 break;
-            case 'Present':
+            case Operators::PRESENT:
                 $query->whereNotNull($field, $aggregator);
 
                 break;
-            case 'Equal':
-            case 'Not_Equal':
-            case 'Greater_Than':
-            case 'Less_Than':
+            case Operators::EQUAL:
+            case Operators::NOT_EQUAL:
+            case Operators::GREATER_THAN:
+            case Operators::LESS_THAN:
                 $query->where($field, $this->basicSymbols[$conditionTreeLeaf->getOperator()], $value, $aggregator);
 
                 break;
-            case 'IContains':
+            case Operators::ICONTAINS:
                 $query->whereRaw("LOWER ($field) LIKE LOWER(?)", ['%' . $value . '%'], $aggregator);
 
                 break;
-            case 'Contains':
+            case Operators::CONTAINS:
                 $query->whereRaw("$field LIKE ?", ['%' . $value . '%'], $aggregator);
 
                 break;
-            case 'Not_Contains':
+            case Operators::NOT_CONTAINS:
                 $query->whereRaw("$field NOT LIKE ?", ['%' . $value . '%'], $aggregator);
 
                 break;
-            case 'In':
+            case Operators::IN:
                 $value = is_array($value) ? $value : array_map('trim', explode(',', $value));
                 $query->whereIn($field, $value, $aggregator);
 
                 break;
-            case 'Not_In':
+            case Operators::NOT_IN:
                 $value = is_array($value) ? $value : array_map('trim', explode(',', $value));
                 $query->whereNotIn($field, $value, $aggregator);
 
                 break;
-            case 'Starts_With':
+            case Operators::STARTS_WITH:
                 $query->whereRaw("$field LIKE ?", [$value . '%'], $aggregator);
 
                 break;
-            case 'Ends_With':
+            case Operators::ENDS_WITH:
                 $query->whereRaw("$field LIKE ?", ['%' . $value], $aggregator);
 
                 break;
-            case 'IStarts_With':
+            case Operators::ISTARTS_WITH:
                 $query->whereRaw("LOWER ($field) LIKE ?", [$value . '%'], $aggregator);
 
                 break;
-            case 'IEnds_With':
+            case Operators::IENDS_WITH:
                 $query->whereRaw("LOWER ($field) LIKE LOWER(?)", ['%' . $value], $aggregator);
 
                 break;
