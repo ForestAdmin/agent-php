@@ -3,11 +3,13 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes;
 
 use Closure;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeEquivalent;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record as RecordUtils;
 use Illuminate\Support\Str;
 use JetBrains\PhpStorm\ArrayShape;
 
@@ -82,9 +84,39 @@ class ConditionTreeLeaf extends ConditionTree
         return $result instanceof ConditionTree ? $result : ConditionTreeFactory::fromArray($result);
     }
 
-    public function match(array $record, Collection $collection, string $timezone): bool
+    public function match(array $record, CollectionContract $collection, string $timezone): bool
     {
-        // TODO: Implement match() method.
+        $fieldValue = RecordUtils::getFieldValue($record, $this->field);
+        $columnType = $collection->getFields()->get($this->field)->getColumnType();
+
+        switch ($this->operator) {
+            case 'Equal':
+                return $fieldValue === $this->value;
+            case 'LessThan':
+                return $fieldValue < $this->value;
+            case 'GreaterThan':
+                return $fieldValue > $this->value;
+            case 'Like':
+                return $this->like($fieldValue, $this->value, true);
+            case 'ILike':
+                return $this->like($fieldValue, $this->value, false);
+            case 'LongerThan':
+                return is_string($fieldValue) ? strlen($fieldValue) > $this->value : false;
+            case 'ShorterThan':
+                return is_string($fieldValue) ? strlen($fieldValue) < $this->value : false;
+            case 'IncludesAll':
+                return collect(explode(',', $this->value))->every(fn ($v) => in_array($v, $fieldValue, true));
+            case 'NotEqual':
+            case 'NotContains':
+                return ! $this->inverse()->match($record, $collection, $timezone);
+            default:
+                return ConditionTreeEquivalent::getEquivalentTree(
+                    $this,
+                    Operators::getUniqueOperators(),
+                    $columnType,
+                    $timezone,
+                )->match($record, $collection, $timezone);
+        }
     }
 
     public function forEachLeaf(Closure $handler): self
@@ -115,5 +147,18 @@ class ConditionTreeLeaf extends ConditionTree
     public function useIntervalOperator(): bool
     {
         return in_array($this->operator, Operators::getIntervalOperators());
+    }
+
+    private function like(string $value, string $pattern, bool $caseSensitive): bool
+    {
+        if (! $value) {
+            return false;
+        }
+
+        $regexp = Str::of($pattern)->replaceMatches('/([\.\\\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:\-])/g', '\\$1')
+            ->replaceMatches('/%/g', '.*')
+            ->replaceMatches('/_/g', '.');
+
+        return Str::is('^' . $regexp . '$/' . $caseSensitive ? 'g' : 'gi', $value);
     }
 }
