@@ -90,24 +90,24 @@ class ConditionTreeLeaf extends ConditionTree
         $columnType = $collection->getFields()->get($this->field)->getColumnType();
 
         switch ($this->operator) {
-            case 'Equal':
+            case Operators::EQUAL:
                 return $fieldValue === $this->value;
-            case 'LessThan':
+            case Operators::LESS_THAN:
                 return $fieldValue < $this->value;
-            case 'GreaterThan':
+            case Operators::GREATER_THAN:
                 return $fieldValue > $this->value;
-            case 'Like':
+            case Operators::LIKE:
                 return $this->like($fieldValue, $this->value, true);
-            case 'ILike':
+            case Operators::ILIKE:
                 return $this->like($fieldValue, $this->value, false);
-            case 'LongerThan':
+            case Operators::LONGER_THAN:
                 return is_string($fieldValue) ? strlen($fieldValue) > $this->value : false;
-            case 'ShorterThan':
+            case Operators::SHORTER_THAN:
                 return is_string($fieldValue) ? strlen($fieldValue) < $this->value : false;
-            case 'IncludesAll':
+            case Operators::INCLUDES_ALL:
                 return collect(explode(',', $this->value))->every(fn ($v) => in_array($v, $fieldValue, true));
-            case 'NotEqual':
-            case 'NotContains':
+            case Operators::NOT_EQUAL:
+            case Operators::NOT_CONTAINS:
                 return ! $this->inverse()->match($record, $collection, $timezone);
             default:
                 return ConditionTreeEquivalent::getEquivalentTree(

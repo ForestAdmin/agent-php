@@ -4,32 +4,33 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 
 final class Comparisons
 {
     public static function equalityTransforms(): array
     {
         return [
-            'Blank'    => [
+            Operators::BLANK     => [
                 [
-                    'dependsOn' => ['In'],
+                    'dependsOn' => [Operators::IN],
                     'forTypes'  => ['String'],
                     'replacer'  => fn ($leaf) => $leaf->override(operator: 'In', value: [null, '']),
                 ],
                 [
-                    'dependsOn' => ['Missing'],
+                    'dependsOn' => [Operators::MISSING],
                     'replacer'  => fn ($leaf) => $leaf->override(operator: 'Missing'),
                 ],
             ],
-            'Missing'  => [
+            Operators::MISSING   => [
                 [
-                    'dependsOn' => ['Equal'],
+                    'dependsOn' => [Operators::EQUAL],
                     'replacer'  => fn ($leaf) => $leaf->override(operator: 'Equal', value: null),
                 ],
             ],
-            'Present'  => [
+            Operators::PRESENT   => [
                 [
-                    'dependsOn' => ['NotIn'],
+                    'dependsOn' => [Operators::NOT_IN],
                     'forTypes'  => ['String'],
                     'replacer'  => fn ($leaf) => $leaf->override(operator: 'NotIn', value: [null, '']),
                 ],
@@ -38,15 +39,15 @@ final class Comparisons
                     'replacer'  => fn ($leaf) => $leaf->override(operator: 'NotEqual', value: null),
                 ],
             ],
-            'Equal'    => [
+            Operators::EQUAL     => [
                 [
-                    'dependsOn' => ['In'],
+                    'dependsOn' => [Operators::IN],
                     'replacer'  => fn ($leaf) => $leaf->override(operator: 'In', value: [$leaf->getValue()]),
                 ],
             ],
-            'In'       => [
+            Operators::IN        => [
                 [
-                    'dependsOn' => ['Equal'],
+                    'dependsOn' => [Operators::EQUAL],
                     'replacer'  => function ($leaf) {
                         $trees = collect($leaf->getValue())
                             ->map(fn ($item) => new ConditionTreeLeaf(field: $leaf->getField(), operator: 'Equal', value: $item))
@@ -56,15 +57,15 @@ final class Comparisons
                     },
                 ],
             ],
-            'NotEqual' => [
+            Operators::NOT_EQUAL => [
                 [
-                    'dependsOn' => ['NotIn'],
+                    'dependsOn' => [Operators::NOT_IN],
                     'replacer'  => fn ($leaf) => $leaf->override(operator: 'NotIn', value: [$leaf->getValue()]),
                 ],
             ],
-            'NotIn'    => [
+            Operators::NOT_IN    => [
                 [
-                    'dependsOn' => ['NotEqual'],
+                    'dependsOn' => [Operators::NOT_EQUAL],
                     'replacer'  => function ($leaf) {
                         $trees = collect($leaf->getValue)
                             ->map(fn ($item) => $leaf->override(operator: 'NotEqual', value: $item))

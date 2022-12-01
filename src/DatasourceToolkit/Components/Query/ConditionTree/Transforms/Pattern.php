@@ -2,14 +2,16 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Transforms;
 
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
+
 final class Pattern
 {
     public static function likes(callable $getPattern, bool $caseSensitive): array
     {
-        $operator = $caseSensitive ? 'Like' : 'ILike';
+        $operator = $caseSensitive ? Operators::LIKE : Operators::ILIKE;
 
         return [
-            'dependsOn' => ['operator'],
+            'dependsOn' => [$operator],
             'forTypes'  => ['String'],
             'replacer'  => fn ($leaf) => $leaf->override(operator: $operator, value: $getPattern($leaf->getValue())),
         ];
@@ -18,12 +20,12 @@ final class Pattern
     public static function patternTransforms(): array
     {
         return [
-            'Contains'    => [self::likes(['value' => '%$value%'], true)],
-            'StartsWith'  => [self::likes(['value' => '$value%'], true)],
-            'EndsWith'    => [self::likes(['value' => '%$value'], true)],
-            'IContains'   => [self::likes(['value' => '%$value%'], false)],
-            'IStartsWith' => [self::likes(['value' => '$value%'], false)],
-            'IEndsWith'   => [self::likes(['value' => '%$value'], false)],
+            Operators::CONTAINS     => [self::likes(fn ($value) => '%' . $value . '%', true)],
+            Operators::STARTS_WITH  => [self::likes(fn ($value) => $value . '%', true)],
+            Operators::ENDS_WITH    => [self::likes(fn ($value) => '%' . $value, true)],
+            Operators::ICONTAINS    => [self::likes(fn ($value) => '%' . $value . '%', false)],
+            Operators::ISTARTS_WITH => [self::likes(fn ($value) => $value . '%', false)],
+            Operators::IENDS_WITH   => [self::likes(fn ($value) => '%' . $value, false)],
         ];
     }
 }

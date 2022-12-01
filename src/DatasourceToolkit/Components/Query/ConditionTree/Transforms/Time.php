@@ -4,6 +4,7 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\
 
 use Carbon\Carbon;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 
 final class Time
 {
@@ -28,15 +29,15 @@ final class Time
     public static function interval(\Closure $startFn, \Closure $endFn): array
     {
         return [
-            'dependsOn' => ['LessThan', 'GreaterThan'],
+            'dependsOn' => [Operators::LESS_THAN, Operators::GREATER_THAN],
             'forTypes'  => ['Date', 'Dateonly'],
             'replacer'  => function ($leaf, $tz) use ($startFn, $endFn) {
                 $now = Carbon::now(tz: $tz);
 
                 return ConditionTreeFactory::intersect(
                     [
-                        $leaf->override(operator: 'GreaterThan', value: self::format($startFn($now, $leaf->getValue()))),
-                        $leaf->override(operator: 'LessThan', value: self::format($endFn($now, $leaf->getValue()))),
+                        $leaf->override(operator: Operators::GREATER_THAN, value: self::format($startFn($now, $leaf->getValue()))),
+                        $leaf->override(operator: Operators::LESS_THAN, value: self::format($endFn($now, $leaf->getValue()))),
                     ]
                 );
             },
@@ -62,40 +63,40 @@ final class Time
     public static function timeTransforms(): array
     {
         return [
-            'Before' => [self::compare('LessThan', static fn ($now, $value) => Carbon::parse($value))],
-            'After'  => [self::compare('GreaterThan', static fn ($now, $value) => Carbon::parse($value))],
+            Operators::BEFORE => [self::compare(Operators::LESS_THAN, static fn ($now, $value) => Carbon::parse($value))],
+            Operators::AFTER  => [self::compare(Operators::GREATER_THAN, static fn ($now, $value) => Carbon::parse($value))],
 
-            'Past'   => [self::compare('LessThan', static fn ($now) => $now)],
-            'Future' => [self::compare('GreaterThan', static fn ($now) => $now)],
+            Operators::PAST   => [self::compare(Operators::LESS_THAN, static fn ($now) => $now)],
+            Operators::FUTURE => [self::compare(Operators::GREATER_THAN, static fn ($now) => $now)],
 
-            'BeforeXHoursAgo' => [self::compare('LessThan', static fn ($now, $value) => $now->subHours($value))],
-            'AfterXHoursAgo'  => [self::compare('GreaterThan', static fn ($now, $value) => $now->subHours($value))],
+            Operators::BEFORE_X_HOURS_AGO => [self::compare(Operators::LESS_THAN, static fn ($now, $value) => $now->subHours($value))],
+            Operators::AFTER_X_HOURS_AGO  => [self::compare(Operators::GREATER_THAN, static fn ($now, $value) => $now->subHours($value))],
 
-            'PreviousWeekToDate'    => [self::previousIntervalToDate('week')],
-            'PreviousMonthToDate'   => [self::previousIntervalToDate('month')],
-            'PreviousQuarterToDate' => [self::previousIntervalToDate('quarter')],
-            'PreviousYearToDate'    => [self::previousIntervalToDate('year')],
+            Operators::PREVIOUS_WEEK_TO_DATE    => [self::previousIntervalToDate('week')],
+            Operators::PREVIOUS_MONTH_TO_DATE   => [self::previousIntervalToDate('month')],
+            Operators::PREVIOUS_QUARTER_TO_DATE => [self::previousIntervalToDate('quarter')],
+            Operators::PREVIOUS_YEAR_TO_DATE    => [self::previousIntervalToDate('year')],
 
-            'Yesterday'       => [self::previousInterval('day')],
-            'PreviousWeek'    => [self::previousInterval('week')],
-            'PreviousMonth'   => [self::previousInterval('month')],
-            'PreviousQuarter' => [self::previousInterval('quarter')],
-            'PreviousYear'    => [self::previousInterval('year')],
+            Operators::YESTERDAY        => [self::previousInterval('day')],
+            Operators::PREVIOUS_WEEK    => [self::previousInterval('week')],
+            Operators::PREVIOUS_MONTH   => [self::previousInterval('month')],
+            Operators::PREVIOUS_QUARTER => [self::previousInterval('quarter')],
+            Operators::PREVIOUS_YEAR    => [self::previousInterval('year')],
 
-            'PreviousXDaysToDate' => [
+            Operators::PREVIOUS_X_DAYS_TO_DATE => [
                 self::interval(
                     static fn ($now, $value) => $now->subDays($value)->startOfDay(),
                     static fn ($now) => $now,
                 ),
             ],
-            'PreviousXDays'       => [
+            Operators::PREVIOUS_X_DAYS         => [
                 self::interval(
                     static fn ($now, $value) => $now->subDays($value)->startOfDay(),
                     static fn ($now) => $now->startOfDay(),
                 ),
             ],
 
-            'Today' => [
+            Operators::TODAY => [
                 self::interval(
                     static fn ($now) => $now->startOfDay(),
                     static fn ($now) => $now->addDay()->startOfDay(),
