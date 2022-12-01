@@ -94,11 +94,11 @@ class CollectionDecorator implements CollectionContract
         return $this->childCollection->update($caller, $refinedFilter, $id, $patch);
     }
 
-    public function delete(Caller $caller, Filter $filter, $id): void
+    public function delete(Caller $caller, Filter $filter): void
     {
         $refinedFilter = $this->refineFilter($caller, $filter);
 
-        $this->childCollection->delete($caller, $refinedFilter, $id);
+        $this->childCollection->delete($caller, $refinedFilter);
     }
 
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)

@@ -6,11 +6,16 @@ use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Types\Types;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
+use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class ThroughCollection extends BaseCollection
 {
@@ -92,6 +97,18 @@ class ThroughCollection extends BaseCollection
             'timestamp'                                                                  => PrimitiveType::DATE,
             default                                                                      => PrimitiveType::STRING,
         };
+    }
 
+    public function create(Caller $caller, array $data)
+    {
+        $data = $this->formatAttributes($data);
+        $query = QueryConverter::of($this, $caller->getTimezone());
+        $id = $query->insert($data);
+
+//        $filter = new Filter(
+//            conditionTree: new ConditionTreeLeaf($this->getIdentifier(), Operators::EQUAL, $id)
+//        );
+//
+//        return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->first());
     }
 }

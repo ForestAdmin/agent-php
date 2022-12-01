@@ -337,6 +337,8 @@ class QueryConverter
                 ->getDataSource()
                 ->getCollection($relation->getForeignCollection())->getTableName();
 
+            $this->addJoinRelation($relation, $tableName);
+
             return $tableName . '.' . Str::after($leaf->getField(), ':');
         }
 
