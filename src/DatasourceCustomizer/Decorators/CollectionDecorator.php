@@ -158,16 +158,6 @@ class CollectionDecorator implements CollectionContract
         return $this->childCollection->export($caller, $filter, $projection);
     }
 
-    public function associate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void
-    {
-        $this->childCollection->associate($caller, $parentFilter, $childFilter, $relation);
-    }
-
-    public function dissociate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void
-    {
-        $this->childCollection->dissociate($caller, $parentFilter, $childFilter, $relation);
-    }
-
     public function getSegments()
     {
         return $this->childCollection->getSegments();

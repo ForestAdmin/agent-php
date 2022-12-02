@@ -125,68 +125,6 @@ class BaseCollection extends ForestCollection
         }
     }
 
-    public function associate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void
-    {
-        $entity = Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $parentFilter)->first());
-        $targetCollection = $this->datasource->getCollection($relation->getForeignCollection());
-
-        if ($relation instanceof ManyToManySchema) {
-            $entitiesTarget = QueryConverter::of($targetCollection, $caller->getTimezone(), $childFilter)
-                ->get()
-                ->map(fn ($record) => Arr::undot($record))
-                ->toArray();
-
-            /** @var Builder $query */
-            $query = $this->getDataSource()
-                ->getOrm()
-                ->getConnection()
-                ->table($relation->getThroughTable());
-            foreach ($entitiesTarget as $entityTarget) {
-                $query->updateOrInsert(
-                    [
-                        $relation->getForeignKey() => $entityTarget[$relation->getForeignKeyTarget()],
-                        $relation->getOriginKey()  => $entity[$relation->getOriginKeyTarget()],
-                    ],
-                    []
-                );
-            }
-        } else {
-            QueryConverter::of($targetCollection, $caller->getTimezone(), $childFilter)->update(
-                [
-                    $relation->getOriginKey() => $entity[$this->getIdentifier()],
-                ]
-            );
-        }
-    }
-
-    public function dissociate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void
-    {
-        $entity = Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $parentFilter)->first());
-        $targetCollection = $this->datasource->getCollection($relation->getForeignCollection());
-
-        if ($relation instanceof ManyToManySchema) {
-            $entitiesTarget = QueryConverter::of($targetCollection, $caller->getTimezone(), $childFilter)
-                ->get()
-                ->map(fn ($record) => Arr::undot($record))
-                ->toArray();
-
-            foreach ($entitiesTarget as $entityTarget) {
-                $this->getDataSource()
-                    ->getOrm()
-                    ->getConnection()
-                    ->table($relation->getThroughTable())
-                    ->where(
-                        [
-                            [$relation->getForeignKey(), '=', $entityTarget[$relation->getForeignKeyTarget()]],
-                            [$relation->getOriginKey(), '=', $entity[$relation->getOriginKeyTarget()]],
-                        ]
-                    )->delete();
-            }
-        } else {
-            // todo
-        }
-    }
-
     protected function formatAttributes(array $data)
     {
         $entityAttributes = [];
