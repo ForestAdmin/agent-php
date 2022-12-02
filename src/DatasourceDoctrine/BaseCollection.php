@@ -2,35 +2,18 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceDoctrine;
 
-use Doctrine\ORM\Mapping\ManyToMany;
-use Doctrine\ORM\Mapping\ManyToOne;
-use Doctrine\ORM\Mapping\OneToMany;
-use Doctrine\ORM\Mapping\OneToOne;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use Doctrine\Persistence\Mapping\MappingException;
-use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryCharts;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection as ForestCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class BaseCollection extends ForestCollection
@@ -95,12 +78,12 @@ class BaseCollection extends ForestCollection
      * @throws NonUniqueResultException
      * @throws NoResultException
      */
-    public function update(Caller $caller, Filter $filter, $id, array $patch)
+    public function update(Caller $caller, Filter $filter, array $patch)
     {
         $data = $this->formatAttributes($patch);
         QueryConverter::of($this, $caller->getTimezone(), $filter)->update($data);
 
-        return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->first());
+        return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->first() ?? []);
     }
 
     public function delete(Caller $caller, Filter $filter): void

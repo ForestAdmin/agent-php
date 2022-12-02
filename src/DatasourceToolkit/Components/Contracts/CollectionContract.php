@@ -33,7 +33,7 @@ interface CollectionContract
 
     public function export(Caller $caller, Filter $filter, Projection $projection): array;
 
-    public function update(Caller $caller, Filter $filter, $id, array $patch);
+    public function update(Caller $caller, Filter $filter, array $patch);
 
     public function delete(Caller $caller, Filter $filter): void;
 

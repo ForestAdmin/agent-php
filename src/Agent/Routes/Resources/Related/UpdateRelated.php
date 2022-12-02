@@ -56,7 +56,6 @@ class UpdateRelated extends AbstractRelationRoute
             new Filter(
                 conditionTree: ConditionTreeFactory::intersect([$fkOwner, $scope]),
             ),
-            $parentId,
             [$relation->getForeignKey() => $foreignValue]
         );
     }
@@ -73,7 +72,6 @@ class UpdateRelated extends AbstractRelationRoute
             new Filter(
                 conditionTree: ConditionTreeFactory::intersect([$oldFkOwner, $scope]),
             ),
-            $childId,
             [$relation->getOriginKey() => $originValue]
         );
     }

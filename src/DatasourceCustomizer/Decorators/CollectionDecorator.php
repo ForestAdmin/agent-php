@@ -87,11 +87,11 @@ class CollectionDecorator implements CollectionContract
         return $this->childCollection->list($caller, $refinedFilter, $projection);
     }
 
-    public function update(Caller $caller, Filter $filter, $id, array $patch)
+    public function update(Caller $caller, Filter $filter, array $patch)
     {
         $refinedFilter = $this->refineFilter($caller, $filter);
 
-        return $this->childCollection->update($caller, $refinedFilter, $id, $patch);
+        return $this->childCollection->update($caller, $refinedFilter, $patch);
     }
 
     public function delete(Caller $caller, Filter $filter): void

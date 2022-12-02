@@ -86,7 +86,7 @@ class Collection implements CollectionContract
         // TODO: Implement list() method.
     }
 
-    public function update(Caller $caller, Filter $filter, $id, array $patch)
+    public function update(Caller $caller, Filter $filter, array $patch)
     {
         // TODO: Implement update() method.
     }

@@ -60,7 +60,7 @@ class AssociateRelated extends AbstractRelationRoute
             ConditionTreeFactory::intersect(
                 [
                     new ConditionTreeLeaf('id', Operators::EQUAL, $value),
-                    $this->permissions->getScope(),
+                    $this->permissions->getScope($this->collection),
                 ]
             )
         );

@@ -40,7 +40,7 @@ class Update extends AbstractCollectionRoute
             )
         );
 
-        $result = $this->collection->update($this->caller, $filter, $id, $this->request->get('data'));
+        $result = $this->collection->update($this->caller, $filter, $this->request->get('data'));
 
         return [
             'name'              => $args['collectionName'],
