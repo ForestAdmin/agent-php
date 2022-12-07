@@ -22,16 +22,7 @@ class DoctrineDatasource extends ForestDatasource
     {
         parent::__construct();
         $this->orm = new Manager();
-        $this->orm->addConnection(
-            [
-                "driver"   => $databaseConfig['databaseDriver'],
-                "host"     => $databaseConfig['databaseHost'],
-                "port"     => $databaseConfig['databasePort'],
-                "database" => $databaseConfig['databaseName'],
-                "username" => $databaseConfig['databaseUsername'],
-                "password" => $databaseConfig['databasePassword'],
-            ]
-        );
+        $this->orm->addConnection($databaseConfig);
         $this->orm->bootEloquent();
 
         $this->generate();
