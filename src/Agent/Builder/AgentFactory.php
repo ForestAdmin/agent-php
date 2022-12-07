@@ -80,7 +80,7 @@ class AgentFactory
     private function buildCache(array $config): void
     {
         $filesystem = new Filesystem();
-        $directory = $config['projectDir'] . '/forest-cache' ;
+        $directory = $config['cacheDir'];
         self::$container->set('cache', new CacheServices($filesystem, $directory));
         self::$container->get('cache')->add('config', $config, self::TTL_CONFIG);
     }
