@@ -3,15 +3,19 @@
 namespace ForestAdmin\AgentPHP\Agent\Builder;
 
 use DI\Container;
+use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
+use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
+use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use Illuminate\Events\Dispatcher;
 
 class AgentFactory
 {
-    private const TTL = 3600;
+    private const TTL_CONFIG = 3600;
+
+    private const TTL_SCHEMA = 7200;
 
     protected static Container $container;
 
@@ -34,6 +38,8 @@ class AgentFactory
     public function build(): void
     {
         self::$container->set('datasource', $this->customizer->getStack()->dataSource);
+
+        $this->sendSchema($this->customizer->getStack()->dataSource);
     }
 
     /**
@@ -76,6 +82,24 @@ class AgentFactory
         $filesystem = new Filesystem();
         $directory = $config['projectDir'] . '/forest-cache' ;
         self::$container->set('cache', new CacheServices($filesystem, $directory));
-        self::$container->get('cache')->add('config', $config, self::TTL);
+        self::$container->get('cache')->add('config', $config, self::TTL_CONFIG);
+    }
+
+    private function sendSchema(Datasource $datasource): void
+    {
+        $schema = SchemaEmitter::getSerializedSchema($datasource);
+
+        $schemaIsKnown = false;
+        if (Cache::get('schemaFileHash') === $schema['meta']['schemaFileHash']) {
+            $schemaIsKnown = true;
+        }
+
+        if (! $schemaIsKnown) {
+            // TODO this.options.logger('Info', 'Schema was updated, sending new version');
+            ForestHttpApi::uploadSchema($schema);
+            Cache::put('schemaFileHash', $schema['meta']['schemaFileHash'], self::TTL_SCHEMA);
+        } else {
+            // TODO this.options.logger('Info', 'Schema was not updated since last run');
+        }
     }
 }
