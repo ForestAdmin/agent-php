@@ -25,7 +25,6 @@ class Operators
     public const ENDS_WITH = 'Ends_With';
     public const IENDS_WITH = 'IEnds_With';
     public const MISSING = 'Missing';
-
     public const BEFORE = 'Before';
     public const AFTER = 'After';
     public const AFTER_X_HOURS_AGO = 'After_X_Hours_Ago';

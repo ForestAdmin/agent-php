@@ -27,7 +27,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 class QueryStringParser
 {
     public const DEFAULT_ITEMS_PER_PAGE = 15;
-    
+
     public const DEFAULT_PAGE_TO_SKIP = 1;
 
     /**
