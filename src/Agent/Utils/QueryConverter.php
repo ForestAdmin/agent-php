@@ -287,7 +287,7 @@ class QueryConverter
 
                 break;
             case Operators::ICONTAINS:
-                $query->whereRaw("LOWER ($field) LIKE LOWER(?)", ['%' . $value . '%'], $aggregator);
+                $query->whereRaw("LOWER($field) LIKE LOWER(?)", ['%' . $value . '%'], $aggregator);
 
                 break;
             case Operators::CONTAINS:
@@ -317,7 +317,7 @@ class QueryConverter
 
                 break;
             case Operators::ISTARTS_WITH:
-                $query->whereRaw("LOWER ($field) LIKE ?", [$value . '%'], $aggregator);
+                $query->whereRaw("LOWER($field) LIKE ?", [$value . '%'], $aggregator);
 
                 break;
             case Operators::IENDS_WITH:

@@ -22,23 +22,14 @@ class SearchCollection extends CollectionDecorator
 {
     private ?Closure $replacer = null;
 
-    /**
-     * @throws \ReflectionException
-     */
     public function replaceSearch(Closure $replacer): void
     {
-        // todo check closure arguments type with ReflectionFunction
         $this->replacer = $replacer;
     }
 
     public function isSearchable(): bool
     {
         return true;
-    }
-
-    protected function refineSchema($childSchema /*: CollectionSchema*/) /* CollectionSchema*/
-    {
-        // todo
     }
 
     public function refineFilter(Caller $caller, PaginatedFilter|Filter|null $filter): PaginatedFilter|Filter|null
