@@ -17,7 +17,7 @@ class ConditionTreeEquivalent
         return self::getReplacer($leaf->getOperator(), $operators, $columnType)($leaf, $timezone);
     }
 
-    public static function hasEquivalentTree(string $operator, array $filterOperators, string $columnType, array $visited = []): bool
+    public static function hasEquivalentTree(string $operator, array $filterOperators, string $columnType): bool
     {
         return (bool) self::getReplacer($operator, $filterOperators, $columnType);
     }
