@@ -40,7 +40,6 @@ class Collection extends BaseCollection
         $this->tableName = $this->entityMetadata->getTableName();
         $this->addFields($this->entityMetadata->fieldMappings);
         $this->mapRelationshipsToFields();
-        $this->searchable = true;
     }
 
     /**
