@@ -17,19 +17,23 @@ class OperatorsReplaceCollection extends CollectionDecorator
     public function getFields(): IlluminateCollection
     {
         $fields = $this->childCollection->getFields();
-
         /**
          * @var ColumnSchema $schema
          */
         foreach ($fields as $schema) {
             if ($schema instanceof ColumnSchema) {
                 $newOperators = collect(Operators::getAllOperators())
-                    ->filter(fn ($operator) => ConditionTreeEquivalent::hasEquivalentTree($operator, $schema->getFilterOperators(), $schema->getColumnType()));
+                    ->filter(fn ($operator) => ConditionTreeEquivalent::hasEquivalentTree($operator, $schema->getFilterOperators(), $schema->getColumnType()))
+                    ->toArray();
 
-                $schema->setFilterOperators([
-                    ...$schema->getFilterOperators(),
-                    ...$newOperators,
-                ]);
+                $schema->setFilterOperators(
+                    array_unique(
+                        [
+                            ...$schema->getFilterOperators(),
+                            ...$newOperators,
+                        ]
+                    )
+                );
             }
         }
 

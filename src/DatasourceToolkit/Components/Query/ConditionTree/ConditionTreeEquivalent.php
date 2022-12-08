@@ -17,15 +17,15 @@ class ConditionTreeEquivalent
         return self::getReplacer($leaf->getOperator(), $operators, $columnType)($leaf, $timezone);
     }
 
-    public static function hasEquivalentTree(string $operator, array $operators, string $columnType): bool
+    public static function hasEquivalentTree(string $operator, array $filterOperators, string $columnType, array $visited = []): bool
     {
-        return (bool) self::getReplacer($operator, $operators, $columnType);
+        return (bool) self::getReplacer($operator, $filterOperators, $columnType);
     }
 
     private static function getReplacer(string $operator, array $filterOperators, string $columnType, array $visited = [])
     {
         if (in_array($operator, $filterOperators, true)) {
-            return fn ($leaf) => $leaf;
+            return static fn ($leaf) => $leaf;
         }
 
         foreach (self::getAlternatives($operator) ?? [] as $key => $alt) {
@@ -38,9 +38,9 @@ class ConditionTreeEquivalent
 
                 if (collect($dependsReplacer)->every(fn ($r) => (bool) $r)) {
                     return static function ($leaf, $timezone) use ($replacer, $dependsReplacer, $operator) {
-                        call_user_func($replacer, $leaf, $timezone)->replaceLeafs(
+                        $replacer($leaf, $timezone)->replaceLeafs(
                             function ($subLeaf) use ($timezone, $dependsReplacer, $operator) {
-                                call_user_func($dependsReplacer[array_search($operator, $subLeaf, true)], $subLeaf, $timezone);
+                                $dependsReplacer[array_search($operator, $subLeaf, true)]($subLeaf, $timezone);
                             }
                         );
                     };
