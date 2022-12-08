@@ -54,6 +54,7 @@ final class FrontendFilterable
             Operators::CONTAINS,
             Operators::NOT_CONTAINS,
         ],
+        'Json'   => [],
     ];
 
     public static function isFilterable(string|array $type, array $operators = []): bool
