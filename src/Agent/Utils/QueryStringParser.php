@@ -21,14 +21,13 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\SortValidator;
 use function ForestAdmin\config;
 
 use Illuminate\Support\Str;
-
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class QueryStringParser
 {
     public const DEFAULT_ITEMS_PER_PAGE = 15;
-
+    
     public const DEFAULT_PAGE_TO_SKIP = 1;
 
     /**
@@ -187,21 +186,18 @@ class QueryStringParser
             return SortFactory::byPrimaryKeys($collection);
         }
 
-        try {
-            $sort = new Sort(
+        $sortString = Str::replace('.', ':', $sortString);
+        $sort = new Sort(
+            [
                 [
-                    [
-                        'field'     => Str::replace('-', '', $sortString),
-                        'ascending' => ! Str::contains($sortString, '-'),
-                    ],
-                ]
-            );
+                    'field'     => Str::replace('-', '', $sortString),
+                    'ascending' => ! Str::contains($sortString, '-'),
+                ],
+            ]
+        );
 
-            SortValidator::validate($collection, $sort);
+        SortValidator::validate($collection, $sort);
 
-            return $sort;
-        } catch (\RuntimeException $e) {
-            throw new ForestException("Invalid sort: $sortString");
-        }
+        return $sort;
     }
 }
