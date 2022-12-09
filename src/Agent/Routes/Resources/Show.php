@@ -44,7 +44,7 @@ class Show extends AbstractCollectionRoute
             $this->caller,
             $filter,
             QueryStringParser::parseProjection($this->collection, $this->request)
-        )[0];
+        )[0] ?? [];
 
         return [
             'name'              => $args['collectionName'],
