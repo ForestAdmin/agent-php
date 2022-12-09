@@ -46,21 +46,13 @@ function factoryListing($args = []): Listing
             ->getMock();
     }
 
-    if (isset($args['export'])) {
-        $collectionUser = mock($collectionUser)
-            ->shouldReceive('export')
-            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
-            ->andReturn($args['export'])
-            ->getMock();
-    }
-
     $datasource->addCollection($collectionUser);
 
     $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
+        'projectDir'    => sys_get_temp_dir(),
+        'schemaPath'    => sys_get_temp_dir() . '/.forestadmin-schema.json',
         'authSecret'    => AUTH_SECRET,
-        'isProduction' => false,
+        'isProduction'  => false,
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();
     SchemaEmitter::getSerializedSchema($datasource);
@@ -184,7 +176,7 @@ test('handleRequestCsv() should return a response 200', function () {
         ],
     ];
 
-    $listing = factoryListing(['export' => $data]);
+    $listing = factoryListing(['listing' => $data]);
 
     expect($listing->handleRequest(['collectionName' => 'User.csv']))
         ->toBeArray()

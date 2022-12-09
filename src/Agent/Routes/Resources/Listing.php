@@ -56,7 +56,7 @@ class Listing extends AbstractCollectionRoute
         $this->permissions->can('export:' . $this->collection->getName());
 
         $scope = $this->permissions->getScope($this->collection);
-        $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
+        $this->filter = ContextFilterFactory::buildPaginated($this->collection, $this->request, $scope);
         $projection = QueryStringParser::parseProjection($this->collection, $this->request);
         $rows = $this->collection->list(
             $this->caller,
