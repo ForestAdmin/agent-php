@@ -108,7 +108,7 @@ class BaseCollection extends ForestCollection
         }
     }
 
-    protected function formatAttributes(array $data)
+    public function formatAttributes(array $data)
     {
         $entityAttributes = [];
         $attributes = $data['attributes'];

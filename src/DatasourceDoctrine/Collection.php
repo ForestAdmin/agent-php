@@ -103,26 +103,6 @@ class Collection extends BaseCollection
         return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->first());
     }
 
-    protected function formatAttributes(array $data)
-    {
-        $entityAttributes = [];
-        $attributes = $data['attributes'];
-        $relationships = $data['relationships'] ?? [];
-        foreach ($attributes as $key => $value) {
-            $entityAttributes[$key] = $value;
-        }
-
-        foreach ($relationships as $key => $value) {
-            $relation = $this->getFields()[$key];
-            $attributes = $value['data'];
-            if ($relation instanceof ManyToOneSchema) {
-                $entityAttributes[$relation->getForeignKey()] = $attributes[$relation->getForeignKeyTarget()];
-            }
-        }
-
-        return $entityAttributes;
-    }
-
     /**
      * @param array $reflectionAttributes
      * @return string|null
