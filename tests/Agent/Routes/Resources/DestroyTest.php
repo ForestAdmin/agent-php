@@ -30,9 +30,9 @@ function factoryDestroy(): Destroy
     $datasource->addCollection($collectionCar);
 
     $options = [
-        'projectDir'   => sys_get_temp_dir(),
+        'projectDir'    => sys_get_temp_dir(),
         'authSecret'    => AUTH_SECRET,
-        'isProduction' => false,
+        'isProduction'  => false,
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();
 
