@@ -40,7 +40,7 @@ class ConditionTreeBranch extends ConditionTree
     {
         return new ConditionTreeBranch(
             $this->aggregator,
-            array_map(static fn ($condition) => $condition->replaceLeafs($handler), $this->getConditions()),
+            array_map(static fn ($condition) => $condition->replaceLeafs($handler), collect($this->getConditions())->filter()->toArray()),
         );
     }
 

@@ -45,10 +45,37 @@ function factoryChart($args = []): Charts
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
+                throughCollection: 'BookReview',
             ),
             'bookReviews' => new OneToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
+                foreignCollection: 'Review',
+            ),
+        ]
+    );
+
+    $collectionBookReview = new Collection($datasource, 'BookReview');
+    $collectionBookReview->addFields(
+        [
+            'id'          => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'reviews'     => new ManyToManySchema(
+                originKey: 'book_id',
+                originKeyTarget: 'id',
+                throughTable: 'book_review',
+                foreignKey: 'review_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'Review',
+                throughCollection: 'BookReview',
+            ),
+            'book' => new ManyToOneSchema(
+                foreignKey: 'book_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'Book',
+            ),
+            'review' => new ManyToOneSchema(
+                foreignKey: 'review_id',
+                foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
             ),
         ]
@@ -82,6 +109,7 @@ function factoryChart($args = []): Charts
 
     $datasource->addCollection($collectionBooks);
     $datasource->addCollection($collectionReviews);
+    $datasource->addCollection($collectionBookReview);
 
     $options = [
         'projectDir'    => sys_get_temp_dir(),
@@ -195,6 +223,7 @@ test('makeValue() with previous filter should return a ValueChart', function () 
             ],
         ]
     );
+
     $result = $chart->handleRequest(['collectionName' => 'Book']);
 
     expect($result)
