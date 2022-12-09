@@ -89,34 +89,23 @@ class ConditionTreeLeaf extends ConditionTree
         $fieldValue = RecordUtils::getFieldValue($record, $this->field);
         $columnType = $collection->getFields()->get($this->field)->getColumnType();
 
-        switch ($this->operator) {
-            case Operators::EQUAL:
-                return $fieldValue === $this->value;
-            case Operators::LESS_THAN:
-                return $fieldValue < $this->value;
-            case Operators::GREATER_THAN:
-                return $fieldValue > $this->value;
-            case Operators::LIKE:
-                return $this->like($fieldValue, $this->value, true);
-            case Operators::ILIKE:
-                return $this->like($fieldValue, $this->value, false);
-            case Operators::LONGER_THAN:
-                return is_string($fieldValue) ? strlen($fieldValue) > $this->value : false;
-            case Operators::SHORTER_THAN:
-                return is_string($fieldValue) ? strlen($fieldValue) < $this->value : false;
-            case Operators::INCLUDES_ALL:
-                return collect(explode(',', $this->value))->every(fn ($v) => in_array($v, $fieldValue, true));
-            case Operators::NOT_EQUAL:
-            case Operators::NOT_CONTAINS:
-                return ! $this->inverse()->match($record, $collection, $timezone);
-            default:
-                return ConditionTreeEquivalent::getEquivalentTree(
-                    $this,
-                    Operators::getUniqueOperators(),
-                    $columnType,
-                    $timezone,
-                )->match($record, $collection, $timezone);
-        }
+        return match ($this->operator) {
+            Operators::EQUAL        => $fieldValue === $this->value,
+            Operators::LESS_THAN    => $fieldValue < $this->value,
+            Operators::GREATER_THAN => $fieldValue > $this->value,
+            Operators::LIKE         => $this->like($fieldValue, $this->value, true),
+            Operators::ILIKE        => $this->like($fieldValue, $this->value, false),
+            Operators::LONGER_THAN  => is_string($fieldValue) && strlen($fieldValue) > $this->value,
+            Operators::SHORTER_THAN => is_string($fieldValue) && strlen($fieldValue) < $this->value,
+            Operators::INCLUDES_ALL => collect(explode(',', $this->value))->every(fn ($v) => in_array($v, $fieldValue, true)),
+            Operators::NOT_EQUAL, Operators::NOT_CONTAINS => ! $this->inverse()->match($record, $collection, $timezone),
+            default => ConditionTreeEquivalent::getEquivalentTree(
+                $this,
+                Operators::getUniqueOperators(),
+                $columnType,
+                $timezone,
+            )->match($record, $collection, $timezone),
+        };
     }
 
     public function forEachLeaf(Closure $handler): self
