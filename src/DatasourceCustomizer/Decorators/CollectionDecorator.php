@@ -153,11 +153,6 @@ class CollectionDecorator implements CollectionContract
         return $this->childCollection->show($caller, $filter, $id, $projection);
     }
 
-    public function export(Caller $caller, Filter $filter, Projection $projection): array
-    {
-        return $this->childCollection->export($caller, $filter, $projection);
-    }
-
     public function getSegments()
     {
         return $this->childCollection->getSegments();

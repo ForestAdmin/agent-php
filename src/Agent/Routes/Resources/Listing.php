@@ -57,12 +57,21 @@ class Listing extends AbstractCollectionRoute
 
         $scope = $this->permissions->getScope($this->collection);
         $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
-
-        $rows = $this->collection->export(
+        $projection = QueryStringParser::parseProjection($this->collection, $this->request);
+        $rows = $this->collection->list(
             $this->caller,
             $this->filter,
-            QueryStringParser::parseProjection($this->collection, $this->request),
+            $projection
         );
+
+        $relations = $projection->relations()->keys()->toArray();
+        foreach ($rows as &$row) {
+            foreach ($row as $field => $value) {
+                if (is_array($value) && in_array($field, $relations, true)) {
+                    $row[$field] = array_shift($value);
+                }
+            }
+        }
 
         $filename = $this->request->input('filename', $this->collection->getName()) . '.csv';
         $header = explode(',', $this->request->get('header'));

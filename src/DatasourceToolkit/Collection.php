@@ -81,11 +81,6 @@ class Collection implements CollectionContract
         // TODO: Implement list() method.
     }
 
-    public function export(Caller $caller, Filter $filter, Projection $projection): array
-    {
-        // TODO: Implement list() method.
-    }
-
     public function update(Caller $caller, Filter $filter, array $patch)
     {
         // TODO: Implement update() method.

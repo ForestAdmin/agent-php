@@ -42,25 +42,6 @@ class BaseCollection extends ForestCollection
             ->toArray();
     }
 
-    public function export(Caller $caller, Filter $filter, Projection $projection): array
-    {
-        $results = QueryConverter::of($this, $caller->getTimezone(), $filter, $projection)
-            ->get()
-            ->map(fn ($record) => Arr::undot($record))
-            ->toArray();
-
-        $relations = $projection->relations()->keys()->toArray();
-        foreach ($results as &$result) {
-            foreach ($result as $field => $value) {
-                if (is_array($value) && in_array($field, $relations, true)) {
-                    $result[$field] = array_shift($value);
-                }
-            }
-        }
-
-        return $results;
-    }
-
     public function create(Caller $caller, array $data)
     {
         $data = $this->formatAttributes($data);
