@@ -13,7 +13,7 @@ abstract class ConditionTree
 {
     abstract public function inverse(): self;
 
-    abstract public function replaceLeafs(Closure $handler): self;
+    abstract public function replaceLeafs(Closure $handler): ?self;
 
     abstract public function match(array $record, Collection $collection, string $timezone): bool;
 

@@ -77,9 +77,13 @@ class ConditionTreeLeaf extends ConditionTree
         };
     }
 
-    public function replaceLeafs(Closure $handler): ConditionTree
+    public function replaceLeafs(Closure $handler): ?ConditionTree
     {
         $result = $handler($this);
+
+        if ($result === null) {
+            return null;
+        }
 
         return $result instanceof ConditionTree ? $result : ConditionTreeFactory::fromArray($result);
     }

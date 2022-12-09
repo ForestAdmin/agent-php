@@ -14,7 +14,9 @@ class ConditionTreeEquivalent
 
     public static function getEquivalentTree(ConditionTreeLeaf $leaf, array $operators, string $columnType, string $timezone)
     {
-        return self::getReplacer($leaf->getOperator(), $operators, $columnType)($leaf, $timezone);
+        $replacer = self::getReplacer($leaf->getOperator(), $operators, $columnType);
+
+        return $replacer ? $replacer($leaf, $timezone) : null;
     }
 
     public static function hasEquivalentTree(string $operator, array $filterOperators, string $columnType): bool

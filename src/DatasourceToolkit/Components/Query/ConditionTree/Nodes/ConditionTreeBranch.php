@@ -36,7 +36,7 @@ class ConditionTreeBranch extends ConditionTree
         );
     }
 
-    public function replaceLeafs(Closure $handler): ConditionTree
+    public function replaceLeafs(Closure $handler): ?ConditionTree
     {
         return new ConditionTreeBranch(
             $this->aggregator,
