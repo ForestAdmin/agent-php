@@ -23,7 +23,6 @@ class Collection
 {
     public static function getInverseRelation(CollectionContract $collection, string $relationName): ?string
     {
-        // TODO useful ? because we have the attribute inverseRelationName into our RelationSchema
         /** @var RelationSchema $relation */
         $relationField = $collection->getFields()->get($relationName);
         /** @var MainCollection $foreignCollection */

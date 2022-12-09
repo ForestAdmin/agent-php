@@ -33,13 +33,11 @@ dataset('DatasourceForFilterFactory', dataset: function () {
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'books',
             ),
             'bookReviews' => new OneToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'books'
             ),
         ]
     );
@@ -64,7 +62,6 @@ dataset('DatasourceForFilterFactory', dataset: function () {
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'bookReview'
             ),
         ]
     );
@@ -99,13 +96,11 @@ function createDatasourceForFilterFactory(): Datasource
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'books',
             ),
             'bookReviews' => new OneToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'books'
             ),
         ]
     );
@@ -130,7 +125,6 @@ function createDatasourceForFilterFactory(): Datasource
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'bookReview'
             ),
         ]
     );

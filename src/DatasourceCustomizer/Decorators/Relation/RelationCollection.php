@@ -235,19 +235,16 @@ class RelationCollection extends CollectionDecorator
                 foreignKey: $partialJoin['foreignKey'],
                 foreignKeyTarget: Arr::get($partialJoin, 'foreignKeyTarget', Schema::getPrimaryKeys($target)[0]),
                 foreignCollection: $partialJoin['foreignCollection'],
-                inverseRelationName:''
             ),
             'OneToOne'  => new OneToOneSchema(
                 originKey: $partialJoin['originKey'],
                 originKeyTarget: Arr::get($partialJoin, 'foreignKeyTarget', Schema::getPrimaryKeys($this)[0]),
                 foreignCollection: $partialJoin['foreignCollection'],
-                inverseRelationName: ''
             ),
             'OneToMany' => new OneToManySchema(
                 originKey: $partialJoin['originKey'],
                 originKeyTarget: Arr::get($partialJoin, 'foreignKeyTarget', Schema::getPrimaryKeys($this)[0]),
                 foreignCollection: $partialJoin['foreignCollection'],
-                inverseRelationName: ''
             ),
             'ManyToMany' => new ManyToManySchema(
                 originKey: $partialJoin['originKey'],

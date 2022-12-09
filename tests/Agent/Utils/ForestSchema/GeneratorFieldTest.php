@@ -25,7 +25,6 @@ function GeneratorFieldWithOneToOneRelation(): Datasource
                 foreignKey: 'authorId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
-                inverseRelationName: 'Books'
             ),
         ]
     );
@@ -38,7 +37,6 @@ function GeneratorFieldWithOneToOneRelation(): Datasource
                 originKey: 'authorId',
                 originKeyTarget: 'id',
                 foreignCollection: 'Book',
-                inverseRelationName: 'author'
             ),
         ]
     );
@@ -68,7 +66,6 @@ function GeneratorFieldWithOneToManyRelation(): Datasource
                 foreignKey: 'authorId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
-                inverseRelationName: 'books'
             ),
         ]
     );
@@ -81,7 +78,6 @@ function GeneratorFieldWithOneToManyRelation(): Datasource
                 originKey: 'authorId',
                 originKeyTarget: 'id',
                 foreignCollection: 'Book',
-                inverseRelationName: 'author'
             ),
         ]
     );
@@ -113,7 +109,6 @@ function GeneratorFieldWithManyToManyRelation(): Datasource
                 foreignKey: 'personId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
-                inverseRelationName: 'books'
             ),
         ]
     );
@@ -127,13 +122,11 @@ function GeneratorFieldWithManyToManyRelation(): Datasource
                 foreignKey: 'bookId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',
-                inverseRelationName: 'books'
             ),
             'person'   => new ManyToOneSchema(
                 foreignKey: 'personId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
-                inverseRelationName: 'persons'
             ),
         ]
     );
@@ -149,7 +142,6 @@ function GeneratorFieldWithManyToManyRelation(): Datasource
                 foreignKey: 'bookId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',
-                inverseRelationName: 'persons'
             ),
         ]
     );

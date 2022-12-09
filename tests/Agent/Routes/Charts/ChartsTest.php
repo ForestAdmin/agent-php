@@ -45,13 +45,11 @@ function factoryChart($args = []): Charts
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'Book',
             ),
             'bookReviews' => new OneToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'bookReviews',
             ),
         ]
     );
@@ -65,7 +63,6 @@ function factoryChart($args = []): Charts
                 foreignKey: 'book_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',
-                inverseRelationName: 'bookReviews',
             ),
         ]
     );

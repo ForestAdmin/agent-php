@@ -27,7 +27,6 @@ function conditionTreeCollectionValidation(): Collection
                 originKey: 'id',
                 originKeyTarget: 'id',
                 foreignCollection: 'owner',
-                inverseRelationName: 'car'
             ),
         ]
     );
@@ -40,7 +39,6 @@ function conditionTreeCollectionValidation(): Collection
                 originKey: 'id',
                 originKeyTarget: 'id',
                 foreignCollection: 'address',
-                inverseRelationName: 'owner'
             ),
         ]
     );

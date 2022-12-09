@@ -67,7 +67,6 @@ class ThroughCollection extends BaseCollection
                 foreignKey: $foreignKey->getLocalColumns()[0],
                 foreignKeyTarget: $foreignKey->getForeignColumns()[0],
                 foreignCollection: $this->metadata['foreignCollections'][$foreignKey->getForeignTableName()],
-                inverseRelationName: '',
             );
 
             $this->addField(Str::lower($relation->getForeignCollection()), $relation);

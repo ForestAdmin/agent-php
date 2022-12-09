@@ -49,7 +49,6 @@ function projectionDatasource(): Datasource
                 originKey: 'id',
                 originKeyTarget: 'owner_id',
                 foreignCollection: 'owners',
-                inverseRelationName: 'car'
             ),
         ]
     );

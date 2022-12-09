@@ -33,7 +33,6 @@ function factoryAssociateRelated($args = []): AssociateRelated
                 originKey: 'user_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'Car',
-                inverseRelationName: 'user',
             ),
         ]
     );
@@ -49,7 +48,6 @@ function factoryAssociateRelated($args = []): AssociateRelated
                 foreignKey: 'user_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'User',
-                inverseRelationName: 'cars'
             ),
         ]
     );

@@ -63,13 +63,11 @@ function datasourceWithOneToOneAndManyToOne(): Datasource
                 originKey: 'book_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'authors',
-                inverseRelationName: 'book'
             ),
             'myFormat' => new ManyToOneSchema(
                 foreignKey: 'format_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'formats',
-                inverseRelationName: 'books'
             ),
         ]
     );
@@ -121,7 +119,6 @@ function datasourceOtherRelations(): Datasource
                 originKey: 'id',
                 originKeyTarget: 'id',
                 foreignCollection: 'bookPersons',
-                inverseRelationName: 'book'
             ),
         ]
     );

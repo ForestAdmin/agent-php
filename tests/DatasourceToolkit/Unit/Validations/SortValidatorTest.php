@@ -21,7 +21,6 @@ test('validate() should throw', function () {
                 foreignKey: 'authorId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'persons',
-                inverseRelationName: 'books'
             ),
         ]
     );
@@ -42,7 +41,6 @@ test('validate() should not throw', function () {
                 foreignKey: 'authorId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'persons',
-                inverseRelationName: 'books'
             ),
         ]
     );

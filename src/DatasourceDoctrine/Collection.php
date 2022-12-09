@@ -134,7 +134,6 @@ class Collection extends BaseCollection
             foreignKey: $joinColumn['name'],
             foreignKeyTarget: $relatedMeta->fieldNames[$joinColumn['referencedColumnName']],
             foreignCollection: (new \ReflectionClass($related))->getShortName(),
-            inverseRelationName: $inverseName,
         );
 
         $columnSchema = new ColumnSchema(
@@ -177,14 +176,12 @@ class Collection extends BaseCollection
                 originKey: $this->entityMetadata->fieldNames[$joinColumn[0]['referencedColumnName']],
                 originKeyTarget: $joinColumn[0]['name'],
                 foreignCollection: (new \ReflectionClass($related))->getShortName(),
-                inverseRelationName: $inverseName
             );
         } else {
             $relationField = new OneToOneSchema(
                 originKey: $joinColumn[0]['name'],
                 originKeyTarget: $relatedMeta->fieldNames[$joinColumn[0]['referencedColumnName']],
                 foreignCollection: (new \ReflectionClass($related))->getShortName(),
-                inverseRelationName: $inverseName
             );
         }
 
@@ -289,7 +286,6 @@ class Collection extends BaseCollection
             originKey: $joinColumn['name'],
             originKeyTarget: $this->entityMetadata->fieldNames[$joinColumn['referencedColumnName']],
             foreignCollection: (new \ReflectionClass($related))->getShortName(),
-            inverseRelationName: $mappedField,
         );
 
         $this->addField($name, $relationField);

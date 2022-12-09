@@ -11,9 +11,8 @@ abstract class ManyRelationSchema extends RelationSchema
         protected string $foreignKeyTarget,
         protected string $foreignCollection,
         protected string $type,
-        protected string $inverseRelationName,
     ) {
-        parent::__construct($foreignCollection, $type, $inverseRelationName);
+        parent::__construct($foreignCollection, $type);
     }
 
     public function getForeignKey(): string

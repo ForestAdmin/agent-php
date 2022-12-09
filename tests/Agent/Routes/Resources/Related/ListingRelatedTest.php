@@ -33,7 +33,6 @@ function factoryListingRelated($args = []): ListingRelated
                 originKey: 'user_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'Car',
-                inverseRelationName: 'user',
             ),
         ]
     );
@@ -49,7 +48,6 @@ function factoryListingRelated($args = []): ListingRelated
                 foreignKey: 'user_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'User',
-                inverseRelationName: 'cars'
             ),
         ]
     );

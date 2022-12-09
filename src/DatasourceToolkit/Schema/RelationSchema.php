@@ -7,7 +7,6 @@ abstract class RelationSchema
     public function __construct(
         protected string $foreignCollection,
         protected string $type,
-        protected string $inverseRelationName,
     ) {
     }
 
@@ -24,10 +23,5 @@ abstract class RelationSchema
     public function setForeignCollection(string $foreignCollection): void
     {
         $this->foreignCollection = $foreignCollection;
-    }
-
-    public function getInverseRelationName(): string
-    {
-        return $this->inverseRelationName;
     }
 }

@@ -21,7 +21,6 @@ dataset('FieldValidatorCollection', function () {
                 originKey: 'id',
                 originKeyTarget: 'id',
                 foreignCollection: 'owner',
-                inverseRelationName: 'car'
             ),
         ]
     );
@@ -34,7 +33,6 @@ dataset('FieldValidatorCollection', function () {
                 originKey: 'id',
                 originKeyTarget: 'id',
                 foreignCollection: 'address',
-                inverseRelationName: 'owner'
             ),
         ]
     );

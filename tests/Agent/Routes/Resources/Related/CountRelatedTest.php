@@ -32,7 +32,6 @@ function factoryCountRelated($args = []): CountRelated
                 originKey: 'user_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'Car',
-                inverseRelationName: 'user',
             ),
         ]
     );
@@ -48,7 +47,6 @@ function factoryCountRelated($args = []): CountRelated
                 foreignKey: 'user_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'User',
-                inverseRelationName: 'cars'
             ),
         ]
     );

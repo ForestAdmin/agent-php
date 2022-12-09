@@ -20,7 +20,6 @@ dataset('projectionValidatorCollection', function () {
                 foreignKey: 'authorId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'persons',
-                inverseRelationName: 'books'
             ),
         ]
     );

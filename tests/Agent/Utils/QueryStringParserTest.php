@@ -40,7 +40,6 @@ function factoryQueryStringParser()
                 originKey: 'user_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'Car',
-                inverseRelationName: 'user',
             ),
         ]
     );
@@ -57,7 +56,6 @@ function factoryQueryStringParser()
                 foreignKey: 'user_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'User',
-                inverseRelationName: 'cars'
             ),
         ]
     );

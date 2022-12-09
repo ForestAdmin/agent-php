@@ -35,7 +35,6 @@ function factoryDissociateRelated($args = []): DissociateRelated
                 originKey: 'user_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'Car',
-                inverseRelationName: 'user',
             ),
             'houses'     => new ManyToManySchema(
                 originKey: 'user_id',
@@ -44,7 +43,6 @@ function factoryDissociateRelated($args = []): DissociateRelated
                 foreignKey: 'house_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'House',
-                inverseRelationName: 'users'
             ),
         ]
     );
@@ -60,7 +58,6 @@ function factoryDissociateRelated($args = []): DissociateRelated
                 foreignKey: 'user_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'User',
-                inverseRelationName: 'cars'
             ),
         ]
     );
@@ -79,7 +76,6 @@ function factoryDissociateRelated($args = []): DissociateRelated
                 foreignKey: 'user_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'User',
-                inverseRelationName: 'houses'
             ),
         ]
     );

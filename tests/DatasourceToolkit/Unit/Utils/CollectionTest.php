@@ -31,7 +31,6 @@ function dataSourceWithInverseRelationMissing(): Datasource
                 foreignKey: 'authorId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
-                inverseRelationName: 'Book'
             ),
             'authorId' => new ColumnSchema(
                 columnType: PrimitiveType::UUID,
@@ -83,13 +82,11 @@ function datasourceWithAllRelations(array $args = []): Datasource
                 foreignKey: 'personId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
-                inverseRelationName: 'myPersons'
             ),
             'myBookPersons' => new OneToManySchema(
                 originKey: 'bookId',
                 originKeyTarget: 'id',
                 foreignCollection: 'BookPerson',
-                inverseRelationName: 'bookPersons'
             ),
         ]
     );
@@ -108,13 +105,11 @@ function datasourceWithAllRelations(array $args = []): Datasource
                 foreignKey: 'bookId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',
-                inverseRelationName: 'myBook'
             ),
             'myPerson' => new ManyToOneSchema(
                 foreignKey: 'personId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
-                inverseRelationName: 'myPerson'
             ),
         ]
     );
@@ -134,13 +129,11 @@ function datasourceWithAllRelations(array $args = []): Datasource
                 foreignKey: 'bookId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',
-                inverseRelationName: 'myBooks'
             ),
             'myBookPerson' => new OneToOneSchema(
                 originKey: 'personId',
                 originKeyTarget: 'id',
                 foreignCollection: 'BookPerson',
-                inverseRelationName: 'bookPersons'
             ),
         ]
     );
@@ -236,7 +229,6 @@ test('isManyToManyInverse() should return false', function () {
         foreignKey: 'bookId',
         foreignKeyTarget: 'id',
         foreignCollection: 'Book',
-        inverseRelationName: 'persons'
     );
 
     expect(CollectionUtils::isManyToManyInverse($collectionBook->getFields()['myPersons'], $manyToManyRelation))->toBeFalse();

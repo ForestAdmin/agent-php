@@ -8,9 +8,8 @@ class OneToOneSchema extends SingleRelationSchema
         protected string $originKey,
         protected string $originKeyTarget,
         protected string $foreignCollection,
-        protected string $inverseRelationName,
     ) {
-        parent::__construct($originKey, $originKeyTarget, $foreignCollection, 'OneToOne', $inverseRelationName);
+        parent::__construct($originKey, $originKeyTarget, $foreignCollection, 'OneToOne');
     }
 
     public function getForeignCollection(): string

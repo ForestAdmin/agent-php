@@ -42,13 +42,11 @@ test('getToManyRelation() should find relations ManyToMany and OneToMany', funct
         foreignKey: 'review_id',
         foreignKeyTarget: 'id',
         foreignCollection: 'Review',
-        inverseRelationName: 'books',
     );
     $oneToMany = new OneToManySchema(
         originKey: 'book_id',
         originKeyTarget: 'id',
         foreignCollection: 'Review',
-        inverseRelationName: 'books'
     );
     $collection->addFields(
         [
@@ -71,7 +69,6 @@ test('getToManyRelation() should throw if relation not exist', function () {
                 originKey: 'book_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'books'
             ),
         ]
     );
@@ -89,7 +86,6 @@ test('getToManyRelation() should throw if relation is not ManyToMany or OneToMan
                 foreignKey: 'book_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'books'
             ),
         ]
     );
