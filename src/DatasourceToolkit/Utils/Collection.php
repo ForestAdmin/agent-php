@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
@@ -154,13 +155,9 @@ class Collection
         $id,
         string $relationName,
         Caller $caller,
-        Filter $foreignFilter,
+        PaginatedFilter $foreignFilter,
         Projection $projection,
-        $format = 'list'
     ) {
-        if (! in_array($format, ['list', 'export'], true)) {
-            throw new ForestException("Return format of collection unknown, only values 'list' or 'export' are allowed");
-        }
         $relation = Schema::getToManyRelation($collection, $relationName);
         $foreignCollection = $collection->getDataSource()->getCollection($relation->getForeignCollection());
         if ($relation instanceof ManyToManySchema && $foreignFilter->isNestable()) {
@@ -169,7 +166,7 @@ class Collection
             if ($foreignRelation) {
                 $throughCollection = $collection->getDataSource()->getCollection($relation->getThroughCollection());
 
-                $records = $throughCollection->$format(
+                $records = $throughCollection->list(
                     $caller,
                     FilterFactory::makeThroughFilter($collection, $id, $relationName, $caller, $foreignFilter),
                     $projection->nest($foreignRelation)
@@ -179,7 +176,7 @@ class Collection
             }
         }
 
-        return $foreignCollection->$format(
+        return $foreignCollection->list(
             $caller,
             FilterFactory::makeForeignFilter($collection, $id, $relationName, $caller, $foreignFilter),
             $projection
