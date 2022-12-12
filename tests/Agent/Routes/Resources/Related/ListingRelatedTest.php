@@ -9,7 +9,7 @@ use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
@@ -56,16 +56,8 @@ function factoryListingRelated($args = []): ListingRelated
         $_GET['fields']['Car'] = implode(',', array_keys($args['listing'][0]));
         $collectionCar = mock($collectionCar)
             ->shouldReceive('list')
-            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
+            ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type(Projection::class))
             ->andReturn($args['listing'])
-            ->getMock();
-    }
-
-    if (isset($args['export'])) {
-        $collectionCar = mock($collectionCar)
-            ->shouldReceive('export')
-            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
-            ->andReturn($args['export'])
             ->getMock();
     }
 
@@ -182,7 +174,7 @@ test('handleRequestCsv() should return a response 200', function () {
         ],
     ];
 
-    $listing = factoryListingRelated(['export' => $data]);
+    $listing = factoryListingRelated(['listing' => $data]);
 
     expect($listing->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'cars.csv']))
         ->toBeArray()

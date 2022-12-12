@@ -63,7 +63,7 @@ class ListingRelated extends AbstractRelationRoute
         $this->permissions->can('export:' . $this->childCollection->getName());
 
         $scope = $this->permissions->getScope($this->childCollection);
-        $filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
+        $filter = ContextFilterFactory::buildPaginated($this->collection, $this->request, $scope);
 
         $id = Id::unpackId($this->collection, $args['id']);
 
@@ -74,7 +74,6 @@ class ListingRelated extends AbstractRelationRoute
             $this->caller,
             $filter,
             QueryStringParser::parseProjectionWithPks($this->childCollection, $this->request),
-            'export'
         );
 
         $filename = $this->request->input('filename', $this->childCollection->getName()) . '.csv';

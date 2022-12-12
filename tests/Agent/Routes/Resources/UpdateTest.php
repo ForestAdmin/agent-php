@@ -33,7 +33,7 @@ function factoryUpdate($args = []): Update
     if (isset($args['update'])) {
         $collectionCar = mock($collectionCar)
             ->shouldReceive('update')
-            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type('array'), $_GET['data'])
+            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type('array'))
             ->andReturn(($args['update']))
             ->getMock();
     }
@@ -41,10 +41,10 @@ function factoryUpdate($args = []): Update
     $datasource->addCollection($collectionCar);
 
     $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
+        'projectDir'    => sys_get_temp_dir(),
+        'schemaPath'    => sys_get_temp_dir() . '/.forestadmin-schema.json',
         'authSecret'    => AUTH_SECRET,
-        'isProduction' => false,
+        'isProduction'  => false,
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();
     SchemaEmitter::getSerializedSchema($datasource);
