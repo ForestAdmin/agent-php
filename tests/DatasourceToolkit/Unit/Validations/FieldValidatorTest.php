@@ -74,6 +74,10 @@ test('validate() should throw when the requested field is of type column', funct
 })->throws(ForestException::class, '🌳🌳🌳 Unexpected field type: cars.id (found Column expected \'ManyToOne\' or \'OneToOne\')')
     ->with('FieldValidatorCollection');
 
+test('validate() should validate field when the value is an array', function ($collection) {
+    expect(FieldValidator::validate($collection, 'id', ['foo', 'bar']));
+})->throws(ForestException::class, '🌳🌳🌳 Wrong type for id: foo. Expects Number')
+    ->with('FieldValidatorCollection');
 
 test('validateValue() on field of type boolean with valid value should not throw', function () {
     $column = new ColumnSchema(columnType: PrimitiveType::BOOLEAN);

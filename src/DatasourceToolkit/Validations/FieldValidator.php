@@ -63,12 +63,11 @@ class FieldValidator
      */
     public static function validateValue(string $field, ColumnSchema $columnSchema, $value, ?array $allowedTypes = null): void
     {
-        // FIXME: handle complex type from ColumnType
+        // TODO FIXME: handle complex type from ColumnType
         if (gettype($columnSchema->getColumnType()) !== PrimitiveType::STRING) {
         }
 
         $type = TypeGetter::get($value, $columnSchema->getColumnType());
-//        dd($type, $value,  $columnSchema->getColumnType());
         if ($columnSchema->getColumnType() === PrimitiveType::ENUM) {
             self::checkEnumValue($type, $columnSchema, $value);
         }
