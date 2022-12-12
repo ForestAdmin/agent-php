@@ -23,13 +23,6 @@ trait CollectionMethods
         return $this->fields;
     }
 
-    public function setFields(array $fields): Collection
-    {
-        $this->fields = $fields;
-
-        return $this;
-    }
-
     public function addActions(array $actions): void
     {
         foreach ($actions as $key => $value) {
@@ -52,13 +45,6 @@ trait CollectionMethods
     public function getActions(): IlluminateCollection
     {
         return $this->actions;
-    }
-
-    public function setActions(array $actions): Collection
-    {
-        $this->actions = $actions;
-
-        return $this;
     }
 
     public function isSearchable(): bool

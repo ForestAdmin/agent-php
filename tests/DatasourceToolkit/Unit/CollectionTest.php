@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ActionSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\ActionScope;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
 it('should prevent instantiation when adding action with duplicated name', function () {
     $action = new ActionSchema(scope: ActionScope::single(), staticForm: true);
@@ -73,13 +74,20 @@ it('should set searchable to true',  function () {
         ->and($collection->isSearchable())->toBe(true);
 });
 
+it('setField() should put the value to fields attribute',  function () {
+    $relation = new OneToOneSchema('id', 'foo_id', '__foreign-collection__');
+    $collection = new Collection(new Datasource(), '__collection__');
+    $collection->setField('foo', $relation);
 
-//it('should prevent execute unknown action',  function() {
-//    $collection = new Collection(new Datasource(), '__collection__');
-//    // todo execute is not define for now
-//});
+    expect($collection->getFields()->get('foo'))->toEqual($relation);
+});
 
-//it('should return an empty form',  function() {
-//    $collection = new Collection(new Datasource(), '__collection__');
-//
-//});
+it('addActions() should push multiple values to action attribute',  function () {
+    $collection = new Collection(new Datasource(), '__collection__');
+    $collection->addActions([
+        new ActionSchema(ActionScope::single()),
+        new ActionSchema(ActionScope::single())
+    ]);
+    expect($collection->getActions())->toBeInstanceOf(\Illuminate\Support\Collection::class)
+        ->and($collection->getActions()->toArray())->toEqual([new ActionSchema(ActionScope::single()), new ActionSchema(ActionScope::single())]);
+});
