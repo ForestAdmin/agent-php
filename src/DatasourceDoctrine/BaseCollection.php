@@ -29,11 +29,6 @@ class BaseCollection extends ForestCollection
         parent::__construct($datasource, $name);
     }
 
-    public function show(Caller $caller, Filter $filter, $id, Projection $projection)
-    {
-        return Arr::undot(QueryConverter::of($this, $caller->getTimezone(), $filter, $projection)->first());
-    }
-
     public function list(Caller $caller, Filter $filter, Projection $projection): array
     {
         return QueryConverter::of($this, $caller->getTimezone(), $filter, $projection)
