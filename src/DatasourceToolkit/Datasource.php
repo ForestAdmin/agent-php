@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
-use Composer\Autoload\ClassMapGenerator;
+use Composer\ClassMapGenerator\ClassMapGenerator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\Chart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
@@ -37,13 +37,6 @@ class Datasource implements DatasourceContract
     public function getCollection(string $name): CollectionContract
     {
         $collection = $this->collections->first(fn ($item) => $item->getName() === $name);
-
-        return $collection ?? throw new ForestException("Collection $name not found.");
-    }
-
-    public function getCollectionByClassName(string $name): CollectionContract
-    {
-        $collection = $this->collections->first(fn ($item) => $item->getClassName() === $name);
 
         return $collection ?? throw new ForestException("Collection $name not found.");
     }
