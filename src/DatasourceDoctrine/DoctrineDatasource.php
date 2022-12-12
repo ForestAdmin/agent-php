@@ -8,6 +8,9 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource as ForestDatasource;
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Support\Arr;
 
+/**
+ * @codeCoverageIgnore
+ */
 class DoctrineDatasource extends ForestDatasource
 {
     protected Manager $orm;
