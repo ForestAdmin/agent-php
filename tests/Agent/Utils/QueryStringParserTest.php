@@ -437,5 +437,5 @@ test('parseSort() should throw a ForestException when the requested sort is inva
     $_GET['sort'] = '-fieldThatDoNotExist';
 
     expect(fn () => QueryStringParser::parseSort($collectionCategory, Request::createFromGlobals()))
-        ->toThrow(ForestException::class, '🌳🌳🌳 Invalid sort: -fieldThatDoNotExist');
+        ->toThrow(ForestException::class, '🌳🌳🌳 Column not found: Category.fieldThatDoNotExist');
 });
