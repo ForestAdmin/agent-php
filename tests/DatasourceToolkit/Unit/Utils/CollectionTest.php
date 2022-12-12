@@ -365,21 +365,6 @@ test('getValue() should work with composite id', function (Caller $caller) {
         ->toEqual('ref');
 })->with('caller');
 
-test('listRelation() should throw with unexpected format', function (Caller $caller) {
-    $datasource = datasourceWithAllRelations(
-        [
-            'Book' => [
-                'list' => ['id' => 1, 'title' => 'foo'],
-            ],
-        ]
-    );
-    $collectionBook = $datasource->getCollection('Book');
-    $filter = new Filter();
-
-    expect(static fn () => CollectionUtils::listRelation($collectionBook, [1], 'myPersons', $caller, $filter, new Projection(), 'foo-format'))
-        ->toThrow(ForestException::class, "🌳🌳🌳 Return format of collection unknown, only values 'list' or 'export' are allowed");
-})->with('caller');
-
 test('listRelation() should work with one to many relation', function (Caller $caller) {
     $datasource = datasourceWithAllRelations(
         [
