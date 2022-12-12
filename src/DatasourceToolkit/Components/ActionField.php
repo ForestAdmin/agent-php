@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\ActionFieldType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Concerns\ActionFieldType;
 
 class ActionField
 {
