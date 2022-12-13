@@ -33,6 +33,7 @@ dataset('DatasourceForFilterFactory', dataset: function () {
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
+                throughCollection: 'BookReview'
             ),
             'bookReviews' => new OneToManySchema(
                 originKey: 'book_id',
@@ -96,6 +97,7 @@ function createDatasourceForFilterFactory(): Datasource
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
+                throughCollection: 'BookReview'
             ),
             'bookReviews' => new OneToManySchema(
                 originKey: 'book_id',
@@ -120,11 +122,17 @@ function createDatasourceForFilterFactory(): Datasource
     $collectionBookReview->addFields(
         [
             'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'review_id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'review_id' => new ColumnSchema(columnType: PrimitiveType::NUMBER),
             'review'    => new ManyToOneSchema(
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
+            ),
+            'book_id' => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'book'    => new ManyToOneSchema(
+                foreignKey: 'book_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'Book',
             ),
         ]
     );
@@ -247,8 +255,9 @@ test("makeThroughFilter() should nest the provided filter many to many", closure
                 conditionTree: new ConditionTreeBranch(
                     aggregator: 'And',
                     conditions: [
-                        new ConditionTreeLeaf(field: 'books:id', operator: Operators::EQUAL, value: 1),
-                        new ConditionTreeLeaf(field: 'someField', operator: Operators::EQUAL, value: 1),
+                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
+                        new ConditionTreeLeaf(field: 'review_id', operator: Operators::PRESENT),
+                        new ConditionTreeLeaf(field: 'review:someField', operator: Operators::EQUAL, value: 1),
                     ]
                 )
             )
