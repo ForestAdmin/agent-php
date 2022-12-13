@@ -192,15 +192,15 @@ class Collection
         Aggregation $aggregation,
         ?int $limit = null
     ) {
-        // TODO
         $relation = Schema::getToManyRelation($collection, $relationName);
         $foreignCollection = $collection->getDataSource()->getCollection($relation->getForeignCollection());
 
         if ($relation instanceof ManyToManySchema && $foreignFilter->isNestable()) {
             $foreignRelation = self::getThroughTarget($collection, $relationName);
-            $aggregation = $aggregation->override(field: self::getInverseRelation($collection, $relationName) . ':' . $relation->getOriginKeyTarget());
-            if ($foreignRelation === $foreignCollection->getName()) {
-                return $foreignCollection->aggregate(
+            if ($foreignRelation) {
+                $throughCollection = $collection->getDataSource()->getCollection($relation->getThroughCollection());
+
+                return $throughCollection->aggregate(
                     $caller,
                     FilterFactory::makeThroughFilter($collection, $id, $relationName, $caller, $foreignFilter),
                     $aggregation,

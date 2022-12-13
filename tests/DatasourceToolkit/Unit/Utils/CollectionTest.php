@@ -408,7 +408,7 @@ test('aggregateRelation() should work with one to many relation', function (Call
     $collectionBook = $datasource->getCollection('Book');
     $filter = new PaginatedFilter();
 
-    expect(CollectionUtils::aggregateRelation($collectionBook, [1], 'myBookPersons', $caller, $filter, new Aggregation('count')))
+    expect(CollectionUtils::aggregateRelation($collectionBook, [1], 'myBookPersons', $caller, $filter, new Aggregation('Count')))
         ->toEqual(1);
 })->with('caller');
 
@@ -417,6 +417,6 @@ test('aggregateRelation() should work with many to many relation', function (Cal
     $collectionBook = $datasource->getCollection('Book');
     $filter = new PaginatedFilter();
 
-    expect(CollectionUtils::aggregateRelation($collectionBook, [1], 'myPersons', $caller, $filter, new Aggregation('count')))
+    expect(CollectionUtils::aggregateRelation($collectionBook, [1], 'myPersons', $caller, $filter, new Aggregation('Count')))
         ->toEqual(1);
 })->with('caller');
