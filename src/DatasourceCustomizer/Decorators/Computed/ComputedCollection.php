@@ -65,7 +65,7 @@ class ComputedCollection extends CollectionDecorator
         $this->markSchemaAsDirty();
     }
 
-    public function list(Caller $caller, PaginatedFilter|Filter $filter, Projection $projection): array
+    public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array
     {
         $childProjection = $projection->replaceItem(fn ($path) => $this->rewriteField($this, $path));
         $records = $this->childCollection->list($caller, $filter, $childProjection);
@@ -78,6 +78,8 @@ class ComputedCollection extends CollectionDecorator
         if (! $aggregation->getProjection()->some(fn ($field) => $this->getComputed($field))) {
             return $this->childCollection->aggregate($caller, $filter, $aggregation, $limit, $chartType);
         }
+
+        $filter = new PaginatedFilter($filter->getConditionTree(), $filter->getSearch(), $filter->getSearchExtended(), $filter->getSegment());
 
         return $aggregation->apply(
             $this->list($caller, $filter, $aggregation->getProjection()->withPks($this)),
