@@ -12,7 +12,6 @@ class ColumnSchema
      * @param bool         $isSortable
      * @param string       $type
      * @param string|null  $defaultValue
-     * @param string|null  $namespace
      * @param array        $enumValues
      * @param array        $validation
      */
@@ -24,7 +23,6 @@ class ColumnSchema
         protected bool $isSortable = true,
         protected string $type = 'Column',
         protected ?string $defaultValue = null,
-        protected ?string $namespace = null,
         protected array $enumValues = [],
         protected array $validation = [],
     ) {
@@ -87,14 +85,6 @@ class ColumnSchema
     public function getType(): string
     {
         return $this->type;
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getNamespace(): ?string
-    {
-        return $this->namespace;
     }
 
     /**

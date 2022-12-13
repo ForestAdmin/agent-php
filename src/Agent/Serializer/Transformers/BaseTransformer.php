@@ -4,7 +4,6 @@ namespace ForestAdmin\AgentPHP\Agent\Serializer\Transformers;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Serializer\DataTypes;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
