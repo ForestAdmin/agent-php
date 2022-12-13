@@ -42,6 +42,7 @@ test('getToManyRelation() should find relations ManyToMany and OneToMany', funct
         foreignKey: 'review_id',
         foreignKeyTarget: 'id',
         foreignCollection: 'Review',
+        throughCollection: 'BookReview'
     );
     $oneToMany = new OneToManySchema(
         originKey: 'book_id',
