@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record;
 
 class Aggregation
@@ -11,6 +12,14 @@ class Aggregation
 
     public function __construct(protected string $operation, protected ?string $field = null, protected ?array $groups = [])
     {
+        $this->validate($this->operation);
+    }
+
+    public function validate($operation)
+    {
+        if (! in_array($operation, ['Count', 'Sum', 'Avg', 'Max', 'Min'], true)) {
+            throw new ForestException("Aggregate operation $operation not allowed");
+        }
     }
 
     public function getOperation(): string
@@ -190,7 +199,7 @@ class Aggregation
             }
 
             if (is_numeric($value)) {
-                $summary['Sun'] += $value;
+                $summary['Sum'] += $value;
             }
         }
     }
