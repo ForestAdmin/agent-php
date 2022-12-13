@@ -88,7 +88,7 @@ class OperatorsEmulateCollection extends CollectionDecorator
     private function replaceLeaf(Caller $caller, ConditionTreeLeaf $leaf, array $replacements): ConditionTree
     {
         if (Str::contains($leaf->getField(), ':')) {
-            $prefix = Str::before(':', $leaf->getField());
+            $prefix = Str::before($leaf->getField(), ':');
             /** @var RelationSchema $schema */
             $schema = $this->getFields()->get($prefix);
             $association = $this->dataSource->getCollection($schema->getForeignCollection());

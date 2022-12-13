@@ -11,13 +11,13 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 function factoryDissociateRelated($args = []): DissociateRelated
 {
@@ -43,6 +43,7 @@ function factoryDissociateRelated($args = []): DissociateRelated
                 foreignKey: 'house_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'House',
+                throughCollection: 'HouseUser'
             ),
         ]
     );
@@ -76,6 +77,26 @@ function factoryDissociateRelated($args = []): DissociateRelated
                 foreignKey: 'user_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'User',
+                throughCollection: 'HouseUser',
+            ),
+        ]
+    );
+
+    $collectionHouseUser = new Collection($datasource, 'HouseUser');
+    $collectionHouseUser->addFields(
+        [
+            'id'       => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::IN, Operators::EQUAL], isPrimaryKey: true),
+            'house_id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::IN, Operators::EQUAL]),
+            'user_id'  => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::IN, Operators::EQUAL]),
+            'house'    => new ManyToOneSchema(
+                foreignKey: 'house_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'House',
+            ),
+            'user' => new ManyToOneSchema(
+                foreignKey: 'user_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'User',
             ),
         ]
     );
@@ -83,7 +104,12 @@ function factoryDissociateRelated($args = []): DissociateRelated
     if (isset($args['dissociate'])) {
         $collectionUser = mock($collectionUser)
             ->shouldReceive('dissociate')
-            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Filter::class), \Mockery::type(RelationSchema::class))
+            ->with(
+                \Mockery::type(Caller::class),
+                \Mockery::type(Filter::class),
+                \Mockery::type(Filter::class),
+                \Mockery::type(RelationSchema::class)
+            )
             ->andReturnNull()
             ->getMock();
     }
@@ -91,6 +117,7 @@ function factoryDissociateRelated($args = []): DissociateRelated
     $datasource->addCollection($collectionUser);
     $datasource->addCollection($collectionCar);
     $datasource->addCollection($collectionHouse);
+    $datasource->addCollection($collectionHouseUser);
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
@@ -120,7 +147,10 @@ function factoryDissociateRelated($args = []): DissociateRelated
 
     $dissociate = mock(DissociateRelated::class)
         ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('checkIp')
+        ->shouldReceive('makeForeignFilter')
+        ->andReturn(new Filter())
         ->getMock();
 
     invokeProperty($dissociate, 'request', $request);
@@ -224,4 +254,3 @@ test('handleRequest() should throw if there is no ids', function () {
     expect(fn () => $dissociate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'cars']))
         ->toThrow(ForestException::class, '🌳🌳🌳 Expected no empty id list');
 });
-

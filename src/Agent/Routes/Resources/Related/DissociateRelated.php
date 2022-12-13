@@ -73,7 +73,6 @@ class DissociateRelated extends AbstractRelationRoute
             // Generate filters _BEFORE_ deleting stuff, otherwise things break.
             $throughFilter = $this->makeThroughFilter($parentId, $filter, $relationName);
             $foreignFilter = $this->makeForeignFilter($parentId, $filter, $relationName);
-
             // Delete records from through collection
             $throughCollection->delete($this->caller, $throughFilter);
 
@@ -84,17 +83,16 @@ class DissociateRelated extends AbstractRelationRoute
         } else {
             // Only delete records from through collection
             $throughFilter = $this->makeThroughFilter($parentId, $filter, $relationName);
-//            dd($throughFilter);
             $throughCollection->delete($this->caller, $throughFilter);
         }
     }
 
-    private function makeForeignFilter(array $parentId, Filter $baseForeignFilter, string $relationName): Filter
+    protected function makeForeignFilter(array $parentId, Filter $baseForeignFilter, string $relationName): Filter
     {
         return FilterFactory::makeForeignFilter($this->collection, $parentId, $relationName, $this->caller, $baseForeignFilter);
     }
 
-    private function makeThroughFilter(array $parentId, Filter $baseForeignFilter, string $relationName): Filter
+    protected function makeThroughFilter(array $parentId, Filter $baseForeignFilter, string $relationName): Filter
     {
         return FilterFactory::makeThroughFilter($this->collection, $parentId, $relationName, $this->caller, $baseForeignFilter);
     }
