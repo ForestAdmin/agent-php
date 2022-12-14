@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Search;
 use Closure;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
@@ -55,7 +56,7 @@ class SearchCollection extends CollectionDecorator
         return $filter;
     }
 
-    private function defaultReplacer(string $search, bool $searchExtended): ConditionTree
+    private function defaultReplacer(string $search, ?bool $searchExtended = null): ConditionTree
     {
         $searchableFields = $this->getSearchableFields($this->childCollection, $searchExtended);
         $conditions = $searchableFields->map(
@@ -67,7 +68,7 @@ class SearchCollection extends CollectionDecorator
         return ConditionTreeFactory::union($conditions);
     }
 
-    private function getSearchableFields(CollectionDecorator $collection, bool $searchExtended): IlluminateCollection
+    private function getSearchableFields(CollectionContract|CollectionDecorator $collection, ?bool $searchExtended = null): IlluminateCollection
     {
         $fields = collect();
         foreach ($collection->getFields() as $name => $field) {
@@ -136,7 +137,7 @@ class SearchCollection extends CollectionDecorator
         return null;
     }
 
-    private function lenientFind(array $haystack, string $needle): string
+    private function lenientFind(array $haystack, string $needle): ?string
     {
         $haystack = collect($haystack);
 
