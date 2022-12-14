@@ -46,9 +46,9 @@ class ConditionTreeBranch extends ConditionTree
 
     public function match(array $record, Collection $collection, string $timezone): bool
     {
-        return $this->aggregator() === 'And'
-            ? $this->conditions->everyLeaf(fn ($condition) => $condition->match($record, $collection, $timezone))
-            : $this->conditions->someLeaf(fn ($condition) => $condition->match($record, $collection, $timezone));
+        return $this->aggregator === 'And'
+            ? $this->everyLeaf(fn ($condition) => $condition->match($record, $collection, $timezone))
+            : $this->someLeaf(fn ($condition) => $condition->match($record, $collection, $timezone));
     }
 
     public function forEachLeaf(Closure $handler): self

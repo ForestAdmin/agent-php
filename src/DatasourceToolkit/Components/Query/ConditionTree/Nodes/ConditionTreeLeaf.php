@@ -101,14 +101,15 @@ class ConditionTreeLeaf extends ConditionTree
             Operators::ILIKE        => $this->like($fieldValue, $this->value, false),
             Operators::LONGER_THAN  => is_string($fieldValue) && strlen($fieldValue) > $this->value,
             Operators::SHORTER_THAN => is_string($fieldValue) && strlen($fieldValue) < $this->value,
-            Operators::INCLUDES_ALL => collect(explode(',', $this->value))->every(fn ($v) => in_array($v, $fieldValue, true)),
+            Operators::INCLUDES_ALL => collect(is_array($this->value) ? $this->value : explode(',', $this->value))
+                ->every(fn ($v) => in_array($v, $fieldValue, true)),
             Operators::NOT_EQUAL, Operators::NOT_CONTAINS => ! $this->inverse()->match($record, $collection, $timezone),
             default => ConditionTreeEquivalent::getEquivalentTree(
                 $this,
                 Operators::getUniqueOperators(),
                 $columnType,
                 $timezone,
-            )->match($record, $collection, $timezone),
+            )?->match($record, $collection, $timezone),
         };
     }
 
@@ -148,10 +149,10 @@ class ConditionTreeLeaf extends ConditionTree
             return false;
         }
 
-        $regexp = Str::of($pattern)->replaceMatches('/([\.\\\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:\-])/g', '\\$1')
-            ->replaceMatches('/%/g', '.*')
-            ->replaceMatches('/_/g', '.');
+        $regexp = Str::of($pattern)->replaceMatches('/([\.\\\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:\-])/', '\\$1')
+            ->replaceMatches('/%/', '.*')
+            ->replaceMatches('/_/', '.');
 
-        return Str::is('^' . $regexp . '$/' . $caseSensitive ? 'g' : 'gi', $value);
+        return preg_match_all('#^'.$regexp.'\z#' . ($caseSensitive ? '' : 'i'), $value) === 1;
     }
 }

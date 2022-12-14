@@ -35,14 +35,24 @@ class ConditionTreeEquivalent
             $dependsOn = $alt['dependsOn'];
             $valid = ! array_key_exists('forTypes', $alt) || in_array($alt['forTypes'], PrimitiveType::tree(), true);
 
-            if ($valid && ! array_key_exists($key, $visited)) {
-                $dependsReplacer = collect($dependsOn)->map(fn ($replacement) => self::getReplacer($replacement, $filterOperators, $columnType, [...$visited, $alt]));
+            if ($valid && ! in_array($alt, $visited, true)) {
+                $dependsReplacer = collect($dependsOn)
+                    ->mapWithKeys(
+                        function ($replacement) use ($filterOperators, $columnType, $visited, $alt) {
+                            return [$replacement => self::getReplacer($replacement, $filterOperators, $columnType, [...$visited, $alt])];
+                        }
+                    );
 
                 if (collect($dependsReplacer)->every(fn ($r) => (bool) $r)) {
-                    return static function ($leaf, $timezone) use ($replacer, $dependsReplacer, $operator) {
-                        $replacer($leaf, $timezone)->replaceLeafs(
-                            function ($subLeaf) use ($timezone, $dependsReplacer, $operator) {
-                                $dependsReplacer[array_search($operator, $subLeaf, true)]($subLeaf, $timezone);
+                    return static function ($leaf, $timezone) use ($replacer, $dependsReplacer) {
+                        /** @var ConditionTree $conditionTree */
+                        $conditionTree = $replacer($leaf, $timezone);
+
+                        return $conditionTree->replaceLeafs(
+                            function (ConditionTreeLeaf $subLeaf) use ($timezone, $dependsReplacer) {
+                                $closure = $dependsReplacer[$subLeaf->getOperator()];
+
+                                return $closure($subLeaf, $timezone);
                             }
                         );
                     };

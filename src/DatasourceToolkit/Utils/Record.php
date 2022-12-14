@@ -18,9 +18,11 @@ class Record
 
     public static function getFieldValue(array $record, string $field)
     {
-        $record = Arr::dot($record);
-        $path = Str::replace(':', '.', $field);
+        if (Str::contains($field, ':')) {
+            $record = Arr::dot($record);
+            $field = Str::replace(':', '.', $field);
+        }
 
-        return Arr::get($record, $path);
+        return Arr::get($record, $field);
     }
 }
