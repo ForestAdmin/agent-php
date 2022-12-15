@@ -12,6 +12,10 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
 function factorySearchCollection()
 {
@@ -178,7 +182,7 @@ test('refineFilter() when the search is defined and the collection schema is not
     );
 });
 
-test('refineFilter() search is a case insensitive string and both operators are supported should return filter with "contains" condition and "or" aggregator', function () {
+test('refineFilter() when the search is defined and the collection schema is not searchable search is a case insensitive string and both operators are supported should return filter with "contains" condition and "or" aggregator', function () {
     [$datasource, $collection, $caller] = factorySearchCollection();
     $collection->setSearchable(false);
     $collection->setField('label', new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::ICONTAINS, Operators::CONTAINS]));
@@ -195,7 +199,7 @@ test('refineFilter() search is a case insensitive string and both operators are 
     );
 });
 
-test('refineFilter() when the search is an uuid and the column type is an uuid should return filter with "equal" condition and "or" aggregator', function () {
+test('refineFilter() when the search is defined and the collection schema is not searchable when the search is an uuid and the column type is an uuid should return filter with "equal" condition and "or" aggregator', function () {
     [$datasource, $collection, $caller] = factorySearchCollection();
     $collection->setSearchable(false);
     $collection->setField('number', new ColumnSchema(columnType: PrimitiveType::UUID, filterOperators: [Operators::EQUAL]));
@@ -212,7 +216,7 @@ test('refineFilter() when the search is an uuid and the column type is an uuid s
     );
 });
 
-test('refineFilter() when the search is a number and the column type is a number returns "equal" condition, "or" aggregator and cast value to Number', function () {
+test('refineFilter() when the search is defined and the collection schema is not searchable when the search is a number and the column type is a number returns "equal" condition, "or" aggregator and cast value to Number', function () {
     [$datasource, $collection, $caller] = factorySearchCollection();
     $collection->setSearchable(false);
     $collection->setField('label', new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::ICONTAINS]));
@@ -236,7 +240,7 @@ test('refineFilter() when the search is a number and the column type is a number
     );
 });
 
-test('refineFilter() when the search is an string and the column type is an enum should return filter with "equal" condition and "or" aggregator', function () {
+test('refineFilter() when the search is defined and the collection schema is not searchable when the search is an string and the column type is an enum should return filter with "equal" condition and "or" aggregator', function () {
     [$datasource, $collection, $caller] = factorySearchCollection();
     $collection->setSearchable(false);
     $collection->setField('label', new ColumnSchema(columnType: PrimitiveType::ENUM, filterOperators: [Operators::EQUAL], enumValues: ['AnEnUmVaLue']));
@@ -253,3 +257,132 @@ test('refineFilter() when the search is an string and the column type is an enum
     );
 });
 
+test('refineFilter() when the search is defined and the collection schema is not searchable when there are several fields should return all the number fields when a number is researched', function () {
+    [$datasource, $collection, $caller] = factorySearchCollection();
+    $collection->setSearchable(false);
+    $collection->setField('field1', new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL]));
+    $collection->setField('field2', new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL]));
+    $collection->setField('fieldNotReturned', new ColumnSchema(columnType: PrimitiveType::UUID));
+    $searchCollection = new SearchCollection($collection, $datasource);
+    $filter = new Filter(search: '1584');
+
+    expect($searchCollection->refineFilter($caller, $filter))->toEqual(
+        new Filter(
+            conditionTree: new ConditionTreeBranch(
+                'Or',
+                [
+                    new ConditionTreeLeaf(field: 'field1', operator: Operators::EQUAL, value: 1584),
+                    new ConditionTreeLeaf(field: 'field2', operator: Operators::EQUAL, value: 1584),
+                ]
+            ),
+            search: null,
+            searchExtended: null,
+            segment: null
+        ),
+    );
+});
+
+test('refineFilter() when the search is defined and the collection schema is not searchable when it is a deep search with relation fields should return all the uuid fields when uuid is researched', function () {
+    $datasource = new Datasource();
+    $collectionBooks = new Collection($datasource, 'Book');
+    $collectionBooks->addFields(
+        [
+            'id'          => new ColumnSchema(columnType: PrimitiveType::UUID, filterOperators: [Operators::EQUAL], isPrimaryKey: true),
+            'reviews'     => new ManyToManySchema(
+                originKey: 'book_id',
+                originKeyTarget: 'id',
+                throughTable: 'book_review',
+                foreignKey: 'review_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'Review',
+                throughCollection: 'BookReview',
+            ),
+            'bookReviews' => new OneToManySchema(
+                originKey: 'book_id',
+                originKeyTarget: 'id',
+                foreignCollection: 'Review',
+            ),
+        ]
+    );
+    $collectionBookReview = new Collection($datasource, 'BookReview');
+    $collectionBookReview->addFields(
+        [
+            'id'      => new ColumnSchema(columnType: PrimitiveType::UUID, filterOperators: [Operators::EQUAL], isPrimaryKey: true),
+            'reviews' => new ManyToManySchema(
+                originKey: 'book_id',
+                originKeyTarget: 'id',
+                throughTable: 'book_review',
+                foreignKey: 'review_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'Review',
+                throughCollection: 'BookReview',
+            ),
+            'book'    => new ManyToOneSchema(
+                foreignKey: 'book_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'Book',
+            ),
+            'review'  => new OneToOneSchema(
+                originKey: 'review_id',
+                originKeyTarget: 'id',
+                foreignCollection: 'Review',
+            ),
+        ]
+    );
+
+    $collectionReviews = new Collection($datasource, 'Review');
+    $collectionReviews->addFields(
+        [
+            'id'     => new ColumnSchema(columnType: PrimitiveType::UUID, filterOperators: [Operators::EQUAL], isPrimaryKey: true),
+            'book'   => new ManyToOneSchema(
+                foreignKey: 'book_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'Book',
+            ),
+        ]
+    );
+    $datasource->addCollection($collectionBooks);
+    $datasource->addCollection($collectionReviews);
+    $datasource->addCollection($collectionBookReview);
+
+    $options = [
+        'projectDir'   => sys_get_temp_dir(),
+        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
+        'authSecret'   => AUTH_SECRET,
+        'isProduction' => false,
+        'agentUrl'     => 'http://localhost/',
+    ];
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+
+    $caller = new Caller(
+        id: 1,
+        email: 'sarah.connor@skynet.com',
+        firstName: 'sarah',
+        lastName: 'connor',
+        team: 'survivor',
+        renderingId: 1,
+        tags: [],
+        timezone: 'Europe/Paris',
+        permissionLevel: 'admin',
+        role: 'dev'
+    );
+
+    $searchCollection = new SearchCollection($collectionBookReview, $datasource);
+    $filter = new Filter(search: '2d162303-78bf-599e-b197-93590ac3d315', searchExtended: true);
+
+    expect($searchCollection->refineFilter($caller, $filter))->toEqual(
+        new Filter(
+            conditionTree: new ConditionTreeBranch(
+                'Or',
+                [
+                    new ConditionTreeLeaf(field: 'id', operator: Operators::EQUAL, value: '2d162303-78bf-599e-b197-93590ac3d315'),
+                    new ConditionTreeLeaf(field: 'book:id', operator: Operators::EQUAL, value: '2d162303-78bf-599e-b197-93590ac3d315'),
+                    new ConditionTreeLeaf(field: 'review:id', operator: Operators::EQUAL, value: '2d162303-78bf-599e-b197-93590ac3d315'),
+                ]
+            ),
+            search: null,
+            searchExtended: true,
+            segment: null
+        ),
+    );
+});
