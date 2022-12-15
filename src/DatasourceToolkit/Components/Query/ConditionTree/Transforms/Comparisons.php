@@ -67,7 +67,7 @@ final class Comparisons
                 [
                     'dependsOn' => [Operators::NOT_EQUAL],
                     'replacer'  => function ($leaf) {
-                        $trees = collect($leaf->getValue)
+                        $trees = collect($leaf->getValue())
                             ->map(fn ($item) => $leaf->override(operator: Operators::NOT_EQUAL, value: $item))
                             ->toArray();
 
