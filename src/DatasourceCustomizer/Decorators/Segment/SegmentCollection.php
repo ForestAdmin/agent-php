@@ -6,6 +6,7 @@ use Closure;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ConditionTreeValidator;
@@ -37,9 +38,13 @@ class SegmentCollection extends CollectionDecorator
 
         $segment = $filter->getSegment();
 
-        if ($segment && $this->computedSegments[$segment]) {
+        if ($segment && isset($this->computedSegments[$segment])) {
             $definition = $this->computedSegments[$segment];
             $result = $definition();
+
+            if ($result instanceof ConditionTreeLeaf) {
+                $result = ['field' => $result->getField(), 'operator' => $result->getOperator(), 'value' => $result->getValue()];
+            }
 
             $conditionTreeSegment = ConditionTreeFactory::fromArray($result);
             ConditionTreeValidator::validate($conditionTreeSegment, $this);
