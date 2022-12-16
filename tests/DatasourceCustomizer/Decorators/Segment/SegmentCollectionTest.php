@@ -16,15 +16,15 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 function factorySegmentCollection()
 {
     $datasource = new Datasource();
-    $collectionPerson = new Collection($datasource, 'Person');
-    $collectionPerson->addFields(
+    $collectionProduct = new Collection($datasource, 'Person');
+    $collectionProduct->addFields(
         [
             'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
             'name'  => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::EQUAL, Operators::IN]),
             'price' => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::GREATER_THAN, Operators::LESS_THAN]),
         ]
     );
-    $datasource->addCollection($collectionPerson);
+    $datasource->addCollection($collectionProduct);
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
@@ -48,7 +48,7 @@ function factorySegmentCollection()
         role: 'dev'
     );
 
-    return [$datasource, $collectionPerson, $caller];
+    return [$datasource, $collectionProduct, $caller];
 }
 
 test('getSegments() should return the list of segment', function () {
