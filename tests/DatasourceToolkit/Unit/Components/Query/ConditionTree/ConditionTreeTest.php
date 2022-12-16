@@ -153,7 +153,6 @@ test('match() should work', function (ConditionTreeBranch $tree) {
         ->and($tree->inverse()->match(['column1' => true, 'column2' => false], $collection, 'Europe/Paris'))->toBeTrue();
 })->with('conditionTreeBranch');
 
-
 test('match() should work with many operators', function () {
     $collection = new Collection(new Datasource(), 'myCollection');
     $collection->addFields(
@@ -172,6 +171,7 @@ test('match() should work with many operators', function () {
     $allConditions = new ConditionTreeBranch('And', [
         new ConditionTreeLeaf('string', Operators::PRESENT),
         new ConditionTreeLeaf('string', Operators::LIKE, '%value%'),
+        new ConditionTreeLeaf('string', Operators::LIKE, '%value%'),
         new ConditionTreeLeaf('string', Operators::ILIKE, '%VaLuE%'),
         new ConditionTreeLeaf('string', Operators::LESS_THAN, 'valuf'),
         new ConditionTreeLeaf('string', Operators::EQUAL, 'value'),
@@ -185,3 +185,45 @@ test('match() should work with many operators', function () {
 
     expect($allConditions->match(['string' => 'value', 'array' => ['value']], $collection, 'Europe/Paris'))->toBeTrue();
 });
+
+test('like() should work with null value', function () {
+    $collection = new Collection(new Datasource(), 'myCollection');
+    $collection->addFields(
+        [
+            'string' => new ColumnSchema(
+                columnType: PrimitiveType::STRING,
+                filterOperators: [Operators::EQUAL],
+            ),
+        ]
+    );
+    $leaf = new ConditionTreeLeaf('string', Operators::LIKE, '%value%');
+
+    expect($leaf->match(['string' => null], $collection, 'Europe/Paris'))->toBeFalse();
+});
+
+test('apply() should work', function (ConditionTreeBranch $tree) {
+    $collection = new Collection(new Datasource(), 'myCollection');
+    $collection->addFields(
+        [
+            'column1' => new ColumnSchema(
+                columnType: PrimitiveType::BOOLEAN,
+                filterOperators: [Operators::EQUAL],
+            ),
+            'column2' => new ColumnSchema(
+                columnType: PrimitiveType::BOOLEAN,
+                filterOperators: [Operators::EQUAL],
+            ),
+        ]
+    );
+    $records = [
+        ['id' => 1, 'column1' => true, 'column2' => true],
+        ['id' => 2, 'column1' => false, 'column2' => true],
+        ['id' => 3, 'column1' => true, 'column2' => false],
+    ];
+
+    expect($tree->apply($records, $collection, 'Europe/Paris'))->toEqual(
+        [
+            ['id' => 1, 'column1' => true, 'column2' => true],
+        ]
+    );
+})->with('conditionTreeBranch');

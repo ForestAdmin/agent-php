@@ -143,7 +143,7 @@ class ConditionTreeLeaf extends ConditionTree
         return in_array($this->operator, Operators::getIntervalOperators());
     }
 
-    private function like(string $value, string $pattern, bool $caseSensitive): bool
+    private function like(?string $value, string $pattern, bool $caseSensitive): bool
     {
         if (! $value) {
             return false;
