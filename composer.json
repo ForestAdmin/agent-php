@@ -29,7 +29,8 @@
         "pestphp/pest": "^1.21",
         "pestphp/pest-plugin-mock": "^1.0",
         "phpspec/prophecy-phpunit": "^2.0",
-        "symfony/var-dumper": "^6.0"
+        "symfony/var-dumper": "^6.0",
+        "spatie/pest-plugin-test-time": "^1.1"
     },
     "autoload": {
         "psr-4": {

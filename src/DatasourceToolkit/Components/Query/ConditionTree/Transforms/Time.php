@@ -19,9 +19,7 @@ final class Time
             'dependsOn' => [$operator],
             'forTypes'  => ['Date', 'Dateonly'],
             'replacer'  => function ($leaf, $tz) use ($operator, $dateCallback) {
-                $now = Carbon::now(tz: $tz);
-
-                return $leaf->override(operator: $operator, value: self::format($dateCallback($now, $leaf->getValue())));
+                return $leaf->override(operator: $operator, value: self::format($dateCallback(Carbon::now(tz: $tz), $leaf->getValue())));
             },
         ];
     }
@@ -32,12 +30,11 @@ final class Time
             'dependsOn' => [Operators::LESS_THAN, Operators::GREATER_THAN],
             'forTypes'  => ['Date', 'Dateonly'],
             'replacer'  => function ($leaf, $tz) use ($startFn, $endFn) {
-                $now = Carbon::now(tz: $tz);
 
                 return ConditionTreeFactory::intersect(
                     [
-                        $leaf->override(operator: Operators::GREATER_THAN, value: self::format($startFn($now, $leaf->getValue()))),
-                        $leaf->override(operator: Operators::LESS_THAN, value: self::format($endFn($now, $leaf->getValue()))),
+                        $leaf->override(operator: Operators::GREATER_THAN, value: self::format($startFn(Carbon::now(tz: $tz), $leaf->getValue()))),
+                        $leaf->override(operator: Operators::LESS_THAN, value: self::format($endFn(Carbon::now(tz: $tz), $leaf->getValue()))),
                     ]
                 );
             },
@@ -47,7 +44,7 @@ final class Time
     public static function previousInterval(string $duration): array
     {
         return self::interval(
-            static fn ($now) => $now->sub[ucfirst($duration)](1)->startOf($duration),
+            static fn ($now) => $now->{'sub'.ucfirst($duration)}()->startOf($duration),
             static fn ($now) => $now->startOf($duration),
         );
     }
