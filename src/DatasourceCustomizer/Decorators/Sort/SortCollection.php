@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record as RecordUtils;
@@ -29,10 +30,12 @@ class SortCollection extends CollectionDecorator
     {
         FieldValidator::validate($this, $name);
 
-        $field = $this->childCollection->getFields()[$name];
-        if ($field instanceof RelationSchema) {
+        if (! isset($this->childCollection->getFields()[$name])) {
             throw new ForestException('Cannot replace sort on relation');
         }
+        $field = $this->childCollection->getFields()[$name];
+
+
         /** @var ColumnSchema $field */
         if (empty($equivalentSort)) {
             $field->setSortable(false);
