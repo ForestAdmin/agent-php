@@ -19,7 +19,7 @@ class UpdateRelated extends AbstractRelationRoute
     public function setupRoutes(): AbstractRoute
     {
         $this->addRoute(
-            'forest.related.associate',
+            'forest.related.update',
             'put',
             '/{collectionName}/{id}/relationships/{relationName}',
             fn ($args) => $this->handleRequest($args)
@@ -35,16 +35,21 @@ class UpdateRelated extends AbstractRelationRoute
 
         $id = Id::unpackId($this->collection, $args['id']);
         $childId = null !== $this->request->input('data.id') ? Id::unpackId($this->childCollection, $this->request->input('data.id')) : null;
-        $relation = Schema::getToManyRelation($this->collection, $args['relationName']);
+        $relation = $this->collection->getFields()[$args['relationName']];
 
         if ($relation->getType() === 'ManyToOne') {
-            $this->updateManytoOne($relation, $id, $childId);
+            $this->updateManyToOne($relation, $id, $childId);
         } elseif ($relation->getType() === 'OneToOne') {
-            $this->updateOnetoOne($relation, $id, $childId);
+            $this->updateOneToOne($relation, $id);
         }
+
+        return [
+            'content' => null,
+            'status'  => 204,
+        ];
     }
 
-    private function updateManytoOne(ManyToOneSchema $relation, $parentId, $childId): void
+    private function updateManyToOne(ManyToOneSchema $relation, $parentId, $childId): void
     {
         $scope = $this->permissions->getScope($this->childCollection);
         $foreignValue = $childId ? CollectionUtils::getValue($this->childCollection, $this->caller, $childId, $relation->getForeignKeyTarget()) : null;
@@ -60,7 +65,7 @@ class UpdateRelated extends AbstractRelationRoute
         );
     }
 
-    private function updateOnetoOne(OneToOneSchema $relation, $parentId, $childId): void
+    private function updateOneToOne(OneToOneSchema $relation, $parentId): void
     {
         $scope = $this->permissions->getScope($this->childCollection);
         $originValue = CollectionUtils::getValue($this->collection, $this->caller, $parentId, $relation->getOriginKeyTarget());
