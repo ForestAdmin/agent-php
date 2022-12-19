@@ -2,7 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Sort;
 
-
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
@@ -11,7 +10,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFil
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record as RecordUtils;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\FieldValidator;
@@ -33,16 +31,9 @@ class SortCollection extends CollectionDecorator
         if (! isset($this->childCollection->getFields()[$name])) {
             throw new ForestException('Cannot replace sort on relation');
         }
-        $field = $this->childCollection->getFields()[$name];
 
-
-        /** @var ColumnSchema $field */
-        if (empty($equivalentSort)) {
-            $field->setSortable(false);
-            $this->childCollection->setField($name, $field);
-        } else {
-            $this->sorts[$name] = new Sort($equivalentSort);
-        }
+        $this->sorts[$name] = ! empty($equivalentSort) ? new Sort($equivalentSort) : null;
+        $this->markSchemaAsDirty();
     }
 
     public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array
@@ -72,17 +63,18 @@ class SortCollection extends CollectionDecorator
         $newFilter = new Filter(
             conditionTree: ConditionTreeFactory::matchRecords($this, $referenceRecords)
         );
+
         $records = $this->childCollection->list($caller, $newFilter, $projection->withPks($this));
         $records = $this->sortRecords($referenceRecords, $records);
 
-        return $projection->apply($records);
+        return $projection->apply($records)->toArray();
     }
 
     private function sortRecords(array $referenceRecords, array $records): array
     {
         $positionById = [];
         $sorted = [];
-        foreach ($referenceRecords as $index => $record) {
+        foreach (array_values($referenceRecords) as $index => $record) {
             $id = implode('|', RecordUtils::getPrimaryKeys($this, $record));
             $positionById[$id] = $index;
         }
@@ -125,7 +117,7 @@ class SortCollection extends CollectionDecorator
     private function isEmulated(string $path): bool
     {
         if (! Str::contains($path, ':')) {
-            return isset($this->sorts[$path]);
+            return array_key_exists($path, $this->sorts);
         }
 
         /** @var RelationSchema $relation */
