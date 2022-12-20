@@ -90,6 +90,21 @@ class GeneratorField
         // todo return object like agent-js
     }
 
+//    private static convertColumnType(type: ColumnType): ForestServerColumnType {
+//        if (typeof type === 'string') return type;
+//
+//        if (Array.isArray(type)) {
+//          return [this.convertColumnType(type[0])];
+//        }
+//
+//        return {
+//            fields: Object.entries(type).map(([key, subType]) => ({
+//                field: key,
+//                type: this.convertColumnType(subType),
+//              })),
+//            };
+//   }
+
     public static function buildToManyRelationSchema(RelationSchema $relation, CollectionContract $collection, CollectionContract $foreignCollection, array $baseSchema): array
     {
         if (is_a($relation, OneToManySchema::class)) {

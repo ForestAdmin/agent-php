@@ -119,9 +119,8 @@ class Charts extends AbstractCollectionRoute
         $aggregation = new Aggregation(
             operation: $this->request->get('aggregate'),
             field: $this->request->get('aggregate_field'),
-            groups: [['field' => $this->request->get('group_by_date_field'), 'operation' => $this->request->get('time_range')]] // Todo it's useful to add operation ?
+            groups: [['field' => $this->request->get('group_by_date_field'), 'operation' => $this->request->get('time_range')]]
         );
-        $aggregate = Str::lower($this->request->get('aggregate'));
 
         $result = $this->collection->aggregate($this->caller, $this->filter, $aggregation, null, $this->type);
 

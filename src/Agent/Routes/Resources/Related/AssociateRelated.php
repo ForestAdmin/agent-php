@@ -35,7 +35,7 @@ class AssociateRelated extends AbstractRelationRoute
 
         $parentId = Id::unpackId($this->collection, $args['id']);
         $targetedRelationId = Id::unpackId($this->childCollection, $this->request->input('data')[0]['id']);
-        $scope = $this->permissions->getScope($this->collection);
+        $this->permissions->getScope($this->collection);
         $relation = SchemaUtils::getToManyRelation($this->collection, $args['relationName']);
 
         if ($relation instanceof OneToManySchema) {
