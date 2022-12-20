@@ -25,7 +25,6 @@ class Operators
     public const ENDS_WITH = 'Ends_With';
     public const IENDS_WITH = 'IEnds_With';
     public const MISSING = 'Missing';
-
     public const BEFORE = 'Before';
     public const AFTER = 'After';
     public const AFTER_X_HOURS_AGO = 'After_X_Hours_Ago';
@@ -68,5 +67,21 @@ class Operators
         return array_values(
             (new \ReflectionClass(self::class))->getConstants()
         );
+    }
+
+    public static function getUniqueOperators(): array
+    {
+        return [
+            self::EQUAL,
+            self::NOT_EQUAL,
+            self::LESS_THAN,
+            self::GREATER_THAN,
+            self::LIKE,
+            self::ILIKE,
+            self::NOT_CONTAINS,
+            self::LONGER_THAN,
+            self::SHORTER_THAN,
+            self::INCLUDES_ALL,
+        ];
     }
 }

@@ -6,9 +6,9 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projectio
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort\SortFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
 test('new sort should work', function () {
     $sort = new Sort(
@@ -158,4 +158,36 @@ test('SortFactory::byPrimaryKeys should work', function () {
         ]
     );
     expect(SortFactory::byPrimaryKeys($collection))->toEqual(new Sort([['field' => 'id', 'ascending' => true]]));
+});
+
+test('construct() should throw if there is no key field key in a record', function () {
+    expect(fn () => new Sort(
+        [
+            ['label' => 'column1', 'ascending' => true],
+        ]
+    ))->toThrow(ForestException::class, '🌳🌳🌳 Invalid sort clause, key "field" and "ascending" must be present and should be of type string and boolean.');
+});
+
+test('construct() should throw if there is no ascending key in a record', function () {
+    expect(fn () => new Sort(
+        [
+            ['field' => 'column1'],
+        ]
+    ))->toThrow(ForestException::class, '🌳🌳🌳 Invalid sort clause, key "field" and "ascending" must be present and should be of type string and boolean.');
+});
+
+test('construct() should throw if there is the value of key is not a string in a record', function () {
+    expect(fn () => new Sort(
+        [
+            ['field' => 1, 'ascending' => true],
+        ]
+    ))->toThrow(ForestException::class, '🌳🌳🌳 Invalid sort clause, key "field" and "ascending" must be present and should be of type string and boolean.');
+});
+
+test('construct() should throw if there is the value of ascending is not a boolean in a record', function () {
+    expect(fn () => new Sort(
+        [
+            ['field' => 'column1', 'ascending' => 'true'],
+        ]
+    ))->toThrow(ForestException::class, '🌳🌳🌳 Invalid sort clause, key "field" and "ascending" must be present and should be of type string and boolean.');
 });

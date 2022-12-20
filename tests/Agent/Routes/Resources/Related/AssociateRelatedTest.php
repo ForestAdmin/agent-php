@@ -11,11 +11,12 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 
 function factoryAssociateRelated($args = []): AssociateRelated
 {
@@ -33,7 +34,53 @@ function factoryAssociateRelated($args = []): AssociateRelated
                 originKey: 'user_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'Car',
-                inverseRelationName: 'user',
+            ),
+            'houses'     => new ManyToManySchema(
+                originKey: 'user_id',
+                originKeyTarget: 'id',
+                throughTable: 'houses_users',
+                foreignKey: 'house_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'House',
+                throughCollection: 'HouseUser'
+            ),
+        ]
+    );
+
+    $collectionHouse = new Collection($datasource, 'House');
+    $collectionHouse->addFields(
+        [
+            'id'       => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::IN, Operators::EQUAL], isPrimaryKey: true),
+            'address'  => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'zip_code' => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'city'     => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'users'    => new ManyToManySchema(
+                originKey: 'house_id',
+                originKeyTarget: 'id',
+                throughTable: 'houses_users',
+                foreignKey: 'user_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'User',
+                throughCollection: 'HouseUser',
+            ),
+        ]
+    );
+
+    $collectionHouseUser = new Collection($datasource, 'HouseUser');
+    $collectionHouseUser->addFields(
+        [
+            'id'       => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::IN, Operators::EQUAL], isPrimaryKey: true),
+            'house_id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::IN, Operators::EQUAL]),
+            'user_id'  => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::IN, Operators::EQUAL]),
+            'house'    => new ManyToOneSchema(
+                foreignKey: 'house_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'House',
+            ),
+            'user' => new ManyToOneSchema(
+                foreignKey: 'user_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'User',
             ),
         ]
     );
@@ -49,7 +96,6 @@ function factoryAssociateRelated($args = []): AssociateRelated
                 foreignKey: 'user_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'User',
-                inverseRelationName: 'cars'
             ),
         ]
     );
@@ -64,11 +110,13 @@ function factoryAssociateRelated($args = []): AssociateRelated
 
     $datasource->addCollection($collectionUser);
     $datasource->addCollection($collectionCar);
+    $datasource->addCollection($collectionHouse);
+    $datasource->addCollection($collectionHouseUser);
 
     $options = [
-        'projectDir'   => sys_get_temp_dir(),
+        'projectDir'    => sys_get_temp_dir(),
         'authSecret'    => AUTH_SECRET,
-        'isProduction' => false,
+        'isProduction'  => false,
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();
 
@@ -121,6 +169,25 @@ test('handleRequest() should return a response 200', function () {
     $associate = factoryAssociateRelated(['associate' => true]);
 
     expect($associate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'cars']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'content' => null,
+                'status'  => 204,
+            ]
+        );
+});
+
+test('handleRequest() should return a response 200 with ManyToMany', function () {
+    $_GET['data'] = [
+        [
+            'id'   => 1,
+            'type' => 'House',
+        ],
+    ];
+    $associate = factoryAssociateRelated(['associate' => true]);
+
+    expect($associate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'houses']))
         ->toBeArray()
         ->toEqual(
             [

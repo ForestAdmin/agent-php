@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LeaderboardChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LineChart;
@@ -17,7 +18,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use Illuminate\Support\Str;
@@ -119,13 +119,12 @@ class Charts extends AbstractCollectionRoute
         $aggregation = new Aggregation(
             operation: $this->request->get('aggregate'),
             field: $this->request->get('aggregate_field'),
-            groups: [['field' => $this->request->get('group_by_date_field'), 'operation' => $this->request->get('time_range')]] // Todo it's useful to add operation ?
+            groups: [['field' => $this->request->get('group_by_date_field'), 'operation' => $this->request->get('time_range')]]
         );
-        $aggregate = Str::lower($this->request->get('aggregate'));
 
         $result = $this->collection->aggregate($this->caller, $this->filter, $aggregation, null, $this->type);
 
-        return new LineChart($this->mapArrayToKeyValueAggregateDate($result, $aggregate, $this->request->get('time_range')));
+        return new LineChart($this->mapArrayToLabelValue($result));
     }
 
     private function makeLeaderboard(): LeaderboardChart
@@ -186,34 +185,16 @@ class Charts extends AbstractCollectionRoute
             })->toArray();
     }
 
-    private function mapArrayToKeyValueAggregateDate($array, string $aggregate, string $aggregateIsADate): array
+    private function mapArrayToLabelValue($array): array
     {
         return collect($array)
-            ->map(function ($item) use ($aggregate, $aggregateIsADate) {
-                // @codeCoverageIgnoreStart
-                $keys = array_keys($item);
-                if ($keys[0] === Str::lower($aggregate)) {
-                    $label = $item[$keys[1]];
-                    $values = $item[$keys[0]];
-                } else {
-                    $label = $item[$keys[0]];
-                    $values = $item[$keys[1]];
-                }
-                // @codeCoverageIgnoreEnd
-
-                $label = $label->format($this->getDateFormat($aggregateIsADate));
-
-                return compact('label', 'values');
-            })->toArray();
-    }
-
-    private function getDateFormat(string $field): string
-    {
-        return match (Str::lower($field)) {
-            'week'  => '\WW-Y',
-            'month' => 'M Y',
-            'year'  => 'Y',
-            default => 'd/m/Y',
-        };
+            ->map(function ($value, $label) {
+                return [
+                    'label'  => $label,
+                    'values' => compact('value'),
+                ];
+            })
+            ->values()
+            ->toArray();
     }
 }

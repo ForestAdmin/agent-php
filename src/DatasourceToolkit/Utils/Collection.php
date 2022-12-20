@@ -10,20 +10,20 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 
 class Collection
 {
     public static function getInverseRelation(CollectionContract $collection, string $relationName): ?string
     {
-        // TODO useful ? because we have the attribute inverseRelationName into our RelationSchema
         /** @var RelationSchema $relation */
         $relationField = $collection->getFields()->get($relationName);
         /** @var MainCollection $foreignCollection */
@@ -131,14 +131,23 @@ class Collection
 
     public static function getThroughTarget(CollectionContract $collection, string $relationName): ?string
     {
-        /** @var ManyToManySchema $relation */
         $relation = $collection->getFields()[$relationName];
-
-        if ($relation->getType() !== 'ManyToMany') {
+        if (! $relation instanceof ManyToManySchema) {
             throw new ForestException('Relation must be many to many');
         }
 
-        return $relation->getForeignCollection();
+        $throughCollection = $collection->getDataSource()->getCollection($relation->getThroughCollection());
+        foreach ($throughCollection->getFields() as $fieldName => $field) {
+            if ($field instanceof ManyToOneSchema &&
+                $field->getForeignCollection() === $relation->getForeignCollection() &&
+                $field->getForeignKey() === $relation->getForeignKey() &&
+                $field->getForeignKeyTarget() === $relation->getForeignKeyTarget()
+            ) {
+                return $fieldName;
+            }
+        }
+
+        return null;
     }
 
     public static function listRelation(
@@ -146,29 +155,28 @@ class Collection
         $id,
         string $relationName,
         Caller $caller,
-        Filter $foreignFilter,
+        PaginatedFilter $foreignFilter,
         Projection $projection,
-        $format = 'list'
     ) {
-        if (! in_array($format, ['list', 'export'], true)) {
-            throw new ForestException("Return format of collection unknown, only values 'list' or 'export' are allowed");
-        }
         $relation = Schema::getToManyRelation($collection, $relationName);
         $foreignCollection = $collection->getDataSource()->getCollection($relation->getForeignCollection());
-        if ($relation->getType() === 'ManyToMany' && $foreignFilter->isNestable()) {
+        if ($relation instanceof ManyToManySchema && $foreignFilter->isNestable()) {
             $foreignRelation = self::getThroughTarget($collection, $relationName);
-            $projection->push($relation->getOriginKey() . ':' . $relation->getOriginKeyTarget());
 
-            if ($foreignRelation === $foreignCollection->getName()) {
-                return $foreignCollection->$format(
+            if ($foreignRelation) {
+                $throughCollection = $collection->getDataSource()->getCollection($relation->getThroughCollection());
+
+                $records = $throughCollection->list(
                     $caller,
                     FilterFactory::makeThroughFilter($collection, $id, $relationName, $caller, $foreignFilter),
-                    $projection
+                    $projection->nest($foreignRelation)
                 );
+
+                return collect($records)->map(fn ($record) => $record[$foreignRelation])->toArray();
             }
         }
 
-        return $foreignCollection->$format(
+        return $foreignCollection->list(
             $caller,
             FilterFactory::makeForeignFilter($collection, $id, $relationName, $caller, $foreignFilter),
             $projection
@@ -187,19 +195,17 @@ class Collection
         $relation = Schema::getToManyRelation($collection, $relationName);
         $foreignCollection = $collection->getDataSource()->getCollection($relation->getForeignCollection());
 
-        if ($relation->getType() === 'ManyToMany' && $foreignFilter->isNestable()) {
+        if ($relation instanceof ManyToManySchema && $foreignFilter->isNestable()) {
             $foreignRelation = self::getThroughTarget($collection, $relationName);
-            $aggregation = $aggregation->override(field: $relation->getOriginKey() . ':' . $relation->getOriginKeyTarget());
+            if ($foreignRelation) {
+                $throughCollection = $collection->getDataSource()->getCollection($relation->getThroughCollection());
 
-            if ($foreignRelation === $foreignCollection->getName()) {
-                $records = $foreignCollection->aggregate(
+                return $throughCollection->aggregate(
                     $caller,
                     FilterFactory::makeThroughFilter($collection, $id, $relationName, $caller, $foreignFilter),
                     $aggregation,
                     $limit
                 );
-
-                return $records;
             }
         }
 

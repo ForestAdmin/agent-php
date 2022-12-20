@@ -29,7 +29,7 @@ class Show extends AbstractCollectionRoute
         $this->build($args);
         $this->permissions->can('read:' . $this->collection->getName());
         $id = Id::unpackId($this->collection, $args['id']);
-        $filter = ContextFilterFactory::build(
+        $filter = ContextFilterFactory::buildPaginated(
             $this->collection,
             $this->request,
             ConditionTreeFactory::intersect(
@@ -39,12 +39,12 @@ class Show extends AbstractCollectionRoute
                 ]
             )
         );
-        $result = $this->collection->show(
+
+        $result = $this->collection->list(
             $this->caller,
             $filter,
-            $id,
             QueryStringParser::parseProjection($this->collection, $this->request)
-        );
+        )[0] ?? [];
 
         return [
             'name'              => $args['collectionName'],

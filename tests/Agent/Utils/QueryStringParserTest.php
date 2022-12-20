@@ -11,11 +11,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 function factoryQueryStringParser()
@@ -40,7 +40,6 @@ function factoryQueryStringParser()
                 originKey: 'user_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'Car',
-                inverseRelationName: 'user',
             ),
         ]
     );
@@ -57,7 +56,6 @@ function factoryQueryStringParser()
                 foreignKey: 'user_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'User',
-                inverseRelationName: 'cars'
             ),
         ]
     );
@@ -439,5 +437,5 @@ test('parseSort() should throw a ForestException when the requested sort is inva
     $_GET['sort'] = '-fieldThatDoNotExist';
 
     expect(fn () => QueryStringParser::parseSort($collectionCategory, Request::createFromGlobals()))
-        ->toThrow(ForestException::class, '🌳🌳🌳 Invalid sort: -fieldThatDoNotExist');
+        ->toThrow(ForestException::class, '🌳🌳🌳 Column not found: Category.fieldThatDoNotExist');
 });

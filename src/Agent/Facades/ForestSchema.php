@@ -21,7 +21,6 @@ use JsonPath\JsonObject;
  */
 class ForestSchema extends Facade
 {
-    // TODO ADD UNIT TEST WHEN SMARTFIELD & SMARTACTION OK
     public static function getFacadeObject()
     {
         return new ForestSchemaInstrospection();

@@ -4,7 +4,6 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection;
 
 use Closure;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
@@ -20,9 +19,9 @@ class Projection extends IlluminateCollection
         return $columns->all();
     }
 
-    public function relations()
+    public function relations(): IlluminateCollection
     {
-        return $this->reduce(
+        return collect($this->reduce(
             static function ($memo, $path) {
                 if (Str::contains($path, ':')) {
                     $relation = Str::before($path, ':');
@@ -37,10 +36,10 @@ class Projection extends IlluminateCollection
                 return $memo;
             },
             []
-        );
+        ));
     }
 
-    public function replaceItem(Closure $callback)
+    public function replaceItem(Closure $callback): Projection
     {
         return $this
             ->map($callback)

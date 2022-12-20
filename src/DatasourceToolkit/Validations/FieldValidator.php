@@ -5,8 +5,8 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Validations;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Str;
 
@@ -63,12 +63,11 @@ class FieldValidator
      */
     public static function validateValue(string $field, ColumnSchema $columnSchema, $value, ?array $allowedTypes = null): void
     {
-        // FIXME: handle complex type from ColumnType
+        // TODO FIXME: handle complex type from ColumnType
         if (gettype($columnSchema->getColumnType()) !== PrimitiveType::STRING) {
         }
 
         $type = TypeGetter::get($value, $columnSchema->getColumnType());
-//        dd($type, $value,  $columnSchema->getColumnType());
         if ($columnSchema->getColumnType() === PrimitiveType::ENUM) {
             self::checkEnumValue($type, $columnSchema, $value);
         }

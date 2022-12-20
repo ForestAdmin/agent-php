@@ -2,11 +2,11 @@
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 
@@ -42,13 +42,12 @@ test('getToManyRelation() should find relations ManyToMany and OneToMany', funct
         foreignKey: 'review_id',
         foreignKeyTarget: 'id',
         foreignCollection: 'Review',
-        inverseRelationName: 'books',
+        throughCollection: 'BookReview'
     );
     $oneToMany = new OneToManySchema(
         originKey: 'book_id',
         originKeyTarget: 'id',
         foreignCollection: 'Review',
-        inverseRelationName: 'books'
     );
     $collection->addFields(
         [
@@ -71,7 +70,6 @@ test('getToManyRelation() should throw if relation not exist', function () {
                 originKey: 'book_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'books'
             ),
         ]
     );
@@ -89,7 +87,6 @@ test('getToManyRelation() should throw if relation is not ManyToMany or OneToMan
                 foreignKey: 'book_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'books'
             ),
         ]
     );

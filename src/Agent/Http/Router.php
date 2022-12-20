@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\AssociateRelated;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\CountRelated;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\DissociateRelated;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\ListingRelated;
+use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\UpdateRelated;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Show;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Store;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Update;
@@ -33,6 +34,7 @@ class Router
             Update::make()->getRoutes(),
             Destroy::make()->getRoutes(),
             ListingRelated::make()->getRoutes(),
+            UpdateRelated::make()->getRoutes(),
             AssociateRelated::make()->getRoutes(),
             DissociateRelated::make()->getRoutes(),
             CountRelated::make()->getRoutes(),

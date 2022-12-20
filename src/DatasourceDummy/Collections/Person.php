@@ -3,10 +3,10 @@
 namespace ForestAdmin\AgentPHP\DatasourceDummy\Collections;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
 class Person extends BaseCollection
 {
@@ -30,13 +30,11 @@ class Person extends BaseCollection
                 originKey: 'authorId',
                 originKeyTarget: 'id',
                 foreignCollection: 'Book',
-                inverseRelationName: 'Person',
             ),
             'address' => new OneToOneSchema(
                 originKey: 'originKeyId',
                 originKeyTarget: 'id',
                 foreignCollection: 'Address',
-                inverseRelationName: 'Person',
             ),
         ];
 

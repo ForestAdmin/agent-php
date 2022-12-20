@@ -9,80 +9,15 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operat
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 const TEST_TIMEZONE = 'Europe/Dublin';
-
-dataset('DatasourceForFilterFactory', dataset: function () {
-    yield $datasource = new Datasource();
-
-    $collectionBooks = new Collection($datasource, 'Book');
-    $collectionBooks->addFields(
-        [
-            'id'          => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'reviews'     => new ManyToManySchema(
-                originKey: 'book_id',
-                originKeyTarget: 'id',
-                throughTable: 'bookReview',
-                foreignKey: 'review_id',
-                foreignKeyTarget: 'id',
-                foreignCollection: 'Review',
-                inverseRelationName: 'books',
-            ),
-            'bookReviews' => new OneToManySchema(
-                originKey: 'book_id',
-                originKeyTarget: 'id',
-                foreignCollection: 'Review',
-                inverseRelationName: 'books'
-            ),
-        ]
-    );
-
-    $collectionReviews = new Collection($datasource, 'Review');
-    $collectionReviews->addFields(
-        [
-            'id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-        ]
-    );
-    $mockCollectionReviews = mock($collectionReviews)
-        ->shouldReceive('list')
-        ->andReturn([['id' => 1], ['id' => 2]])
-        ->getMock();
-
-    $collectionBookReview = new Collection($datasource, 'BookReview');
-    $collectionBookReview->addFields(
-        [
-            'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'review_id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'review'    => new ManyToOneSchema(
-                foreignKey: 'review_id',
-                foreignKeyTarget: 'id',
-                foreignCollection: 'Review',
-                inverseRelationName: 'bookReview'
-            ),
-        ]
-    );
-    $mockCollectionBookReview = mock($collectionBookReview)
-        ->shouldReceive('list')
-        ->andReturn([['id' => 123, 'review_id' => 1], ['id' => 124, 'review_id' => 2]])
-        ->getMock();
-
-    $datasource->addCollection($collectionBooks);
-    $datasource->addCollection($mockCollectionReviews);
-    $datasource->addCollection($mockCollectionBookReview);
-
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'isProduction' => false,
-    ];
-    (new AgentFactory($options,  []))->addDatasource($datasource)->build();
-});
 
 function createDatasourceForFilterFactory(): Datasource
 {
@@ -99,13 +34,12 @@ function createDatasourceForFilterFactory(): Datasource
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'books',
+                throughCollection: 'BookReview'
             ),
             'bookReviews' => new OneToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'books'
             ),
         ]
     );
@@ -125,12 +59,17 @@ function createDatasourceForFilterFactory(): Datasource
     $collectionBookReview->addFields(
         [
             'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'review_id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'review_id' => new ColumnSchema(columnType: PrimitiveType::NUMBER),
             'review'    => new ManyToOneSchema(
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'bookReview'
+            ),
+            'book_id' => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'book'    => new ManyToOneSchema(
+                foreignKey: 'book_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'Book',
             ),
         ]
     );
@@ -253,8 +192,29 @@ test("makeThroughFilter() should nest the provided filter many to many", closure
                 conditionTree: new ConditionTreeBranch(
                     aggregator: 'And',
                     conditions: [
-                        new ConditionTreeLeaf(field: 'books:id', operator: Operators::EQUAL, value: 1),
-                        new ConditionTreeLeaf(field: 'someField', operator: Operators::EQUAL, value: 1),
+                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
+                        new ConditionTreeLeaf(field: 'review_id', operator: Operators::PRESENT),
+                        new ConditionTreeLeaf(field: 'review:someField', operator: Operators::EQUAL, value: 1),
+                    ]
+                )
+            )
+        );
+})->with('caller');
+
+test("makeThroughFilter() should make two queries many to many", closure: function (Caller $caller) {
+    $datasource = createDatasourceForFilterFactory();
+    $books = $datasource->getCollection('Book');
+    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1), segment: 'someSegment');
+    $filter = FilterFactory::makeThroughFilter($books, [1], 'reviews', $caller, $baseFilter);
+
+    expect($filter)
+        ->toEqual(
+            new Filter(
+                conditionTree: new ConditionTreeBranch(
+                    aggregator: 'And',
+                    conditions: [
+                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
+                        new ConditionTreeLeaf(field: 'review_id', operator: Operators::IN, value: [1,2]),
                     ]
                 )
             )
@@ -277,7 +237,7 @@ test("makeForeignFilter() should add the fk condition one to many", closure: fun
                     aggregator: 'And',
                     conditions: [
                         new ConditionTreeLeaf(field: 'someField', operator: Operators::EQUAL, value: 1),
-                        new ConditionTreeLeaf(field: 'books', operator: Operators::EQUAL, value: 1),
+                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
                     ]
                 ),
                 segment: 'some-segment'

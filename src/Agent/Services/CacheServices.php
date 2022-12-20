@@ -330,12 +330,10 @@ class CacheServices implements Store
 
     public function many(array $keys)
     {
-        // TODO: Implement many() method.
     }
 
     public function putMany(array $values, $seconds)
     {
-        // TODO: Implement putMany() method.
     }
 
     /**

@@ -5,11 +5,12 @@
     "license": "GPL-3.0-or-later",
     "require": {
         "php": "^8.0",
-        "composer/composer": "^2.3",
+        "doctrine/orm": "^2.13",
         "firebase/php-jwt": "^6.2",
         "galbar/jsonpath": "^2.0",
         "guzzlehttp/guzzle": "^7.4",
         "illuminate/collections": "^9.13",
+        "illuminate/database": "^9.38",
         "illuminate/support": "^9.19",
         "league/csv": "^9.8",
         "league/fractal": "^0.20.1",
@@ -21,15 +22,15 @@
         "spatie/enum": "^3.13",
         "symfony/cache": "^6.0",
         "symfony/http-foundation": "^6.0",
-        "symfony/http-kernel": "^6.0",
-        "doctrine/orm": "^2.13"
+        "symfony/http-kernel": "^6.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.0",
         "pestphp/pest": "^1.21",
         "pestphp/pest-plugin-mock": "^1.0",
         "phpspec/prophecy-phpunit": "^2.0",
-        "symfony/var-dumper": "^6.0"
+        "symfony/var-dumper": "^6.0",
+        "spatie/pest-plugin-test-time": "^1.1"
     },
     "autoload": {
         "psr-4": {

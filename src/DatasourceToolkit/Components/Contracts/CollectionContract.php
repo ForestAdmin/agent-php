@@ -8,8 +8,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results\ActionResult;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 
 interface CollectionContract
 {
@@ -31,15 +31,9 @@ interface CollectionContract
 
     public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array;
 
-    public function export(Caller $caller, Filter $filter, Projection $projection): array;
+    public function update(Caller $caller, Filter $filter, array $patch);
 
-    public function update(Caller $caller, Filter $filter, $id, array $patch);
-
-    public function delete(Caller $caller, Filter $filter, $id): void;
+    public function delete(Caller $caller, Filter $filter): void;
 
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null);
-
-    public function associate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void;
-
-    public function dissociate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void;
 }

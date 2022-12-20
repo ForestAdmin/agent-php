@@ -17,12 +17,12 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use Illuminate\Support\Str;
 
 function factoryChart($args = []): Charts
@@ -45,13 +45,38 @@ function factoryChart($args = []): Charts
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'Book',
+                throughCollection: 'BookReview',
             ),
             'bookReviews' => new OneToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'Review',
-                inverseRelationName: 'bookReviews',
+            ),
+        ]
+    );
+
+    $collectionBookReview = new Collection($datasource, 'BookReview');
+    $collectionBookReview->addFields(
+        [
+            'id'          => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'reviews'     => new ManyToManySchema(
+                originKey: 'book_id',
+                originKeyTarget: 'id',
+                throughTable: 'book_review',
+                foreignKey: 'review_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'Review',
+                throughCollection: 'BookReview',
+            ),
+            'book' => new ManyToOneSchema(
+                foreignKey: 'book_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'Book',
+            ),
+            'review' => new ManyToOneSchema(
+                foreignKey: 'review_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'Review',
             ),
         ]
     );
@@ -65,7 +90,6 @@ function factoryChart($args = []): Charts
                 foreignKey: 'book_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',
-                inverseRelationName: 'bookReviews',
             ),
         ]
     );
@@ -74,7 +98,6 @@ function factoryChart($args = []): Charts
         $collectionBooks = mock($collectionBooks)
             ->shouldReceive('aggregate')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null, \Mockery::type('string'));
-
         if (isset($args['books']['previous'])) {
             $collectionBooks = $collectionBooks->andReturn($args['books']['results'][0], $args['books']['results'][1])
                 ->getMock();
@@ -86,6 +109,7 @@ function factoryChart($args = []): Charts
 
     $datasource->addCollection($collectionBooks);
     $datasource->addCollection($collectionReviews);
+    $datasource->addCollection($collectionBookReview);
 
     $options = [
         'projectDir'    => sys_get_temp_dir(),
@@ -199,6 +223,7 @@ test('makeValue() with previous filter should return a ValueChart', function () 
             ],
         ]
     );
+
     $result = $chart->handleRequest(['collectionName' => 'Book']);
 
     expect($result)
@@ -305,14 +330,8 @@ test('makeLine() with day filter should return a LineChart', function () {
         [
             'books'   => [
                 'results' => [
-                    [
-                        'label' => new \DateTime('2022-01-03 00:00:00'),
-                        'value' => 10,
-                    ],
-                    [
-                        'label' => new \DateTime('2022-01-10 00:00:00'),
-                        'value' => 15,
-                    ],
+                    '03/01/2022' => 10,
+                    '10/01/2022' => 15,
                 ],
             ],
             'payload' => [
@@ -340,11 +359,11 @@ test('makeLine() with day filter should return a LineChart', function () {
         ->toHaveKey('value', (new LineChart([
             [
                 'label'  => '03/01/2022',
-                'values' => 10,
+                'values' => ['value' => 10],
             ],
             [
                 'label'  => '10/01/2022',
-                'values' => 15,
+                'values' => ['value' => 15],
             ],
         ]))->serialize())
         ->and($result['content']['data']['id']);
@@ -355,14 +374,8 @@ test('makeLine() with week filter should return a LineChart', function () {
         [
             'books'   => [
                 'results' => [
-                    [
-                        'label' => new \DateTime('2022-01-03 00:00:00'),
-                        'value' => 10,
-                    ],
-                    [
-                        'label' => new \DateTime('2022-01-10 00:00:00'),
-                        'value' => 15,
-                    ],
+                    'W01-2022' => 10,
+                    'W02-2022' => 15,
                 ],
             ],
             'payload' => [
@@ -390,11 +403,11 @@ test('makeLine() with week filter should return a LineChart', function () {
         ->toHaveKey('value', (new LineChart([
             [
                 'label'  => 'W01-2022',
-                'values' => 10,
+                'values' => ['value' => 10],
             ],
             [
                 'label'  => 'W02-2022',
-                'values' => 15,
+                'values' => ['value' => 15],
             ],
         ]))->serialize())
         ->and($result['content']['data']['id']);
@@ -405,14 +418,8 @@ test('makeLine() with month filter should return a LineChart', function () {
         [
             'books'   => [
                 'results' => [
-                    [
-                        'label' => new \DateTime('2022-01-01 00:00:00'),
-                        'value' => 10,
-                    ],
-                    [
-                        'label' => new \DateTime('2022-02-01 00:00:00'),
-                        'value' => 15,
-                    ],
+                    'Jan 2022' => 10,
+                    'Feb 2022' => 15,
                 ],
             ],
             'payload' => [
@@ -440,11 +447,11 @@ test('makeLine() with month filter should return a LineChart', function () {
         ->toHaveKey('value', (new LineChart([
             [
                 'label'  => 'Jan 2022',
-                'values' => 10,
+                'values' => ['value' => 10],
             ],
             [
                 'label'  => 'Feb 2022',
-                'values' => 15,
+                'values' => ['value' => 15],
             ],
         ]))->serialize())
         ->and($result['content']['data']['id']);
@@ -455,14 +462,8 @@ test('makeLine() with month year should return a LineChart', function () {
         [
             'books'   => [
                 'results' => [
-                    [
-                        'label' => new \DateTime('2022-01-01 00:00:00'),
-                        'value' => 10,
-                    ],
-                    [
-                        'label' => new \DateTime('2023-01-01 00:00:00'),
-                        'value' => 15,
-                    ],
+                    '2022' => 10,
+                    '2023' => 15,
                 ],
             ],
             'payload' => [
@@ -490,11 +491,11 @@ test('makeLine() with month year should return a LineChart', function () {
         ->toHaveKey('value', (new LineChart([
             [
                 'label'  => '2022',
-                'values' => 10,
+                'values' => ['value' => 10],
             ],
             [
                 'label'  => '2023',
-                'values' => 15,
+                'values' => ['value' => 15],
             ],
         ]))->serialize())
         ->and($result['content']['data']['id']);

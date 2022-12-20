@@ -3,9 +3,9 @@
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\SortValidator;
 
@@ -21,7 +21,6 @@ test('validate() should throw', function () {
                 foreignKey: 'authorId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'persons',
-                inverseRelationName: 'books'
             ),
         ]
     );
@@ -42,7 +41,6 @@ test('validate() should not throw', function () {
                 foreignKey: 'authorId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'persons',
-                inverseRelationName: 'books'
             ),
         ]
     );

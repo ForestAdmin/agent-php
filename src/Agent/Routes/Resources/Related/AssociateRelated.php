@@ -8,8 +8,11 @@ use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 
 class AssociateRelated extends AbstractRelationRoute
 {
@@ -30,43 +33,54 @@ class AssociateRelated extends AbstractRelationRoute
         $this->build($args);
         $this->permissions->can('edit:' . $this->collection->getName());
 
-        $id = Id::unpackId($this->collection, $args['id']);
-        $childId = Id::unpackId($this->childCollection, $this->request->input('data')[0]['id']);
-        $relation = Schema::getToManyRelation($this->collection, $args['relationName']);
+        $parentId = Id::unpackId($this->collection, $args['id']);
+        $targetedRelationId = Id::unpackId($this->childCollection, $this->request->input('data')[0]['id']);
+        $this->permissions->getScope($this->collection);
+        $relation = SchemaUtils::getToManyRelation($this->collection, $args['relationName']);
 
-        [$pk] = Schema::getPrimaryKeys($this->collection);
-        $parentValue = CollectionUtils::getValue($this->collection, $this->caller, $id, $pk);
-
-        $parentFilter = ContextFilterFactory::build(
-            $this->collection,
-            $this->request,
-            ConditionTreeFactory::intersect(
-                [
-                    $this->permissions->getScope($this->collection),
-                    new ConditionTreeLeaf($pk, 'Equal', $parentValue),
-                ]
-            )
-        );
-
-        [$pkChild] = Schema::getPrimaryKeys($this->childCollection);
-        $childValue = CollectionUtils::getValue($this->childCollection, $this->caller, $childId, $pkChild);
-
-        $childFilter = ContextFilterFactory::build(
-            $this->childCollection,
-            $this->request,
-            ConditionTreeFactory::intersect(
-                [
-                    $this->permissions->getScope($this->childCollection),
-                    new ConditionTreeLeaf($pkChild, 'Equal', $childValue),
-                ]
-            )
-        );
-
-        $this->collection->associate($this->caller, $parentFilter, $childFilter, $relation);
+        if ($relation instanceof OneToManySchema) {
+            $this->associateOneToMany($relation, $parentId, $targetedRelationId);
+        } else {
+            $this->associateManyToMany($relation, $parentId, $targetedRelationId);
+        }
 
         return [
             'content' => null,
             'status'  => 204,
         ];
+    }
+
+    private function associateOneToMany(OneToManySchema $relation, array $parentId, array $targetedRelationId): void
+    {
+        $id = SchemaUtils::getPrimaryKeys($this->childCollection)[0];
+        $value = CollectionUtils::getValue($this->childCollection, $this->caller, $targetedRelationId, $id);
+        $filter = ContextFilterFactory::build(
+            $this->collection,
+            $this->request,
+            ConditionTreeFactory::intersect(
+                [
+                    new ConditionTreeLeaf('id', Operators::EQUAL, $value),
+                    $this->permissions->getScope($this->collection),
+                ]
+            )
+        );
+        $value = CollectionUtils::getValue($this->collection, $this->caller, $parentId, $relation->getOriginKeyTarget());
+        $this->childCollection->update($this->caller, $filter, ['attributes' => [$relation->getOriginKey() => $value]]);
+    }
+
+    private function associateManyToMany(ManyToManySchema $relation, array $parentId, array $targetedRelationId)
+    {
+        $id = SchemaUtils::getPrimaryKeys($this->childCollection)[0];
+        $foreign = CollectionUtils::getValue($this->childCollection, $this->caller, $targetedRelationId, $id);
+        $id = SchemaUtils::getPrimaryKeys($this->collection)[0];
+        $origin = CollectionUtils::getValue($this->collection, $this->caller, $parentId, $id);
+        $record = ['attributes' => [
+                $relation->getOriginKey()  => $origin,
+                $relation->getForeignKey() => $foreign,
+            ],
+        ];
+
+        $throughCollection = $this->datasource->getCollection($relation->getThroughCollection());
+        $throughCollection->create($this->caller, $record);
     }
 }

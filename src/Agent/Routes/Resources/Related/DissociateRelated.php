@@ -8,13 +8,13 @@ use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema;
-use Illuminate\Support\Arr;
 
 class DissociateRelated extends AbstractRelationRoute
 {
@@ -35,41 +35,66 @@ class DissociateRelated extends AbstractRelationRoute
         $this->build($args);
         $this->permissions->can('delete:' . $this->collection->getName());
 
-        $id = Id::unpackId($this->collection, $args['id']);
+        $parentId = Id::unpackId($this->collection, $args['id']);
         $isDeleteMode = $this->request->get('delete') ?? false;
         $selectionIds = Id::parseSelectionIds($this->childCollection, $this->request);
         $childFilter = $this->getBaseForeignFilter($selectionIds);
 
         $relation = Schema::getToManyRelation($this->collection, $args['relationName']);
-        if ($isDeleteMode) {
-            if ($relation->getType() === 'ManyToMany') {
-                $childFilter = FilterFactory::makeThroughFilter($this->collection, $id, $args['relationName'], $this->caller, $childFilter);
-            } else {
-                $childFilter = FilterFactory::makeForeignFilter($this->collection, $id, $args['relationName'], $this->caller, $childFilter);
-            }
 
-            $this->childCollection->delete($this->caller, $childFilter, Arr::flatten($selectionIds['ids']));
+        if ($relation instanceof OneToManySchema) {
+            $this->dissociateOrDeleteOneToMany($relation, $args['relationName'], $parentId, $isDeleteMode, $childFilter);
         } else {
-            [$pk] = Schema::getPrimaryKeys($this->collection);
-            $parentValue = CollectionUtils::getValue($this->collection, $this->caller, $id, $pk);
-            $parentFilter = ContextFilterFactory::build(
-                $this->collection,
-                $this->request,
-                ConditionTreeFactory::intersect(
-                    [
-                        $this->permissions->getScope($this->collection),
-                        new ConditionTreeLeaf($pk, 'Equal', $parentValue),
-                    ]
-                )
-            );
-
-            $this->collection->dissociate($this->caller, $parentFilter, $childFilter, $relation);
+            $this->dissociateOrDeleteManyToMany($relation, $args['relationName'], $parentId, $isDeleteMode, $childFilter);
         }
 
         return [
             'content' => null,
             'status'  => 204,
         ];
+    }
+
+    private function dissociateOrDeleteOneToMany(OneToManySchema $relation, string $relationName, array $parentId, bool $isDeleteMode, Filter $filter): void
+    {
+        $foreignFilter = $this->makeForeignFilter($parentId, $filter, $relationName);
+
+        if ($isDeleteMode) {
+            $this->childCollection->delete($this->caller, $foreignFilter);
+        } else {
+            $this->childCollection->update($this->caller, $foreignFilter, ['attributes' => [$relation->getOriginKey() => null]]);
+        }
+    }
+
+    private function dissociateOrDeleteManyToMany(ManyToManySchema $relation, string $relationName, array $parentId, bool $isDeleteMode, Filter $filter): void
+    {
+        $throughCollection = $this->datasource->getCollection($relation->getThroughCollection());
+
+        if ($isDeleteMode) {
+            // Generate filters _BEFORE_ deleting stuff, otherwise things break.
+            $throughFilter = $this->makeThroughFilter($parentId, $filter, $relationName);
+            $foreignFilter = $this->makeForeignFilter($parentId, $filter, $relationName);
+            // Delete records from through collection
+            $throughCollection->delete($this->caller, $throughFilter);
+
+            // Let the datasource crash when:
+            // - the records in the foreignCollection are linked to other records in the origin collection
+            // - the underlying database/api is not cascading deletes
+            $this->childCollection->delete($this->caller, $foreignFilter);
+        } else {
+            // Only delete records from through collection
+            $throughFilter = $this->makeThroughFilter($parentId, $filter, $relationName);
+            $throughCollection->delete($this->caller, $throughFilter);
+        }
+    }
+
+    protected function makeForeignFilter(array $parentId, Filter $baseForeignFilter, string $relationName): Filter
+    {
+        return FilterFactory::makeForeignFilter($this->collection, $parentId, $relationName, $this->caller, $baseForeignFilter);
+    }
+
+    protected function makeThroughFilter(array $parentId, Filter $baseForeignFilter, string $relationName): Filter
+    {
+        return FilterFactory::makeThroughFilter($this->collection, $parentId, $relationName, $this->caller, $baseForeignFilter);
     }
 
     /**

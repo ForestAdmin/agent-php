@@ -13,8 +13,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operat
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
 function factoryShow($args = []): Show
 {
@@ -33,8 +33,8 @@ function factoryShow($args = []): Show
 
     if (isset($args['show'])) {
         $collectionCar = mock($collectionCar)
-            ->shouldReceive('show')
-            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), [$args['show']['id']], \Mockery::type(Projection::class))
+            ->shouldReceive('list')
+            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
             ->andReturn(($args['show']))
             ->getMock();
     }
@@ -42,10 +42,10 @@ function factoryShow($args = []): Show
     $datasource->addCollection($collectionCar);
 
     $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
+        'projectDir'    => sys_get_temp_dir(),
+        'schemaPath'    => sys_get_temp_dir() . '/.forestadmin-schema.json',
         'authSecret'    => AUTH_SECRET,
-        'isProduction' => false,
+        'isProduction'  => false,
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();
     SchemaEmitter::getSerializedSchema($datasource);
@@ -87,9 +87,11 @@ test('make() should return a new instance of Show with routes', function () {
 
 test('handleRequest() should return a response 200', function () {
     $data = [
-        'id'    => 1,
-        'model' => 'F8',
-        'brand' => 'Ferrari',
+        [
+            'id'    => 1,
+            'model' => 'F8',
+            'brand' => 'Ferrari',
+        ],
     ];
     $show = factoryShow(
         [
@@ -115,4 +117,3 @@ test('handleRequest() should return a response 200', function () {
             ]
         );
 });
-

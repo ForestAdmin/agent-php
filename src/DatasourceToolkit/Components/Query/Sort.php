@@ -18,7 +18,7 @@ class Sort extends IlluminateCollection
                 || ! is_string($item['field'])
                 || ! is_bool($item['ascending'])
             ) {
-                throw new ForestException('Invalid sort clause, key "field" and "ascending" must be present and of type string and boolean.');
+                throw new ForestException('Invalid sort clause, key "field" and "ascending" must be present and should be of type string and boolean.');
             }
         }
 

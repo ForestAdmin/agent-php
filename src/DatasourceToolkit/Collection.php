@@ -11,11 +11,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results\ActionResult;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ActionSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ActionSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection as IlluminateCollection;
 
@@ -53,7 +53,6 @@ class Collection implements CollectionContract
 
     public function execute(Caller $caller, string $name, array $formValues, ?Filter $filter = null): ActionResult
     {
-        // TODO: Implement execute() method.
         if (! $this->actions->get($name)) {
             throw new ForestException("Action $name is not implemented.");
         }
@@ -68,52 +67,31 @@ class Collection implements CollectionContract
 
     public function create(Caller $caller, array $data)
     {
-        // TODO: Implement create() method.
     }
 
     public function show(Caller $caller, Filter $filter, $id, Projection $projection)
     {
-        // TODO: Implement show() method.
     }
 
     public function list(Caller $caller, Filter $filter, Projection $projection): array
     {
-        // TODO: Implement list() method.
     }
 
-    public function export(Caller $caller, Filter $filter, Projection $projection): array
+    public function update(Caller $caller, Filter $filter, array $patch)
     {
-        // TODO: Implement list() method.
     }
 
-    public function update(Caller $caller, Filter $filter, $id, array $patch)
+    public function delete(Caller $caller, Filter $filter): void
     {
-        // TODO: Implement update() method.
-    }
-
-    public function delete(Caller $caller, Filter $filter, $id): void
-    {
-        // TODO: Implement delete() method.
     }
 
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
     {
-        // TODO: Implement aggregate() method.
-    }
-
-    public function associate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void
-    {
-        // TODO: Implement create() method.
-    }
-
-    public function dissociate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void
-    {
-        // TODO: Implement dissociate() method.
     }
 
     public function makeTransformer()
     {
-        return new BaseTransformer($this->name);
+        return new BaseTransformer($this->getName());
     }
 
     public function toArray($record, ?Projection $projection = null): array

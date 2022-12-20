@@ -3,10 +3,10 @@
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\FieldValidator;
 
 use function ForestAdmin\cache;
@@ -21,7 +21,6 @@ dataset('FieldValidatorCollection', function () {
                 originKey: 'id',
                 originKeyTarget: 'id',
                 foreignCollection: 'owner',
-                inverseRelationName: 'car'
             ),
         ]
     );
@@ -34,7 +33,6 @@ dataset('FieldValidatorCollection', function () {
                 originKey: 'id',
                 originKeyTarget: 'id',
                 foreignCollection: 'address',
-                inverseRelationName: 'owner'
             ),
         ]
     );
@@ -76,6 +74,10 @@ test('validate() should throw when the requested field is of type column', funct
 })->throws(ForestException::class, '🌳🌳🌳 Unexpected field type: cars.id (found Column expected \'ManyToOne\' or \'OneToOne\')')
     ->with('FieldValidatorCollection');
 
+test('validate() should validate field when the value is an array', function ($collection) {
+    expect(FieldValidator::validate($collection, 'id', ['foo', 'bar']));
+})->throws(ForestException::class, '🌳🌳🌳 Wrong type for id: foo. Expects Number')
+    ->with('FieldValidatorCollection');
 
 test('validateValue() on field of type boolean with valid value should not throw', function () {
     $column = new ColumnSchema(columnType: PrimitiveType::BOOLEAN);

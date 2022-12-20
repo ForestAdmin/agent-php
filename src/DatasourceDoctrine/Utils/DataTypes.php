@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceDoctrine\Utils;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
 class DataTypes
 {
@@ -14,6 +14,7 @@ class DataTypes
             'datetime_immutable', 'datetime' => PrimitiveType::DATE,
             'boolean'                        => PrimitiveType::BOOLEAN,
             'time'                           => PrimitiveType::TIMEONLY,
+            'json'                           => PrimitiveType::JSON,
             default                          => PrimitiveType::STRING,
         };
     }

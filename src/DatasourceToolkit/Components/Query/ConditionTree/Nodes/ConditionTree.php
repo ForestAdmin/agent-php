@@ -4,6 +4,7 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\
 
 use Closure;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Str;
@@ -12,7 +13,7 @@ abstract class ConditionTree
 {
     abstract public function inverse(): self;
 
-    abstract public function replaceLeafs(Closure $handler): self;
+    abstract public function replaceLeafs(Closure $handler): ?self;
 
     abstract public function match(array $record, Collection $collection, string $timezone): bool;
 
@@ -24,14 +25,9 @@ abstract class ConditionTree
 
     abstract public function getProjection(): Projection;
 
-    public function apply(array $records, Collections $collections, string $timezone): array
+    public function apply(array $records, CollectionContract $collection, string $timezone): array
     {
-        // todo
-        // maybe parse record into the collection ?
-
-        /*apply(records: RecordData[], collection: Collection, timezone: string): RecordData[] {
-            return records.filter(record => this.match(record, collection, timezone));
-          }*/
+        return collect($records)->filter(fn ($record) => $this->match($record, $collection, $timezone))->toArray();
     }
 
     public function nest(string $prefix): self

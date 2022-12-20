@@ -6,14 +6,15 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Concerns\PrimitiveType;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 
@@ -31,7 +32,6 @@ function dataSourceWithInverseRelationMissing(): Datasource
                 foreignKey: 'authorId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
-                inverseRelationName: 'Book'
             ),
             'authorId' => new ColumnSchema(
                 columnType: PrimitiveType::UUID,
@@ -79,17 +79,16 @@ function datasourceWithAllRelations(array $args = []): Datasource
             'myPersons'     => new ManyToManySchema(
                 originKey: 'bookId',
                 originKeyTarget: 'id',
-                throughTable: 'BookPerson',
+                throughTable: 'bookPerson',
                 foreignKey: 'personId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
-                inverseRelationName: 'myPersons'
+                throughCollection: 'BookPerson'
             ),
             'myBookPersons' => new OneToManySchema(
                 originKey: 'bookId',
                 originKeyTarget: 'id',
                 foreignCollection: 'BookPerson',
-                inverseRelationName: 'bookPersons'
             ),
         ]
     );
@@ -108,13 +107,11 @@ function datasourceWithAllRelations(array $args = []): Datasource
                 foreignKey: 'bookId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',
-                inverseRelationName: 'myBook'
             ),
             'myPerson' => new ManyToOneSchema(
                 foreignKey: 'personId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
-                inverseRelationName: 'myPerson'
             ),
         ]
     );
@@ -130,17 +127,17 @@ function datasourceWithAllRelations(array $args = []): Datasource
             'myBooks'      => new ManyToManySchema(
                 originKey: 'personId',
                 originKeyTarget: 'id',
-                throughTable: 'BookPerson',
+                throughTable: 'bookPerson',
                 foreignKey: 'bookId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',
-                inverseRelationName: 'myBooks'
+                throughCollection: 'BookPerson'
+
             ),
             'myBookPerson' => new OneToOneSchema(
                 originKey: 'personId',
                 originKeyTarget: 'id',
                 foreignCollection: 'BookPerson',
-                inverseRelationName: 'bookPersons'
             ),
         ]
     );
@@ -236,7 +233,7 @@ test('isManyToManyInverse() should return false', function () {
         foreignKey: 'bookId',
         foreignKeyTarget: 'id',
         foreignCollection: 'Book',
-        inverseRelationName: 'persons'
+        throughCollection: 'BookFoo'
     );
 
     expect(CollectionUtils::isManyToManyInverse($collectionBook->getFields()['myPersons'], $manyToManyRelation))->toBeFalse();
@@ -342,7 +339,7 @@ test('getThroughTarget() should work', function () {
     $collectionBook = $datasource->getCollection('Book');
 
     expect(CollectionUtils::getThroughTarget($collectionBook, 'myPersons'))
-        ->toEqual('Person');
+        ->toEqual('myPerson');
 });
 
 test('getValue() should work', function (Caller $caller) {
@@ -373,65 +370,53 @@ test('getValue() should work with composite id', function (Caller $caller) {
         ->toEqual('ref');
 })->with('caller');
 
-test('listRelation() should throw with unexpected format', function (Caller $caller) {
-    $datasource = datasourceWithAllRelations(
-        [
-            'Book' => [
-                'list' => ['id' => 1, 'title' => 'foo'],
-            ],
-        ]
-    );
-    $collectionBook = $datasource->getCollection('Book');
-    $filter = new Filter();
-
-    expect(static fn () => CollectionUtils::listRelation($collectionBook, [1], 'myPersons', $caller, $filter, new Projection(), 'foo-format'))
-        ->toThrow(ForestException::class, "🌳🌳🌳 Return format of collection unknown, only values 'list' or 'export' are allowed");
-})->with('caller');
-
 test('listRelation() should work with one to many relation', function (Caller $caller) {
     $datasource = datasourceWithAllRelations(
         [
             'BookPerson' => [
-                'list' => ['bookId' => 1, 'personId' => 1],
+                'list' => [['bookId' => 1, 'personId' => 1]],
             ],
         ]
     );
     $collectionBook = $datasource->getCollection('Book');
-    $filter = new Filter();
+    $filter = new PaginatedFilter();
 
     expect(CollectionUtils::listRelation($collectionBook, [1], 'myBookPersons', $caller, $filter, new Projection()))
-        ->toEqual(['bookId' => 1, 'personId' => 1]);
+        ->toEqual([['bookId' => 1, 'personId' => 1]]);
 })->with('caller');
 
 test('listRelation() should work with many to many relation', function (Caller $caller) {
     $datasource = datasourceWithAllRelations(
         [
             'Person' => [
-                'list' => ['id' => 1, 'name' => 'foo'],
+                'list' => [['id' => 1, 'name' => 'foo']],
+            ],
+            'BookPerson' => [
+                'list' => [['bookId' => 1, 'personId' => 1, 'myPerson' => 1, 'myBook' => 1]],
             ],
         ]
     );
     $collectionBook = $datasource->getCollection('Book');
-    $filter = new Filter();
+    $filter = new PaginatedFilter();
 
     expect(CollectionUtils::listRelation($collectionBook, [1], 'myPersons', $caller, $filter, new Projection()))
-        ->toEqual(['id' => 1, 'name' => 'foo']);
+        ->toEqual([1]);
 })->with('caller');
 
 test('aggregateRelation() should work with one to many relation', function (Caller $caller) {
     $datasource = datasourceWithAllRelations(['BookPerson' => ['aggregate' => 1]]);
     $collectionBook = $datasource->getCollection('Book');
-    $filter = new Filter();
+    $filter = new PaginatedFilter();
 
-    expect(CollectionUtils::aggregateRelation($collectionBook, [1], 'myBookPersons', $caller, $filter, new Aggregation('count')))
+    expect(CollectionUtils::aggregateRelation($collectionBook, [1], 'myBookPersons', $caller, $filter, new Aggregation('Count')))
         ->toEqual(1);
 })->with('caller');
 
 test('aggregateRelation() should work with many to many relation', function (Caller $caller) {
-    $datasource = datasourceWithAllRelations(['Person' => ['aggregate' => 1]]);
+    $datasource = datasourceWithAllRelations(['Person' => ['aggregate' => 1], 'BookPerson' => ['aggregate' => 1]]);
     $collectionBook = $datasource->getCollection('Book');
-    $filter = new Filter();
+    $filter = new PaginatedFilter();
 
-    expect(CollectionUtils::aggregateRelation($collectionBook, [1], 'myPersons', $caller, $filter, new Aggregation('count')))
+    expect(CollectionUtils::aggregateRelation($collectionBook, [1], 'myPersons', $caller, $filter, new Aggregation('Count')))
         ->toEqual(1);
 })->with('caller');

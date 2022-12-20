@@ -5,8 +5,12 @@ namespace ForestAdmin\AgentPHP\Agent\Builder;
 use DI\Container;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use Illuminate\Support\Collection as IlluminateCollection;
+use Illuminate\Database\Capsule\Manager;
+use Illuminate\Database\Events\StatementPrepared;
+use Illuminate\Events\Dispatcher;
+
 
 class AgentFactory
 {
@@ -14,35 +18,25 @@ class AgentFactory
 
     protected static Container $container;
 
-    protected Datasource $compositeDatasource;
+    protected DatasourceCustomizer $customizer;
 
-    protected DecoratorsStack $stack;
-
-    protected IlluminateCollection $customizations;
-
-    public function __construct(array $config, array $services)
+    public function __construct(array $config, array $services = [])
     {
-        $this->compositeDatasource = new Datasource();
-        $this->stack = new DecoratorsStack($this->compositeDatasource);
-        $this->customizations = new IlluminateCollection();
+        $this->customizer = new DatasourceCustomizer();
         $this->buildContainer($services);
         $this->buildCache($config);
     }
 
-    public function addDatasource(Datasource $datasource): self
+    public function addDatasource(Datasource $datasource, array $options = []): self
     {
-        $datasource->getCollections()->each(
-            fn ($collection) => $this->compositeDatasource->addCollection($collection)
-        );
-
-        $this->stack->build();
+        $this->customizer->addDatasource($datasource, $options);
 
         return $this;
     }
 
     public function build(): void
     {
-        self::$container->set('datasource', $this->stack->dataSource);
+        self::$container->set('datasource', $this->customizer->getStack()->dataSource);
     }
 
     /**
@@ -56,9 +50,7 @@ class AgentFactory
      */
     public function customizeCollection(string $name, \Closure $handle): self
     {
-        if ($this->stack->dataSource->getCollection($name)) {
-            $handle(new CollectionBuilder($this->stack, $name));
-        }
+        $this->customizer->customizeCollection($name, $handle);
 
         return $this;
     }
@@ -76,6 +68,7 @@ class AgentFactory
     private function buildContainer(array $services): void
     {
         self::$container = new Container();
+
         foreach ($services as $key => $value) {
             self::$container->set($key, $value);
         }

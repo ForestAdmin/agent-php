@@ -7,29 +7,26 @@ use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\Mapping\MappingException;
-use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BaseTransformer;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
-use ForestAdmin\AgentPHP\DatasourceDoctrine\Transformer\EntityTransformer;
+use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\DataTypes;
-use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\QueryCharts;
-use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\QueryConverter;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection as ForestCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\ManyToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
-class Collection extends ForestCollection
+class Collection extends BaseCollection
 {
     /**
      * @throws \ReflectionException
@@ -40,9 +37,9 @@ class Collection extends ForestCollection
         parent::__construct($datasource, $entityMetadata->reflClass->getShortName());
 
         $this->className = $entityMetadata->getName();
+        $this->tableName = $this->entityMetadata->getTableName();
         $this->addFields($this->entityMetadata->fieldMappings);
         $this->mapRelationshipsToFields();
-        $this->searchable = true;
     }
 
     /**
@@ -71,7 +68,7 @@ class Collection extends ForestCollection
      */
     public function addFields(array $fields): void
     {
-        foreach ($fields as $key => $value) {
+        foreach ($fields as $value) {
             $field = new ColumnSchema(
                 columnType: DataTypes::getType($value['type']),
                 filterOperators: FrontendFilterable::getRequiredOperators(DataTypes::getType($value['type'])),
@@ -83,7 +80,7 @@ class Collection extends ForestCollection
                 enumValues: [], // todo
                 validation: [], // todo
             );
-            $this->addField($key, $field);
+            $this->addField($value['columnName'], $field);
         }
     }
 
@@ -92,186 +89,18 @@ class Collection extends ForestCollection
         return $this->entityMetadata->getSingleIdReflectionProperty()->getName();
     }
 
-    /**
-     * @throws NonUniqueResultException
-     * @throws NoResultException
-     */
-    public function show(Caller $caller, Filter $filter, $id, Projection $projection)
-    {
-        return QueryConverter::of($filter, $this->datasource->getEntityManager(), $this->entityMetadata, $caller->getTimezone(), $projection)
-            ->getQuery()
-            ->getSingleResult();
-    }
-
-    public function list(Caller $caller, Filter $filter, Projection $projection): array
-    {
-        return QueryConverter::of($filter, $this->datasource->getEntityManager(), $this->entityMetadata, $caller->getTimezone(), $projection)
-            ->getQuery()
-            ->getArrayResult();
-    }
-
-    public function export(Caller $caller, Filter $filter, Projection $projection): array
-    {
-        $results = QueryConverter::of($filter, $this->datasource->getEntityManager(), $this->entityMetadata, $caller->getTimezone(), $projection)
-            ->getQuery()
-            ->getArrayResult();
-
-        $relations = array_keys($projection->relations());
-        foreach ($results as &$result) {
-            foreach ($result as $field => $value) {
-                if (is_array($value) && in_array($field, $relations, true)) {
-                    $result[$field] = array_shift($value);
-                }
-            }
-        }
-
-        return $results;
-    }
-
     public function create(Caller $caller, array $data)
     {
-        $entity = $this->setAttributesAndPersist(new $this->className(), $data);
-        $propertyAccessor = PropertyAccess::createPropertyAccessor();
+        $data = $this->formatAttributes($data);
+        $data[$this->getIdentifier()] = $this->entityMetadata->idGenerator->generateId($this->datasource->getEntityManager(), new $this->className());
+        $query = QueryConverter::of($this, $caller->getTimezone());
+        $id = $query->insertGetId($data);
 
-        return $this->datasource->getEntityManager()->getRepository($this->className)->find($propertyAccessor->getValue($entity, $this->getIdentifier()));
-    }
+        $filter = new Filter(
+            conditionTree: new ConditionTreeLeaf($this->getIdentifier(), Operators::EQUAL, $id)
+        );
 
-    /**
-     * @throws NonUniqueResultException
-     * @throws NoResultException
-     */
-    public function update(Caller $caller, Filter $filter, $id, array $patch)
-    {
-        $record = QueryConverter::of($filter, $this->datasource->getEntityManager(), $this->entityMetadata, $caller->getTimezone())
-            ->getQuery()
-            ->getSingleResult();
-
-        return $this->setAttributesAndPersist($record, $patch);
-    }
-
-    public function delete(Caller $caller, Filter $filter, $id): void
-    {
-        $records = QueryConverter::of($filter, $this->datasource->getEntityManager(), $this->entityMetadata, $caller->getTimezone())
-            ->getQuery()
-            ->getResult();
-
-        foreach ($records as $record) {
-            $this->datasource->getEntityManager()->remove($record);
-        }
-
-        $this->datasource->getEntityManager()->flush();
-    }
-
-    /**
-     * @throws \Exception
-     */
-    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
-    {
-        $qb = QueryConverter::of($filter, $this->datasource->getEntityManager(), $this->entityMetadata, $caller->getTimezone(), $aggregation->getProjection());
-
-        if ($chartType) {
-            return QueryCharts::of($this->entityMetadata, $qb, $aggregation, $limit)
-                ->{'query' . $chartType}()
-                ->getQuery()
-                ->getArrayResult();
-        } else {
-            return $qb->select(Str::lower($aggregation->getOperation()) . '(' . $qb->getRootAliases()[0] . ')')
-                ->getQuery()
-                ->getSingleScalarResult();
-        }
-    }
-
-    public function associate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void
-    {
-        $entity = QueryConverter::of($parentFilter, $this->datasource->getEntityManager(), $this->entityMetadata, $caller->getTimezone())
-            ->getQuery()
-            ->getSingleResult();
-
-        if ($relation instanceof ManyToManySchema) {
-            $target = $this->entityMetadata->getAssociationMappings()[$relation->getForeignKey()]['targetEntity'];
-        } else {
-            $target = $this->entityMetadata->getAssociationMappings()[$relation->getOriginKey()]['targetEntity'];
-        }
-        $targetEntityMetaData = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor($target);
-        $targetEntity = QueryConverter::of($childFilter, $this->datasource->getEntityManager(), $targetEntityMetaData, $caller->getTimezone())
-            ->getQuery()
-            ->getSingleResult();
-
-        $propertyAccessor = PropertyAccess::createPropertyAccessor();
-
-        if ($relation instanceof ManyToManySchema) {
-            $values = $propertyAccessor->getValue($entity, $relation->getForeignKey())->toArray();
-            $values[] = $targetEntity;
-            $propertyAccessor->setValue($entity, $relation->getForeignKey(), $values);
-        } else {
-            $propertyAccessor->setValue($entity, $relation->getOriginKey(), [$targetEntity]);
-        }
-
-        $this->datasource->getEntityManager()->persist($entity);
-        $this->datasource->getEntityManager()->flush();
-    }
-
-    public function dissociate(Caller $caller, Filter $parentFilter, Filter $childFilter, OneToManySchema|ManyToManySchema $relation): void
-    {
-        $entity = QueryConverter::of($parentFilter, $this->datasource->getEntityManager(), $this->entityMetadata, $caller->getTimezone())
-            ->getQuery()
-            ->getSingleResult();
-
-        if ($relation instanceof ManyToManySchema) {
-            $target = $this->entityMetadata->getAssociationMappings()[$relation->getForeignKey()]['targetEntity'];
-        } else {
-            $target = $this->entityMetadata->getAssociationMappings()[$relation->getOriginKey()]['targetEntity'];
-        }
-        $targetEntityMetaData = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor($target);
-        $targetEntity = QueryConverter::of($childFilter, $this->datasource->getEntityManager(), $targetEntityMetaData, $caller->getTimezone())
-            ->getQuery()
-            ->getResult();
-
-        if (! empty($targetEntity)) {
-            $propertyAccessor = PropertyAccess::createPropertyAccessor();
-            if ($relation instanceof ManyToManySchema) {
-                $currentValues = $propertyAccessor->getValue($entity, $relation->getForeignKey())->toArray();
-                $targetEntityIds = collect($targetEntity)->map(fn ($item) => $propertyAccessor->getValue($item, $relation->getForeignKeyTarget()));
-                $values = collect($currentValues)->filter(
-                    function ($item) use ($propertyAccessor, $relation, $targetEntityIds) {
-                        if (! in_array($propertyAccessor->getValue($item, $relation->getForeignKeyTarget()), $targetEntityIds->all(), true)) {
-                            return $propertyAccessor->getValue($item, $relation->getForeignKeyTarget());
-                        }
-                    }
-                );
-                $propertyAccessor->setValue($entity, $relation->getForeignKey(), $values);
-            } else {
-                $propertyAccessor->setValue($targetEntity, $relation->getInverseRelationName(), null);
-            }
-
-            $this->datasource->getEntityManager()->persist($entity);
-            $this->datasource->getEntityManager()->flush();
-        }
-    }
-
-    protected function setAttributesAndPersist($entity, array $data)
-    {
-        $attributes = $data['attributes'];
-        $relationships = $data['relationships'] ?? [];
-        $propertyAccessor = PropertyAccess::createPropertyAccessor();
-        foreach ($attributes as $key => $value) {
-            $propertyAccessor->setValue($entity, $key, $value);
-        }
-
-        foreach ($relationships as $key => $value) {
-            $type = $this->getRelationType($this->entityMetadata->reflFields[$key]->getAttributes());
-            $attributes = $value['data'];
-            if ($type === 'ManyToOne') {
-                $targetEntity = $this->entityMetadata->getAssociationMapping($key)['targetEntity'];
-                $related = $this->datasource->getEntityManager()->getRepository($targetEntity)->find($attributes['id']);
-                $propertyAccessor->setValue($entity, $key, $related);
-            }
-        }
-
-        $this->datasource->getEntityManager()->persist($entity);
-        $this->datasource->getEntityManager()->flush();
-
-        return $entity;
+        return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->first());
     }
 
     /**
@@ -302,12 +131,24 @@ class Collection extends ForestCollection
     {
         $relatedMeta = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor($related);
         $relationField = new ManyToOneSchema(
-            foreignKey: $name,
+            foreignKey: $joinColumn['name'],
             foreignKeyTarget: $relatedMeta->fieldNames[$joinColumn['referencedColumnName']],
             foreignCollection: (new \ReflectionClass($related))->getShortName(),
-            inverseRelationName: $inverseName,
         );
 
+        $columnSchema = new ColumnSchema(
+            columnType: PrimitiveType::NUMBER,
+            filterOperators: FrontendFilterable::getRequiredOperators(PrimitiveType::NUMBER),
+            isPrimaryKey: false,
+            isReadOnly: false,
+            isSortable: true,
+            type: 'Column',
+            defaultValue: null,
+            enumValues: [],
+            validation: []
+        );
+
+        $this->addField($joinColumn['name'], $columnSchema);
         $this->addField($name, $relationField);
     }
 
@@ -332,17 +173,15 @@ class Collection extends ForestCollection
 
             $joinColumn = $relatedMeta->associationMappings[$mappedField]['joinColumns'];
             $relationField = new OneToOneSchema(
-                originKey: $name,
-                originKeyTarget: $this->entityMetadata->fieldNames[$joinColumn[0]['referencedColumnName']],
+                originKey: $this->entityMetadata->fieldNames[$joinColumn[0]['referencedColumnName']],
+                originKeyTarget: $joinColumn[0]['name'],
                 foreignCollection: (new \ReflectionClass($related))->getShortName(),
-                inverseRelationName: $inverseName
             );
         } else {
             $relationField = new OneToOneSchema(
-                originKey: $name,
+                originKey: $joinColumn[0]['name'],
                 originKeyTarget: $relatedMeta->fieldNames[$joinColumn[0]['referencedColumnName']],
                 foreignCollection: (new \ReflectionClass($related))->getShortName(),
-                inverseRelationName: $inverseName
             );
         }
 
@@ -362,29 +201,62 @@ class Collection extends ForestCollection
     protected function addManyToMany(string $name, array $joinTable, string $related, string $inverseName, ?string $mappedField = null): void
     {
         $relatedMeta = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor($related);
-
         if ($mappedField) {
             // manyToMany inversed
             if (! array_key_exists($mappedField, $relatedMeta->associationMappings)) {
                 throw new \Exception("The relation field `$mappedField` does not exist in the entity `$related`.");
             }
             $joinTable = $relatedMeta->associationMappings[$mappedField]['joinTable'];
+
+            $schemaTable = $this->datasource
+                ->getEntityManager()
+                ->getConnection()
+                ->createSchemaManager()
+                ->listTableDetails($relatedMeta->associationMappings[$mappedField]['joinTable']['name']);
+
             $customAttributes = [
-                'foreignKeyTarget' => $relatedMeta->fieldNames[$joinTable['joinColumns'][0]['referencedColumnName']],
-                'originKeyTarget'  => $this->entityMetadata->fieldNames[$joinTable['inverseJoinColumns'][0]['referencedColumnName']],
+                'foreignKey'          => $joinTable['joinColumns'][0]['name'],
+                'foreignKeyTarget'    => $relatedMeta->fieldNames[$joinTable['joinColumns'][0]['referencedColumnName']],
+                'originKey'           => $joinTable['inverseJoinColumns'][0]['name'],
+                'originKeyTarget'     => $this->entityMetadata->fieldNames[$joinTable['inverseJoinColumns'][0]['referencedColumnName']],
             ];
         } else {
+            $schemaTable = $this->datasource
+                ->getEntityManager()
+                ->getConnection()
+                ->createSchemaManager()
+                ->listTableDetails($joinTable['name']);
+
             $customAttributes = [
-                'foreignKeyTarget' => $relatedMeta->fieldNames[$joinTable['inverseJoinColumns'][0]['referencedColumnName']],
-                'originKeyTarget'  => $this->entityMetadata->fieldNames[$joinTable['joinColumns'][0]['referencedColumnName']],
+                'foreignKey'          => $joinTable['inverseJoinColumns'][0]['name'],
+                'foreignKeyTarget'    => $relatedMeta->fieldNames[$joinTable['inverseJoinColumns'][0]['referencedColumnName']],
+                'originKey'           => $joinTable['joinColumns'][0]['name'],
+                'originKeyTarget'     => $this->entityMetadata->fieldNames[$joinTable['joinColumns'][0]['referencedColumnName']],
             ];
         }
 
+        if ($this->datasource->getCollections()->first(fn ($item) => $item->getName() === $schemaTable->getName()) === null) {
+            // create throughCollection
+            $this->datasource->addCollection(
+                new ThroughCollection(
+                    $this->datasource,
+                    [
+                        'name'               => $schemaTable->getName(),
+                        'columns'            => $schemaTable->getColumns(),
+                        'foreignKeys'        => $schemaTable->getForeignKeys(),
+                        'primaryKey'         => $schemaTable->getPrimaryKey(),
+                        'foreignCollections' => [
+                            $this->tableName                        => $this->name,
+                            $relatedMeta->getTableName()            => $relatedMeta->reflClass->getShortName(),
+                        ],
+                    ]
+                )
+            );
+        }
+
         $defaultAttributes = [
-            'foreignKey'          => $name,
             'throughTable'        => $joinTable['name'],
-            'originKey'           => $inverseName,
-            'inverseRelationName' => $inverseName,
+            'throughCollection'   => $schemaTable->getName(),
             'foreignCollection'   => (new \ReflectionClass($related))->getShortName(),
         ];
 
@@ -411,33 +283,11 @@ class Collection extends ForestCollection
 
         $joinColumn = $relatedMeta->associationMappings[$mappedField]['joinColumns'][0];
         $relationField = new OneToManySchema(
-            originKey: $name,
+            originKey: $joinColumn['name'],
             originKeyTarget: $this->entityMetadata->fieldNames[$joinColumn['referencedColumnName']],
             foreignCollection: (new \ReflectionClass($related))->getShortName(),
-            inverseRelationName: $mappedField,
         );
 
         $this->addField($name, $relationField);
-    }
-
-    public function toArray($record, ?Projection $projection = null): array
-    {
-        $entityMetadata = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor(get_class($record));
-        $fields = $projection ?? $entityMetadata->getFieldNames();
-        $propertyAccessor = PropertyAccess::createPropertyAccessor();
-        $serialized = [];
-
-        foreach ($fields as $field) {
-            if (Str::contains($field, ':')) {
-                $fieldName = Str::before($field, ':');
-                $value = $propertyAccessor->getValue($record, $fieldName);
-                $serialized[$fieldName] = $value ? $this->toArray($value, new Projection(Str::after($field, ':'))) : null;
-            } else {
-                $value = $propertyAccessor->getValue($record, $field);
-                $serialized[$field] = $value;
-            }
-        }
-
-        return $serialized;
     }
 }

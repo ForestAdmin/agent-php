@@ -9,9 +9,9 @@ use function ForestAdmin\config;
 class SchemaEmitter
 {
     public const LIANA_NAME = 'laravel-forestadmin';
-//    public const LIANA_NAME = 'forest-php-agent';
+//    public const LIANA_NAME = 'agent-php';
 
-    public const LIANA_VERSION = '1.0.0-beta.22';
+    public const LIANA_VERSION = '1.0.0-beta';
 
     /**
      * @throws \JsonException
@@ -22,10 +22,8 @@ class SchemaEmitter
         $schema = config('isProduction') ? self::loadFromDisk() : self::generate($datasource);
 
         if (! config('isProduction')) {
-            // todo create json file
             $pretty = json_encode($schema, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
             file_put_contents(config('schemaPath'), $pretty);
-            //  writeFile(options.schemaPath, pretty, { encoding: 'utf-8' });
         }
         $hash = sha1(json_encode($schema, JSON_THROW_ON_ERROR));
 
@@ -42,9 +40,7 @@ class SchemaEmitter
             'liana_version' => self::LIANA_VERSION,
             'stack'         => [
                 'engine'         => 'php',
-                'engine_version' => '', /* TODO */
-                'database_type'  => '',  /* TODO */
-                'orm_version'    => '',  /* TODO */
+                'engine_version' => phpversion(),
             ],
         ];
     }

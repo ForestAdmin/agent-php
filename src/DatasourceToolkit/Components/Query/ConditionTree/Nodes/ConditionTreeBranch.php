@@ -36,17 +36,19 @@ class ConditionTreeBranch extends ConditionTree
         );
     }
 
-    public function replaceLeafs(Closure $handler): ConditionTree
+    public function replaceLeafs(Closure $handler): ?ConditionTree
     {
         return new ConditionTreeBranch(
             $this->aggregator,
-            array_map(static fn ($condition) => $condition->replaceLeafs($handler), $this->getConditions()),
+            array_map(static fn ($condition) => $condition->replaceLeafs($handler), collect($this->getConditions())->filter()->toArray()),
         );
     }
 
     public function match(array $record, Collection $collection, string $timezone): bool
     {
-        // TODO: Implement match() method.
+        return $this->aggregator === 'And'
+            ? $this->everyLeaf(fn ($condition) => $condition->match($record, $collection, $timezone))
+            : $this->someLeaf(fn ($condition) => $condition->match($record, $collection, $timezone));
     }
 
     public function forEachLeaf(Closure $handler): self

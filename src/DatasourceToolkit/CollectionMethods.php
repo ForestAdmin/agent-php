@@ -2,9 +2,9 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ActionSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Decorators\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ActionSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection as IlluminateCollection;
 
@@ -21,13 +21,6 @@ trait CollectionMethods
     public function getFields(): IlluminateCollection
     {
         return $this->fields;
-    }
-
-    public function setFields(array $fields): Collection
-    {
-        $this->fields = $fields;
-
-        return $this;
     }
 
     public function addActions(array $actions): void
@@ -52,13 +45,6 @@ trait CollectionMethods
     public function getActions(): IlluminateCollection
     {
         return $this->actions;
-    }
-
-    public function setActions(array $actions): Collection
-    {
-        $this->actions = $actions;
-
-        return $this;
     }
 
     public function isSearchable(): bool
