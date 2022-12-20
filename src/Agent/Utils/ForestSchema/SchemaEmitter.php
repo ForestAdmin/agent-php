@@ -11,7 +11,7 @@ class SchemaEmitter
     public const LIANA_NAME = 'laravel-forestadmin';
 //    public const LIANA_NAME = 'forest-php-agent';
 
-    public const LIANA_VERSION = '1.0.0-beta.22';
+    public const LIANA_VERSION = '1.0.0-beta';
 
     /**
      * @throws \JsonException
@@ -40,9 +40,7 @@ class SchemaEmitter
             'liana_version' => self::LIANA_VERSION,
             'stack'         => [
                 'engine'         => 'php',
-                'engine_version' => '', /* TODO */
-                'database_type'  => '',  /* TODO */
-                'orm_version'    => '',  /* TODO */
+                'engine_version' => phpversion(),
             ],
         ];
     }
