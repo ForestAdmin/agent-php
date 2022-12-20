@@ -54,12 +54,10 @@ class BaseCollection extends ForestCollection
      * @throws NonUniqueResultException
      * @throws NoResultException
      */
-    public function update(Caller $caller, Filter $filter, array $patch)
+    public function update(Caller $caller, Filter $filter, array $patch): void
     {
         $data = $this->formatAttributes($patch);
         QueryConverter::of($this, $caller->getTimezone(), $filter)->update($data);
-
-        return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->first() ?? []);
     }
 
     public function delete(Caller $caller, Filter $filter): void

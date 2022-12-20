@@ -4,7 +4,6 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources\Related;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRelationRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
@@ -12,7 +11,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema;
 
 class UpdateRelated extends AbstractRelationRoute
 {
@@ -61,7 +59,7 @@ class UpdateRelated extends AbstractRelationRoute
             new Filter(
                 conditionTree: ConditionTreeFactory::intersect([$fkOwner, $scope]),
             ),
-            [$relation->getForeignKey() => $foreignValue]
+            ['attributes' => [$relation->getForeignKey() => $foreignValue]]
         );
     }
 
@@ -77,7 +75,7 @@ class UpdateRelated extends AbstractRelationRoute
             new Filter(
                 conditionTree: ConditionTreeFactory::intersect([$oldFkOwner, $scope]),
             ),
-            [$relation->getOriginKey() => $originValue]
+            ['attributes' => [$relation->getOriginKey() => $originValue]]
         );
     }
 }

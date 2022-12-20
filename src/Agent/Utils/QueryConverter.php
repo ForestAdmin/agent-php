@@ -68,7 +68,6 @@ class QueryConverter
 
             $this->applyConditionTree();
         }
-//        dd($this->query->toSql());
     }
 
     private function applyProjection(): void

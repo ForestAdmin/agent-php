@@ -8,6 +8,8 @@ use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\ProjectionFactory;
 
 class Update extends AbstractCollectionRoute
 {
@@ -40,7 +42,14 @@ class Update extends AbstractCollectionRoute
             )
         );
 
-        $result = $this->collection->update($this->caller, $filter, $this->request->get('data'));
+        $this->collection->update($this->caller, $filter, $this->request->get('data'));
+
+        $filter = new PaginatedFilter($filter->getConditionTree(), $filter->getSearch(), $filter->getSearchExtended(), $filter->getSegment());
+        $result = $this->collection->list(
+            $this->caller,
+            $filter,
+            ProjectionFactory::all($this->collection)
+        )[0] ?? [];
 
         return [
             'name'              => $args['collectionName'],
