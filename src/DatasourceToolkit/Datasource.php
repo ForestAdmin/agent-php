@@ -52,6 +52,5 @@ class Datasource implements DatasourceContract
 
     public function renderChart(Caller $caller, string $name): Chart
     {
-        // TODO: Implement renderChart() method.
     }
 }

@@ -53,7 +53,6 @@ class Collection implements CollectionContract
 
     public function execute(Caller $caller, string $name, array $formValues, ?Filter $filter = null): ActionResult
     {
-        // TODO: Implement execute() method.
         if (! $this->actions->get($name)) {
             throw new ForestException("Action $name is not implemented.");
         }
@@ -68,32 +67,26 @@ class Collection implements CollectionContract
 
     public function create(Caller $caller, array $data)
     {
-        // TODO: Implement create() method.
     }
 
     public function show(Caller $caller, Filter $filter, $id, Projection $projection)
     {
-        // TODO: Implement show() method.
     }
 
     public function list(Caller $caller, Filter $filter, Projection $projection): array
     {
-        // TODO: Implement list() method.
     }
 
     public function update(Caller $caller, Filter $filter, array $patch)
     {
-        // TODO: Implement update() method.
     }
 
     public function delete(Caller $caller, Filter $filter): void
     {
-        // TODO: Implement delete() method.
     }
 
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
     {
-        // TODO: Implement aggregate() method.
     }
 
     public function makeTransformer()
