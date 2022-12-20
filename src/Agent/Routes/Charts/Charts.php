@@ -125,7 +125,7 @@ class Charts extends AbstractCollectionRoute
 
         $result = $this->collection->aggregate($this->caller, $this->filter, $aggregation, null, $this->type);
 
-        return new LineChart($this->mapArrayToKeyValueAggregateDate($result, $aggregate, $this->request->get('time_range')));
+        return new LineChart($this->mapArrayToLabelValue($result));
     }
 
     private function makeLeaderboard(): LeaderboardChart
@@ -186,7 +186,7 @@ class Charts extends AbstractCollectionRoute
             })->toArray();
     }
 
-    private function mapArrayToKeyValueAggregateDate($array): array
+    private function mapArrayToLabelValue($array): array
     {
         return collect($array)
             ->map(function ($value, $label) {
@@ -197,15 +197,5 @@ class Charts extends AbstractCollectionRoute
             })
             ->values()
             ->toArray();
-    }
-
-    private function getDateFormat(string $field): string
-    {
-        return match (Str::lower($field)) {
-            'week'  => '\WW-Y',
-            'month' => 'M Y',
-            'year'  => 'Y',
-            default => 'd/m/Y',
-        };
     }
 }
