@@ -22,10 +22,8 @@ class SchemaEmitter
         $schema = config('isProduction') ? self::loadFromDisk() : self::generate($datasource);
 
         if (! config('isProduction')) {
-            // todo create json file
             $pretty = json_encode($schema, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
             file_put_contents(config('schemaPath'), $pretty);
-            //  writeFile(options.schemaPath, pretty, { encoding: 'utf-8' });
         }
         $hash = sha1(json_encode($schema, JSON_THROW_ON_ERROR));
 
