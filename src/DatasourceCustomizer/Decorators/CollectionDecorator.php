@@ -51,7 +51,7 @@ class CollectionDecorator implements CollectionContract
 
     public function getSchema(): IlluminateCollection
     {
-        $subSchema = GeneratorCollection::buildSchema($this->childCollection); // const subSchema = this.childCollection.schema;
+        $subSchema = GeneratorCollection::buildSchema($this->childCollection);
 
         if (! $this->lastSchema || $this->lastSubSchema !== $subSchema) {
             $this->lastSchema = $this->refineSchema($subSchema);
