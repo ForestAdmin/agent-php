@@ -19,6 +19,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
@@ -67,6 +68,7 @@ class QueryConverter
 
             $this->applyConditionTree();
         }
+//        dd($this->query->toSql());
     }
 
     private function applyProjection(): void
@@ -89,36 +91,45 @@ class QueryConverter
 
     private function addJoinRelation(RelationSchema $relation, string $relationTableName): void
     {
-        if ($relation instanceof OneToOneSchema || $relation instanceof OneToManySchema) {
-            $this->query->leftJoin(
-                "$relationTableName as $relationTableName",
-                $this->tableName . '.' . $relation->getOriginKey(),
-                '=',
-                $relationTableName . '.' . $relation->getOriginKeyTarget()
-            );
-        } elseif ($relation instanceof ManyToOneSchema) {
-            $this->query->leftJoin(
-                "$relationTableName as $relationTableName",
-                $this->tableName . '.' . $relation->getForeignKey(),
-                '=',
-                $relationTableName . '.' . $relation->getForeignKeyTarget()
-            );
-        } else {
-            /** @var ManyToManySchema $relation */
+        if ($relation instanceof ManyToManySchema) {
             $throughTable = $relation->getThroughTable();
-            $this->query
-                ->leftJoin(
-                    "$throughTable as $throughTable",
-                    $this->tableName . '.' . $relation->getOriginKeyTarget(),
+            $joinTable = "$relationTableName as $relationTableName";
+            $joinThroughTable = "$throughTable as $throughTable";
+            if (! $this->isJoin($joinTable) && ! $this->isJoin($joinThroughTable)) {
+                $this->query
+                    ->leftJoin(
+                        "$throughTable as $throughTable",
+                        $this->tableName . '.' . $relation->getOriginKeyTarget(),
+                        '=',
+                        $throughTable . '.' . $relation->getOriginKey()
+                    )
+                    ->leftJoin(
+                        "$relationTableName as $relationTableName",
+                        $throughTable . '.' . $relation->getForeignKey(),
+                        '=',
+                        $relationTableName . '.' . $relation->getForeignKeyTarget()
+                    );
+            }
+        } else {
+            $joinTable = "$relationTableName as $relationTableName";
+            if (
+                ($relation instanceof OneToOneSchema || $relation instanceof OneToManySchema)
+                && ! $this->isJoin($joinTable)
+            ) {
+                $this->query->leftJoin(
+                    $joinTable,
+                    $this->tableName . '.' . $relation->getOriginKey(),
                     '=',
-                    $throughTable . '.' . $relation->getOriginKey()
-                )
-                ->leftJoin(
-                    "$relationTableName as $relationTableName",
-                    $throughTable . '.' . $relation->getForeignKey(),
+                    $relationTableName . '.' . $relation->getOriginKeyTarget()
+                );
+            } elseif ($relation instanceof ManyToOneSchema && ! $this->isJoin($joinTable)) {
+                $this->query->leftJoin(
+                    $joinTable,
+                    $this->tableName . '.' . $relation->getForeignKey(),
                     '=',
                     $relationTableName . '.' . $relation->getForeignKeyTarget()
                 );
+            }
         }
     }
 
@@ -127,7 +138,7 @@ class QueryConverter
         /** @var Sort $sort */
         if (method_exists($this->filter, 'getSort') && $sort = $this->filter->getSort()) {
             foreach ($sort as $value) {
-                if (!Str::contains($value['field'], ':')) {
+                if (! Str::contains($value['field'], ':')) {
                     $this->query->orderBy($this->tableName . '.' . $value['field'], $value['ascending'] ? 'ASC' : 'DESC');
                 } else {
                     $this->query->orderBy(
@@ -272,18 +283,18 @@ class QueryConverter
         $value = $conditionTreeLeaf->getValue();
         switch ($conditionTreeLeaf->getOperator()) {
             case Operators::BLANK:
-                $query->whereNull($field, $aggregator);
+                $query->whereNull(Str::replace('"', '', $field), $aggregator);
 
                 break;
             case Operators::PRESENT:
-                $query->whereNotNull($field, $aggregator);
+                $query->whereNotNull(Str::replace('"', '', $field), $aggregator);
 
                 break;
             case Operators::EQUAL:
             case Operators::NOT_EQUAL:
             case Operators::GREATER_THAN:
             case Operators::LESS_THAN:
-                $query->where($field, $this->basicSymbols[$conditionTreeLeaf->getOperator()], $value, $aggregator);
+                $query->where(Str::replace('"', '', $field), $this->basicSymbols[$conditionTreeLeaf->getOperator()], $value, $aggregator);
 
                 break;
             case Operators::ICONTAINS:
@@ -300,12 +311,12 @@ class QueryConverter
                 break;
             case Operators::IN:
                 $value = is_array($value) ? $value : array_map('trim', explode(',', $value));
-                $query->whereIn($field, $value, $aggregator);
+                $query->whereIn(Str::replace('"', '', $field), $value, $aggregator);
 
                 break;
             case Operators::NOT_IN:
                 $value = is_array($value) ? $value : array_map('trim', explode(',', $value));
-                $query->whereNotIn($field, $value, $aggregator);
+                $query->whereNotIn(Str::replace('"', '', $field), $value, $aggregator);
 
                 break;
             case Operators::STARTS_WITH:
@@ -336,12 +347,23 @@ class QueryConverter
             $tableName = $this->collection
                 ->getDataSource()
                 ->getCollection($relation->getForeignCollection())->getTableName();
-
             $this->addJoinRelation($relation, $tableName);
 
-            return $tableName . '.' . Str::after($leaf->getField(), ':');
+            return '"' . $tableName . '"' . '."' . Str::after($leaf->getField(), ':') . '"';
         }
 
-        return $this->tableName . '.' . $leaf->getField();
+        return '"' . $this->tableName . '"' . '."' . $leaf->getField() . '"';
+    }
+
+    private function isJoin(string $joinTable): bool
+    {
+        /** @var JoinClause $join */
+        foreach ($this->query->joins ?? [] as $join) {
+            if ($join->table === $joinTable) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
