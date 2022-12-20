@@ -87,7 +87,7 @@ class BaseCollection extends ForestCollection
     public function formatAttributes(array $data)
     {
         $entityAttributes = [];
-        $attributes = $data['attributes'];
+        $attributes = $data['attributes'] ?? [];
         $relationships = $data['relationships'] ?? [];
         foreach ($attributes as $key => $value) {
             $entityAttributes[$key] = $value;

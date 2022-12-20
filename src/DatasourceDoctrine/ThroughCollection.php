@@ -8,12 +8,15 @@ use Doctrine\DBAL\Types\Types;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record as RecordUtils;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
@@ -102,12 +105,19 @@ class ThroughCollection extends BaseCollection
     {
         $data = $this->formatAttributes($data);
         $query = QueryConverter::of($this, $caller->getTimezone());
-        $id = $query->insert($data);
+        $primaryKeys = SchemaUtils::getPrimaryKeys($this);
+        if (collect($primaryKeys)->every(fn ($value) => array_key_exists($value, $data))) {
+            $query->insert($data);
+            $filter = new Filter(
+                conditionTree:  ConditionTreeFactory::matchIds($this, [RecordUtils::getPrimaryKeys($this, $data)]),
+            );
+        } else {
+            $id = $query->insertGetId($data, SchemaUtils::getPrimaryKeys($this)[0]);
+            $filter = new Filter(
+                conditionTree:  new  ConditionTreeLeaf(SchemaUtils::getPrimaryKeys($this)[0], Operators::EQUAL, $id),
+            );
+        }
 
-//        $filter = new Filter(
-//            conditionTree: new ConditionTreeLeaf($this->getIdentifier(), Operators::EQUAL, $id)
-//        );
-//
-//        return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->first());
+        return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->first());
     }
 }
