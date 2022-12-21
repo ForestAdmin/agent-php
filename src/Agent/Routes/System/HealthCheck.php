@@ -2,8 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\System;
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
-use ForestAdmin\AgentPHP\Agent\ForestAdminHttpDriver;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 
 class HealthCheck extends AbstractRoute

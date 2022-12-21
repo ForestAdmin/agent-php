@@ -68,6 +68,28 @@ class AgentFactory
         return self::$container->get($key);
     }
 
+    /**
+     * @throws \ErrorException
+     * @throws \JsonException
+     */
+    public function sendSchema(): void
+    {
+        $schema = SchemaEmitter::getSerializedSchema($this->customizer->getStack()->dataSource);
+
+        $schemaIsKnown = false;
+        if (Cache::get('schemaFileHash') === $schema['meta']['schemaFileHash']) {
+            $schemaIsKnown = true;
+        }
+
+        if (! $schemaIsKnown) {
+            // TODO this.options.logger('Info', 'Schema was updated, sending new version');
+            ForestHttpApi::uploadSchema($schema);
+            Cache::put('schemaFileHash', $schema['meta']['schemaFileHash'], self::TTL_SCHEMA);
+        } else {
+            // TODO this.options.logger('Info', 'Schema was not updated since last run');
+        }
+    }
+
     private function buildContainer(array $services): void
     {
         self::$container = new Container();
@@ -83,23 +105,5 @@ class AgentFactory
         $directory = $config['cacheDir'];
         self::$container->set('cache', new CacheServices($filesystem, $directory));
         self::$container->get('cache')->add('config', $config, self::TTL_CONFIG);
-    }
-
-    private function sendSchema(Datasource $datasource): void
-    {
-        $schema = SchemaEmitter::getSerializedSchema($datasource);
-
-        $schemaIsKnown = false;
-        if (Cache::get('schemaFileHash') === $schema['meta']['schemaFileHash']) {
-            $schemaIsKnown = true;
-        }
-
-        if (! $schemaIsKnown) {
-            // TODO this.options.logger('Info', 'Schema was updated, sending new version');
-            ForestHttpApi::uploadSchema($schema);
-            Cache::put('schemaFileHash', $schema['meta']['schemaFileHash'], self::TTL_SCHEMA);
-        } else {
-            // TODO this.options.logger('Info', 'Schema was not updated since last run');
-        }
     }
 }
