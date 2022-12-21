@@ -192,7 +192,6 @@ class Collection
         Aggregation $aggregation,
         ?int $limit = null
     ) {
-        // TODO
         $relation = Schema::getToManyRelation($collection, $relationName);
         $foreignCollection = $collection->getDataSource()->getCollection($relation->getForeignCollection());
 

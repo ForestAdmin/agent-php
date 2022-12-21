@@ -39,7 +39,7 @@ class AgentFactory
     {
         self::$container->set('datasource', $this->customizer->getStack()->dataSource);
 
-        $this->sendSchema($this->customizer->getStack()->dataSource);
+        $this->sendSchema();
     }
 
     /**

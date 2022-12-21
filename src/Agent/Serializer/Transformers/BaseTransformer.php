@@ -58,17 +58,6 @@ class BaseTransformer extends TransformerAbstract
             unset($data[$key]);
         }
 
-        $fields = $forestCollection->getFields();
-//        foreach ($data as $key => &$value) {
-//            if (isset($fields[$key])) {
-//                /** @var ColumnSchema $columnSchema */
-//                $columnSchema = $fields[$key];
-//                $value = $this->renderValue($columnSchema->getColumnType(), $value);
-//            }
-//        }
-
-
-
         return $data;
     }
 
