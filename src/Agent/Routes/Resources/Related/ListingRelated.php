@@ -52,7 +52,7 @@ class ListingRelated extends AbstractRelationRoute
 
         return [
             'name'              => $this->childCollection->getName(),
-            'content'           => JsonApi::renderCollection($results, $this->childCollection->makeTransformer(), $this->childCollection->getName()),
+            'content'           => JsonApi::renderCollection($results, $this->childCollection->makeTransformer(), $this->childCollection->getName(), $this->request),
         ];
     }
 
