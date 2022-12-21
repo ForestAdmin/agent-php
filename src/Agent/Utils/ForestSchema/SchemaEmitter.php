@@ -22,7 +22,7 @@ class SchemaEmitter
         $schema = config('isProduction') ? self::loadFromDisk() : self::generate($datasource);
 
         if (! config('isProduction')) {
-            $pretty = json_encode($schema, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
+            $pretty = json_encode(['meta' => self::meta(), 'collections' => $schema], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
             file_put_contents(config('schemaPath'), $pretty);
         }
         $hash = sha1(json_encode($schema, JSON_THROW_ON_ERROR));
