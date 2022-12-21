@@ -157,9 +157,4 @@ class CollectionDecorator implements CollectionContract
     {
         return $this->childCollection->getSegments();
     }
-
-    public function getSegments()
-    {
-        return $this->childCollection->getSegments();
-    }
 }

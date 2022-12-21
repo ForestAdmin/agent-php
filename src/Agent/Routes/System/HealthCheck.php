@@ -25,20 +25,9 @@ class HealthCheck extends AbstractRoute
 
     public function handleRequest()
     {
-        $this->sendSchema();
-
         return [
             'content' => null,
             'status'  => 204,
         ];
-    }
-
-    /**
-     * @codeCoverageIgnore
-     * @return void
-     */
-    protected function sendSchema(): void
-    {
-        ForestAdminHttpDriver::sendSchema(AgentFactory::get('datasource'));
     }
 }
