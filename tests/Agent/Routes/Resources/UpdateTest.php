@@ -11,6 +11,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
@@ -31,20 +32,27 @@ function factoryUpdate($args = []): Update
     );
 
     if (isset($args['update'])) {
+
         $collectionCar = mock($collectionCar)
             ->shouldReceive('update')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type('array'))
-            ->andReturn(($args['update']))
+            ->andReturn($args['update']);
+
+
+        $collectionCar=  $collectionCar->shouldReceive('list')
+          //  ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
+            ->andReturn([$args['result']])
             ->getMock();
     }
 
     $datasource->addCollection($collectionCar);
 
     $options = [
-        'projectDir'    => sys_get_temp_dir(),
-        'schemaPath'    => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'authSecret'    => AUTH_SECRET,
-        'isProduction'  => false,
+        'projectDir'   => sys_get_temp_dir(),
+        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
+        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
+        'authSecret'   => AUTH_SECRET,
+        'isProduction' => false,
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();
     SchemaEmitter::getSerializedSchema($datasource);
@@ -95,23 +103,23 @@ test('handleRequest() should return a response 200', function () {
         'attributes' => $data,
         'type'       => 'Car',
     ];
-    $update = factoryUpdate(['update' => $data]);
+
+    $result = [
+        'name'    => 'Car',
+        'content' => [
+            'data' => [
+                'type'       => 'Car',
+                'id'         => '2',
+                'attributes' => [
+                    'model' => 'Murcielago',
+                    'brand' => 'Lamborghini',
+                ],
+            ],
+        ],
+    ];
+    $update = factoryUpdate(['update' => $data, 'result' => $result]);
 
     expect($update->handleRequest(['collectionName' => 'Car', 'id' => 2]))
         ->toBeArray()
-        ->toEqual(
-            [
-                'name'    => 'Car',
-                'content' => [
-                    'data' => [
-                        'type'       => 'Car',
-                        'id'         => '2',
-                        'attributes' => [
-                            'model' => 'Murcielago',
-                            'brand' => 'Lamborghini',
-                        ],
-                    ],
-                ],
-            ]
-        );
+        ->toEqual($result);
 });

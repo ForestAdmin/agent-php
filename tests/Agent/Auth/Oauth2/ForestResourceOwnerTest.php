@@ -68,6 +68,7 @@ test('expirationInSeconds() should return a timestamp', function (ForestResource
 test('makeJwt() should return a JWT token', function (ForestResourceOwner $forestResourceOwner) {
     $options = [
         'projectDir' => sys_get_temp_dir(),
+        'cacheDir'   => sys_get_temp_dir() . '/forest-cache',
         'authSecret' => AUTH_SECRET,
     ];
     (new AgentFactory($options, []));

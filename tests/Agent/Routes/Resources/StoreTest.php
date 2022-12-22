@@ -40,8 +40,9 @@ function factoryStore($args = []): Store
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
+        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
         'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'authSecret'    => AUTH_SECRET,
+        'authSecret'   => AUTH_SECRET,
         'isProduction' => false,
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();
@@ -98,8 +99,8 @@ test('handleRequest() should return a response 200', function () {
         ->toBeArray()
         ->toEqual(
             [
-                'name'              => 'Car',
-                'content'           => [
+                'name'    => 'Car',
+                'content' => [
                     'data' => [
                         'type'       => 'Car',
                         'id'         => '2',

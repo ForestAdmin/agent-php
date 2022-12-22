@@ -25,6 +25,7 @@ function factorySearchCollection()
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
+        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
         'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
         'authSecret'   => AUTH_SECRET,
         'isProduction' => false,
@@ -333,8 +334,8 @@ test('refineFilter() when the search is defined and the collection schema is not
     $collectionReviews = new Collection($datasource, 'Review');
     $collectionReviews->addFields(
         [
-            'id'     => new ColumnSchema(columnType: PrimitiveType::UUID, filterOperators: [Operators::EQUAL], isPrimaryKey: true),
-            'book'   => new ManyToOneSchema(
+            'id'   => new ColumnSchema(columnType: PrimitiveType::UUID, filterOperators: [Operators::EQUAL], isPrimaryKey: true),
+            'book' => new ManyToOneSchema(
                 foreignKey: 'book_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',
@@ -347,6 +348,7 @@ test('refineFilter() when the search is defined and the collection schema is not
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
+        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
         'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
         'authSecret'   => AUTH_SECRET,
         'isProduction' => false,

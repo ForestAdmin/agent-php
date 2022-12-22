@@ -58,8 +58,8 @@ function factoryChart($args = []): Charts
     $collectionBookReview = new Collection($datasource, 'BookReview');
     $collectionBookReview->addFields(
         [
-            'id'          => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'reviews'     => new ManyToManySchema(
+            'id'      => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'reviews' => new ManyToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
                 throughTable: 'book_review',
@@ -68,12 +68,12 @@ function factoryChart($args = []): Charts
                 foreignCollection: 'Review',
                 throughCollection: 'BookReview',
             ),
-            'book' => new ManyToOneSchema(
+            'book'    => new ManyToOneSchema(
                 foreignKey: 'book_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',
             ),
-            'review' => new ManyToOneSchema(
+            'review'  => new ManyToOneSchema(
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
@@ -112,9 +112,10 @@ function factoryChart($args = []): Charts
     $datasource->addCollection($collectionBookReview);
 
     $options = [
-        'projectDir'    => sys_get_temp_dir(),
-        'authSecret'    => AUTH_SECRET,
-        'isProduction'  => false,
+        'projectDir'   => sys_get_temp_dir(),
+        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
+        'authSecret'   => AUTH_SECRET,
+        'isProduction' => false,
     ];
     (new Agentfactory($options, []))->addDatasource($datasource)->build();
 

@@ -93,7 +93,7 @@ function factoryDissociateRelated($args = []): DissociateRelated
                 foreignKeyTarget: 'id',
                 foreignCollection: 'House',
             ),
-            'user' => new ManyToOneSchema(
+            'user'     => new ManyToOneSchema(
                 foreignKey: 'user_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'User',
@@ -121,6 +121,7 @@ function factoryDissociateRelated($args = []): DissociateRelated
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
+        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
         'authSecret'   => AUTH_SECRET,
         'isProduction' => false,
     ];

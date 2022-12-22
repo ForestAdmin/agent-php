@@ -51,7 +51,8 @@ function dataSourceWithInverseRelationMissing(): Datasource
     $datasource->addCollection($collectionPerson);
 
     $options = [
-        'projectDir' => sys_get_temp_dir(), // only use for cache
+        'projectDir' => sys_get_temp_dir(),
+        'cacheDir'   => sys_get_temp_dir() . '/forest-cache', // only use for cache
     ];
 
     (new AgentFactory($options, []))->addDatasource($datasource)->build();
@@ -187,7 +188,8 @@ function datasourceWithAllRelations(array $args = []): Datasource
     $datasource->addCollection($collectionPerson);
 
     $options = [
-        'projectDir' => sys_get_temp_dir(), // only use for cache
+        'projectDir' => sys_get_temp_dir(),
+        'cacheDir'   => sys_get_temp_dir() . '/forest-cache', // only use for cache
     ];
 
     (new AgentFactory($options, []))->addDatasource($datasource)->build();
@@ -360,7 +362,7 @@ test('getValue() should work with composite id', function (Caller $caller) {
     $datasource = datasourceWithAllRelations(
         [
             'Book' => [
-                'list' => ['id' => 1,'reference' => 'ref', 'title' => 'foo'],
+                'list' => ['id' => 1, 'reference' => 'ref', 'title' => 'foo'],
             ],
         ]
     );
@@ -388,7 +390,7 @@ test('listRelation() should work with one to many relation', function (Caller $c
 test('listRelation() should work with many to many relation', function (Caller $caller) {
     $datasource = datasourceWithAllRelations(
         [
-            'Person' => [
+            'Person'     => [
                 'list' => [['id' => 1, 'name' => 'foo']],
             ],
             'BookPerson' => [

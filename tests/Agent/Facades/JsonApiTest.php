@@ -2,6 +2,7 @@
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
+use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
 use ForestAdmin\AgentPHP\Agent\Services\JsonApiResponse;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
@@ -27,8 +28,9 @@ function factoryJsonApi()
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
+        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
         'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'authSecret'    => AUTH_SECRET,
+        'authSecret'   => AUTH_SECRET,
         'isProduction' => false,
         'agentUrl'     => 'http://localhost/',
     ];
@@ -54,9 +56,9 @@ test('renderCollection() should return a JsonApiResponse render', function () {
         ],
     ];
 
-    $render = JsonApi::renderCollection($content, new BasicArrayTransformer(), 'Person');
+    $render = JsonApi::renderCollection($content, new BasicArrayTransformer(), 'Person', Request::createFromGlobals());
 
-    expect($render)->toEqual((new JsonApiResponse())->renderCollection($content, new BasicArrayTransformer(), 'Person'));
+    expect($render)->toEqual((new JsonApiResponse())->renderCollection($content, new BasicArrayTransformer(), 'Person', Request::createFromGlobals()));
 });
 
 test('renderItem() should return a JsonApiResponse renderItem', function () {

@@ -28,6 +28,7 @@ function factorySegmentCollection()
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
+        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
         'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
         'authSecret'   => AUTH_SECRET,
         'isProduction' => false,

@@ -66,7 +66,8 @@ test('start() should return the renderingId', function () {
 test('verifyCodeAndGenerateToken() should return the token', function () {
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'authSecret'    => AUTH_SECRET,
+        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
+        'authSecret'   => AUTH_SECRET,
         'isProduction' => false,
         'debug'        => false,
     ];

@@ -13,7 +13,8 @@ function factoryHealthCheck($args = []): HealthCheck
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'authSecret'    => AUTH_SECRET,
+        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
+        'authSecret'   => AUTH_SECRET,
         'isProduction' => false,
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();

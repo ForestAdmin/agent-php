@@ -84,6 +84,7 @@ function createDatasourceForFilterFactory(): Datasource
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
+'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
         'isProduction' => false,
     ];
     (new AgentFactory($options,  []))->addDatasource($datasource)->build();

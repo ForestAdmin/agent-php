@@ -42,10 +42,11 @@ function factoryShow($args = []): Show
     $datasource->addCollection($collectionCar);
 
     $options = [
-        'projectDir'    => sys_get_temp_dir(),
-        'schemaPath'    => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'authSecret'    => AUTH_SECRET,
-        'isProduction'  => false,
+        'projectDir'   => sys_get_temp_dir(),
+        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
+        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
+        'authSecret'   => AUTH_SECRET,
+        'isProduction' => false,
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();
     SchemaEmitter::getSerializedSchema($datasource);
@@ -95,7 +96,7 @@ test('handleRequest() should return a response 200', function () {
     ];
     $show = factoryShow(
         [
-            'show'   => $data,
+            'show' => $data,
         ]
     );
 

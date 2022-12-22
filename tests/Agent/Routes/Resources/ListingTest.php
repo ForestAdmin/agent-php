@@ -49,10 +49,11 @@ function factoryListing($args = []): Listing
     $datasource->addCollection($collectionUser);
 
     $options = [
-        'projectDir'    => sys_get_temp_dir(),
-        'schemaPath'    => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'authSecret'    => AUTH_SECRET,
-        'isProduction'  => false,
+        'projectDir'   => sys_get_temp_dir(),
+        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
+        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
+        'authSecret'   => AUTH_SECRET,
+        'isProduction' => false,
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();
     SchemaEmitter::getSerializedSchema($datasource);
@@ -127,8 +128,8 @@ test('handleRequest() should return a response 200', function () {
         ->toBeArray()
         ->toEqual(
             [
-                'name'              => 'User',
-                'content'           => [
+                'name'    => 'User',
+                'content' => [
                     'data' => [
                         [
                             'type'       => 'User',

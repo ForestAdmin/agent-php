@@ -24,7 +24,7 @@ function factoryIdUtil()
     $collectionFoo = new Collection($datasource, 'Foo');
     $collectionFoo->addFields(
         [
-            'name'  => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'name' => new ColumnSchema(columnType: PrimitiveType::STRING),
         ]
     );
 
@@ -33,7 +33,8 @@ function factoryIdUtil()
 
     $options = [
         'projectDir'   => sys_get_temp_dir(),
-        'authSecret'    => AUTH_SECRET,
+        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
+        'authSecret'   => AUTH_SECRET,
         'isProduction' => false,
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();
@@ -101,16 +102,16 @@ test('unpackIds() should return an array of list id valus', function () {
 test('de', function () {
     $_GET['data'] = [
         'attributes' => [
-            'ids'                      => ['1','2','3'],
+            'ids'                      => ['1', '2', '3'],
             'collection_name'          => 'User',
             'parent_collection_name'   => null,
             'parent_collection_id'     => null,
             'parent_association_name'  => null,
             'all_records'              => true,
             'all_records_subset_query' => [
-                'fields[Car]'      => 'id,first_name,last_name',
-                'page[number]'     => 1,
-                'page[size]'       => 15,
+                'fields[Car]'  => 'id,first_name,last_name',
+                'page[number]' => 1,
+                'page[size]'   => 15,
             ],
             'all_records_ids_excluded' => ['4'],
             'smart_action_id'          => null,

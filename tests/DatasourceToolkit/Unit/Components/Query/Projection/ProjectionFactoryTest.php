@@ -34,7 +34,6 @@ test('all() should return all the collection fields and the relation fields', fu
 });
 
 
-
 test('all() should return all the collection fields without the relations', function () {
     $datasource = datasourceOtherRelations();
     $collection = $datasource->getCollection('books');
@@ -64,7 +63,7 @@ function datasourceWithOneToOneAndManyToOne(): Datasource
                 originKeyTarget: 'id',
                 foreignCollection: 'authors',
             ),
-            'myFormat' => new ManyToOneSchema(
+            'myFormat'  => new ManyToOneSchema(
                 foreignKey: 'format_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'formats',
@@ -91,11 +90,12 @@ function datasourceWithOneToOneAndManyToOne(): Datasource
     $datasource->addCollection($collectionFormats);
 
     $options = [
-        'projectDir'   => sys_get_temp_dir(), // only use for cache
+        'projectDir'   => sys_get_temp_dir(),
+        'cacheDir'     => sys_get_temp_dir() . '/forest-cache', // only use for cache
         'isProduction' => false,
     ];
 
-    (new AgentFactory($options,  []))->addDatasource($datasource)->build();
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
 
     return $datasource;
 }
@@ -106,7 +106,7 @@ function datasourceOtherRelations(): Datasource
     $collectionBookPersons = new Collection($datasource, 'bookPersons');
     $collectionBookPersons->addFields(
         [
-            'id'   => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
         ]
     );
 
@@ -127,10 +127,11 @@ function datasourceOtherRelations(): Datasource
     $datasource->addCollection($collectionBookPersons);
 
     $options = [
-        'projectDir' => sys_get_temp_dir(), // only use for cache
+        'projectDir' => sys_get_temp_dir(),
+        'cacheDir'   => sys_get_temp_dir() . '/forest-cache', // only use for cache
     ];
 
-    (new AgentFactory($options,  []))->addDatasource($datasource)->build();
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
 
     return $datasource;
 }

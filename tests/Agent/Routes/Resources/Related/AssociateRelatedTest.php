@@ -77,7 +77,7 @@ function factoryAssociateRelated($args = []): AssociateRelated
                 foreignKeyTarget: 'id',
                 foreignCollection: 'House',
             ),
-            'user' => new ManyToOneSchema(
+            'user'     => new ManyToOneSchema(
                 foreignKey: 'user_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'User',
@@ -114,9 +114,10 @@ function factoryAssociateRelated($args = []): AssociateRelated
     $datasource->addCollection($collectionHouseUser);
 
     $options = [
-        'projectDir'    => sys_get_temp_dir(),
-        'authSecret'    => AUTH_SECRET,
-        'isProduction'  => false,
+        'projectDir'   => sys_get_temp_dir(),
+        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
+        'authSecret'   => AUTH_SECRET,
+        'isProduction' => false,
     ];
     (new AgentFactory($options, []))->addDatasource($datasource)->build();
 

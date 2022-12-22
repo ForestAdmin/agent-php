@@ -63,9 +63,10 @@ function projectionDatasource(): Datasource
     $datasource->addCollection($collectionOwner);
 
     $options = [
-        'projectDir'      => sys_get_temp_dir(), // only use for cache
+        'projectDir' => sys_get_temp_dir(),
+        'cacheDir'   => sys_get_temp_dir() . '/forest-cache', // only use for cache
     ];
-    (new AgentFactory($options,  []))->addDatasource($datasource)->build();
+    (new AgentFactory($options, []))->addDatasource($datasource)->build();
 
     return $datasource;
 }

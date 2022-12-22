@@ -9,7 +9,8 @@
 //function factoryAgentFactoryOptions(): array
 //{
 //    $options = [
-//        'projectDir'    => sys_get_temp_dir(),
+//        'projectDir'   => sys_get_temp_dir(),
+//        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
 //        'authSecret'    => AUTH_SECRET,
 //        'isProduction'  => false,
 //    ];
