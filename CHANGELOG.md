@@ -1,0 +1,21 @@
+# 1.0.0-beta.1 (2022-12-22)
+
+
+### Bug Fixes
+
+* sort on relation ([#17](https://github.com/ForestAdmin/agent-php/issues/17)) ([16de644](https://github.com/ForestAdmin/agent-php/commit/16de644650275e3e51ff9d9c009948ef81d44f97))
+* tests add new method to build agent ([#16](https://github.com/ForestAdmin/agent-php/issues/16)) ([062991f](https://github.com/ForestAdmin/agent-php/commit/062991f876dca6b0ddc2bc494ad6c00b4a73f68a))
+
+
+### Features
+
+* add charts support ([#3](https://github.com/ForestAdmin/agent-php/issues/3)) ([0a60035](https://github.com/ForestAdmin/agent-php/commit/0a60035dc497c0969c88d9e6a48105c4de6f8c51))
+* add data source toolkit & agent builder  ([#1](https://github.com/ForestAdmin/agent-php/issues/1)) ([f11df17](https://github.com/ForestAdmin/agent-php/commit/f11df172ddfad476c93343fdd74ea631a7e2bb8b))
+* add doctrine datasource ([#10](https://github.com/ForestAdmin/agent-php/issues/10)) ([522f478](https://github.com/ForestAdmin/agent-php/commit/522f47834cf4d45976c12090ac91bb410f73f8af))
+* add filters support  ([#2](https://github.com/ForestAdmin/agent-php/issues/2)) ([3621192](https://github.com/ForestAdmin/agent-php/commit/3621192bfa295269bacb67d8f8602db702a62169))
+* add ipwhitelist support ([#7](https://github.com/ForestAdmin/agent-php/issues/7)) ([8b5791d](https://github.com/ForestAdmin/agent-php/commit/8b5791dfa90e6d2db92c8991fe672d5fa76bbd07))
+* add permissions support ([#5](https://github.com/ForestAdmin/agent-php/issues/5)) ([434006f](https://github.com/ForestAdmin/agent-php/commit/434006fd4b99238bb8c05677dca0ff55e7c6fd74))
+* Add some decorators  ([#14](https://github.com/ForestAdmin/agent-php/issues/14)) ([865bffa](https://github.com/ForestAdmin/agent-php/commit/865bffa65d083462689a2f129166fc3af16c4d05))
+* add support of some decorators ([#12](https://github.com/ForestAdmin/agent-php/issues/12)) ([c061efe](https://github.com/ForestAdmin/agent-php/commit/c061efe9bdec735f579a0cd85d91dbb35b8b272d))
+* send schema automatically ([#15](https://github.com/ForestAdmin/agent-php/issues/15)) ([60c4120](https://github.com/ForestAdmin/agent-php/commit/60c412038e04c097a13ff9a4dccd4b2be223f7b0))
+* **oidc:** remove callbackurl on authentication and fix charts permissions ([#6](https://github.com/ForestAdmin/agent-php/issues/6)) ([11af29f](https://github.com/ForestAdmin/agent-php/commit/11af29f184cf9ac0f16f8d60e9544305bffb38e1))

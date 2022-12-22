@@ -10,7 +10,7 @@ class SchemaEmitter
 {
     public const LIANA_NAME = 'laravel-forestadmin';
 
-    public const LIANA_VERSION = '1.0.0-beta';
+    public const LIANA_VERSION = '1.0.0-beta.1';
 
     /**
      * @throws \JsonException
