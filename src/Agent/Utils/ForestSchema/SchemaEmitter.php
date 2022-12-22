@@ -4,7 +4,6 @@ namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
-
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema;
 
 use function ForestAdmin\config;
