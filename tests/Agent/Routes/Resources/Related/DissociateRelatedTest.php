@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\DissociateRelated;
@@ -22,9 +21,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 function factoryDissociateRelated($args = []): DissociateRelated
 {
     $datasource = new Datasource();
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
-    $_GET['timezone'] = 'Europe/Paris';
-
     $collectionUser = new Collection($datasource, 'User');
     $collectionUser->addFields(
         [
@@ -118,14 +114,7 @@ function factoryDissociateRelated($args = []): DissociateRelated
     $datasource->addCollection($collectionCar);
     $datasource->addCollection($collectionHouse);
     $datasource->addCollection($collectionHouseUser);
-
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     $request = Request::createFromGlobals();
     $permissions = new Permissions(QueryStringParser::parseCaller($request));

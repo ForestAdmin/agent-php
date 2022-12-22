@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
@@ -63,14 +62,7 @@ function factoryQueryStringParser()
     $datasource->addCollection($collectionCategory);
     $datasource->addCollection($collectionUser);
     $datasource->addCollection($collectionCar);
-
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return compact('collectionCategory', 'collectionUser', 'collectionCar');
 }
@@ -348,7 +340,6 @@ test('parseSegment() should work when passed in the body (actions)', function ()
 
 test('parseCaller() should return the timezone and the user', function () {
     factoryQueryStringParser();
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
     $_GET['timezone'] = 'America/Los_Angeles';
 
     $projection = QueryStringParser::parseCaller(Request::createFromGlobals());
@@ -363,7 +354,7 @@ test('parseCaller() should return the timezone and the user', function () {
 
 test('parseCaller() should throw a ValidationError when the timezone is missing', function () {
     factoryQueryStringParser();
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
+    unset($_GET['timezone']);
 
     expect(fn () => QueryStringParser::parseCaller(Request::createFromGlobals()))
         ->toThrow(ForestException::class, '🌳🌳🌳 Missing timezone');
@@ -371,7 +362,6 @@ test('parseCaller() should throw a ValidationError when the timezone is missing'
 
 test('parseCaller() should throw a ValidationError when the timezone is invalid', function () {
     factoryQueryStringParser();
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
     $_GET['timezone'] = 'ThisTZ/Donotexist';
 
     expect(fn () => QueryStringParser::parseCaller(Request::createFromGlobals()))

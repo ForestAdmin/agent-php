@@ -1,7 +1,6 @@
 <?php
 
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\GeneratorField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
@@ -43,13 +42,7 @@ function GeneratorFieldWithOneToOneRelation(): Datasource
 
     $datasource->addCollection($collectionBook);
     $datasource->addCollection($collectionPerson);
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'authSecret'    => AUTH_SECRET,
-        'isProduction'  => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return $datasource;
 }
@@ -85,13 +78,7 @@ function GeneratorFieldWithOneToManyRelation(): Datasource
 
     $datasource->addCollection($collectionBook);
     $datasource->addCollection($collectionPerson);
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'authSecret'    => AUTH_SECRET,
-        'isProduction'  => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return $datasource;
 }
@@ -153,13 +140,7 @@ function GeneratorFieldWithManyToManyRelation(): Datasource
     $datasource->addCollection($collectionBook);
     $datasource->addCollection($collectionBookPerson);
     $datasource->addCollection($collectionPerson);
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'authSecret'    => AUTH_SECRET,
-        'isProduction'  => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return $datasource;
 }

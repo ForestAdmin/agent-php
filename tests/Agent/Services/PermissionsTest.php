@@ -21,8 +21,6 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 function permissionsFactory($scopes = [], $post = []): Permissions
 {
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
-    $_GET = ['timezone' => 'Europe/Paris'];
     $_POST = $post;
     $datasource = new Datasource();
     $collectionBooking = new Collection($datasource, 'Booking');
@@ -33,13 +31,7 @@ function permissionsFactory($scopes = [], $post = []): Permissions
         ]
     );
     $datasource->addCollection($collectionBooking);
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     $request = Request::createFromGlobals();
     $permissions = new Permissions(QueryStringParser::parseCaller($request));

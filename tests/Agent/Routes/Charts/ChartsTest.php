@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
@@ -28,8 +27,6 @@ use Illuminate\Support\Str;
 function factoryChart($args = []): Charts
 {
     $datasource = new Datasource();
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
-
     $collectionBooks = new Collection($datasource, 'Book');
     $collectionBooks->addFields(
         [
@@ -110,14 +107,7 @@ function factoryChart($args = []): Charts
     $datasource->addCollection($collectionBooks);
     $datasource->addCollection($collectionReviews);
     $datasource->addCollection($collectionBookReview);
-
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-    ];
-    (new Agentfactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     $_GET = $args['payload'];
     $request = Request::createFromGlobals();

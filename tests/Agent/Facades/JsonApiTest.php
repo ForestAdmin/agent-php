@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
@@ -23,19 +22,8 @@ function factoryJsonApi()
             'last_name'  => new ColumnSchema(columnType: PrimitiveType::STRING),
         ]
     );
-
     $datasource->addCollection($collectionPerson);
-
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-        'agentUrl'     => 'http://localhost/',
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
-
+    buildAgent($datasource);
     SchemaEmitter::getSerializedSchema($datasource);
 
     return $collectionPerson;

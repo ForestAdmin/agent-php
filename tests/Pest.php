@@ -73,6 +73,7 @@ function buildAgent(Datasource $datasource, array $options = [])
             'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
             'authSecret'   => AUTH_SECRET,
             'isProduction' => false,
+            'agentUrl'     => 'http://localhost/',
         ],
         $options
     );

@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use GuzzleHttp\Client;
@@ -12,16 +11,7 @@ use function ForestAdmin\config;
 function factoryForestApiRequester($url = 'https://api.development.forestadmin.com'): void
 {
     $datasource = new Datasource();
-
-    $options = [
-        'projectDir'      => sys_get_temp_dir(),
-        'cacheDir'        => sys_get_temp_dir() . '/forest-cache',
-        'authSecret'      => AUTH_SECRET,
-        'isProduction'    => false,
-        'debug'           => false,
-        'forestServerUrl' => $url,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource, ['debug' => false, 'forestServerUrl' => $url]);
 }
 
 function mockClientResponse(): Client

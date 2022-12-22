@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Destroy;
@@ -15,9 +14,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 function factoryDestroy(): Destroy
 {
     $datasource = new Datasource();
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
-    $_GET['timezone'] = 'Europe/Paris';
-
     $collectionCar = new Collection($datasource, 'Car');
     $collectionCar->addFields(
         [
@@ -28,14 +24,7 @@ function factoryDestroy(): Destroy
     );
 
     $datasource->addCollection($collectionCar);
-
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     $request = Request::createFromGlobals();
     $permissions = new Permissions(QueryStringParser::parseCaller($request));

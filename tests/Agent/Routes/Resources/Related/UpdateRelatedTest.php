@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\UpdateRelated;
@@ -19,9 +18,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 function factoryUpdateRelated($args = []): UpdateRelated
 {
     $datasource = new Datasource();
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
-    $_GET['timezone'] = 'Europe/Paris';
-
     $collectionUser = new Collection($datasource, 'User');
     $collectionUser->addFields(
         [
@@ -69,15 +65,8 @@ function factoryUpdateRelated($args = []): UpdateRelated
 
     $datasource->addCollection($collectionUser);
     $datasource->addCollection($collectionCar);
+    buildAgent($datasource);
 
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
     SchemaEmitter::getSerializedSchema($datasource);
 
     $request = Request::createFromGlobals();

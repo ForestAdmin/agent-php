@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
@@ -10,7 +9,6 @@ use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
@@ -24,9 +22,6 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 function factoryListing($args = []): Listing
 {
     $datasource = new Datasource();
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
-    $_GET['timezone'] = 'Europe/Paris';
-
     $collectionUser = new Collection($datasource, 'User');
     $collectionUser->addFields(
         [
@@ -47,15 +42,8 @@ function factoryListing($args = []): Listing
     }
 
     $datasource->addCollection($collectionUser);
+    buildAgent($datasource);
 
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
     SchemaEmitter::getSerializedSchema($datasource);
 
     $request = Request::createFromGlobals();

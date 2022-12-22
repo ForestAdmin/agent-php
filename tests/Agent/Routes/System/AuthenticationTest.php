@@ -3,7 +3,6 @@
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use ForestAdmin\AgentPHP\Agent\Auth\AuthManager;
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Security\Authentication;
 use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
@@ -34,16 +33,7 @@ function user()
 function factoryAuthentication(): Authentication
 {
     $datasource = new Datasource();
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
-    $_GET['timezone'] = 'Europe/Paris';
-
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     $request = Request::createFromGlobals();
 

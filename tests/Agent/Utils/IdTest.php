@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
@@ -30,14 +29,7 @@ function factoryIdUtil()
 
     $datasource->addCollection($collectionUser);
     $datasource->addCollection($collectionFoo);
-
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return compact('collectionUser', 'collectionFoo');
 }
