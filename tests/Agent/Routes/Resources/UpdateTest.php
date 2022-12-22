@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Update;
@@ -19,9 +18,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 function factoryUpdate($args = []): Update
 {
     $datasource = new Datasource();
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
-    $_GET['timezone'] = 'Europe/Paris';
-
     $collectionCar = new Collection($datasource, 'Car');
     $collectionCar->addFields(
         [
@@ -32,31 +28,20 @@ function factoryUpdate($args = []): Update
     );
 
     if (isset($args['update'])) {
-
         $collectionCar = mock($collectionCar)
             ->shouldReceive('update')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type('array'))
-            ->andReturn($args['update']);
-
-
-        $collectionCar=  $collectionCar->shouldReceive('list')
-          //  ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
-            ->andReturn([$args['result']])
+            ->andReturn($args['update'])
+            ->shouldReceive('list')
+            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
+            ->andReturn([$args['update']])
             ->getMock();
     }
 
     $datasource->addCollection($collectionCar);
+    buildAgent($datasource);
 
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
     SchemaEmitter::getSerializedSchema($datasource);
-
     $request = Request::createFromGlobals();
     $permissions = new Permissions(QueryStringParser::parseCaller($request));
 
@@ -79,7 +64,6 @@ function factoryUpdate($args = []): Update
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();
-
     invokeProperty($update, 'request', $request);
 
     return $update;
@@ -103,23 +87,23 @@ test('handleRequest() should return a response 200', function () {
         'attributes' => $data,
         'type'       => 'Car',
     ];
-
-    $result = [
-        'name'    => 'Car',
-        'content' => [
-            'data' => [
-                'type'       => 'Car',
-                'id'         => '2',
-                'attributes' => [
-                    'model' => 'Murcielago',
-                    'brand' => 'Lamborghini',
-                ],
-            ],
-        ],
-    ];
-    $update = factoryUpdate(['update' => $data, 'result' => $result]);
+    $update = factoryUpdate(['update' => $data]);
 
     expect($update->handleRequest(['collectionName' => 'Car', 'id' => 2]))
         ->toBeArray()
-        ->toEqual($result);
+        ->toEqual(
+            [
+                'name'    => 'Car',
+                'content' => [
+                    'data' => [
+                        'type'       => 'Car',
+                        'id'         => '2',
+                        'attributes' => [
+                            'model' => 'Murcielago',
+                            'brand' => 'Lamborghini',
+                        ],
+                    ],
+                ],
+            ]
+        );
 });
