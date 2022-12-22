@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Sort\SortCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
@@ -69,29 +68,9 @@ function factorySortCollection()
     $datasource->addCollection($collectionBook);
     $datasource->addCollection($collectionUser);
 
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-        'agentUrl'     => 'http://localhost/',
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
-    $caller = new Caller(
-        id: 1,
-        email: 'sarah.connor@skynet.com',
-        firstName: 'sarah',
-        lastName: 'connor',
-        team: 'survivor',
-        renderingId: 1,
-        tags: [],
-        timezone: 'Europe/Paris',
-        permissionLevel: 'admin',
-        role: 'dev'
-    );
-
-    return [$datasource, $collectionBook, $caller, $records];
+    return [$datasource, $collectionBook, $records];
 }
 
 function factorySortChildCollection($records)
@@ -132,29 +111,9 @@ function factorySortChildCollection($records)
     $datasourceDecorator = new DatasourceDecorator($datasource, SortCollection::class);
     $datasourceDecorator->build();
 
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-        'agentUrl'     => 'http://localhost/',
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
-    $caller = new Caller(
-        id: 1,
-        email: 'sarah.connor@skynet.com',
-        firstName: 'sarah',
-        lastName: 'connor',
-        team: 'survivor',
-        renderingId: 1,
-        tags: [],
-        timezone: 'Europe/Paris',
-        permissionLevel: 'admin',
-        role: 'dev'
-    );
-
-    return [$datasourceDecorator, $caller];
+    return [$datasourceDecorator];
 }
 
 test('emulateFieldSorting() should return the field sortable to null', function () {
@@ -217,35 +176,35 @@ test('replaceFieldSorting() should throw if the field is in a relation', functio
     ))->toThrow(ForestException::class, '🌳🌳🌳 Cannot replace sort on relation');
 });
 
-test('list() should return the records of the childCollection list method when there is no field emulated', function () {
-    [$datasource, $collection, $caller, $records] = factorySortCollection();
+test('list() should return the records of the childCollection list method when there is no field emulated', function (Caller $caller) {
+    [$datasource, $collection, $records] = factorySortCollection();
     $sortCollection = new SortCollection($collection, $datasource);
     $list = $sortCollection->list($caller, new PaginatedFilter(sort: new Sort([['field' => 'title', 'ascending' => true]])), new Projection(['id', 'title']));
 
     expect($list)->toEqual($records);
-});
+})->with('caller');
 
-test('list() should return the records sorted when a replace field is provided and the ascending is true', function () {
-    [$datasource, $collection, $caller, $records] = factorySortCollection();
+test('list() should return the records sorted when a replace field is provided and the ascending is true', function (Caller $caller) {
+    [$datasource, $collection, $records] = factorySortCollection();
     $sortCollection = new SortCollection($collection, $datasource);
 
     $sortCollection->replaceFieldSorting('title', [['field' => 'id', 'ascending' => true]]);
     $list = $sortCollection->list($caller, new PaginatedFilter(sort: new Sort([['field' => 'title', 'ascending' => true]])), new Projection(['id', 'title']));
 
     expect($list)->toEqual($records);
-});
+})->with('caller');
 
-test('list() should return the records sorted when a replace field is provided and the ascending is false', function () {
-    [$datasource, $collection, $caller, $records] = factorySortCollection();
+test('list() should return the records sorted when a replace field is provided and the ascending is false', function (Caller $caller) {
+    [$datasource, $collection, $records] = factorySortCollection();
     $sortCollection = new SortCollection($collection, $datasource);
 
     $sortCollection->replaceFieldSorting('title', [['field' => 'id', 'ascending' => true]]);
     $list = $sortCollection->list($caller, new PaginatedFilter(sort: new Sort([['field' => 'title', 'ascending' => false]])), new Projection(['id', 'title']));
 
     expect($list)->toEqual($records);
-});
+})->with('caller');
 
-test('list() should return the records sorted when the list doesn\'t have emulated field', function () {
+test('list() should return the records sorted when the list doesn\'t have emulated field', function (Caller $caller) {
     $records = [
         [
             [
@@ -277,7 +236,7 @@ test('list() should return the records sorted when the list doesn\'t have emulat
         ],
     ];
 
-    [$datasourceDecorator, $caller] = factorySortChildCollection($records);
+    [$datasourceDecorator] = factorySortChildCollection($records);
     $collection = $datasourceDecorator->getCollection('Book');
     $collection->emulateFieldSorting('id');
     $list = $collection->list(
@@ -300,9 +259,9 @@ test('list() should return the records sorted when the list doesn\'t have emulat
             'title' => 'Gomorrah',
         ],
     ]);
-});
+})->with('caller');
 
-test('list() on relationship should return the records sorted when the list doesn\'t have emulated field', function () {
+test('list() on relationship should return the records sorted when the list doesn\'t have emulated field', function (Caller $caller) {
     $records = [
         [
             [
@@ -337,7 +296,7 @@ test('list() on relationship should return the records sorted when the list does
         ],
     ];
 
-    [$datasourceDecorator, $caller] = factorySortChildCollection($records);
+    [$datasourceDecorator] = factorySortChildCollection($records);
     $authorCollection = $datasourceDecorator->getCollection('User');
     $authorCollection->emulateFieldSorting('id');
 
@@ -363,4 +322,4 @@ test('list() on relationship should return the records sorted when the list does
             'title' => 'Gomorrah',
         ],
     ]);
-});
+})->with('caller');

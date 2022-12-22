@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\CountRelated;
@@ -19,9 +18,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 function factoryCountRelated($args = []): CountRelated
 {
     $datasource = new Datasource();
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
-    $_GET['timezone'] = 'Europe/Paris';
-
     $collectionUser = new Collection($datasource, 'User');
     $collectionUser->addFields(
         [
@@ -54,20 +50,14 @@ function factoryCountRelated($args = []): CountRelated
     if (isset($args['count'])) {
         $collectionCar = mock($collectionCar)
             ->shouldReceive('aggregate')
-            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null, null)
+            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
             ->andReturn(count($args['count']))
             ->getMock();
     }
 
     $datasource->addCollection($collectionUser);
     $datasource->addCollection($collectionCar);
-
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     $request = Request::createFromGlobals();
     $permissions = new Permissions(QueryStringParser::parseCaller($request));

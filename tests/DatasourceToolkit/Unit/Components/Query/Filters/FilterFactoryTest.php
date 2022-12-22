@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
@@ -65,8 +64,8 @@ function createDatasourceForFilterFactory(): Datasource
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
             ),
-            'book_id' => new ColumnSchema(columnType: PrimitiveType::NUMBER),
-            'book'    => new ManyToOneSchema(
+            'book_id'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'book'      => new ManyToOneSchema(
                 foreignKey: 'book_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',
@@ -82,11 +81,7 @@ function createDatasourceForFilterFactory(): Datasource
     $datasource->addCollection($mockCollectionReviews);
     $datasource->addCollection($mockCollectionBookReview);
 
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'isProduction' => false,
-    ];
-    (new AgentFactory($options,  []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return $datasource;
 }
@@ -214,7 +209,7 @@ test("makeThroughFilter() should make two queries many to many", closure: functi
                     aggregator: 'And',
                     conditions: [
                         new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
-                        new ConditionTreeLeaf(field: 'review_id', operator: Operators::IN, value: [1,2]),
+                        new ConditionTreeLeaf(field: 'review_id', operator: Operators::IN, value: [1, 2]),
                     ]
                 )
             )

@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
@@ -50,11 +49,7 @@ function dataSourceWithInverseRelationMissing(): Datasource
     $datasource->addCollection($collectionBook);
     $datasource->addCollection($collectionPerson);
 
-    $options = [
-        'projectDir' => sys_get_temp_dir(), // only use for cache
-    ];
-
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return $datasource;
 }
@@ -186,11 +181,7 @@ function datasourceWithAllRelations(array $args = []): Datasource
     $datasource->addCollection($collectionBookPerson);
     $datasource->addCollection($collectionPerson);
 
-    $options = [
-        'projectDir' => sys_get_temp_dir(), // only use for cache
-    ];
-
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return $datasource;
 }
@@ -360,7 +351,7 @@ test('getValue() should work with composite id', function (Caller $caller) {
     $datasource = datasourceWithAllRelations(
         [
             'Book' => [
-                'list' => ['id' => 1,'reference' => 'ref', 'title' => 'foo'],
+                'list' => ['id' => 1, 'reference' => 'ref', 'title' => 'foo'],
             ],
         ]
     );
@@ -388,7 +379,7 @@ test('listRelation() should work with one to many relation', function (Caller $c
 test('listRelation() should work with many to many relation', function (Caller $caller) {
     $datasource = datasourceWithAllRelations(
         [
-            'Person' => [
+            'Person'     => [
                 'list' => [['id' => 1, 'name' => 'foo']],
             ],
             'BookPerson' => [

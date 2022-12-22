@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Segment\SegmentCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
@@ -26,33 +25,13 @@ function factorySegmentCollection()
     );
     $datasource->addCollection($collectionProduct);
 
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-        'agentUrl'     => 'http://localhost/',
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
-    $caller = new Caller(
-        id: 1,
-        email: 'sarah.connor@skynet.com',
-        firstName: 'sarah',
-        lastName: 'connor',
-        team: 'survivor',
-        renderingId: 1,
-        tags: [],
-        timezone: 'Europe/Paris',
-        permissionLevel: 'admin',
-        role: 'dev'
-    );
-
-    return [$datasource, $collectionProduct, $caller];
+    return [$datasource, $collectionProduct];
 }
 
 test('getSegments() should return the list of segment', function () {
-    [$datasource, $collection, $caller] = factorySegmentCollection();
+    [$datasource, $collection] = factorySegmentCollection();
 
     $segmentCollection = new SegmentCollection($collection, $datasource);
     $segmentCollection->addSegment(
@@ -75,8 +54,8 @@ test('getSegments() should return the list of segment', function () {
     expect($segmentCollection->getSegments())->toArray()->toEqual(['segmentName', 'segmentName2']);
 });
 
-test('refineFilter() when there is no filter should return null', function () {
-    [$datasource, $collection, $caller] = factorySegmentCollection();
+test('refineFilter() when there is no filter should return null', function (Caller $caller) {
+    [$datasource, $collection] = factorySegmentCollection();
 
     $segmentCollection = new SegmentCollection($collection, $datasource);
     $segmentCollection->addSegment(
@@ -89,10 +68,10 @@ test('refineFilter() when there is no filter should return null', function () {
     );
 
     expect($segmentCollection->refineFilter($caller, null))->toBeNull();
-});
+})->with('caller');
 
-test('refineFilter() when there is a filter when the segment is not managed by this decorator should return the given filter', function () {
-    [$datasource, $collection, $caller] = factorySegmentCollection();
+test('refineFilter() when there is a filter when the segment is not managed by this decorator should return the given filter', function (Caller $caller) {
+    [$datasource, $collection] = factorySegmentCollection();
     $segmentCollection = new SegmentCollection($collection, $datasource);
     $segmentCollection->addSegment(
         'segmentName',
@@ -105,10 +84,10 @@ test('refineFilter() when there is a filter when the segment is not managed by t
     $filter = new Filter(segment: 'aSegment');
 
     expect($segmentCollection->refineFilter($caller, $filter))->toEqual($filter);
-});
+})->with('caller');
 
-test('refineFilter() when there is a filter when the segment is managed by this decorator should return the filter with the merged conditionTree', function () {
-    [$datasource, $collection, $caller] = factorySegmentCollection();
+test('refineFilter() when there is a filter when the segment is managed by this decorator should return the filter with the merged conditionTree', function (Caller $caller) {
+    [$datasource, $collection] = factorySegmentCollection();
     $segmentCollection = new SegmentCollection($collection, $datasource);
     $segmentCollection->addSegment(
         'segmentName',
@@ -134,10 +113,10 @@ test('refineFilter() when there is a filter when the segment is managed by this 
             segment: null
         ),
     );
-});
+})->with('caller');
 
-test('refineFilter() when there is a filter when the segment is managed by this decorator should throw an error when a conditionTree is not valid', function () {
-    [$datasource, $collection, $caller] = factorySegmentCollection();
+test('refineFilter() when there is a filter when the segment is managed by this decorator should throw an error when a conditionTree is not valid', function (Caller $caller) {
+    [$datasource, $collection] = factorySegmentCollection();
     $segmentCollection = new SegmentCollection($collection, $datasource);
     $segmentCollection->addSegment(
         'segmentName',
@@ -150,4 +129,4 @@ test('refineFilter() when there is a filter when the segment is managed by this 
     );
 
     expect(fn () => $segmentCollection->refineFilter($caller, $filter))->toThrow(ForestException::class, '🌳🌳🌳 Column not found Person.do not exists');
-});
+})->with('caller');

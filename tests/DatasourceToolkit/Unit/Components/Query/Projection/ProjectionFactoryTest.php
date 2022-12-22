@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\ProjectionFactory;
@@ -34,7 +33,6 @@ test('all() should return all the collection fields and the relation fields', fu
 });
 
 
-
 test('all() should return all the collection fields without the relations', function () {
     $datasource = datasourceOtherRelations();
     $collection = $datasource->getCollection('books');
@@ -64,7 +62,7 @@ function datasourceWithOneToOneAndManyToOne(): Datasource
                 originKeyTarget: 'id',
                 foreignCollection: 'authors',
             ),
-            'myFormat' => new ManyToOneSchema(
+            'myFormat'  => new ManyToOneSchema(
                 foreignKey: 'format_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'formats',
@@ -90,12 +88,7 @@ function datasourceWithOneToOneAndManyToOne(): Datasource
     $datasource->addCollection($collectionAuthors);
     $datasource->addCollection($collectionFormats);
 
-    $options = [
-        'projectDir'   => sys_get_temp_dir(), // only use for cache
-        'isProduction' => false,
-    ];
-
-    (new AgentFactory($options,  []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return $datasource;
 }
@@ -106,7 +99,7 @@ function datasourceOtherRelations(): Datasource
     $collectionBookPersons = new Collection($datasource, 'bookPersons');
     $collectionBookPersons->addFields(
         [
-            'id'   => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
         ]
     );
 
@@ -126,11 +119,7 @@ function datasourceOtherRelations(): Datasource
     $datasource->addCollection($collectionBooks);
     $datasource->addCollection($collectionBookPersons);
 
-    $options = [
-        'projectDir' => sys_get_temp_dir(), // only use for cache
-    ];
-
-    (new AgentFactory($options,  []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return $datasource;
 }

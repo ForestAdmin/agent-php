@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
@@ -28,8 +27,6 @@ use Illuminate\Support\Str;
 function factoryChart($args = []): Charts
 {
     $datasource = new Datasource();
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
-
     $collectionBooks = new Collection($datasource, 'Book');
     $collectionBooks->addFields(
         [
@@ -58,8 +55,8 @@ function factoryChart($args = []): Charts
     $collectionBookReview = new Collection($datasource, 'BookReview');
     $collectionBookReview->addFields(
         [
-            'id'          => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'reviews'     => new ManyToManySchema(
+            'id'      => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'reviews' => new ManyToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
                 throughTable: 'book_review',
@@ -68,12 +65,12 @@ function factoryChart($args = []): Charts
                 foreignCollection: 'Review',
                 throughCollection: 'BookReview',
             ),
-            'book' => new ManyToOneSchema(
+            'book'    => new ManyToOneSchema(
                 foreignKey: 'book_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',
             ),
-            'review' => new ManyToOneSchema(
+            'review'  => new ManyToOneSchema(
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
@@ -110,13 +107,7 @@ function factoryChart($args = []): Charts
     $datasource->addCollection($collectionBooks);
     $datasource->addCollection($collectionReviews);
     $datasource->addCollection($collectionBookReview);
-
-    $options = [
-        'projectDir'    => sys_get_temp_dir(),
-        'authSecret'    => AUTH_SECRET,
-        'isProduction'  => false,
-    ];
-    (new Agentfactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     $_GET = $args['payload'];
     $request = Request::createFromGlobals();

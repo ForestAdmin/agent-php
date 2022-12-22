@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Facades;
 
+use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Services\JsonApiResponse;
 use League\Fractal\TransformerAbstract;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -9,7 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 /**
  * Class Cache
  *
- * @method static array renderCollection($class, TransformerAbstract $transformer, string $name, array $metadata = [])
+ * @method static array renderCollection($class, TransformerAbstract $transformer, string $name, Request $request)
  * @method static array renderItem($data, TransformerAbstract $transformer, string $name)
  * @method static array renderChart($chart)
  * @method static JsonResponse deactivateCountResponse()

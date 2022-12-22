@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\ConditionTreeParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
@@ -23,13 +22,7 @@ function factoryConditionTreeParser()
     );
 
     $datasource->addCollection($collectionCategory);
-
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'authSecret'    => AUTH_SECRET,
-        'isProduction' => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return $collectionCategory;
 }
@@ -77,7 +70,7 @@ test('ConditionTreeParser() should work with "IN" on a string', function () {
     $filters = ['field' => 'label', 'operator' => 'In', 'value' => ' id1,id2 , id3'];
 
     expect(ConditionTreeParser::fromPLainObject($collectionCategory, $filters))
-        ->toEqual(new ConditionTreeLeaf(field: 'label', operator: 'In', value: ['id1','id2','id3']));
+        ->toEqual(new ConditionTreeLeaf(field: 'label', operator: 'In', value: ['id1', 'id2', 'id3']));
 });
 
 test('ConditionTreeParser() should work with "IN" on a number', function () {
@@ -86,7 +79,7 @@ test('ConditionTreeParser() should work with "IN" on a number', function () {
     $filters = ['field' => 'id', 'operator' => 'In', 'value' => '1,2,3'];
 
     expect(ConditionTreeParser::fromPLainObject($collectionCategory, $filters))
-        ->toEqual(new ConditionTreeLeaf(field: 'id', operator: 'In', value: [1,2,3]));
+        ->toEqual(new ConditionTreeLeaf(field: 'id', operator: 'In', value: [1, 2, 3]));
 });
 
 test('ConditionTreeParser() should work with "IN" on a boolean', function () {

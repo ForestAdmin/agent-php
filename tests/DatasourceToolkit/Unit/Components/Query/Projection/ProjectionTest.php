@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
@@ -62,10 +61,7 @@ function projectionDatasource(): Datasource
     $datasource->addCollection($collectionCars);
     $datasource->addCollection($collectionOwner);
 
-    $options = [
-        'projectDir'      => sys_get_temp_dir(), // only use for cache
-    ];
-    (new AgentFactory($options,  []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return $datasource;
 }

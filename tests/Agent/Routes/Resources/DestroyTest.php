@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Destroy;
@@ -15,9 +14,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 function factoryDestroy(): Destroy
 {
     $datasource = new Datasource();
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
-    $_GET['timezone'] = 'Europe/Paris';
-
     $collectionCar = new Collection($datasource, 'Car');
     $collectionCar->addFields(
         [
@@ -28,13 +24,7 @@ function factoryDestroy(): Destroy
     );
 
     $datasource->addCollection($collectionCar);
-
-    $options = [
-        'projectDir'    => sys_get_temp_dir(),
-        'authSecret'    => AUTH_SECRET,
-        'isProduction'  => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     $request = Request::createFromGlobals();
     $permissions = new Permissions(QueryStringParser::parseCaller($request));
@@ -87,16 +77,16 @@ test('handleRequest() should return a response 200', function () {
 test('handleRequestBulk() should return a response 200', function () {
     $_GET['data'] = [
         'attributes' => [
-            'ids'                      => ['1','2','3'],
+            'ids'                      => ['1', '2', '3'],
             'collection_name'          => 'Car',
             'parent_collection_name'   => null,
             'parent_collection_id'     => null,
             'parent_association_name'  => null,
             'all_records'              => true,
             'all_records_subset_query' => [
-                'fields[Car]'      => 'id,model,brand',
-                'page[number]'     => 1,
-                'page[size]'       => 15,
+                'fields[Car]'  => 'id,model,brand',
+                'page[number]' => 1,
+                'page[size]'   => 15,
             ],
             'all_records_ids_excluded' => [],
             'smart_action_id'          => null,

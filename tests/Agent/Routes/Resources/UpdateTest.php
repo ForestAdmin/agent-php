@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Update;
@@ -11,6 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
@@ -18,9 +18,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 function factoryUpdate($args = []): Update
 {
     $datasource = new Datasource();
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
-    $_GET['timezone'] = 'Europe/Paris';
-
     $collectionCar = new Collection($datasource, 'Car');
     $collectionCar->addFields(
         [
@@ -34,21 +31,17 @@ function factoryUpdate($args = []): Update
         $collectionCar = mock($collectionCar)
             ->shouldReceive('update')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type('array'))
-            ->andReturn(($args['update']))
+            ->andReturn($args['update'])
+            ->shouldReceive('list')
+            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
+            ->andReturn([$args['update']])
             ->getMock();
     }
 
     $datasource->addCollection($collectionCar);
+    buildAgent($datasource);
 
-    $options = [
-        'projectDir'    => sys_get_temp_dir(),
-        'schemaPath'    => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'authSecret'    => AUTH_SECRET,
-        'isProduction'  => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
     SchemaEmitter::getSerializedSchema($datasource);
-
     $request = Request::createFromGlobals();
     $permissions = new Permissions(QueryStringParser::parseCaller($request));
 
@@ -71,7 +64,6 @@ function factoryUpdate($args = []): Update
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();
-
     invokeProperty($update, 'request', $request);
 
     return $update;

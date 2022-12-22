@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Security\ScopeInvalidation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
@@ -9,15 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 function factoryScopeInvalidation(): ScopeInvalidation
 {
     $datasource = new Datasource();
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
-    $_GET['timezone'] = 'Europe/Paris';
-
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'authSecret'    => AUTH_SECRET,
-        'isProduction' => false,
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     $request = Request::createFromGlobals();
     $scopeInvalidation = mock(ScopeInvalidation::class)
