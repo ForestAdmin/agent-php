@@ -60,7 +60,7 @@ class SortCollection extends CollectionDecorator
         }
 
         // We now have the information we need to sort by the field
-        $newFilter = new Filter(
+        $newFilter = new PaginatedFilter(
             conditionTree: ConditionTreeFactory::matchRecords($this, $referenceRecords)
         );
 
