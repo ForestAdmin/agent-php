@@ -4,9 +4,9 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollec
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 class PublicationCollectionDatasourceDecorator extends DatasourceDecorator
 {

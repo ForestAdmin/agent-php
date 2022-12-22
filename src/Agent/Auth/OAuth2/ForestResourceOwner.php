@@ -3,9 +3,11 @@
 namespace ForestAdmin\AgentPHP\Agent\Auth\OAuth2;
 
 use Firebase\JWT\JWT;
+
+use function ForestAdmin\config;
+
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Tool\ArrayAccessorTrait;
-use function ForestAdmin\config;
 
 /**
  * Class ForestResourceOwner

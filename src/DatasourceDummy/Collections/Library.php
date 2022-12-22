@@ -11,7 +11,7 @@ class Library extends BaseCollection
     public function __construct(DatasourceContract $dataSource)
     {
         $fields = [
-            'id' => new ColumnSchema(
+            'id'   => new ColumnSchema(
                 columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),

@@ -14,8 +14,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projectio
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results\ActionResult;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use Illuminate\Support\Collection as IlluminateCollection;
 

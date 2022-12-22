@@ -231,17 +231,17 @@ class RelationCollection extends CollectionDecorator
         $target = $this->dataSource->getCollection($partialJoin['foreignCollection']);
 
         return match ($partialJoin['type']) {
-            'ManyToOne' => new ManyToOneSchema(
+            'ManyToOne'  => new ManyToOneSchema(
                 foreignKey: $partialJoin['foreignKey'],
                 foreignKeyTarget: Arr::get($partialJoin, 'foreignKeyTarget', Schema::getPrimaryKeys($target)[0]),
                 foreignCollection: $partialJoin['foreignCollection'],
             ),
-            'OneToOne'  => new OneToOneSchema(
+            'OneToOne'   => new OneToOneSchema(
                 originKey: $partialJoin['originKey'],
                 originKeyTarget: Arr::get($partialJoin, 'foreignKeyTarget', Schema::getPrimaryKeys($this)[0]),
                 foreignCollection: $partialJoin['foreignCollection'],
             ),
-            'OneToMany' => new OneToManySchema(
+            'OneToMany'  => new OneToManySchema(
                 originKey: $partialJoin['originKey'],
                 originKeyTarget: Arr::get($partialJoin, 'foreignKeyTarget', Schema::getPrimaryKeys($this)[0]),
                 foreignCollection: $partialJoin['foreignCollection'],

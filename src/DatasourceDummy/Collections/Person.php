@@ -13,25 +13,25 @@ class Person extends BaseCollection
     public function __construct(DatasourceContract $dataSource)
     {
         $fields = [
-            'id' => new ColumnSchema(
+            'id'        => new ColumnSchema(
                 columnType: PrimitiveType::NUMBER,
                 isPrimaryKey: true
             ),
             'firstName' => new ColumnSchema(
                 columnType: PrimitiveType::STRING,
             ),
-            'lastName' => new ColumnSchema(
+            'lastName'  => new ColumnSchema(
                 columnType: PrimitiveType::STRING,
             ),
             'addressId' => new ColumnSchema(
                 columnType: PrimitiveType::NUMBER,
             ),
-            'books' => new OneToManySchema(
+            'books'     => new OneToManySchema(
                 originKey: 'authorId',
                 originKeyTarget: 'id',
                 foreignCollection: 'Book',
             ),
-            'address' => new OneToOneSchema(
+            'address'   => new OneToOneSchema(
                 originKey: 'originKeyId',
                 originKeyTarget: 'id',
                 foreignCollection: 'Address',

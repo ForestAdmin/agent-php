@@ -2,10 +2,10 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ActionSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 trait CollectionMethods
@@ -90,7 +90,6 @@ trait CollectionMethods
     {
         $this->fields->put($name, $field);
     }
-
 
     public function addFields(array $fields): void
     {

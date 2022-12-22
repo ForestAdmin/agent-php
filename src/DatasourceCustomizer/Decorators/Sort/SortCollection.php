@@ -5,7 +5,6 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Sort;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;

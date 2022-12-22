@@ -37,19 +37,19 @@ class Book extends BaseCollection
     public function __construct(DatasourceContract $dataSource)
     {
         $fields = [
-            'id'          => new ColumnSchema(
+            'id'           => new ColumnSchema(
                 columnType: PrimitiveType::NUMBER,
                 filterOperators: Operators::getAllOperators(),
                 isPrimaryKey: true
             ),
-            'title'       => new ColumnSchema(
+            'title'        => new ColumnSchema(
                 columnType: PrimitiveType::STRING,
                 defaultValue: 'Foo'
             ),
-            'publication' => new ColumnSchema(
+            'publication'  => new ColumnSchema(
                 columnType: PrimitiveType::DATE,
             ),
-            'author'      => new ColumnSchema(
+            'author'       => new ColumnSchema(
                 columnType: PrimitiveType::STRING,
             ),
             'user_id'      => new ColumnSchema(
