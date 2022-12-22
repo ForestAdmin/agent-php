@@ -3,7 +3,6 @@
 namespace ForestAdmin\AgentPHP\DatasourceDummy\Collections;
 
 use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BaseTransformer;
-use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;

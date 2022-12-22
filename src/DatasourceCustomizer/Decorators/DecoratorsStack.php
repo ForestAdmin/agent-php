@@ -43,12 +43,10 @@ class DecoratorsStack
 //        $last = $this->lateOpEmulate = new DatasourceDecorator($last, OperatorsEmulateCollection::class);
 //        $last = $this->lateOpReplace = new DatasourceDecorator($last, OperatorsReplaceCollection::class);
 
-
         // Step 2: Those need access to all fields. They can be loaded in any order.
         $last = $this->search = new DatasourceDecorator($last, SearchCollection::class);
         $last = $this->segment = new DatasourceDecorator($last, SegmentCollection::class);
         $last = $this->sort = new DatasourceDecorator($last, SortCollection::class);
-
 
         $this->dataSource = &$last;
     }

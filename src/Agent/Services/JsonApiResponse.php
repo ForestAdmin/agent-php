@@ -2,14 +2,20 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Services;
 
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\ForestSchema;
+use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Serializer\JsonApiSerializer;
 
 use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
 
+use ForestAdmin\AgentPHP\Agent\Utils\Id as IdUtils;
+
 use function ForestAdmin\config;
 
 use Illuminate\Support\Collection as BaseCollection;
+
+use Illuminate\Support\Str;
 
 use League\Fractal\Manager;
 use League\Fractal\Resource\Collection;
@@ -27,12 +33,17 @@ class JsonApiResponse
         $this->fractal = new Manager();
     }
 
-    public function renderCollection($class, TransformerAbstract $transformer, string $name)
+    public function renderCollection($class, TransformerAbstract $transformer, string $name, Request $request)
     {
         $this->fractal->setSerializer(new JsonApiSerializer(config('agentUrl')));
         $transformer->setAvailableIncludes(ForestSchema::getRelatedData($name));
+        $resource = new Collection($class, $transformer, $name);
 
-        return $this->fractal->createData(new Collection($class, $transformer, $name))->toArray();
+        if ($request->has('search')) {
+            $resource->setMeta($this->searchDecorator($resource, $request->get('search')));
+        }
+
+        return $this->fractal->createData($resource)->toArray();
     }
 
     public function renderItem($data, TransformerAbstract $transformer, string $name)
@@ -76,8 +87,19 @@ class JsonApiResponse
         // todo
     }
 
-    protected function searchDecorator(BaseCollection $items, $searchValue): array
+    protected function searchDecorator(Collection $resource, string $searchValue): array
     {
-        // todo
+        $forestCollection = AgentFactory::get('datasource')->getCollection($resource->getResourceKey());
+        $decorator = ['decorators' => []];
+        foreach ($resource->getData() as $key => $value) {
+            $decorator['decorators'][$key]['id'] = IdUtils::packId($forestCollection, $value);
+            foreach ($value as $fieldKey => $fieldValue) {
+                if (! is_array($fieldValue) && Str::contains(Str::lower($fieldValue), Str::lower($searchValue))) {
+                    $decorator['decorators'][$key]['search'][] = $fieldKey;
+                }
+            }
+        }
+
+        return $decorator;
     }
 }
