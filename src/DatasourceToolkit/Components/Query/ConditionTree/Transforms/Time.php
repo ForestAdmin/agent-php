@@ -30,7 +30,6 @@ final class Time
             'dependsOn' => [Operators::LESS_THAN, Operators::GREATER_THAN],
             'forTypes'  => ['Date', 'Dateonly'],
             'replacer'  => function ($leaf, $tz) use ($startFn, $endFn) {
-
                 return ConditionTreeFactory::intersect(
                     [
                         $leaf->override(operator: Operators::GREATER_THAN, value: self::format($startFn(Carbon::now(tz: $tz), $leaf->getValue()))),
@@ -60,40 +59,40 @@ final class Time
     public static function timeTransforms(): array
     {
         return [
-            Operators::BEFORE => [self::compare(Operators::LESS_THAN, static fn ($now, $value) => Carbon::parse($value))],
-            Operators::AFTER  => [self::compare(Operators::GREATER_THAN, static fn ($now, $value) => Carbon::parse($value))],
+            Operators::BEFORE                   => [self::compare(Operators::LESS_THAN, static fn ($now, $value) => Carbon::parse($value))],
+            Operators::AFTER                    => [self::compare(Operators::GREATER_THAN, static fn ($now, $value) => Carbon::parse($value))],
 
-            Operators::PAST   => [self::compare(Operators::LESS_THAN, static fn ($now) => $now)],
-            Operators::FUTURE => [self::compare(Operators::GREATER_THAN, static fn ($now) => $now)],
+            Operators::PAST                     => [self::compare(Operators::LESS_THAN, static fn ($now) => $now)],
+            Operators::FUTURE                   => [self::compare(Operators::GREATER_THAN, static fn ($now) => $now)],
 
-            Operators::BEFORE_X_HOURS_AGO => [self::compare(Operators::LESS_THAN, static fn ($now, $value) => $now->subHours($value))],
-            Operators::AFTER_X_HOURS_AGO  => [self::compare(Operators::GREATER_THAN, static fn ($now, $value) => $now->subHours($value))],
+            Operators::BEFORE_X_HOURS_AGO       => [self::compare(Operators::LESS_THAN, static fn ($now, $value) => $now->subHours($value))],
+            Operators::AFTER_X_HOURS_AGO        => [self::compare(Operators::GREATER_THAN, static fn ($now, $value) => $now->subHours($value))],
 
             Operators::PREVIOUS_WEEK_TO_DATE    => [self::previousIntervalToDate('week')],
             Operators::PREVIOUS_MONTH_TO_DATE   => [self::previousIntervalToDate('month')],
             Operators::PREVIOUS_QUARTER_TO_DATE => [self::previousIntervalToDate('quarter')],
             Operators::PREVIOUS_YEAR_TO_DATE    => [self::previousIntervalToDate('year')],
 
-            Operators::YESTERDAY        => [self::previousInterval('day')],
-            Operators::PREVIOUS_WEEK    => [self::previousInterval('week')],
-            Operators::PREVIOUS_MONTH   => [self::previousInterval('month')],
-            Operators::PREVIOUS_QUARTER => [self::previousInterval('quarter')],
-            Operators::PREVIOUS_YEAR    => [self::previousInterval('year')],
+            Operators::YESTERDAY                => [self::previousInterval('day')],
+            Operators::PREVIOUS_WEEK            => [self::previousInterval('week')],
+            Operators::PREVIOUS_MONTH           => [self::previousInterval('month')],
+            Operators::PREVIOUS_QUARTER         => [self::previousInterval('quarter')],
+            Operators::PREVIOUS_YEAR            => [self::previousInterval('year')],
 
-            Operators::PREVIOUS_X_DAYS_TO_DATE => [
+            Operators::PREVIOUS_X_DAYS_TO_DATE  => [
                 self::interval(
                     static fn ($now, $value) => $now->subDays($value)->startOfDay(),
                     static fn ($now) => $now,
                 ),
             ],
-            Operators::PREVIOUS_X_DAYS         => [
+            Operators::PREVIOUS_X_DAYS          => [
                 self::interval(
                     static fn ($now, $value) => $now->subDays($value)->startOfDay(),
                     static fn ($now) => $now->startOfDay(),
                 ),
             ],
 
-            Operators::TODAY => [
+            Operators::TODAY                    => [
                 self::interval(
                     static fn ($now) => $now->startOfDay(),
                     static fn ($now) => $now->addDay()->startOfDay(),

@@ -134,4 +134,3 @@ class ForestSchemaInstrospection
         return $data ?: [];
     }
 }
-

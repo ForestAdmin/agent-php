@@ -22,7 +22,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use Illuminate\Support\Arr;
-use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class Collection extends BaseCollection
 {

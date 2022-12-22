@@ -9,7 +9,6 @@ use function ForestAdmin\config;
 class SchemaEmitter
 {
     public const LIANA_NAME = 'laravel-forestadmin';
-//    public const LIANA_NAME = 'agent-php';
 
     public const LIANA_VERSION = '1.0.0-beta';
 

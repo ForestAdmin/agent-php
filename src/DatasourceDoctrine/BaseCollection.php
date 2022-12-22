@@ -14,7 +14,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use Illuminate\Support\Arr;
-use Symfony\Component\PropertyAccess\PropertyAccess;
 
 class BaseCollection extends ForestCollection
 {

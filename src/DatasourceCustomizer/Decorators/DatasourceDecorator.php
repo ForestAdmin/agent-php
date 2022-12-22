@@ -20,8 +20,6 @@ class DatasourceDecorator extends Datasource
         // Reflect.defineProperty(childDataSource, 'addCollection', {
         //      value: this.addCollectionObserver.bind(this),
         // });
-
-
     }
 
     public function addCollection(CollectionDecorator|CollectionContract $collection): void
@@ -50,7 +48,6 @@ class DatasourceDecorator extends Datasource
             }
         } catch (\Exception $e) {
             throw new ForestException("Unable to add collections to the datasource");
-
         }
     }
 }

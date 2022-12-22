@@ -104,7 +104,7 @@ class ConditionTreeLeaf extends ConditionTree
             Operators::INCLUDES_ALL => collect(is_array($this->value) ? $this->value : explode(',', $this->value))
                 ->every(fn ($v) => in_array($v, $fieldValue, true)),
             Operators::NOT_EQUAL, Operators::NOT_CONTAINS => ! $this->inverse()->match($record, $collection, $timezone),
-            default => ConditionTreeEquivalent::getEquivalentTree(
+            default                 => ConditionTreeEquivalent::getEquivalentTree(
                 $this,
                 Operators::getUniqueOperators(),
                 $columnType,
