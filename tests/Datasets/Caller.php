@@ -8,7 +8,7 @@ dataset('caller', function () {
         email: 'sarah.connor@skynet.com',
         firstName: 'sarah',
         lastName: 'connor',
-        team: 'poisonous mushrooms',
+        team: 'survivor',
         renderingId: 1,
         tags: [],
         timezone: 'Europe/Paris',

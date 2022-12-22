@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
@@ -50,12 +49,7 @@ function dataSourceWithInverseRelationMissing(): Datasource
     $datasource->addCollection($collectionBook);
     $datasource->addCollection($collectionPerson);
 
-    $options = [
-        'projectDir' => sys_get_temp_dir(),
-        'cacheDir'   => sys_get_temp_dir() . '/forest-cache', // only use for cache
-    ];
-
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return $datasource;
 }
@@ -187,12 +181,7 @@ function datasourceWithAllRelations(array $args = []): Datasource
     $datasource->addCollection($collectionBookPerson);
     $datasource->addCollection($collectionPerson);
 
-    $options = [
-        'projectDir' => sys_get_temp_dir(),
-        'cacheDir'   => sys_get_temp_dir() . '/forest-cache', // only use for cache
-    ];
-
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return $datasource;
 }

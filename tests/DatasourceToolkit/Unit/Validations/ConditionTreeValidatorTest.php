@@ -46,12 +46,7 @@ function conditionTreeCollectionValidation(): Collection
     $datasource->addCollection($collectionCars);
     $datasource->addCollection($collectionOwners);
 
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache', // only use for cache
-    ];
-
-    (new AgentFactory($options,  []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return $collectionCars;
 }

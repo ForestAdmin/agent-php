@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\ProjectionFactory;
@@ -89,13 +88,7 @@ function datasourceWithOneToOneAndManyToOne(): Datasource
     $datasource->addCollection($collectionAuthors);
     $datasource->addCollection($collectionFormats);
 
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache', // only use for cache
-        'isProduction' => false,
-    ];
-
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return $datasource;
 }
@@ -126,12 +119,7 @@ function datasourceOtherRelations(): Datasource
     $datasource->addCollection($collectionBooks);
     $datasource->addCollection($collectionBookPersons);
 
-    $options = [
-        'projectDir' => sys_get_temp_dir(),
-        'cacheDir'   => sys_get_temp_dir() . '/forest-cache', // only use for cache
-    ];
-
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
+    buildAgent($datasource);
 
     return $datasource;
 }

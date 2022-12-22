@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Search\SearchCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
@@ -22,35 +21,13 @@ function factorySearchCollection()
     $datasource = new Datasource();
     $collectionPerson = new Collection($datasource, 'Person');
     $datasource->addCollection($collectionPerson);
+    buildAgent($datasource);
 
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-        'agentUrl'     => 'http://localhost/',
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
-
-    $caller = new Caller(
-        id: 1,
-        email: 'sarah.connor@skynet.com',
-        firstName: 'sarah',
-        lastName: 'connor',
-        team: 'survivor',
-        renderingId: 1,
-        tags: [],
-        timezone: 'Europe/Paris',
-        permissionLevel: 'admin',
-        role: 'dev'
-    );
-
-    return [$datasource, $collectionPerson, $caller];
+    return [$datasource, $collectionPerson];
 }
 
 test('replaceSearch() should work', function () {
-    [$datasource, $collection, $caller] = factorySearchCollection();
+    [$datasource, $collection] = factorySearchCollection();
     $searchCollection = new SearchCollection($collection, $datasource);
     $replace = fn ($search) => [
         'aggregator' => 'And',
@@ -64,31 +41,31 @@ test('replaceSearch() should work', function () {
 });
 
 test('isSearchable() should return true', function () {
-    [$datasource, $collection, $caller] = factorySearchCollection();
+    [$datasource, $collection] = factorySearchCollection();
     $searchCollection = new SearchCollection($collection, $datasource);
 
     expect($searchCollection->isSearchable())->toBeTrue();
 });
 
-test('refineFilter() when the search value is null should return the given filter to return all records', function () {
-    [$datasource, $collection, $caller] = factorySearchCollection();
+test('refineFilter() when the search value is null should return the given filter to return all records', function (Caller $caller) {
+    [$datasource, $collection] = factorySearchCollection();
     $searchCollection = new SearchCollection($collection, $datasource);
     $filter = new Filter(search: null);
 
     expect($searchCollection->refineFilter($caller, $filter))->toEqual($filter);
-});
+})->with('caller');
 
-test('refineFilter() when the collection schema is searchable should return the given filter without adding condition', function () {
-    [$datasource, $collection, $caller] = factorySearchCollection();
+test('refineFilter() when the collection schema is searchable should return the given filter without adding condition', function (Caller $caller) {
+    [$datasource, $collection] = factorySearchCollection();
     $collection->setSearchable(true);
     $searchCollection = new SearchCollection($collection, $datasource);
     $filter = new Filter(search: 'a text');
 
     expect($searchCollection->refineFilter($caller, $filter))->toEqual($filter);
-});
+})->with('caller');
 
-test('refineFilter() when a replacer is provided it should be used instead of the default one', function () {
-    [$datasource, $collection, $caller] = factorySearchCollection();
+test('refineFilter() when a replacer is provided it should be used instead of the default one', function (Caller $caller) {
+    [$datasource, $collection] = factorySearchCollection();
     $searchCollection = new SearchCollection($collection, $datasource);
     $filter = new Filter(search: 'something');
     $replace = fn ($value) => [
@@ -103,10 +80,10 @@ test('refineFilter() when a replacer is provided it should be used instead of th
             segment: null
         ),
     );
-});
+})->with('caller');
 
-test('refineFilter() when the search is defined and the collection schema is not searchable and when the search is empty returns the same filter and set search as null', function () {
-    [$datasource, $collection, $caller] = factorySearchCollection();
+test('refineFilter() when the search is defined and the collection schema is not searchable and when the search is empty returns the same filter and set search as null', function (Caller $caller) {
+    [$datasource, $collection] = factorySearchCollection();
     $collection->setSearchable(false);
     $searchCollection = new SearchCollection($collection, $datasource);
     $filter = new Filter(search: '     ', searchExtended: false);
@@ -118,10 +95,10 @@ test('refineFilter() when the search is defined and the collection schema is not
             segment: null
         ),
     );
-});
+})->with('caller');
 
-test('refineFilter() when the search is defined and the collection schema is not searchable and when the filter contains already conditions should add its conditions to the filter', function () {
-    [$datasource, $collection, $caller] = factorySearchCollection();
+test('refineFilter() when the search is defined and the collection schema is not searchable and when the filter contains already conditions should add its conditions to the filter', function (Caller $caller) {
+    [$datasource, $collection] = factorySearchCollection();
     $collection->setSearchable(false);
     $collection->setField('label', new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::ICONTAINS]));
     $searchCollection = new SearchCollection($collection, $datasource);
@@ -147,10 +124,10 @@ test('refineFilter() when the search is defined and the collection schema is not
             segment: null
         ),
     );
-});
+})->with('caller');
 
-test('refineFilter() when the search is defined and the collection schema is not searchable when the search is a string and the column type is a string should return filter with "contains" condition and "or" aggregator', function () {
-    [$datasource, $collection, $caller] = factorySearchCollection();
+test('refineFilter() when the search is defined and the collection schema is not searchable when the search is a string and the column type is a string should return filter with "contains" condition and "or" aggregator', function (Caller $caller) {
+    [$datasource, $collection] = factorySearchCollection();
     $collection->setSearchable(false);
     $collection->setField('label', new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::ICONTAINS, Operators::CONTAINS]));
     $searchCollection = new SearchCollection($collection, $datasource);
@@ -164,10 +141,10 @@ test('refineFilter() when the search is defined and the collection schema is not
             segment: null
         ),
     );
-});
+})->with('caller');
 
-test('refineFilter() when the search is defined and the collection schema is not searchable when searching on a string that only supports Equal should return filter with "equal" condition', function () {
-    [$datasource, $collection, $caller] = factorySearchCollection();
+test('refineFilter() when the search is defined and the collection schema is not searchable when searching on a string that only supports Equal should return filter with "equal" condition', function (Caller $caller) {
+    [$datasource, $collection] = factorySearchCollection();
     $collection->setSearchable(false);
     $collection->setField('label', new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::EQUAL]));
     $searchCollection = new SearchCollection($collection, $datasource);
@@ -181,10 +158,10 @@ test('refineFilter() when the search is defined and the collection schema is not
             segment: null
         ),
     );
-});
+})->with('caller');
 
-test('refineFilter() when the search is defined and the collection schema is not searchable search is a case insensitive string and both operators are supported should return filter with "contains" condition and "or" aggregator', function () {
-    [$datasource, $collection, $caller] = factorySearchCollection();
+test('refineFilter() when the search is defined and the collection schema is not searchable search is a case insensitive string and both operators are supported should return filter with "contains" condition and "or" aggregator', function (Caller $caller) {
+    [$datasource, $collection] = factorySearchCollection();
     $collection->setSearchable(false);
     $collection->setField('label', new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::ICONTAINS, Operators::CONTAINS]));
     $searchCollection = new SearchCollection($collection, $datasource);
@@ -198,10 +175,10 @@ test('refineFilter() when the search is defined and the collection schema is not
             segment: null
         ),
     );
-});
+})->with('caller');
 
-test('refineFilter() when the search is defined and the collection schema is not searchable when the search is an uuid and the column type is an uuid should return filter with "equal" condition and "or" aggregator', function () {
-    [$datasource, $collection, $caller] = factorySearchCollection();
+test('refineFilter() when the search is defined and the collection schema is not searchable when the search is an uuid and the column type is an uuid should return filter with "equal" condition and "or" aggregator', function (Caller $caller) {
+    [$datasource, $collection] = factorySearchCollection();
     $collection->setSearchable(false);
     $collection->setField('number', new ColumnSchema(columnType: PrimitiveType::UUID, filterOperators: [Operators::EQUAL]));
     $searchCollection = new SearchCollection($collection, $datasource);
@@ -215,10 +192,10 @@ test('refineFilter() when the search is defined and the collection schema is not
             segment: null
         ),
     );
-});
+})->with('caller');
 
-test('refineFilter() when the search is defined and the collection schema is not searchable when the search is a number and the column type is a number returns "equal" condition, "or" aggregator and cast value to Number', function () {
-    [$datasource, $collection, $caller] = factorySearchCollection();
+test('refineFilter() when the search is defined and the collection schema is not searchable when the search is a number and the column type is a number returns "equal" condition, "or" aggregator and cast value to Number', function (Caller $caller) {
+    [$datasource, $collection] = factorySearchCollection();
     $collection->setSearchable(false);
     $collection->setField('label', new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::ICONTAINS]));
     $collection->setField('number', new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL]));
@@ -239,10 +216,10 @@ test('refineFilter() when the search is defined and the collection schema is not
             segment: null
         ),
     );
-});
+})->with('caller');
 
-test('refineFilter() when the search is defined and the collection schema is not searchable when the search is an string and the column type is an enum should return filter with "equal" condition and "or" aggregator', function () {
-    [$datasource, $collection, $caller] = factorySearchCollection();
+test('refineFilter() when the search is defined and the collection schema is not searchable when the search is an string and the column type is an enum should return filter with "equal" condition and "or" aggregator', function (Caller $caller) {
+    [$datasource, $collection] = factorySearchCollection();
     $collection->setSearchable(false);
     $collection->setField('label', new ColumnSchema(columnType: PrimitiveType::ENUM, filterOperators: [Operators::EQUAL], enumValues: ['AnEnUmVaLue']));
     $searchCollection = new SearchCollection($collection, $datasource);
@@ -256,10 +233,10 @@ test('refineFilter() when the search is defined and the collection schema is not
             segment: null
         ),
     );
-});
+})->with('caller');
 
-test('refineFilter() when the search is defined and the collection schema is not searchable when there are several fields should return all the number fields when a number is researched', function () {
-    [$datasource, $collection, $caller] = factorySearchCollection();
+test('refineFilter() when the search is defined and the collection schema is not searchable when there are several fields should return all the number fields when a number is researched', function (Caller $caller) {
+    [$datasource, $collection] = factorySearchCollection();
     $collection->setSearchable(false);
     $collection->setField('field1', new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL]));
     $collection->setField('field2', new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL]));
@@ -281,9 +258,9 @@ test('refineFilter() when the search is defined and the collection schema is not
             segment: null
         ),
     );
-});
+})->with('caller');
 
-test('refineFilter() when the search is defined and the collection schema is not searchable when it is a deep search with relation fields should return all the uuid fields when uuid is researched', function () {
+test('refineFilter() when the search is defined and the collection schema is not searchable when it is a deep search with relation fields should return all the uuid fields when uuid is researched', function (Caller $caller) {
     $datasource = new Datasource();
     $collectionBooks = new Collection($datasource, 'Book');
     $collectionBooks->addFields(
@@ -346,28 +323,7 @@ test('refineFilter() when the search is defined and the collection schema is not
     $datasource->addCollection($collectionReviews);
     $datasource->addCollection($collectionBookReview);
 
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-        'agentUrl'     => 'http://localhost/',
-    ];
-    (new AgentFactory($options, []))->addDatasource($datasource)->build();
-
-    $caller = new Caller(
-        id: 1,
-        email: 'sarah.connor@skynet.com',
-        firstName: 'sarah',
-        lastName: 'connor',
-        team: 'survivor',
-        renderingId: 1,
-        tags: [],
-        timezone: 'Europe/Paris',
-        permissionLevel: 'admin',
-        role: 'dev'
-    );
+    buildAgent($datasource);
 
     $searchCollection = new SearchCollection($collectionBookReview, $datasource);
     $filter = new Filter(search: '2d162303-78bf-599e-b197-93590ac3d315', searchExtended: true);
@@ -387,4 +343,4 @@ test('refineFilter() when the search is defined and the collection schema is not
             segment: null
         ),
     );
-});
+})->with('caller');
