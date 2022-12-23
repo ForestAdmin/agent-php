@@ -1723,10 +1723,17 @@
   dependencies:
     "ms" "^2.0.0"
 
+<<<<<<< HEAD
 "husky@^8.0.1":
   "integrity" "sha512-xs7/chUH/CKdOCs7Zy0Aev9e/dKOMZf3K1Az1nar3tzlv0jfqnYtu235bstsWTmXOR0EfINrPa97yy4Lz6RiKw=="
   "resolved" "https://registry.npmjs.org/husky/-/husky-8.0.1.tgz"
   "version" "8.0.1"
+=======
+husky@^8.0.2:
+  version "8.0.2"
+  resolved "https://registry.yarnpkg.com/husky/-/husky-8.0.2.tgz#5816a60db02650f1f22c8b69b928fd6bcd77a236"
+  integrity sha512-Tkv80jtvbnkK3mYWxPZePGFpQ/tT3HNSs/sasF9P2YfkMezDl3ON37YN6jUUI4eTg5LcyVynlb6r4eyvOmspvg==
+>>>>>>> dc6df6a (chore: update pre-commit configuration)
 
 "iconv-lite@^0.6.2":
   "integrity" "sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw=="
