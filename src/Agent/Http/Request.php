@@ -59,21 +59,9 @@ class Request extends SymfonyRequest
      * @param  array|mixed|null  $keys
      * @return array
      */
-    public function all($keys = null)
+    public function all()
     {
-        $input = $this->input();
-
-        if (! $keys) {
-            return $input;
-        }
-
-        $results = [];
-
-        foreach (is_array($keys) ? $keys : func_get_args() as $key) {
-            Arr::set($results, $key, Arr::get($input, $key));
-        }
-
-        return $results;
+        return $this->input();
     }
 
     /**
@@ -105,22 +93,5 @@ class Request extends SymfonyRequest
         }
 
         return true;
-    }
-
-    /**
-     * Retrieve a parameter item from a given source.
-     *
-     * @param  string  $source
-     * @param  string  $key
-     * @param  string|array|null  $default
-     * @return string|array|null
-     */
-    protected function retrieveItem($source, $key, $default)
-    {
-        if (is_null($key)) {
-            return $this->$source->all();
-        }
-
-        return $this->$source->get($key, $default);
     }
 }
