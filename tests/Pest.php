@@ -14,6 +14,7 @@ define("AGENT_OPTIONS", [
     'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
     'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
     'authSecret'   => AUTH_SECRET,
+    'envSecret'    => SECRET,
     'isProduction' => false,
     'agentUrl'     => 'http://localhost/',
 ]);
@@ -76,14 +77,7 @@ function buildAgent(Datasource $datasource, array $options = [])
     $_GET['timezone'] = 'Europe/Paris';
 
     $options = array_merge(
-        [
-            'projectDir'   => sys_get_temp_dir(),
-            'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-            'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-            'authSecret'   => AUTH_SECRET,
-            'isProduction' => false,
-            'agentUrl'     => 'http://localhost/',
-        ],
+        AGENT_OPTIONS,
         $options
     );
 

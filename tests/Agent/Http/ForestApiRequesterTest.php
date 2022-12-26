@@ -2,11 +2,13 @@
 
 use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+
+use function ForestAdmin\config;
+
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
-use function ForestAdmin\config;
 
 function factoryForestApiRequester($url = 'https://api.development.forestadmin.com'): void
 {
@@ -29,6 +31,21 @@ function mockClientResponseException(): Client
 
     return new Client(['handler' => $handlerStack]);
 }
+
+test('getHeaders() should work', function () {
+    buildAgent(new Datasource());
+    factoryForestApiRequester();
+    $forestApi = new ForestApiRequester();
+    $forestApi->setClient(mockClientResponse());
+
+    expect($forestApi->getHeaders())
+        ->toEqual(
+            [
+                'Content-Type'      => 'application/json',
+                'forest-secret-key' => SECRET,
+            ]
+        );
+});
 
 test('get() should return a Response with a 200 status code', function () {
     factoryForestApiRequester();
