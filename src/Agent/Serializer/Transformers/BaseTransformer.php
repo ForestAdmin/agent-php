@@ -49,11 +49,11 @@ class BaseTransformer extends TransformerAbstract
             if (isset($data[$key])) {
                 $this->defaultIncludes[] = $key;
                 $this->addMethod(
-                    'include' . Str::ucfirst($key),
+                    'include' . Str::ucfirst(Str::camel($key)),
                     fn () => $this->item($data[$key], new BaseTransformer($value->getForeignCollection()), $value->getForeignCollection())
                 );
             } else {
-                $this->addMethod('include' . Str::ucfirst($key), fn () => $this->null());
+                $this->addMethod('include' . Str::ucfirst(Str::camel($key)), fn () => $this->null());
             }
             unset($data[$key]);
         }
