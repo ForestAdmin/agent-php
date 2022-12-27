@@ -2,6 +2,9 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils;
 
+/**
+ * @codeCoverageIgnore
+ */
 class Env
 {
     public static function get(string $key, $defaultValue = null)
