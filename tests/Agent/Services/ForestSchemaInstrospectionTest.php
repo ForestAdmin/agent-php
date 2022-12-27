@@ -5,7 +5,6 @@ use ForestAdmin\AgentPHP\Agent\Services\ForestSchemaInstrospection;
 use JsonPath\JsonObject;
 
 dataset('introspection', function () {
-    //function factoryForestSchemaInstrospection() {
     $options = [
         'projectDir'   => sys_get_temp_dir(),
         'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
