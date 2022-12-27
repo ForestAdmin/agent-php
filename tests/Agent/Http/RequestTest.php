@@ -3,11 +3,20 @@
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use Illuminate\Support\Str;
 
-test('header() should work', function () {
+test('header() should return the value of the key', function () {
     $_SERVER['CONTENT_TYPE'] = 'application/json';
     $request = Request::createFromGlobals();
 
     expect($request->header('content-type'))->toEqual('application/json');
+});
+test('header() should return all when no key is passed', function () {
+    $_SERVER['CONTENT_TYPE'] = 'application/json';
+    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
+    $request = Request::createFromGlobals();
+
+    expect($request->header())->toEqual(
+        ["content-type" => [ "application/json"], "authorization" => [BEARER]]
+    );
 });
 
 test('bearerToken() should work', function () {
@@ -47,4 +56,18 @@ test('input() should return the default value when the key does not exist', func
     $request = Request::createFromGlobals();
 
     expect($request->input('key11', 'defaultValue'))->toEqual('defaultValue');
+});
+
+test('has() should return false when the key does not exist', function () {
+    $_GET['key1'] = 'foo1';
+    $request = Request::createFromGlobals();
+
+    expect($request->has('key11'))->toBeFalse();
+});
+
+test('has() should return true when the key exist', function () {
+    $_GET['key1'] = 'foo1';
+    $request = Request::createFromGlobals();
+
+    expect($request->has('key1'))->toBeTrue();
 });
