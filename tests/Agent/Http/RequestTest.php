@@ -9,6 +9,15 @@ test('header() should return the value of the key', function () {
 
     expect($request->header('content-type'))->toEqual('application/json');
 });
+test('header() should return all when no key is passed', function () {
+    $_SERVER['CONTENT_TYPE'] = 'application/json';
+    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
+    $request = Request::createFromGlobals();
+
+    expect($request->header())->toEqual(
+        ["content-type" => [ "application/json"], "authorization" => [BEARER]]
+    );
+});
 
 test('header() should return all when no key is passed', function () {
     $_SERVER['CONTENT_TYPE'] = 'application/json';

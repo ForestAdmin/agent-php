@@ -94,4 +94,21 @@ class Request extends SymfonyRequest
 
         return true;
     }
+
+    /**
+     * Retrieve a parameter item from a given source.
+     *
+     * @param  string  $source
+     * @param  string  $key
+     * @param  string|array|null  $default
+     * @return string|array|null
+     */
+    protected function retrieveItem($source, $key, $default)
+    {
+        if (is_null($key)) {
+            return $this->$source->all();
+        }
+
+        return $this->$source->get($key, $default);
+    }
 }
