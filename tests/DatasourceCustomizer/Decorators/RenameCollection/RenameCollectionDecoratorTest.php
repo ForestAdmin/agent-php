@@ -1,15 +1,15 @@
 <?php
 
+use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BaseTransformer;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\RenameCollection\RenameCollectionDatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
-function factoryRenameCollectionDatasourceDecoratorCollection()
+function factoryRenameCollectionDecoratorCollection()
 {
     $datasource = new Datasource();
     $collectionBook = new Collection($datasource, 'Book');
@@ -41,43 +41,36 @@ function factoryRenameCollectionDatasourceDecoratorCollection()
     $datasource->addCollection($collectionPerson);
     buildAgent($datasource);
 
-    return $datasource;
-}
-
-test('replaceSearch() should return the real name when it is not renamed', function () {
-    $datasource = factoryRenameCollectionDatasourceDecoratorCollection();
     $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
     $decoratedDataSource->build();
+
+    return $decoratedDataSource;
+}
+
+test('getName() should return the default collection name when there is no rename action', function () {
+    $decoratedDataSource = factoryRenameCollectionDecoratorCollection();
 
     expect($decoratedDataSource->getCollection('Person')->getName())->toEqual('Person');
 });
 
-test('renameCollections() should rename a collection when the rename option is given', function () {
-    $datasource = factoryRenameCollectionDatasourceDecoratorCollection();
-    $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
-    $decoratedDataSource->build();
+test('getName() should return the new name when there is a rename action', function () {
+    $decoratedDataSource = factoryRenameCollectionDecoratorCollection();
     $decoratedDataSource->renameCollections(['Person' => 'User']);
 
-    $collectionsKeys = array_keys($decoratedDataSource->getCollections()->toArray());
-
-    expect(in_array('Person', $collectionsKeys, true))->toBeFalse()
-        ->and(in_array('User', $collectionsKeys, true))->toBeTrue();
+    expect($decoratedDataSource->getCollection('User')->getName())->toEqual('User');
 });
 
-test('renameCollections() should throw an error if the given new name is already used', function () {
-    $datasource = factoryRenameCollectionDatasourceDecoratorCollection();
-    $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
-    $decoratedDataSource->build();
+test('getFields() should return the fields of the collection', function () {
+    $decoratedDataSource = factoryRenameCollectionDecoratorCollection();
+    $decoratedDataSource->renameCollections(['Person' => 'User']);
 
-    expect(fn () => $decoratedDataSource->renameCollections(['Person' => 'Book']))
-        ->toThrow(ForestException::class, '🌳🌳🌳 The given new collection name Book is already defined in the dataSource');
+    expect($decoratedDataSource->getCollection('User')->getFields())->toHaveKeys(['id', 'book']);
 });
 
-test('renameCollections() should throw an error if the given old name does not exist', function () {
-    $datasource = factoryRenameCollectionDatasourceDecoratorCollection();
-    $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
-    $decoratedDataSource->build();
+test('makeTransformer() should return ', function () {
+    $decoratedDataSource = factoryRenameCollectionDecoratorCollection();
+    $decoratedDataSource->renameCollections(['Person' => 'User']);
 
-    expect(fn () => $decoratedDataSource->renameCollections(['Foo' => 'Bar']))
-        ->toThrow(ForestException::class, '🌳🌳🌳 The given collection name Foo does not exist');
+
+    expect($decoratedDataSource->getCollection('User')->makeTransformer())->toBeInstanceOf(BaseTransformer::class);
 });
