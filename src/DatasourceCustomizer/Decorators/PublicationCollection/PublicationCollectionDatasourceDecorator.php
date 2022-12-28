@@ -29,7 +29,7 @@ class PublicationCollectionDatasourceDecorator extends DatasourceDecorator
         foreach ($this->collections as $collection) {
             foreach ($collection->getFields() as $key => $field) {
                 if ((! $field instanceof ColumnSchema && in_array($field->getForeignCollection(),  $deleted, true))
-                    || ($field instanceof ManyToManySchema && in_array($field->getForeignCollection(), $deleted, true))
+                    || ($field instanceof ManyToManySchema && in_array($field->getThroughCollection(), $deleted, true))
                 ) {
                     $collection->changeFieldVisibility($key, false);
                 }
