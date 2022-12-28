@@ -6,7 +6,7 @@ use function ForestAdmin\config;
 
 use JsonPath\JsonObject;
 
-class ForestSchemaInstrospection
+class ForestSchemaIntrospection
 {
     private JsonObject $schema;
 
