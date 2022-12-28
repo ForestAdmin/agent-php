@@ -115,7 +115,7 @@ class Aggregation
 
         foreach ($records as $record) {
             $group = $this->createGroup($record, $timezone);
-            $uniqueKey = sha1(serialize($record));
+            $uniqueKey = sha1(serialize($group));
             $summary = $groupingMap[$uniqueKey] ?? $this->createSummary($group);
 
             $this->updateSummaryInPlace($summary, $record);
@@ -139,7 +139,7 @@ class Aggregation
             : collect($summaries)
                 ->map(fn ($summary) => [
                     'group' => $summary['group'],
-                    'value' => $this->operation === 'Count' && ! $this->field ? $summary['starCount'] : $summary['operation'],
+                    'value' => $this->operation === 'Count' && ! $this->field ? $summary['starCount'] : $summary[$this->operation],
                 ])
                 ->toArray();
     }

@@ -81,30 +81,7 @@ test('apply() should work with records, timezone and limit null', function () {
     expect($aggregation->apply($records, 'Europe/Paris'))->toEqual([
         [
             'group' => [],
-            'value' => 3,
-        ],
-        [
-            'group' => [],
-            'value' => 3,
-        ],
-    ]);
-});
-
-test('apply() should work with records, timezone and limit not null', function () {
-    $aggregation = new Aggregation('Count');
-    $records = [
-        ['id' => 1],
-        ['id' => 1],
-        ['id' => 1],
-        ['id' => 1],
-        ['id' => 2],
-        ['id' => 2],
-    ];
-
-    expect($aggregation->apply($records, 'Europe/Paris', 1))->toEqual([
-        [
-            'group' => [],
-            'value' => 4,
+            'value' => 6,
         ],
     ]);
 });
@@ -114,14 +91,10 @@ test('apply() should work with records, timezone and limit null on Avg operation
     $records = [
         ['id' => 1],
         ['id' => 2],
-        ['id' => 2],
+        ['id' => 3],
     ];
 
     expect($aggregation->apply($records, 'Europe/Paris'))->toEqual([
-        [
-            'group' => [],
-            'value' => 1,
-        ],
         [
             'group' => [],
             'value' => 2,
@@ -133,18 +106,12 @@ test('apply() should work with group field on year', function () {
     $aggregation = new Aggregation('Avg', 'field', [['field' => 'groupField', 'operation' => 'Year']]);
     $records = [
         ['field' => 5, 'groupField' => '2022-05-01'],
-        ['field' => 5, 'groupField' => '2022-05-01'],
-        ['field' => 10, 'groupField' => '2022-01-02'],
-        ['field' => 1, 'groupField' => '2023-07-11'],
+        ['field' => 10, 'groupField' => '2022-05-01'],
+        ['field' => 15, 'groupField' => '2022-01-02'],
+        ['field' => 10, 'groupField' => '2023-07-11'],
     ];
 
     expect($aggregation->apply($records, 'Europe/Paris'))->toEqual([
-        [
-            'group' => [
-                'groupField' => '2022-01-01',
-            ],
-            'value' => 5,
-        ],
         [
             'group' => [
                 'groupField' => '2022-01-01',
@@ -155,7 +122,7 @@ test('apply() should work with group field on year', function () {
             'group' => [
                 'groupField' => '2023-01-01',
             ],
-            'value' => 1,
+            'value' => 10,
         ],
     ]);
 });
@@ -218,6 +185,31 @@ test('apply() should work with group field on day', function () {
                 'groupField' => '2023-07-11',
             ],
             'value' => 1,
+        ],
+    ]);
+});
+
+test('apply() should work with group field on day with limit', function () {
+    $aggregation = new Aggregation('Avg', 'field', [['field' => 'groupField', 'operation' => 'Day']]);
+    $records = [
+        ['field' => 5, 'groupField' => '2022-05-01'],
+        ['field' => 5, 'groupField' => '2022-05-01'],
+        ['field' => 10, 'groupField' => '2022-01-02'],
+        ['field' => 1, 'groupField' => '2023-07-11'],
+    ];
+
+    expect($aggregation->apply($records, 'Europe/Paris', 2))->toEqual([
+        [
+            'group' => [
+                'groupField' => '2022-05-01',
+            ],
+            'value' => 5,
+        ],
+        [
+            'group' => [
+                'groupField' => '2022-01-02',
+            ],
+            'value' => 10,
         ],
     ]);
 });
