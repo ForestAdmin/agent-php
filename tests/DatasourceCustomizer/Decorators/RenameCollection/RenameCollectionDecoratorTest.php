@@ -71,6 +71,5 @@ test('makeTransformer() should return ', function () {
     $decoratedDataSource = factoryRenameCollectionDecoratorCollection();
     $decoratedDataSource->renameCollections(['Person' => 'User']);
 
-
     expect($decoratedDataSource->getCollection('User')->makeTransformer())->toBeInstanceOf(BaseTransformer::class);
 });
