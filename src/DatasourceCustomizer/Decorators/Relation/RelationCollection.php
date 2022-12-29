@@ -238,12 +238,12 @@ class RelationCollection extends CollectionDecorator
             ),
             'OneToOne'   => new OneToOneSchema(
                 originKey: $partialJoin['originKey'],
-                originKeyTarget: Arr::get($partialJoin, 'foreignKeyTarget', Schema::getPrimaryKeys($this)[0]),
+                originKeyTarget: Arr::get($partialJoin, 'originKeyTarget', Schema::getPrimaryKeys($this)[0]),
                 foreignCollection: $partialJoin['foreignCollection'],
             ),
             'OneToMany'  => new OneToManySchema(
                 originKey: $partialJoin['originKey'],
-                originKeyTarget: Arr::get($partialJoin, 'foreignKeyTarget', Schema::getPrimaryKeys($this)[0]),
+                originKeyTarget: Arr::get($partialJoin, 'originKeyTarget', Schema::getPrimaryKeys($this)[0]),
                 foreignCollection: $partialJoin['foreignCollection'],
             ),
             'ManyToMany' => new ManyToManySchema(
@@ -271,18 +271,18 @@ class RelationCollection extends CollectionDecorator
         if ($key->getColumnType() !== $target->getColumnType()) {
             throw new ForestException(
                 'Types from ' . $owner->getName() . '.' . $keyName . ' and ' .
-                $target->getName() . '.' . $targetName . 'do not match.'
+                $targetOwner->getName() . '.' . $targetName . ' do not match.'
             );
         }
     }
 
     private static function checkColumn(CollectionContract $owner, string $name): void
     {
-        if (! ($column = $owner->getFields()[$name]) || ! $column instanceof ColumnSchema) {
+        if (! isset($owner->getFields()[$name]) || ! $owner->getFields()[$name] instanceof ColumnSchema) {
             throw new ForestException('Column not found: ' . $owner->getName() . '.' . $name);
         }
 
-        if (! in_array(Operators::IN, $column->getFilterOperators(), true)) {
+        if (! in_array(Operators::IN, $owner->getFields()[$name]->getFilterOperators(), true)) {
             throw new ForestException('Column does not support the In operator: ' . $owner->getName() . '.' . $name);
         }
     }
@@ -302,7 +302,11 @@ class RelationCollection extends CollectionDecorator
         $schema = $this->getFields()[$name];
         $association = $this->dataSource->getCollection($schema->getForeignCollection());
         if (! isset($this->relations[$name])) {
-            return $records;
+            return $association->reprojectInPlace(
+                $caller,
+                collect($records)->map(fn ($record) => collect($record)->filter()->toArray())->toArray(),
+                $projection
+            );
         } elseif ($schema instanceof ManyToOneSchema) {
             $ids = collect($records)->map(fn ($record) => $record[$schema->getForeignKey()])->filter();
             $subFilter = new PaginatedFilter(
