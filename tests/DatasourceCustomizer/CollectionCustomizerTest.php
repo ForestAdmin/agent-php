@@ -352,3 +352,30 @@ test('replaceFieldSorting() should replace sort on field', function () {
         ->and($sort['title'])
         ->toEqual(new Sort([['field' => 'title', 'ascending' => true]]));
 });
+
+test('replaceSearch() should call the search decorator', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+
+    $stack = $datasourceCustomizer->getStack();
+    $search = $stack->search;
+    $search = mock($search)
+        ->shouldReceive('getCollection')
+        ->once()
+        ->andReturn($datasourceCustomizer->getStack()->search->getCollection('Book'))
+        ->getMock();
+
+    invokeProperty($stack, 'search', $search);
+    invokeProperty($datasourceCustomizer, 'stack', $stack);
+    invokeProperty($customizer, 'stack', $stack);
+
+    $condition = fn ($search) => [
+        ['field' => 'title', 'operator' => Operators::EQUAL, 'value' => $search],
+    ];
+    $customizer->replaceSearch($condition);
+    \Mockery::close();
+
+    /** @var ComputedCollection $computedCollection */
+    $computedCollection = $datasourceCustomizer->getStack()->search->getCollection('Book');
+
+    expect(invokeProperty($computedCollection, 'replacer'))->toEqual($condition);
+});
