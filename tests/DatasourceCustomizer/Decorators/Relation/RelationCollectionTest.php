@@ -7,10 +7,12 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Relation\RelationCollec
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
@@ -116,7 +118,7 @@ function factoryRelationCollection()
             }
         )
         ->shouldReceive('aggregate')
-        ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class))
+        ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null, null)
         ->andReturnUsing(
             function (Caller $caller, Filter $filter, Aggregation $aggregation) use ($personsRecords) {
                 return $aggregation->apply($personsRecords, 'Europe/Paris');
@@ -610,6 +612,273 @@ test('emulated projection should fetch fields from a many to many relation', fun
             ['id' => 201, 'name' => 'Sharon J. Whalen', 'persons' => null],
             ['id' => 202, 'name' => 'Mae S. Waldron', 'persons' => null],
             ['id' => 203, 'name' => 'Joseph P. Rodriguez', 'persons' => null],
+        ]
+    );
+});
+
+test('emulated projection should fetch fields from a native behind an emulated one', function () {
+    /** @var DatasourceDecorator $datasourceDecorator */
+    ['datasourceDecorator' => $datasourceDecorator] = factoryRelationCollection();
+    /** @var RelationCollection $relationCollection */
+    $personCollection = $datasourceDecorator->getCollection('Person');
+    $passportCollection = $datasourceDecorator->getCollection('Passport');
+
+    $personCollection->addRelation('passport', [
+        'type'              => 'OneToOne',
+        'foreignCollection' => 'Passport',
+        'originKey'         => 'ownerId',
+    ]);
+    $passportCollection->addRelation('owner', [
+        'type'              => 'ManyToOne',
+        'foreignCollection' => 'Person',
+        'foreignKey'        => 'ownerId',
+    ]);
+    $records = $personCollection->list(
+        QueryStringParser::parseCaller(Request::createFromGlobals()),
+        new PaginatedFilter(),
+        new Projection(['id', 'name', 'passport:picture:filename'])
+    );
+
+    expect($records)->toEqual(
+        [
+            ['id' => 201, 'name' => 'Sharon J. Whalen', 'passport' => ['picture' => ['filename' => 'pic2.jpg']]],
+            ['id' => 202, 'name' => 'Mae S. Waldron', 'passport' => ['picture' => ['filename' => 'pic1.jpg']]],
+            ['id' => 203, 'name' => 'Joseph P. Rodriguez', 'passport' => null],
+        ]
+    );
+});
+
+test('emulated projection should not break with deep reprojection', function () {
+    /** @var DatasourceDecorator $datasourceDecorator */
+    ['datasourceDecorator' => $datasourceDecorator] = factoryRelationCollection();
+    /** @var RelationCollection $relationCollection */
+    $personCollection = $datasourceDecorator->getCollection('Person');
+    $passportCollection = $datasourceDecorator->getCollection('Passport');
+
+    $personCollection->addRelation('passport', [
+        'type'              => 'OneToOne',
+        'foreignCollection' => 'Passport',
+        'originKey'         => 'ownerId',
+    ]);
+    $passportCollection->addRelation('owner', [
+        'type'              => 'ManyToOne',
+        'foreignCollection' => 'Person',
+        'foreignKey'        => 'ownerId',
+    ]);
+    $records = $personCollection->list(
+        QueryStringParser::parseCaller(Request::createFromGlobals()),
+        new PaginatedFilter(),
+        new Projection(['id', 'name', 'passport:owner:passport:issueDate'])
+    );
+
+    expect($records)->toEqual(
+        [
+            ['id' => 201, 'name' => 'Sharon J. Whalen', 'passport' => ['owner' => ['passport' => ['issueDate' => '2017-01-01']]]],
+            ['id' => 202, 'name' => 'Mae S. Waldron', 'passport' => ['owner' => ['passport' => ['issueDate' => '2010-01-01']]]],
+            ['id' => 203, 'name' => 'Joseph P. Rodriguez', 'passport' => null],
+        ]
+    );
+});
+
+test('with two emulated relations emulated filtering should filter by a many to one relation', function () {
+    /** @var DatasourceDecorator $datasourceDecorator */
+    ['datasourceDecorator' => $datasourceDecorator] = factoryRelationCollection();
+    /** @var RelationCollection $relationCollection */
+    $personCollection = $datasourceDecorator->getCollection('Person');
+    $passportCollection = $datasourceDecorator->getCollection('Passport');
+
+    $personCollection->addRelation('passport', [
+        'type'              => 'OneToOne',
+        'foreignCollection' => 'Passport',
+        'originKey'         => 'ownerId',
+    ]);
+    $passportCollection->addRelation('owner', [
+        'type'              => 'ManyToOne',
+        'foreignCollection' => 'Person',
+        'foreignKey'        => 'ownerId',
+    ]);
+
+    $records = $passportCollection->list(
+        QueryStringParser::parseCaller(Request::createFromGlobals()),
+        new PaginatedFilter(conditionTree: new ConditionTreeLeaf('owner:name', 'Equal', 'Mae S. Waldron')),
+        new Projection(['id', 'issueDate'])
+    );
+
+    expect($records)->toEqual([['id' => 101, 'issueDate' => '2010-01-01']]);
+});
+
+test('with two emulated relations emulated projection should filter by a one to one relation', function () {
+    /** @var DatasourceDecorator $datasourceDecorator */
+    ['datasourceDecorator' => $datasourceDecorator] = factoryRelationCollection();
+    /** @var RelationCollection $relationCollection */
+    $personCollection = $datasourceDecorator->getCollection('Person');
+    $passportCollection = $datasourceDecorator->getCollection('Passport');
+
+    $personCollection->addRelation('passport', [
+        'type'              => 'OneToOne',
+        'foreignCollection' => 'Passport',
+        'originKey'         => 'ownerId',
+    ]);
+    $passportCollection->addRelation('owner', [
+        'type'              => 'ManyToOne',
+        'foreignCollection' => 'Person',
+        'foreignKey'        => 'ownerId',
+    ]);
+    $records = $personCollection->list(
+        QueryStringParser::parseCaller(Request::createFromGlobals()),
+        new PaginatedFilter(conditionTree: new ConditionTreeLeaf('passport:issueDate', 'Equal', '2017-01-01')),
+        new Projection(['id', 'name'])
+    );
+
+    expect($records)->toEqual([['id' => 201, 'name' => 'Sharon J. Whalen']]);
+});
+
+test('with two emulated relations emulated projection should filter by native relation behind an emulated one', function () {
+    /** @var DatasourceDecorator $datasourceDecorator */
+    ['datasourceDecorator' => $datasourceDecorator] = factoryRelationCollection();
+    /** @var RelationCollection $relationCollection */
+    $personCollection = $datasourceDecorator->getCollection('Person');
+    $passportCollection = $datasourceDecorator->getCollection('Passport');
+
+    $personCollection->addRelation('passport', [
+        'type'              => 'OneToOne',
+        'foreignCollection' => 'Passport',
+        'originKey'         => 'ownerId',
+    ]);
+    $passportCollection->addRelation('owner', [
+        'type'              => 'ManyToOne',
+        'foreignCollection' => 'Person',
+        'foreignKey'        => 'ownerId',
+    ]);
+
+    $records = $personCollection->list(
+        QueryStringParser::parseCaller(Request::createFromGlobals()),
+        new PaginatedFilter(conditionTree: new ConditionTreeLeaf('passport:picture:filename', 'Equal', 'pic1.jpg')),
+        new Projection(['id', 'name'])
+    );
+
+    expect($records)->toEqual([['id' => 202, 'name' => 'Mae S. Waldron']]);
+});
+
+test('with two emulated relations emulated projection should not break with deep filters', function () {
+    /** @var DatasourceDecorator $datasourceDecorator */
+    ['datasourceDecorator' => $datasourceDecorator] = factoryRelationCollection();
+    /** @var RelationCollection $relationCollection */
+    $personCollection = $datasourceDecorator->getCollection('Person');
+    $passportCollection = $datasourceDecorator->getCollection('Passport');
+
+    $personCollection->addRelation('passport', [
+        'type'              => 'OneToOne',
+        'foreignCollection' => 'Passport',
+        'originKey'         => 'ownerId',
+    ]);
+    $passportCollection->addRelation('owner', [
+        'type'              => 'ManyToOne',
+        'foreignCollection' => 'Person',
+        'foreignKey'        => 'ownerId',
+    ]);
+    $records = $personCollection->list(
+        QueryStringParser::parseCaller(Request::createFromGlobals()),
+        new PaginatedFilter(conditionTree: new ConditionTreeLeaf('passport:owner:passport:issueDate', 'Equal', '2017-01-01')),
+        new Projection(['id', 'name'])
+    );
+
+    expect($records)->toEqual([['id' => 201, 'name' => 'Sharon J. Whalen']]);
+});
+
+test('with two emulated relations emulated sorting should replace sorts in emulated many to one into sort by fk', function () {
+    /** @var DatasourceDecorator $datasourceDecorator */
+    ['datasourceDecorator' => $datasourceDecorator] = factoryRelationCollection();
+    /** @var RelationCollection $relationCollection */
+    $personCollection = $datasourceDecorator->getCollection('Person');
+    $passportCollection = $datasourceDecorator->getCollection('Passport');
+
+    $personCollection->addRelation('passport', [
+        'type'              => 'OneToOne',
+        'foreignCollection' => 'Passport',
+        'originKey'         => 'ownerId',
+    ]);
+    $passportCollection->addRelation('owner', [
+        'type'              => 'ManyToOne',
+        'foreignCollection' => 'Person',
+        'foreignKey'        => 'ownerId',
+    ]);
+    $ascending = $passportCollection->list(
+        QueryStringParser::parseCaller(Request::createFromGlobals()),
+        new PaginatedFilter(sort: new Sort([['field' => 'owner:name', 'ascending' => true]])),
+        new Projection(['id', 'ownerId', 'owner:name'])
+    );
+
+    $descending = $passportCollection->list(
+        QueryStringParser::parseCaller(Request::createFromGlobals()),
+        new PaginatedFilter(sort: new Sort([['field' => 'owner:name', 'ascending' => false]])),
+        new Projection(['id', 'ownerId', 'owner:name'])
+    );
+
+    expect($ascending)->toEqual(
+        [
+            ['id' => 103, 'ownerId' => null, 'owner' => null],
+            ['id' => 102, 'ownerId' => 201, 'owner' => ['name' => 'Sharon J. Whalen']],
+            ['id' => 101, 'ownerId' => 202, 'owner' => ['name' => 'Mae S. Waldron']],
+        ]
+    )
+        ->and($descending)->toEqual(
+            [
+                ['id' => 101, 'ownerId' => 202, 'owner' => ['name' => 'Mae S. Waldron']],
+                ['id' => 102, 'ownerId' => 201, 'owner' => ['name' => 'Sharon J. Whalen']],
+                ['id' => 103, 'ownerId' => null, 'owner' => null],
+            ]
+        );
+});
+
+test('with two emulated relations emulated aggregation should not emulate aggregation which don\'t need it', function () {
+    /** @var DatasourceDecorator $datasourceDecorator */
+    ['datasourceDecorator' => $datasourceDecorator] = factoryRelationCollection();
+    /** @var RelationCollection $relationCollection */
+    $personCollection = $datasourceDecorator->getCollection('Person');
+
+    $personCollection->addRelation('passport', [
+        'type'              => 'OneToOne',
+        'foreignCollection' => 'Passport',
+        'originKey'         => 'ownerId',
+    ]);
+    $groups = $personCollection->aggregate(
+        QueryStringParser::parseCaller(Request::createFromGlobals()),
+        new Filter(),
+        new Aggregation(operation: 'Count', groups: [['field' => 'name']])
+    );
+
+    expect($groups)->toEqual(
+        [
+            ['value' => 1, 'group' => ['name' => 'Sharon J. Whalen']],
+            ['value' => 1, 'group' => ['name' => 'Mae S. Waldron']],
+            ['value' => 1, 'group' => ['name' => 'Joseph P. Rodriguez']],
+        ]
+    );
+});
+
+test('with two emulated relations emulated aggregation should give valid results otherwise', function () {
+    /** @var DatasourceDecorator $datasourceDecorator */
+    ['datasourceDecorator' => $datasourceDecorator] = factoryRelationCollection();
+    /** @var RelationCollection $relationCollection */
+    $personCollection = $datasourceDecorator->getCollection('Person');
+
+    $personCollection->addRelation('passport', [
+        'type'              => 'OneToOne',
+        'foreignCollection' => 'Passport',
+        'originKey'         => 'ownerId',
+    ]);
+    $groups = $personCollection->aggregate(
+        QueryStringParser::parseCaller(Request::createFromGlobals()),
+        new Filter(),
+        new Aggregation(operation: 'Count', groups: [['field' => 'passport:picture:filename']])
+    );
+
+    expect($groups)->toEqual(
+        [
+            ['value' => 1, 'group' => ['passport:picture:filename' => 'pic2.jpg']],
+            ['value' => 1, 'group' => ['passport:picture:filename' => 'pic1.jpg']],
+            ['value' => 1, 'group' => ['passport:picture:filename' => null]],
         ]
     );
 });

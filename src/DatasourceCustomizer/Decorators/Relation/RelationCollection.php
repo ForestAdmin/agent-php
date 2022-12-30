@@ -85,7 +85,7 @@ class RelationCollection extends CollectionDecorator
 
     public function refineFilter(Caller $caller, PaginatedFilter|Filter|null $filter): PaginatedFilter|Filter|null
     {
-        if ($filter instanceof Filter) {
+        if (! method_exists($filter, 'getSort')) {
             return $filter->override(
                 conditionTree: $filter->getConditionTree()?->replaceLeafs(
                     fn ($leaf) => $this->rewriteLeaf($caller, $leaf),
@@ -107,7 +107,7 @@ class RelationCollection extends CollectionDecorator
             // middleware
             sort: $filter->getSort()?->replaceClauses(
                 fn ($clause) => $this->rewriteField($clause['field'])->map(
-                    fn ($field) => [...$clause, $field]
+                    fn ($field) => [...$clause, ...['field' => $field]]
                 )
             )
         );

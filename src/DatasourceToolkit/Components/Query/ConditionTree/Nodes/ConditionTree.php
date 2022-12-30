@@ -27,7 +27,7 @@ abstract class ConditionTree
 
     public function apply(array $records, CollectionContract $collection, string $timezone): array
     {
-        return collect($records)->filter(fn ($record) => $this->match($record, $collection, $timezone))->toArray();
+        return collect($records)->filter(fn ($record) => $this->match($record, $collection, $timezone))->values()->toArray();
     }
 
     public function nest(string $prefix): self
