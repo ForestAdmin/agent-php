@@ -229,6 +229,8 @@ class RelationCollection extends CollectionDecorator
     private function relationWithOptionalFields(array $partialJoin): RelationSchema
     {
         $target = $this->dataSource->getCollection($partialJoin['foreignCollection']);
+        // remove null values
+        $partialJoin = array_filter($partialJoin);
 
         return match ($partialJoin['type']) {
             'ManyToOne'  => new ManyToOneSchema(
