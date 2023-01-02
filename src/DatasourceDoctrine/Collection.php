@@ -27,6 +27,8 @@ use Illuminate\Support\Arr;
 
 class Collection extends BaseCollection
 {
+    protected string $className;
+
     /**
      * @throws \ReflectionException
      * @throws \Exception
@@ -38,6 +40,11 @@ class Collection extends BaseCollection
         $this->className = $entityMetadata->getName();
         $this->addFields($this->entityMetadata->fieldMappings);
         $this->mapRelationshipsToFields();
+    }
+
+    public function getClassName(): string
+    {
+        return $this->className;
     }
 
     /**

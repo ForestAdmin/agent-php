@@ -116,11 +116,6 @@ class CollectionDecorator implements CollectionContract
         return $this->dataSource;
     }
 
-    public function getClassName(): string
-    {
-        return $this->childCollection->getClassName();
-    }
-
     public function show(Caller $caller, Filter $filter, $id, Projection $projection)
     {
         return $this->childCollection->show($caller, $filter, $id, $projection);
