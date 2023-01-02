@@ -386,7 +386,7 @@ test('ManyToMany - addRelation() should throw with a non existent though collect
             'persons',
             [
                 'type'              => 'ManyToMany',
-                'throughTable'      => '',
+                'throughTable'      => 'to_remove',
                 'foreignCollection' => 'Passport',
                 'foreignKey'        => 'ownerId',
                 'originKey'         => 'ownerId',
@@ -407,7 +407,7 @@ test('ManyToMany - addRelation() should throw with a non existent originKey', fu
             'persons',
             [
                 'type'              => 'ManyToMany',
-                'throughTable'      => '',
+                'throughTable'      => 'to_remove',
                 'foreignCollection' => 'Passport',
                 'foreignKey'        => 'ownerId',
                 'originKey'         => '__nonExisting__',
@@ -428,7 +428,7 @@ test('ManyToMany - addRelation() should throw with a non existent fk', function 
             'persons',
             [
                 'type'              => 'ManyToMany',
-                'throughTable'      => '',
+                'throughTable'      => 'to_remove',
                 'foreignCollection' => 'Passport',
                 'foreignKey'        => '__nonExisting__',
                 'originKey'         => 'ownerId',
@@ -449,7 +449,7 @@ test('ManyToMany - addRelation() should throw when there is a given originKeyTar
             'persons',
             [
                 'type'              => 'ManyToMany',
-                'throughTable'      => '',
+                'throughTable'      => 'to_remove',
                 'foreignCollection' => 'Passport',
                 'foreignKey'        => 'ownerId',
                 'foreignKeyTarget'  => 'id',
@@ -472,7 +472,7 @@ test('ManyToMany - addRelation() should register the relation when there are a g
             'persons',
             [
                 'type'              => 'ManyToMany',
-                'throughTable'      => '',
+                'throughTable'      => 'to_remove',
                 'foreignCollection' => 'Passport',
                 'foreignKey'        => 'ownerId',
                 'foreignKeyTarget'  => 'id',
@@ -495,7 +495,7 @@ test('ManyToMany - addRelation() should register the relation when there are not
             'persons',
             [
                 'type'              => 'ManyToMany',
-                'throughTable'      => '',
+                'throughTable'      => 'to_remove',
                 'foreignCollection' => 'Passport',
                 'foreignKey'        => 'ownerId',
                 'originKey'         => 'ownerId',
@@ -596,7 +596,7 @@ test('emulated projection should fetch fields from a many to many relation', fun
         'foreignKey'        => 'ownerId',
         'originKey'         => 'ownerId',
         'throughCollection' => 'Passport',
-        'throughTable'      => '',
+        'throughTable'      => 'to_remove',
         'originKeyTarget'   => 'otherId',
         'foreignKeyTarget'  => 'id',
     ]);
