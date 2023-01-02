@@ -1,11 +1,12 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\DatasourceDoctrine;
+namespace ForestAdmin\AgentPHP\BaseDatasource;
 
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryCharts;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
+use ForestAdmin\AgentPHP\BaseDatasource\Contracts\BaseDatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection as ForestCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
@@ -23,8 +24,9 @@ class BaseCollection extends ForestCollection
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function __construct(protected DoctrineDatasource $datasource, string $name)
+    public function __construct(protected BaseDatasourceContract $datasource, string $name, string $tableName)
     {
+        $this->tableName = $tableName;
         parent::__construct($datasource, $name);
     }
 

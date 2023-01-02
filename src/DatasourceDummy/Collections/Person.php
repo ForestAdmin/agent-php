@@ -8,7 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
-class Person extends BaseCollection
+class Person extends DummyCollection
 {
     public function __construct(DatasourceContract $dataSource)
     {

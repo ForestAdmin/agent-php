@@ -10,6 +10,8 @@ use Doctrine\ORM\Mapping\OneToOne;
 use Doctrine\Persistence\Mapping\MappingException;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
+use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
+use ForestAdmin\AgentPHP\BaseDatasource\Contracts\BaseDatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\DataTypes;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
@@ -29,12 +31,11 @@ class Collection extends BaseCollection
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function __construct(protected DoctrineDatasource $datasource, protected ClassMetadata $entityMetadata)
+    public function __construct(protected BaseDatasourceContract $datasource, protected ClassMetadata $entityMetadata)
     {
-        parent::__construct($datasource, $entityMetadata->reflClass->getShortName());
+        parent::__construct($datasource, $entityMetadata->reflClass->getShortName(), $entityMetadata->getTableName());
 
         $this->className = $entityMetadata->getName();
-        $this->tableName = $this->entityMetadata->getTableName();
         $this->addFields($this->entityMetadata->fieldMappings);
         $this->mapRelationshipsToFields();
     }

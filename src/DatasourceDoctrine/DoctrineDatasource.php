@@ -3,25 +3,19 @@
 namespace ForestAdmin\AgentPHP\DatasourceDoctrine;
 
 use Doctrine\ORM\EntityManagerInterface;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource as ForestDatasource;
-use Illuminate\Database\Capsule\Manager;
+use ForestAdmin\AgentPHP\BaseDatasource\BaseDatasource;
 
 /**
  * @codeCoverageIgnore
  */
-class DoctrineDatasource extends ForestDatasource
+class DoctrineDatasource extends BaseDatasource
 {
-    protected Manager $orm;
-
     /**
      * @throws \ReflectionException
      */
     public function __construct(private EntityManagerInterface $entityManager, array $databaseConfig)
     {
-        parent::__construct();
-        $this->orm = new Manager();
-        $this->orm->addConnection($databaseConfig);
-        $this->orm->bootEloquent();
+        parent::__construct($databaseConfig);
 
         $this->generate();
     }
@@ -44,13 +38,5 @@ class DoctrineDatasource extends ForestDatasource
     public function getEntityManager(): EntityManagerInterface
     {
         return $this->entityManager;
-    }
-
-    /**
-     * @return Manager
-     */
-    public function getOrm(): Manager
-    {
-        return $this->orm;
     }
 }

@@ -7,6 +7,8 @@ use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Types\Types;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
+use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
+use ForestAdmin\AgentPHP\BaseDatasource\Contracts\BaseDatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
@@ -28,11 +30,10 @@ class ThroughCollection extends BaseCollection
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function __construct(protected DoctrineDatasource $datasource, protected array $metadata)
+    public function __construct(protected BaseDatasourceContract $datasource, protected array $metadata)
     {
-        parent::__construct($datasource, $this->metadata['name']);
+        parent::__construct($datasource, $this->metadata['name'], $this->metadata['name']);
 
-        $this->tableName = $this->metadata['name'];
         $this->addFields($this->metadata['columns']);
         $this->addRelations();
         $this->searchable = false;
