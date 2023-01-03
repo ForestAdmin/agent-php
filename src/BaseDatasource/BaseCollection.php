@@ -20,10 +20,6 @@ class BaseCollection extends ForestCollection
 {
     protected string $tableName;
 
-    /**
-     * @throws \ReflectionException
-     * @throws \Exception
-     */
     public function __construct(protected BaseDatasourceContract $datasource, string $name, string $tableName)
     {
         $this->tableName = $tableName;

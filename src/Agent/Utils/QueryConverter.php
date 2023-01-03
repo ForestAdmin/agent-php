@@ -91,7 +91,7 @@ class QueryConverter
     private function addJoinRelation(RelationSchema $relation, string $relationTableName): void
     {
         if ($relation instanceof ManyToManySchema) {
-            $throughTable = $relation->getThroughTable();
+            $throughTable = $this->collection->getDataSource()->getCollection($relation->getThroughCollection())->getTableName();
             $joinTable = "$relationTableName as $relationTableName";
             $joinThroughTable = "$throughTable as $throughTable";
             if (! $this->isJoin($joinTable) && ! $this->isJoin($joinThroughTable)) {
