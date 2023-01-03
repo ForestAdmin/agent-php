@@ -2,7 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators;
 
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
@@ -26,12 +25,8 @@ class DatasourceDecorator extends Datasource
 
     public function build()
     {
-        try {
-            foreach ($this->childDataSource->getCollections() as $collection) {
-                $this->addCollection(new $this->classCollectionDecorator($collection, $this));
-            }
-        } catch (\Exception $e) {
-            throw new ForestException("Unable to add collections to the datasource");
+        foreach ($this->childDataSource->getCollections() as $collection) {
+            $this->addCollection(new $this->classCollectionDecorator($collection, $this));
         }
     }
 }
