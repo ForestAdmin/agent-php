@@ -15,7 +15,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 function factorySegmentCollection()
 {
     $datasource = new Datasource();
-    $collectionProduct = new Collection($datasource, 'Person');
+    $collectionProduct = new Collection($datasource, 'Product');
     $collectionProduct->addFields(
         [
             'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
@@ -128,5 +128,5 @@ test('refineFilter() when there is a filter when the segment is managed by this 
         segment: 'segmentName'
     );
 
-    expect(fn () => $segmentCollection->refineFilter($caller, $filter))->toThrow(ForestException::class, '🌳🌳🌳 Column not found Person.do not exists');
+    expect(fn () => $segmentCollection->refineFilter($caller, $filter))->toThrow(ForestException::class, '🌳🌳🌳 Column not found Product.do not exists');
 })->with('caller');
