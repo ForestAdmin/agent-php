@@ -4,7 +4,10 @@
 use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseDatasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
@@ -185,4 +188,38 @@ test('QueryConverter should add the join with OneToMany / OneToOne relation', fu
                 "boolean"  => "and",
             ]
         );
+});
+
+test('QueryConverter should apply sort', function () {
+    global $bookCollection;
+    $filter = new PaginatedFilter(sort: new Sort([['field' => 'title', 'ascending' => false]]));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter);
+
+    expect($query->orders)->toHaveCount(1)
+        ->and($query->orders[0])->toEqual(
+            [
+                'column'    => 'books.title',
+                'direction' => 'desc',
+            ]
+        );
+});
+
+test('QueryConverter should apply sort on relation', function () {
+    global $bookCollection;
+    $filter = new PaginatedFilter(sort: new Sort([['field' => 'author:name', 'ascending' => false]]));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'author:name']));
+
+    expect($query->orders)->toHaveCount(1)
+        ->and($query->orders[0]['column'])->toBeInstanceOf(Illuminate\Database\Query\Expression::class)
+        ->and($query->orders[0]['column']->getValue())->toEqual('"author.name"')
+        ->and($query->orders[0]['direction'])->toEqual('desc');
+});
+
+test('QueryConverter should apply pagination', function () {
+    global $bookCollection;
+    $filter = new PaginatedFilter(page: new Page(20, 10));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'author:name']));
+
+    expect($query->limit)->toEqual(10)
+        ->and($query->offset)->toEqual(20);
 });
