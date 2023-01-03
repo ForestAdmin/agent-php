@@ -107,7 +107,7 @@ class RelationCollection extends CollectionDecorator
             // middleware
             sort: $filter->getSort()?->replaceClauses(
                 fn ($clause) => $this->rewriteField($clause['field'])->map(
-                    fn ($field) => [...$clause, ...['field' => $field]]
+                    fn ($field) => array_merge($clause, ['field' => $field])
                 )
             )
         );
