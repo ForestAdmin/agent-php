@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Facades;
 
-use ForestAdmin\AgentPHP\Agent\Services\ForestSchemaInstrospection;
+use ForestAdmin\AgentPHP\Agent\Services\ForestSchemaIntrospection;
 use JsonPath\JsonObject;
 
 /**
@@ -17,12 +17,12 @@ use JsonPath\JsonObject;
  * @method static null|string getTypeByField(string $collection, string $field)
  * @method static array getRelatedData(string $collection)
  *
- * @see ForestSchemaInstrospection
+ * @see ForestSchemaIntrospection
  */
 class ForestSchema extends Facade
 {
     public static function getFacadeObject()
     {
-        return new ForestSchemaInstrospection();
+        return new ForestSchemaIntrospection();
     }
 }

@@ -13,7 +13,7 @@ class ManyToManySchema extends ManyRelationSchema
         protected string $foreignCollection,
         protected string $throughCollection,
     ) {
-        parent::__construct($foreignKey, $foreignKeyTarget, $foreignCollection, 'ManyToMany', $throughCollection);
+        parent::__construct($foreignKey, $foreignKeyTarget, $foreignCollection, 'ManyToMany');
     }
 
     public function getThroughTable(): string

@@ -14,6 +14,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projectio
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use GuzzleHttp\Psr7\Response;
 use Prophecy\Argument;
 use Prophecy\Prophet;
@@ -25,11 +26,24 @@ function factoryListing($args = []): Listing
     $collectionUser = new Collection($datasource, 'User');
     $collectionUser->addFields(
         [
+            'id'             => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'first_name'     => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'last_name'      => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'birthday'       => new ColumnSchema(columnType: PrimitiveType::DATE),
+            'active'         => new ColumnSchema(columnType: PrimitiveType::BOOLEAN),
+            'driver_licence' => new OneToOneSchema(
+                originKey: 'driver_licence_id',
+                originKeyTarget: 'id',
+                foreignCollection: 'DriverLicence',
+            ),
+        ]
+    );
+
+    $collectionDriverLicence = new Collection($datasource, 'DriverLicence');
+    $collectionDriverLicence->addFields(
+        [
             'id'         => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'first_name' => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'last_name'  => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'birthday'   => new ColumnSchema(columnType: PrimitiveType::DATE),
-            'active'     => new ColumnSchema(columnType: PrimitiveType::BOOLEAN),
+            'reference ' => new ColumnSchema(columnType: PrimitiveType::NUMBER),
         ]
     );
 
@@ -42,6 +56,7 @@ function factoryListing($args = []): Listing
     }
 
     $datasource->addCollection($collectionUser);
+    $datasource->addCollection($collectionDriverLicence);
     buildAgent($datasource);
 
     SchemaEmitter::getSerializedSchema($datasource);
@@ -95,18 +110,26 @@ test('make() should return a new instance of Listing with routes', function () {
 test('handleRequest() should return a response 200', function () {
     $data = [
         [
-            'id'         => 1,
-            'first_name' => 'John',
-            'last_name'  => 'Doe',
-            'birthday'   => '1980-01-01',
-            'active'     => true,
+            'id'             => 1,
+            'first_name'     => 'John',
+            'last_name'      => 'Doe',
+            'birthday'       => '1980-01-01',
+            'active'         => true,
+            'driver_licence' => [
+                'id'        => 1,
+                'reference' => 'AAA456789',
+            ],
         ],
         [
-            'id'         => 2,
-            'first_name' => 'Jane',
-            'last_name'  => 'Doe',
-            'birthday'   => '1984-01-01',
-            'active'     => true,
+            'id'             => 2,
+            'first_name'     => 'Jane',
+            'last_name'      => 'Doe',
+            'birthday'       => '1984-01-01',
+            'active'         => true,
+            'driver_licence' => [
+                'id'        => 2,
+                'reference' => 'BBB456789',
+            ],
         ],
     ];
 
@@ -118,25 +141,57 @@ test('handleRequest() should return a response 200', function () {
             [
                 'name'    => 'User',
                 'content' => [
-                    'data' => [
+                    'data'     => [
                         [
-                            'type'       => 'User',
-                            'id'         => '1',
-                            'attributes' => [
+                            'type'          => 'User',
+                            'id'            => '1',
+                            'attributes'    => [
                                 'first_name' => 'John',
                                 'last_name'  => 'Doe',
                                 'birthday'   => '1980-01-01',
                                 'active'     => true,
                             ],
+                            'relationships' => [
+                                'driver_licence' => [
+                                    'data' => [
+                                        'type' => 'DriverLicence',
+                                        'id'   => 1,
+                                    ],
+                                ],
+                            ],
                         ],
                         [
-                            'type'       => 'User',
-                            'id'         => '2',
-                            'attributes' => [
+                            'type'          => 'User',
+                            'id'            => '2',
+                            'attributes'    => [
                                 'first_name' => 'Jane',
                                 'last_name'  => 'Doe',
                                 'birthday'   => '1984-01-01',
                                 'active'     => true,
+                            ],
+                            'relationships' => [
+                                'driver_licence' => [
+                                    'data' => [
+                                        'type' => 'DriverLicence',
+                                        'id'   => 2,
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'included' => [
+                        [
+                            'type'       => 'DriverLicence',
+                            'id'         => 1,
+                            'attributes' => [
+                                'reference' => 'AAA456789',
+                            ],
+                        ],
+                        [
+                            'type'       => 'DriverLicence',
+                            'id'         => 2,
+                            'attributes' => [
+                                'reference' => 'BBB456789',
                             ],
                         ],
                     ],

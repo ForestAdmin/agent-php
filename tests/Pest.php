@@ -9,6 +9,16 @@ const BEARER = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZW1haWwi
 const AUTH_SECRET = '34b6d9b573e160b957244c1082619bc5a9e36ee8abae5fe7d15991d08ac9f31d';
 const SECRET = '34b6d9b573e160b957244c1082619bc5a9e36ee8abae5fe7d15991d08ac9f31d';
 
+define("AGENT_OPTIONS", [
+    'projectDir'   => sys_get_temp_dir(),
+    'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
+    'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
+    'authSecret'   => AUTH_SECRET,
+    'envSecret'    => SECRET,
+    'isProduction' => false,
+    'agentUrl'     => 'http://localhost/',
+]);
+
 uses()
     ->beforeEach(
         function () {
@@ -67,14 +77,7 @@ function buildAgent(Datasource $datasource, array $options = [])
     $_GET['timezone'] = 'Europe/Paris';
 
     $options = array_merge(
-        [
-            'projectDir'   => sys_get_temp_dir(),
-            'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-            'schemaPath'   => sys_get_temp_dir() . '/.forestadmin-schema.json',
-            'authSecret'   => AUTH_SECRET,
-            'isProduction' => false,
-            'agentUrl'     => 'http://localhost/',
-        ],
+        AGENT_OPTIONS,
         $options
     );
 

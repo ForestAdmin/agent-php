@@ -88,26 +88,6 @@ class ComputedCollection extends CollectionDecorator
         );
     }
 
-    protected function refineSchema($childSchema /*: CollectionSchema*/) /* CollectionSchema*/
-    {
-        $schema = array_merge(); //{ ...childSchema, fields: { ...childSchema.fields } };
-
-        foreach (array_values($this->computeds) as $name => $computed) {
-            $schema['fields'][$name] = [
-                'columnType'      => $computed['columnType'],
-                'defaultValue'    => $computed['defaultValue'],
-                'enumValues'      => $computed['enumValues'],
-                'filterOperators' => '', /*new Set()*/
-                'isPrimaryKey'    => false,
-                'isReadOnly'      => true,
-                'isSortable'      => false,
-                'type'            => 'Column',
-            ];
-        }
-
-        return $schema;
-    }
-
     protected function rewriteField(ComputedCollection $collection, string $path): Projection
     {
         if (Str::contains($path, ':')) {
@@ -125,7 +105,7 @@ class ComputedCollection extends CollectionDecorator
         $computed = $collection->getComputed($path);
 
         return $computed
-            ? (new Projection(...$computed->getDependencies()))->replaceItem(fn ($depPath) => $this->rewriteField($collection, $depPath))
+            ? (new Projection($computed->getDependencies()))->replaceItem(fn ($depPath) => $this->rewriteField($collection, $depPath))
             : new Projection($path);
     }
 }

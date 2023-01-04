@@ -124,10 +124,10 @@ class Projection extends IlluminateCollection
             $result = [];
 
             foreach ($this->columns() as $column) {
-                $result[$column] = $record[$column];
+                $result[$column] = $record[$column] ?? null;
             }
             foreach ($this->relations() as $relation => $projection) {
-                $result[$relation] = $projection->reproject($record[$relation]);
+                $result[$relation] = $projection->reproject($record[$relation] ?? null);
             }
         }
 

@@ -9,6 +9,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Condit
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record as RecordUtils;
 use Illuminate\Support\Str;
 use JetBrains\PhpStorm\ArrayShape;
@@ -91,7 +92,7 @@ class ConditionTreeLeaf extends ConditionTree
     public function match(array $record, CollectionContract $collection, string $timezone): bool
     {
         $fieldValue = RecordUtils::getFieldValue($record, $this->field);
-        $columnType = $collection->getFields()->get($this->field)->getColumnType();
+        $columnType = CollectionUtils::getFieldSchema($collection, $this->field)->getColumnType();
 
         return match ($this->operator) {
             Operators::EQUAL        => $fieldValue === $this->value,

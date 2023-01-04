@@ -85,6 +85,6 @@ class Sort extends IlluminateCollection
 
                 return 0;
             }
-        )->toArray();
+        )->values()->toArray();
     }
 }

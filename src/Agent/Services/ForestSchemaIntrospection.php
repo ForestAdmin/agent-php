@@ -6,7 +6,7 @@ use function ForestAdmin\config;
 
 use JsonPath\JsonObject;
 
-class ForestSchemaInstrospection
+class ForestSchemaIntrospection
 {
     private JsonObject $schema;
 
@@ -29,22 +29,11 @@ class ForestSchemaInstrospection
 
     /**
      * @param string $collection
-     * @return string
-     */
-    public function getClass(string $collection): string
-    {
-        $data = $this->getSchema()->get("$..collections[?(@.name == '$collection')].class");
-
-        return $data ? $data[0] : '';
-    }
-
-    /**
-     * @param string $collection
      * @return array
      */
     public function getFields(string $collection): array
     {
-        $data = $this->getSchema()->get("$..collections[?(@.name == '$collection')].class");
+        $data = $this->getSchema()->get("$..collections[?(@.name == '$collection')].fields");
 
         return $data ? $data[0] : [];
     }
@@ -122,7 +111,6 @@ class ForestSchemaInstrospection
      */
     public function getRelatedData(string $collection): array
     {
-        //$data = $this->getSchema()->get("$[?(@.name == '$collection')].fields[?(@.relationship == 'HasMany' or @.relationship == 'BelongsToMany')].field");
         $data = $this->getSchema()->get("$..collections[?(@.name == '$collection')].fields[?(@.relationship == 'HasMany' or @.relationship == 'BelongsToMany')].field");
         $smartRelationships = $this->getSmartRelationships($collection);
         foreach ($smartRelationships as $relationship) {

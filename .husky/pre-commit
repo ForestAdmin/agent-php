@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-FILES=$(git diff --name-only --cached | grep -E '\.(php)$'  | tr '\n' ' ')
+FILES=$(git diff --name-only --cached --diff-filter=d | grep -E '\.(php)$'  | tr '\n' ' ')
 if [ -z "$FILES" ]
 then
     echo "php files not found."

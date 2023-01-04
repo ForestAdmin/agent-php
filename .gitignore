@@ -2,8 +2,6 @@
 /.vscode
 .DS_Store
 
-.forestadmin-schema.json
-
 # npm
 node_modules
 

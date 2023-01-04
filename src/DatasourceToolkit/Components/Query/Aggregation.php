@@ -115,7 +115,7 @@ class Aggregation
 
         foreach ($records as $record) {
             $group = $this->createGroup($record, $timezone);
-            $uniqueKey = sha1(serialize($record));
+            $uniqueKey = sha1(serialize($group));
             $summary = $groupingMap[$uniqueKey] ?? $this->createSummary($group);
 
             $this->updateSummaryInPlace($summary, $record);
@@ -139,7 +139,7 @@ class Aggregation
             : collect($summaries)
                 ->map(fn ($summary) => [
                     'group' => $summary['group'],
-                    'value' => $this->operation === 'Count' && ! $this->field ? $summary['starCount'] : $summary['operation'],
+                    'value' => $this->operation === 'Count' && ! $this->field ? $summary['starCount'] : $summary[$this->operation],
                 ])
                 ->toArray();
     }
@@ -155,7 +155,7 @@ class Aggregation
         return $group;
     }
 
-    private function applyDateOperation(?string $value, ?string $operation, string $timezone): string
+    private function applyDateOperation(?string $value, ?string $operation, string $timezone): ?string
     {
         return match ($operation) {
             'Year'  => (new \DateTime($value, new \DateTimeZone($timezone)))->format('Y-01-01'),

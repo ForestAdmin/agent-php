@@ -98,7 +98,7 @@ function GeneratorFieldWithManyToManyRelation(): Datasource
                 foreignKey: 'personId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
-                throughCollection: 'BooKPerson',
+                throughCollection: 'BookPerson',
             ),
         ]
     );

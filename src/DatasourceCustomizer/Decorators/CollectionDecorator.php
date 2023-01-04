@@ -2,7 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators;
 
-use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\GeneratorCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\CollectionMethods;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
@@ -13,17 +12,15 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFil
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results\ActionResult;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class CollectionDecorator implements CollectionContract
 {
     use CollectionMethods;
 
-    private ?array $lastSchema; //: CollectionSchema;
+    private ?array $lastSchema;
 
-    private array $lastSubSchema;  //: CollectionSchema;
+    private array $lastSubSchema;
 
     public function __construct(protected CollectionContract|CollectionDecorator $childCollection, protected Datasource $dataSource)
     {
@@ -40,23 +37,6 @@ class CollectionDecorator implements CollectionContract
     public function getFields(): IlluminateCollection
     {
         return $this->childCollection->getFields();
-    }
-
-    public function putField(string $name, ColumnSchema|RelationSchema $field): IlluminateCollection
-    {
-        return $this->childCollection->putField($name, $field);
-    }
-
-    public function getSchema(): IlluminateCollection
-    {
-        $subSchema = GeneratorCollection::buildSchema($this->childCollection);
-
-        if (! $this->lastSchema || $this->lastSubSchema !== $subSchema) {
-            $this->lastSchema = $this->refineSchema($subSchema);
-            $this->lastSubSchema = $subSchema;
-        }
-
-        return $this->lastSchema;
     }
 
     public function execute(Caller $caller, string $name, array $data, ?Filter $filter = null): ActionResult
@@ -114,11 +94,6 @@ class CollectionDecorator implements CollectionContract
     protected function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
     {
         return $filter;
-    }
-
-    protected function refineSchema($subSchema /*: CollectionSchema*/) /* CollectionSchema*/
-    {
-        return $subSchema;
     }
 
     public function getName(): string

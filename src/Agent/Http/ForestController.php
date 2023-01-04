@@ -14,16 +14,19 @@ class ForestController
      * @param Request $request
      * @return JsonResponse|Response
      */
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse|Response
     {
-        $route = $request->attributes->get('_route');
-        $params = $request->attributes->get('_route_params');
-
+        $route = $request->get('_route');
+        $params = $request->get('_route_params');
         $routes = Router::getRoutes();
-        $data = call_user_func($routes[$route]['closure'], $params);
 
+        return $this->response(call_user_func($routes[$route]['closure'], $params));
+    }
+
+    protected function response(array $data): Response|JsonResponse
+    {
         if (isset($data['headers']['Content-type']) && $data['headers']['Content-type'] === 'text/csv') {
-            return new Response($data['content'], $data['status'] ?? 200, $data['headers'] ?? []);
+            return new Response($data['content'], $data['status'] ?? 200, $data['headers']);
         }
 
         return new JsonResponse($data['content'], $data['status'] ?? 200, $data['headers'] ?? []);
