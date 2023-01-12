@@ -4,6 +4,7 @@
 use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseDatasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
@@ -17,6 +18,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
 
 $datasource = null;
 $bookCollection = null;
@@ -225,6 +227,57 @@ test('QueryConverter should apply pagination', function () {
 
     expect($query->limit)->toEqual(10)
         ->and($query->offset)->toEqual(20);
+});
+
+test('QueryConverter apply conditionTree should add join with nested field', function () {
+    global $bookCollection;
+    $filter = new Filter(new ConditionTreeLeaf('author:name', Operators::PRESENT));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+
+    expect($query->joins)
+        ->toHaveCount(1)
+        ->and($query->joins[0])
+        ->toBeInstanceOf(JoinClause::class)
+        ->and($query->joins[0]->table)
+        ->toEqual('users as users')
+        ->and($query->joins[0]->type)
+        ->toEqual('left')
+        ->and($query->joins[0]->wheres)
+        ->toHaveCount(1)
+        ->and($query->joins[0]->wheres[0])
+        ->toEqual([
+            'type'     => 'Column',
+            'first'    => 'books.author_id',
+            'operator' => '=',
+            'second'   => 'users.id',
+            'boolean'  => 'and',
+        ]);
+});
+
+test('QueryConverter apply conditionTree should not add joins twice', function () {
+    global $bookCollection;
+    $filter = new Filter(new ConditionTreeLeaf('author:name', Operators::PRESENT));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'author:name']));
+
+    expect($query->joins)->toHaveCount(1);
+});
+
+test('QueryConverter apply conditionTree should with conditionTreeBranch', function () {
+    global $bookCollection;
+    $filter = new Filter(
+        new ConditionTreeBranch(
+            'Or',
+            [
+                new ConditionTreeLeaf('title', Operators::PRESENT),
+                new ConditionTreeLeaf('author:name', Operators::PRESENT),
+            ]
+        )
+    );
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'author:name']));
+
+    expect($query->wheres)->toHaveCount(1)
+        ->and($query->wheres[0]['type'])->toEqual('Nested')
+        ->and($query->wheres[0]['query']->wheres)->toHaveCount(2);
 });
 
 test('QueryConverter should apply conditionTree with operator BLANK', function () {
