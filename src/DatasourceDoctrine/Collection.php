@@ -36,7 +36,6 @@ class Collection extends BaseCollection
     public function __construct(protected BaseDatasourceContract $datasource, protected ClassMetadata $entityMetadata)
     {
         parent::__construct($datasource, $entityMetadata->reflClass->getShortName(), $entityMetadata->getTableName());
-
         $this->className = $entityMetadata->getName();
         $this->addFields($this->entityMetadata->fieldMappings);
         $this->mapRelationshipsToFields();
@@ -56,12 +55,17 @@ class Collection extends BaseCollection
         $relationships = $this->entityMetadata->associationMappings;
         foreach ($relationships as $key => $value) {
             $type = $this->getRelationType($this->entityMetadata->reflFields[$key]->getAttributes());
+
+//            if ($key === 'owner') {
+//                dd($this->entityMetadata, $value);
+//            }
+
             if ($type) {
                 match ($type) {
-                    'ManyToMany' => $this->addManyToMany($key, $value['joinTable'], $value['targetEntity'], $value['mappedBy'] ?? $value['inversedBy'], $value['mappedBy']),
-                    'ManyToOne'  => $this->addManyToOne($key, $value['joinColumns'][0], $value['targetEntity'], $value['inversedBy']),
+                    'ManyToMany' => $this->addManyToMany($key, $value['joinTable'], $value['targetEntity'], $value['mappedBy']),
+                    'ManyToOne'  => $this->addManyToOne($key, $value['joinColumns'][0], $value['targetEntity']),
                     'OneToMany'  => $this->addOneToMany($key, $value['targetEntity'], $value['mappedBy']),
-                    'OneToOne'   => $this->addOneToOne($key, $value['joinColumns'], $value['targetEntity'], $value['mappedBy'] ?? $value['inversedBy'], $value['mappedBy']),
+                    'OneToOne'   => $this->addOneToOne($key, $value['joinColumns'], $value['targetEntity'], $value['mappedBy']),
                     default      => null
                 };
             }
@@ -132,7 +136,7 @@ class Collection extends BaseCollection
      * @throws MappingException
      * @throws \ReflectionException
      */
-    protected function addManyToOne(string $name, array $joinColumn, string $related, string $inverseName): void
+    protected function addManyToOne(string $name, array $joinColumn, string $related): void
     {
         $relatedMeta = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor($related);
         $relationField = new ManyToOneSchema(
@@ -167,10 +171,12 @@ class Collection extends BaseCollection
      * @throws MappingException
      * @throws \ReflectionException
      */
-    protected function addOneToOne(string $name, array $joinColumn, string $related, string $inverseName, ?string $mappedField = null): void
+    protected function addOneToOne(string $name, array $joinColumn, string $related, ?string $mappedField = null): void
     {
         $relatedMeta = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor($related);
         if ($mappedField) {
+            dd($this->entityMetadata, $name, $joinColumn, $related, $mappedField);
+
             // hasOne
             if (! array_key_exists($mappedField, $relatedMeta->associationMappings)) {
                 throw new \Exception("The relation field `$mappedField` does not exist in the entity `$related`.");
@@ -203,7 +209,7 @@ class Collection extends BaseCollection
      * @throws MappingException
      * @throws \ReflectionException
      */
-    protected function addManyToMany(string $name, array $joinTable, string $related, string $inverseName, ?string $mappedField = null): void
+    protected function addManyToMany(string $name, array $joinTable, string $related, ?string $mappedField = null): void
     {
         $relatedMeta = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor($related);
         if ($mappedField) {
@@ -212,13 +218,11 @@ class Collection extends BaseCollection
                 throw new \Exception("The relation field `$mappedField` does not exist in the entity `$related`.");
             }
             $joinTable = $relatedMeta->associationMappings[$mappedField]['joinTable'];
-
             $schemaTable = $this->datasource
                 ->getEntityManager()
                 ->getConnection()
                 ->createSchemaManager()
-                ->listTableDetails($relatedMeta->associationMappings[$mappedField]['joinTable']['name']);
-
+                ->introspectTable($relatedMeta->associationMappings[$mappedField]['joinTable']['name']);
             $customAttributes = [
                 'foreignKey'          => $joinTable['joinColumns'][0]['name'],
                 'foreignKeyTarget'    => $relatedMeta->fieldNames[$joinTable['joinColumns'][0]['referencedColumnName']],
@@ -230,7 +234,7 @@ class Collection extends BaseCollection
                 ->getEntityManager()
                 ->getConnection()
                 ->createSchemaManager()
-                ->listTableDetails($joinTable['name']);
+                ->introspectTable($joinTable['name']);
 
             $customAttributes = [
                 'foreignKey'          => $joinTable['inverseJoinColumns'][0]['name'],
