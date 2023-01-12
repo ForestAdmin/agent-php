@@ -12,7 +12,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
@@ -327,15 +326,13 @@ class QueryConverter
 
                 break;
             case Operators::ISTARTS_WITH:
-                $query->whereRaw("LOWER($field) LIKE ?", [$value . '%'], $aggregator);
+                $query->whereRaw("LOWER($field) LIKE LOWER(?)", [$value . '%'], $aggregator);
 
                 break;
             case Operators::IENDS_WITH:
-                $query->whereRaw("LOWER ($field) LIKE LOWER(?)", ['%' . $value], $aggregator);
+                $query->whereRaw("LOWER($field) LIKE LOWER(?)", ['%' . $value], $aggregator);
 
                 break;
-            default:
-                throw new ForestException('Unknown operator');
         }
     }
 
