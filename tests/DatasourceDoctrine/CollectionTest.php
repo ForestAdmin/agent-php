@@ -10,13 +10,16 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Id\SequenceGenerator;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
+use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\Collection;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\DoctrineDatasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use Illuminate\Database\Query\Builder;
 use Prophecy\Argument;
 use Prophecy\Prophet;
 
 beforeEach(closure: function () {
-    global $classMetadata, $doctrineDatasource, $fakeClass;
+    global $classMetadata, $doctrineDatasource, $fakeClass, $entityUser;
 
     $entityUser = new class () {
         public function getShortName()
@@ -253,7 +256,7 @@ beforeEach(closure: function () {
             'mappedBy'     => 'categories',
             'inversedBy'   => null,
         ],
-        //many-to-many inverse8
+        //many-to-many inverse
         'comments'      => [
             'fieldName'    => 'comments',
             'joinTable'    => [
@@ -331,10 +334,6 @@ beforeEach(closure: function () {
 
 test('getIdentifier() should return the primary key name', function () {
     global $classMetadata, $doctrineDatasource, $fakeClass;
-    // dd($doctrineDatasource->getEntityManager()->getMetadataFactory());
-    // dd($classMetadata->reflFields['relationCollection1']->getAttributes()[0]->getName());
-    //dd($classMetadata->idGenerator->generateId());
-
     $collection = new Collection($doctrineDatasource, $classMetadata);
 
     expect($collection->getIdentifier())->toEqual($fakeClass->getName());
@@ -347,3 +346,67 @@ test('getClassName() should return the primary key name', function () {
 
     expect($collection->getClassName())->toEqual('User');
 });
+
+test('addFields() should push the entity fields to the collection', function () {
+    global $classMetadata, $doctrineDatasource, $fakeClass;
+    $collection = new Collection($doctrineDatasource, $classMetadata);
+
+    $fields = [
+        'id'    => [
+            'fieldName'  => 'id',
+            'type'       => 'integer',
+            'scale'      => null,
+            'length'     => null,
+            'unique'     => false,
+            'nullable'   => false,
+            'precision'  => null,
+            'id'         => true,
+            'columnName' => 'id',
+        ],
+        'label' => [
+            'fieldName'  => 'label',
+            'type'       => 'string',
+            'scale'      => null,
+            'length'     => 50,
+            'unique'     => false,
+            'nullable'   => false,
+            'precision'  => null,
+            'columnName' => 'label',
+        ],
+    ];
+    $collection->addFields($fields);
+
+    expect($collection->getFields()->toArray())->toHaveKeys(['id', 'label']);
+});
+
+test('create() should ', function (Caller $caller) {
+    global $classMetadata, $doctrineDatasource, $entityUser;
+    $collection = new Collection($doctrineDatasource, $classMetadata);
+
+
+    $prophet = new Prophet();
+    $builder = $prophet->prophesize(Builder::class);
+    $builder->insertGetId(Argument::type('array'))->willReturn(1);
+    $queryConverter = $prophet->prophesize(QueryConverter::class);
+    // $queryConverter->query = $builder->reveal();
+
+    $data = [
+        'attributes' => [
+            'id'    => 1,
+            'label' => 'Foo',
+        ],
+        //        'relationships' => [
+        //            'category' => [
+        //                'data' => [
+        //                    'type' => 'Categories',
+        //                    'id'   => '20',
+        //                ],
+        //            ],
+        //        ],
+        'type'       => 'class@anonymous\x00/Users/matthieuvideaud/Sites/agents/in-app/agent-php/tests/DatasourceDoctrine/CollectionTest.php:22$1dc',
+    ];
+    //(new \ReflectionClass($entityUser))->getName()
+    $collection->create($caller, $data);
+
+    //expect($collection->getFields()->toArray())->toHaveKeys(['id', 'label']);
+})->with('caller');
