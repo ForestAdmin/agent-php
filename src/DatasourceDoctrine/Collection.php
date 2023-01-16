@@ -55,11 +55,6 @@ class Collection extends BaseCollection
         $relationships = $this->entityMetadata->associationMappings;
         foreach ($relationships as $key => $value) {
             $type = $this->getRelationType($this->entityMetadata->reflFields[$key]->getAttributes());
-
-//            if ($key === 'owner') {
-//                dd($this->entityMetadata, $value);
-//            }
-
             if ($type) {
                 match ($type) {
                     'ManyToMany' => $this->addManyToMany($key, $value['joinTable'], $value['targetEntity'], $value['mappedBy']),
@@ -98,6 +93,12 @@ class Collection extends BaseCollection
         return $this->entityMetadata->getSingleIdReflectionProperty()->getName();
     }
 
+    /**
+     * @param Caller $caller
+     * @param array  $data
+     * @return array|void
+     * @codeCoverageIgnore
+     */
     public function create(Caller $caller, array $data)
     {
         $data = $this->formatAttributes($data);
@@ -175,8 +176,6 @@ class Collection extends BaseCollection
     {
         $relatedMeta = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor($related);
         if ($mappedField) {
-            dd($this->entityMetadata, $name, $joinColumn, $related, $mappedField);
-
             // hasOne
             if (! array_key_exists($mappedField, $relatedMeta->associationMappings)) {
                 throw new \Exception("The relation field `$mappedField` does not exist in the entity `$related`.");

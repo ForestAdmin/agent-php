@@ -2,24 +2,21 @@
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
-use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
+use Doctrine\DBAL\Schema\Index;
 use Doctrine\DBAL\Schema\Table;
-use Doctrine\DBAL\Types\IntegerType;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Id\SequenceGenerator;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\ClassMetadataFactory;
-use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\Collection;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\DoctrineDatasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Capsule\Manager;
 use Prophecy\Argument;
 use Prophecy\Prophet;
 
 beforeEach(closure: function () {
-    global $classMetadata, $doctrineDatasource, $fakeClass, $entityUser;
+    global $classMetadata, $doctrineDatasource, $fakeClass, $entityUser, $entityDriverLicence, $entityBook;
 
     $entityUser = new class () {
         public function getShortName()
@@ -184,14 +181,11 @@ beforeEach(closure: function () {
 
     $schemaTable = $prophet->prophesize(Table::class);
     $schemaTable->getName()->willReturn('categories_users');
-    $schemaTable->getColumns()->willReturn([
-        //'category_id' => new Column('category_id', new IntegerType()),
-        //'user_id'     => new Column('category_id', new IntegerType()),
-    ]);
+    $schemaTable->getColumns()->willReturn([]);
     $schemaTable->getForeignKeys()->willReturn([
         'fk_123' => new ForeignKeyConstraint(['user_id'], 'users', ['id']),
     ]);
-    $schemaTable->getPrimaryKey()->willReturn(new Doctrine\DBAL\Schema\Index('id', []));
+    $schemaTable->getPrimaryKey()->willReturn(new Index('id', []));
 
     $abstractSchemaManager = $prophet->prophesize(AbstractSchemaManager::class);
     $abstractSchemaManager->introspectTable(Argument::type('string'))->willReturn($schemaTable->reveal());
@@ -199,28 +193,18 @@ beforeEach(closure: function () {
     $connexion = $prophet->prophesize(Connection::class);
     $connexion->createSchemaManager()->willReturn($abstractSchemaManager->reveal());
 
+    $capsuleManager = $prophet->prophesize(Manager::class);
+    $capsuleManager->table(Argument::any(), Argument::any(), Argument::any())->willReturn('table-name');
+
     $entityManager = $prophet->prophesize(EntityManager::class);
-    $entityManager->getMetadataFactory()
-        ->willReturn($metadataFactory->reveal());
+    $entityManager->getMetadataFactory()->willReturn($metadataFactory->reveal());
     $entityManager->getConnection()->willReturn($connexion->reveal());
 
     $doctrineDatasource = $prophet->prophesize(DoctrineDatasource::class);
-    $doctrineDatasource
-        ->getEntityManager()
-        ->willReturn($entityManager->reveal());
+    $doctrineDatasource->getEntityManager()->willReturn($entityManager->reveal());
+    $doctrineDatasource->getOrm()->willReturn($capsuleManager->reveal());
 
     $doctrineDatasource->getCollections()->willReturn(collect());
-//    $doctrineDatasource->getCollections()->willReturn(collect([
-//        'CategoryUser' => new class () {
-//            public function getName()
-//            {
-//                return 'categories_users';
-//            }
-//        },
-//    ]));
-
-    //$doctrineDatasource->addCollection(Argument::any())->willReturn();
-
     $doctrineDatasource = $doctrineDatasource->reveal();
 
     $classMetadata = $prophet->prophesize(ClassMetadata::class);
@@ -228,7 +212,7 @@ beforeEach(closure: function () {
         'id' => 'id',
     ];
     $classMetadata->reflClass = new \ReflectionClass($entityUser);
-    $classMetadata->getName()->willReturn('User');
+    $classMetadata->getName()->willReturn((new \ReflectionClass($entityUser))->getName());
     $classMetadata->getTableName()->willReturn('users');
     $classMetadata->getIdentifierFieldNames()->willReturn(['id']);
     $fakeClass = new class () {
@@ -340,11 +324,10 @@ test('getIdentifier() should return the primary key name', function () {
 });
 
 test('getClassName() should return the primary key name', function () {
-    global $classMetadata, $doctrineDatasource;
-
+    global $classMetadata, $doctrineDatasource, $entityUser;
     $collection = new Collection($doctrineDatasource, $classMetadata);
 
-    expect($collection->getClassName())->toEqual('User');
+    expect($collection->getClassName())->toEqual((new \ReflectionClass($entityUser))->getName());
 });
 
 test('addFields() should push the entity fields to the collection', function () {
@@ -379,34 +362,88 @@ test('addFields() should push the entity fields to the collection', function () 
     expect($collection->getFields()->toArray())->toHaveKeys(['id', 'label']);
 });
 
-test('create() should ', function (Caller $caller) {
-    global $classMetadata, $doctrineDatasource, $entityUser;
+test('getRelationType() should return a null type on unknown relation', function () {
+    global $classMetadata, $doctrineDatasource;
+
+    $entity = new class () {
+        public function getShortName()
+        {
+            return 'foo';
+        }
+
+        public function getAttributes()
+        {
+            return [
+                new class () {
+                    public function getName()
+                    {
+                        return 'unknown';
+                    }
+                },
+            ];
+        }
+    };
+
+    $classMetadata->reflFields = [
+        'foo'   => $entity,
+    ];
+
+    $classMetadata->associationMappings = [
+        'foo'         => [
+            'fieldName'    => 'foo',
+            'joinTable'    => [],
+            'targetEntity' => (new \ReflectionClass($entity))->getName(),
+            'mappedBy'     => 'bar',
+            'inversedBy'   => null,
+        ],
+    ];
+
     $collection = new Collection($doctrineDatasource, $classMetadata);
 
+    expect($collection->getFields())->not()->toHaveKey('foo');
+});
 
-    $prophet = new Prophet();
-    $builder = $prophet->prophesize(Builder::class);
-    $builder->insertGetId(Argument::type('array'))->willReturn(1);
-    $queryConverter = $prophet->prophesize(QueryConverter::class);
-    // $queryConverter->query = $builder->reveal();
+test('addOneToOne() should throw when the mappel field doen\'t exist into the related entity', function () {
+    global $classMetadata, $doctrineDatasource, $entityDriverLicence;
 
-    $data = [
-        'attributes' => [
-            'id'    => 1,
-            'label' => 'Foo',
+    $classMetadata->associationMappings = [
+        'driverLicence' => [
+            'fieldName'    => 'driverLicence',
+            'targetEntity' => (new \ReflectionClass($entityDriverLicence))->getName(),
+            'joinColumns'  => [],
+            'mappedBy'     => 'my-related-field',
         ],
-        //        'relationships' => [
-        //            'category' => [
-        //                'data' => [
-        //                    'type' => 'Categories',
-        //                    'id'   => '20',
-        //                ],
-        //            ],
-        //        ],
-        'type'       => 'class@anonymous\x00/Users/matthieuvideaud/Sites/agents/in-app/agent-php/tests/DatasourceDoctrine/CollectionTest.php:22$1dc',
     ];
-    //(new \ReflectionClass($entityUser))->getName()
-    $collection->create($caller, $data);
 
-    //expect($collection->getFields()->toArray())->toHaveKeys(['id', 'label']);
-})->with('caller');
+    expect(fn () => new Collection($doctrineDatasource, $classMetadata))->toThrow(\Exception::class, 'The relation field `my-related-field` does not exist in the entity `'.(new \ReflectionClass($entityDriverLicence))->getName().'`.');
+});
+
+test('addManyToMany() should throw when the mappel field doen\'t exist into the related entity', function () {
+    global $classMetadata, $doctrineDatasource, $entityUser;
+
+    $classMetadata->associationMappings = [
+        'users'         => [
+            'fieldName'    => 'users',
+            'joinTable'    => [],
+            'targetEntity' => (new \ReflectionClass($entityUser))->getName(),
+            'mappedBy'     => 'my-related-field',
+            'inversedBy'   => null,
+        ],
+    ];
+
+    expect(fn () => new Collection($doctrineDatasource, $classMetadata))->toThrow(\Exception::class, 'The relation field `my-related-field` does not exist in the entity `'.(new \ReflectionClass($entityUser))->getName().'`.');
+});
+
+test('addOneToMany() should throw when the mappel field doen\'t exist into the related entity', function () {
+    global $classMetadata, $doctrineDatasource, $entityBook;
+
+    $classMetadata->associationMappings = [
+        'books'         => [
+            'fieldName'    => 'books',
+            'targetEntity' => (new \ReflectionClass($entityBook))->getName(),
+            'mappedBy'     => 'my-related-field',
+        ],
+    ];
+
+    expect(fn () => new Collection($doctrineDatasource, $classMetadata))->toThrow(\Exception::class, 'The relation field `my-related-field` does not exist in the entity `'.(new \ReflectionClass($entityBook))->getName().'`.');
+});
