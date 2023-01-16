@@ -11,7 +11,6 @@ use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
 
 use ForestAdmin\AgentPHP\Agent\Utils\Id as IdUtils;
 
-use function ForestAdmin\config;
 
 use Illuminate\Support\Collection as BaseCollection;
 
@@ -35,7 +34,7 @@ class JsonApiResponse
 
     public function renderCollection($class, TransformerAbstract $transformer, string $name, Request $request)
     {
-        $this->fractal->setSerializer(new JsonApiSerializer(config('agentUrl')));
+        $this->fractal->setSerializer(new JsonApiSerializer());
         $transformer->setAvailableIncludes(ForestSchema::getRelatedData($name));
         $resource = new Collection($class, $transformer, $name);
 
@@ -48,7 +47,7 @@ class JsonApiResponse
 
     public function renderItem($data, TransformerAbstract $transformer, string $name)
     {
-        $this->fractal->setSerializer(new JsonApiSerializer(config('agentUrl')));
+        $this->fractal->setSerializer(new JsonApiSerializer());
 
         return $this->fractal->createData(new Item($data, $transformer, $name))->toArray();
     }
