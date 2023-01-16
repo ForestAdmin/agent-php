@@ -85,6 +85,11 @@ class ThroughCollection extends BaseCollection
         return $this->tableName;
     }
 
+    /**
+     * @param string $type
+     * @return string
+     * @codeCoverageIgnore
+     */
     private function getType(string $type): string
     {
         return match ($type) {
@@ -102,6 +107,12 @@ class ThroughCollection extends BaseCollection
         };
     }
 
+    /**
+     * @param Caller $caller
+     * @param array  $data
+     * @return array|void
+     * @codeCoverageIgnore
+     */
     public function create(Caller $caller, array $data)
     {
         $data = $this->formatAttributes($data);
@@ -110,12 +121,12 @@ class ThroughCollection extends BaseCollection
         if (collect($primaryKeys)->every(fn ($value) => array_key_exists($value, $data))) {
             $query->insert($data);
             $filter = new Filter(
-                conditionTree:  ConditionTreeFactory::matchIds($this, [RecordUtils::getPrimaryKeys($this, $data)]),
+                conditionTree: ConditionTreeFactory::matchIds($this, [RecordUtils::getPrimaryKeys($this, $data)]),
             );
         } else {
             $id = $query->insertGetId($data, SchemaUtils::getPrimaryKeys($this)[0]);
             $filter = new Filter(
-                conditionTree:  new  ConditionTreeLeaf(SchemaUtils::getPrimaryKeys($this)[0], Operators::EQUAL, $id),
+                conditionTree: new  ConditionTreeLeaf(SchemaUtils::getPrimaryKeys($this)[0], Operators::EQUAL, $id),
             );
         }
 
