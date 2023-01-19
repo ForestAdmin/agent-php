@@ -1,6 +1,12 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+MSG="$1"
+if grep -qE "chore(release)" "$MSG";
+then
+    exit 1
+fi
+
 FILES=$(git diff --name-only --cached --diff-filter=d | grep -E '\.(php)$'  | tr '\n' ' ')
 if [ -z "$FILES" ]
 then
