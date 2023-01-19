@@ -1,3 +1,10 @@
+# [1.0.0-beta.2](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2023-01-19)
+
+
+### Bug Fixes
+
+* husky pre-commit ([9a3cd59](https://github.com/ForestAdmin/agent-php/commit/9a3cd59ddada45661ce4818a847e59a23fe6d007))
+
 # 1.0.0-beta.1 (2022-12-22)
 
 
