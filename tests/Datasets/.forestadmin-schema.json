@@ -1,7 +1,7 @@
 {
     "meta": {
-        "liana": "laravel-forestadmin",
-        "liana_version": "1.0.0-beta.1",
+        "liana": "agent-php",
+        "liana_version": "1.0.0",
         "stack": {
             "engine": "php",
             "engine_version": "8.0.19"

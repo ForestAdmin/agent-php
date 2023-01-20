@@ -9,13 +9,6 @@ use function ForestAdmin\config;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use League\OAuth2\Client\Tool\ArrayAccessorTrait;
 
-/**
- * Class ForestResourceOwner
- *
- * @package Laravel-forestadmin
- * @license GNU https://www.gnu.org/licenses/licenses.html
- * @link    https://github.com/ForestAdmin/laravel-forestadmin
- */
 class ForestResourceOwner implements ResourceOwnerInterface
 {
     use ArrayAccessorTrait;
