@@ -69,7 +69,6 @@ class AgentFactory
     }
 
     /**
-     * @throws \ErrorException
      * @throws \JsonException
      */
     public function sendSchema(): void

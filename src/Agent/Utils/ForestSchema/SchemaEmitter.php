@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 use function ForestAdmin\config;
 
@@ -12,40 +13,35 @@ class SchemaEmitter
 
     public const LIANA_VERSION = '1.0.0-beta.4';
 
-    /**
-     * @throws \JsonException
-     * @throws \ErrorException
-     */
     public static function getSerializedSchema(Datasource $datasource)
     {
-        $schema = config('isProduction') ? self::loadFromDisk() : self::generate($datasource);
-
-        if (! config('isProduction')) {
-            $pretty = json_encode(['meta' => self::meta(), 'collections' => $schema], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
+        if (config('isProduction')) {
+            if (config('schemaPath') && file_exists(config('schemaPath'))) {
+                return json_decode(file_get_contents(config('schemaPath')), true);
+            } else {
+                throw new ForestException('The .forestadmin-schema.json file doesn\'t exist');
+            }
+        } else {
+            $schema = self::generate($datasource);
+            $hash = sha1(json_encode($schema, JSON_THROW_ON_ERROR));
+            $pretty = json_encode(['meta' => self::meta($hash), 'collections' => $schema], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
             file_put_contents(config('schemaPath'), $pretty);
-        }
-        $hash = sha1(json_encode($schema, JSON_THROW_ON_ERROR));
 
-        return self::serialize($schema, $hash);
+            return self::serialize($schema, $hash);
+        }
     }
 
-    /**
-     * @return array
-     */
-    private static function meta(): array
+    private static function meta(string $hash): array
     {
         return [
-            'liana'         => self::LIANA_NAME,
-            'liana_version' => self::LIANA_VERSION,
-            'stack'         => [
+            'liana'          => self::LIANA_NAME,
+            'liana_version'  => self::LIANA_VERSION,
+            'stack'          => [
                 'engine'         => 'php',
                 'engine_version' => phpversion(),
             ],
+            'schemaFileHash' => $hash,
         ];
-    }
-
-    private static function loadFromDisk()
-    {
     }
 
     private static function generate(Datasource $datasource)
@@ -60,17 +56,11 @@ class SchemaEmitter
             ->toArray();
     }
 
-    /**
-     * @param array  $schema
-     * @param string $hash
-     * @return array
-     */
     private static function serialize(array $schema, string $hash): array
     {
         $data = [];
         $included = [];
-        $meta = self::meta();
-        $meta['schemaFileHash'] = $hash;
+        $meta = self::meta($hash);
 
         foreach ($schema as $collection) {
             $collectionActions = $collection['actions'];
@@ -102,13 +92,7 @@ class SchemaEmitter
         ];
     }
 
-    /**
-     * @param string $type
-     * @param array  $data
-     * @param bool   $withAttributes
-     * @return array
-     */
-    private static function getSmartFeaturesByCollection(string $type, array $data, bool $withAttributes = false): array
+    private static function getSmartFeaturesByCollection(string $type, array $data, bool $withAttributes = false)
     {
         $smartFeatures = [];
 
