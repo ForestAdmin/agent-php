@@ -1,3 +1,10 @@
+# [1.0.0-beta.5](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2023-01-24)
+
+
+### Bug Fixes
+
+* onboarding generate schema ([#26](https://github.com/ForestAdmin/agent-php/issues/26)) ([48b77f0](https://github.com/ForestAdmin/agent-php/commit/48b77f073ae0ecb747fac82416cc8836954a3c63))
+
 # [1.0.0-beta.4](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2023-01-24)
 
 
