@@ -74,7 +74,6 @@ function datasourceWithAllRelations(array $args = []): Datasource
             'myPersons'     => new ManyToManySchema(
                 originKey: 'bookId',
                 originKeyTarget: 'id',
-                throughTable: 'bookPerson',
                 foreignKey: 'personId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
@@ -122,7 +121,6 @@ function datasourceWithAllRelations(array $args = []): Datasource
             'myBooks'      => new ManyToManySchema(
                 originKey: 'personId',
                 originKeyTarget: 'id',
-                throughTable: 'bookPerson',
                 foreignKey: 'bookId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',
@@ -220,7 +218,6 @@ test('isManyToManyInverse() should return false', function () {
     $manyToManyRelation = new ManyToManySchema(
         originKey: 'fooId',
         originKeyTarget: 'id',
-        throughTable: 'bookFoo',
         foreignKey: 'bookId',
         foreignKeyTarget: 'id',
         foreignCollection: 'Book',

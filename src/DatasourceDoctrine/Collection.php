@@ -263,7 +263,6 @@ class Collection extends BaseCollection
         }
 
         $defaultAttributes = [
-            'throughTable'        => $joinTable['name'],
             'throughCollection'   => $schemaTable->getName(),
             'foreignCollection'   => (new \ReflectionClass($related))->getShortName(),
         ];

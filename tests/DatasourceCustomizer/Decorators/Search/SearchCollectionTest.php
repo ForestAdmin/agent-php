@@ -269,7 +269,6 @@ test('refineFilter() when the search is defined and the collection schema is not
             'reviews'     => new ManyToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
-                throughTable: 'book_review',
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
@@ -289,7 +288,6 @@ test('refineFilter() when the search is defined and the collection schema is not
             'reviews' => new ManyToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
-                throughTable: 'book_review',
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',

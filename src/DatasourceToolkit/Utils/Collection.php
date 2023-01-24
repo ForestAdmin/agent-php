@@ -56,7 +56,7 @@ class Collection
         if ($field->getType() === 'ManyToMany' &&
             $relationField->getType() === 'ManyToMany' &&
             $field->getOriginKey() === $relationField->getForeignKey() &&
-            $field->getThroughTable() === $relationField->getThroughTable()) {
+            $field->getThroughCollection() === $relationField->getThroughCollection()) {
             return true;
         }
 

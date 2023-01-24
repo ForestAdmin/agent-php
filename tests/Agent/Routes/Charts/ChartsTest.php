@@ -38,7 +38,6 @@ function factoryChart($args = []): Charts
             'reviews'     => new ManyToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
-                throughTable: 'book_review',
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',
@@ -59,7 +58,6 @@ function factoryChart($args = []): Charts
             'reviews' => new ManyToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
-                throughTable: 'book_review',
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',

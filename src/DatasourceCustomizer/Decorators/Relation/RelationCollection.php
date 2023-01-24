@@ -251,7 +251,6 @@ class RelationCollection extends CollectionDecorator
             'ManyToMany' => new ManyToManySchema(
                 originKey: $partialJoin['originKey'],
                 originKeyTarget: Arr::get($partialJoin, 'originKeyTarget', Schema::getPrimaryKeys($this)[0]),
-                throughTable: $partialJoin['throughTable'],
                 foreignKey: $partialJoin['foreignKey'],
                 foreignKeyTarget: Arr::get($partialJoin, 'foreignKeyTarget', Schema::getPrimaryKeys($target)[0]),
                 foreignCollection: $partialJoin['foreignCollection'],
