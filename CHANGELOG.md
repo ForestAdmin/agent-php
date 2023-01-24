@@ -1,3 +1,10 @@
+# [1.0.0-beta.4](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2023-01-24)
+
+
+### Features
+
+* add base datasource and tests ([#25](https://github.com/ForestAdmin/agent-php/issues/25)) ([76c187f](https://github.com/ForestAdmin/agent-php/commit/76c187fa2f3c4249d5b116d02f4c400b961dd0da))
+
 # [1.0.0-beta.3](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2023-01-20)
 
 # [1.0.0-beta.2](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2023-01-19)

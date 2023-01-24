@@ -10,7 +10,7 @@ class SchemaEmitter
 {
     public const LIANA_NAME = 'agent-php';
 
-    public const LIANA_VERSION = '1.0.0-beta.3';
+    public const LIANA_VERSION = '1.0.0-beta.4';
 
     /**
      * @throws \JsonException
