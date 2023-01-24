@@ -3,7 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Utils;
 
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
-use ForestAdmin\AgentPHP\DatasourceDoctrine\BaseCollection;
+use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
@@ -12,7 +12,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
@@ -91,7 +90,7 @@ class QueryConverter
     private function addJoinRelation(RelationSchema $relation, string $relationTableName): void
     {
         if ($relation instanceof ManyToManySchema) {
-            $throughTable = $relation->getThroughTable();
+            $throughTable = $this->collection->getDataSource()->getCollection($relation->getThroughCollection())->getTableName();
             $joinTable = "$relationTableName as $relationTableName";
             $joinThroughTable = "$throughTable as $throughTable";
             if (! $this->isJoin($joinTable) && ! $this->isJoin($joinThroughTable)) {
@@ -264,7 +263,7 @@ class QueryConverter
                 $start = 'startOf' . $period;
                 $end = 'endOf' . $period;
                 if (Str::endsWith($operator, 'To_Date')) {
-                    $interval = [Carbon::now($this->timezone)->$start(), Carbon::now()];
+                    $interval = [Carbon::now($this->timezone)->$start(), Carbon::now($this->timezone)];
                 } else {
                     $interval = [Carbon::now($this->timezone)->$sub()->$start(), Carbon::now($this->timezone)->$sub()->$end()];
                 }
@@ -327,15 +326,13 @@ class QueryConverter
 
                 break;
             case Operators::ISTARTS_WITH:
-                $query->whereRaw("LOWER($field) LIKE ?", [$value . '%'], $aggregator);
+                $query->whereRaw("LOWER($field) LIKE LOWER(?)", [$value . '%'], $aggregator);
 
                 break;
             case Operators::IENDS_WITH:
-                $query->whereRaw("LOWER ($field) LIKE LOWER(?)", ['%' . $value], $aggregator);
+                $query->whereRaw("LOWER($field) LIKE LOWER(?)", ['%' . $value], $aggregator);
 
                 break;
-            default:
-                throw new ForestException('Unknown operator');
         }
     }
 

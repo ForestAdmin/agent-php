@@ -26,7 +26,6 @@ function factoryPublicationCollectionDatasourceDecorator()
             'persons'  => new ManyToManySchema(
                 originKey: 'bookId',
                 originKeyTarget: 'id',
-                throughTable: 'book_person',
                 foreignKey: 'personId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
@@ -65,7 +64,6 @@ function factoryPublicationCollectionDatasourceDecorator()
             'books' => new ManyToManySchema(
                 originKey: 'personId',
                 originKeyTarget: 'id',
-                throughTable: 'book_person',
                 foreignKey: 'bookId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',

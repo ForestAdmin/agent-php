@@ -12,9 +12,10 @@
     <coverage processUncoveredFiles="true">
         <include>
             <directory suffix=".php">./src/Agent</directory>
-            <directory suffix=".php">./src/DatasourceToolkit</directory>
+            <directory suffix=".php">./src/BaseDatasource</directory>
             <directory suffix=".php">./src/DatasourceCustomizer</directory>
             <directory suffix=".php">./src/DatasourceDoctrine</directory>
+            <directory suffix=".php">./src/DatasourceToolkit</directory>
         </include>
     </coverage>
 </phpunit>

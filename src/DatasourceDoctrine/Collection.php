@@ -10,6 +10,8 @@ use Doctrine\ORM\Mapping\OneToOne;
 use Doctrine\Persistence\Mapping\MappingException;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
+use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
+use ForestAdmin\AgentPHP\BaseDatasource\Contracts\BaseDatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\DataTypes;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
@@ -25,18 +27,23 @@ use Illuminate\Support\Arr;
 
 class Collection extends BaseCollection
 {
+    protected string $className;
+
     /**
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function __construct(protected DoctrineDatasource $datasource, protected ClassMetadata $entityMetadata)
+    public function __construct(protected BaseDatasourceContract $datasource, protected ClassMetadata $entityMetadata)
     {
-        parent::__construct($datasource, $entityMetadata->reflClass->getShortName());
-
+        parent::__construct($datasource, $entityMetadata->reflClass->getShortName(), $entityMetadata->getTableName());
         $this->className = $entityMetadata->getName();
-        $this->tableName = $this->entityMetadata->getTableName();
         $this->addFields($this->entityMetadata->fieldMappings);
         $this->mapRelationshipsToFields();
+    }
+
+    public function getClassName(): string
+    {
+        return $this->className;
     }
 
     /**
@@ -50,10 +57,10 @@ class Collection extends BaseCollection
             $type = $this->getRelationType($this->entityMetadata->reflFields[$key]->getAttributes());
             if ($type) {
                 match ($type) {
-                    'ManyToMany' => $this->addManyToMany($key, $value['joinTable'], $value['targetEntity'], $value['mappedBy'] ?? $value['inversedBy'], $value['mappedBy']),
-                    'ManyToOne'  => $this->addManyToOne($key, $value['joinColumns'][0], $value['targetEntity'], $value['inversedBy']),
+                    'ManyToMany' => $this->addManyToMany($key, $value['joinTable'], $value['targetEntity'], $value['mappedBy']),
+                    'ManyToOne'  => $this->addManyToOne($key, $value['joinColumns'][0], $value['targetEntity']),
                     'OneToMany'  => $this->addOneToMany($key, $value['targetEntity'], $value['mappedBy']),
-                    'OneToOne'   => $this->addOneToOne($key, $value['joinColumns'], $value['targetEntity'], $value['mappedBy'] ?? $value['inversedBy'], $value['mappedBy']),
+                    'OneToOne'   => $this->addOneToOne($key, $value['joinColumns'], $value['targetEntity'], $value['mappedBy']),
                     default      => null
                 };
             }
@@ -86,6 +93,12 @@ class Collection extends BaseCollection
         return $this->entityMetadata->getSingleIdReflectionProperty()->getName();
     }
 
+    /**
+     * @param Caller $caller
+     * @param array  $data
+     * @return array|void
+     * @codeCoverageIgnore
+     */
     public function create(Caller $caller, array $data)
     {
         $data = $this->formatAttributes($data);
@@ -124,7 +137,7 @@ class Collection extends BaseCollection
      * @throws MappingException
      * @throws \ReflectionException
      */
-    protected function addManyToOne(string $name, array $joinColumn, string $related, string $inverseName): void
+    protected function addManyToOne(string $name, array $joinColumn, string $related): void
     {
         $relatedMeta = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor($related);
         $relationField = new ManyToOneSchema(
@@ -159,7 +172,7 @@ class Collection extends BaseCollection
      * @throws MappingException
      * @throws \ReflectionException
      */
-    protected function addOneToOne(string $name, array $joinColumn, string $related, string $inverseName, ?string $mappedField = null): void
+    protected function addOneToOne(string $name, array $joinColumn, string $related, ?string $mappedField = null): void
     {
         $relatedMeta = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor($related);
         if ($mappedField) {
@@ -195,7 +208,7 @@ class Collection extends BaseCollection
      * @throws MappingException
      * @throws \ReflectionException
      */
-    protected function addManyToMany(string $name, array $joinTable, string $related, string $inverseName, ?string $mappedField = null): void
+    protected function addManyToMany(string $name, array $joinTable, string $related, ?string $mappedField = null): void
     {
         $relatedMeta = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor($related);
         if ($mappedField) {
@@ -204,13 +217,11 @@ class Collection extends BaseCollection
                 throw new \Exception("The relation field `$mappedField` does not exist in the entity `$related`.");
             }
             $joinTable = $relatedMeta->associationMappings[$mappedField]['joinTable'];
-
             $schemaTable = $this->datasource
                 ->getEntityManager()
                 ->getConnection()
                 ->createSchemaManager()
-                ->listTableDetails($relatedMeta->associationMappings[$mappedField]['joinTable']['name']);
-
+                ->introspectTable($relatedMeta->associationMappings[$mappedField]['joinTable']['name']);
             $customAttributes = [
                 'foreignKey'          => $joinTable['joinColumns'][0]['name'],
                 'foreignKeyTarget'    => $relatedMeta->fieldNames[$joinTable['joinColumns'][0]['referencedColumnName']],
@@ -222,7 +233,7 @@ class Collection extends BaseCollection
                 ->getEntityManager()
                 ->getConnection()
                 ->createSchemaManager()
-                ->listTableDetails($joinTable['name']);
+                ->introspectTable($joinTable['name']);
 
             $customAttributes = [
                 'foreignKey'          => $joinTable['inverseJoinColumns'][0]['name'],
@@ -252,7 +263,6 @@ class Collection extends BaseCollection
         }
 
         $defaultAttributes = [
-            'throughTable'        => $joinTable['name'],
             'throughCollection'   => $schemaTable->getName(),
             'foreignCollection'   => (new \ReflectionClass($related))->getShortName(),
         ];

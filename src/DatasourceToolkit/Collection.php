@@ -17,8 +17,6 @@ class Collection implements CollectionContract
 {
     use CollectionMethods;
 
-    protected string $className;
-
     protected string $transformer;
 
     public function __construct(
@@ -38,11 +36,6 @@ class Collection implements CollectionContract
     public function getName(): string
     {
         return $this->name;
-    }
-
-    public function getClassName(): string
-    {
-        return $this->className;
     }
 
     public function execute(Caller $caller, string $name, array $formValues, ?Filter $filter = null): ActionResult

@@ -6,7 +6,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContra
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-class Library extends BaseCollection
+class Library extends DummyCollection
 {
     public function __construct(DatasourceContract $dataSource)
     {

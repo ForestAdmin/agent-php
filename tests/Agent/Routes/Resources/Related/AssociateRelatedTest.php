@@ -34,7 +34,6 @@ function factoryAssociateRelated($args = []): AssociateRelated
             'houses'     => new ManyToManySchema(
                 originKey: 'user_id',
                 originKeyTarget: 'id',
-                throughTable: 'houses_users',
                 foreignKey: 'house_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'House',
@@ -53,7 +52,6 @@ function factoryAssociateRelated($args = []): AssociateRelated
             'users'    => new ManyToManySchema(
                 originKey: 'house_id',
                 originKeyTarget: 'id',
-                throughTable: 'houses_users',
                 foreignKey: 'user_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'User',

@@ -16,7 +16,6 @@ define("AGENT_OPTIONS", [
     'authSecret'   => AUTH_SECRET,
     'envSecret'    => SECRET,
     'isProduction' => false,
-    'agentUrl'     => 'http://localhost/',
 ]);
 
 uses()

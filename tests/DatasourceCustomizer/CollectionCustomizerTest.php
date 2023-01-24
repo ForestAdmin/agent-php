@@ -33,7 +33,6 @@ function factoryCollectionCustomizer($collectionName = 'Book')
             'persons'  => new ManyToManySchema(
                 originKey: 'bookId',
                 originKeyTarget: 'id',
-                throughTable: 'book_person',
                 foreignKey: 'personId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
@@ -72,7 +71,6 @@ function factoryCollectionCustomizer($collectionName = 'Book')
             'books' => new ManyToManySchema(
                 originKey: 'personId',
                 originKeyTarget: 'id',
-                throughTable: 'book_person',
                 foreignKey: 'bookId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',

@@ -94,7 +94,6 @@ function GeneratorFieldWithManyToManyRelation(): Datasource
             'persons'      => new ManyToManySchema(
                 originKey: 'bookId',
                 originKeyTarget: 'id',
-                throughTable: 'book_person',
                 foreignKey: 'personId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
@@ -128,7 +127,6 @@ function GeneratorFieldWithManyToManyRelation(): Datasource
             'books'         => new ManyToManySchema(
                 originKey: 'personId',
                 originKeyTarget: 'id',
-                throughTable: 'book_person',
                 foreignKey: 'bookId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',

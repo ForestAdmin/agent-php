@@ -7,6 +7,8 @@ use Doctrine\DBAL\Schema\ForeignKeyConstraint;
 use Doctrine\DBAL\Types\Types;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
+use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
+use ForestAdmin\AgentPHP\BaseDatasource\Contracts\BaseDatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
@@ -28,11 +30,10 @@ class ThroughCollection extends BaseCollection
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function __construct(protected DoctrineDatasource $datasource, protected array $metadata)
+    public function __construct(protected BaseDatasourceContract $datasource, protected array $metadata)
     {
-        parent::__construct($datasource, $this->metadata['name']);
+        parent::__construct($datasource, $this->metadata['name'], $this->metadata['name']);
 
-        $this->tableName = $this->metadata['name'];
         $this->addFields($this->metadata['columns']);
         $this->addRelations();
         $this->searchable = false;
@@ -84,6 +85,11 @@ class ThroughCollection extends BaseCollection
         return $this->tableName;
     }
 
+    /**
+     * @param string $type
+     * @return string
+     * @codeCoverageIgnore
+     */
     private function getType(string $type): string
     {
         return match ($type) {
@@ -101,6 +107,12 @@ class ThroughCollection extends BaseCollection
         };
     }
 
+    /**
+     * @param Caller $caller
+     * @param array  $data
+     * @return array|void
+     * @codeCoverageIgnore
+     */
     public function create(Caller $caller, array $data)
     {
         $data = $this->formatAttributes($data);
@@ -109,12 +121,12 @@ class ThroughCollection extends BaseCollection
         if (collect($primaryKeys)->every(fn ($value) => array_key_exists($value, $data))) {
             $query->insert($data);
             $filter = new Filter(
-                conditionTree:  ConditionTreeFactory::matchIds($this, [RecordUtils::getPrimaryKeys($this, $data)]),
+                conditionTree: ConditionTreeFactory::matchIds($this, [RecordUtils::getPrimaryKeys($this, $data)]),
             );
         } else {
             $id = $query->insertGetId($data, SchemaUtils::getPrimaryKeys($this)[0]);
             $filter = new Filter(
-                conditionTree:  new  ConditionTreeLeaf(SchemaUtils::getPrimaryKeys($this)[0], Operators::EQUAL, $id),
+                conditionTree: new  ConditionTreeLeaf(SchemaUtils::getPrimaryKeys($this)[0], Operators::EQUAL, $id),
             );
         }
 

@@ -16,7 +16,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
-const TEST_TIMEZONE = 'Europe/Dublin';
+const TEST_TIMEZONE = 'Europe/Paris';
 
 function createDatasourceForFilterFactory(): Datasource
 {
@@ -29,7 +29,6 @@ function createDatasourceForFilterFactory(): Datasource
             'reviews'     => new ManyToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
-                throughTable: 'bookReview',
                 foreignKey: 'review_id',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Review',

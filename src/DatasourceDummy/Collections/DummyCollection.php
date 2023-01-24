@@ -10,7 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projectio
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 
-class BaseCollection extends Collection
+class DummyCollection extends Collection
 {
     protected $records = [];
 
