@@ -16,7 +16,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
-const TEST_TIMEZONE = 'Europe/Dublin';
+const TEST_TIMEZONE = 'Europe/Paris';
 
 function createDatasourceForFilterFactory(): Datasource
 {

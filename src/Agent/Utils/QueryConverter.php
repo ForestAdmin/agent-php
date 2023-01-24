@@ -263,7 +263,7 @@ class QueryConverter
                 $start = 'startOf' . $period;
                 $end = 'endOf' . $period;
                 if (Str::endsWith($operator, 'To_Date')) {
-                    $interval = [Carbon::now($this->timezone)->$start(), Carbon::now()];
+                    $interval = [Carbon::now($this->timezone)->$start(), Carbon::now($this->timezone)];
                 } else {
                     $interval = [Carbon::now($this->timezone)->$sub()->$start(), Carbon::now($this->timezone)->$sub()->$end()];
                 }

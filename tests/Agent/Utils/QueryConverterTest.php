@@ -19,13 +19,13 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Carbon;
+use function Spatie\PestPluginTestTime\testTime;
 
-$datasource = null;
-$bookCollection = null;
-$userCollection = null;
-$reviewCollection = null;
-$bookReviewCollection = null;
+const TIMEZONE = 'Europe/Paris';
+
 beforeEach(function () {
+    testTime()->freeze(Carbon::now(TIMEZONE));
     global $datasource, $bookCollection, $reviewCollection, $bookReviewCollection, $userCollection;
     $datasource = new BaseDatasource(
         ['url' => 'sqlite://../../Datasets/test.db']
@@ -280,6 +280,8 @@ test('QueryConverter apply conditionTree should with conditionTreeBranch', funct
         ->and($query->wheres[0]['query']->wheres)->toHaveCount(2);
 });
 
+// test main operators
+
 test('QueryConverter should apply conditionTree with operator BLANK', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::BLANK));
@@ -490,4 +492,318 @@ test('QueryConverter should apply conditionTree with operator IENDS_WITH', funct
             'boolean' => 'and',
         ])
         ->and($query->bindings['where'][0])->toEqual('%foo');
+});
+
+// test date operators
+
+test('QueryConverter should apply conditionTree with operator TODAY', function () {
+    global $bookCollection;
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::TODAY));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'    => 'between',
+            'column'  => '"books"."published_at"',
+            'boolean' => 'and',
+            'not'     => false,
+            'values'  => [
+                Carbon::now(TIMEZONE)->startOfDay(),
+                Carbon::now(TIMEZONE)->endOfDay(),
+            ],
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator BEFORE', function () {
+    global $bookCollection;
+    $date = '2022-01-01 12:00:00';
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::BEFORE, $date));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'     => 'Basic',
+            'column'   => '"books"."published_at"',
+            'operator' => '<',
+            'boolean'  => 'and',
+            'value'    => Carbon::parse($date),
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator AFTER', function () {
+    global $bookCollection;
+    $date = '2022-01-01 12:00:00';
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::AFTER, $date));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'     => 'Basic',
+            'column'   => '"books"."published_at"',
+            'operator' => '>',
+            'boolean'  => 'and',
+            'value'    => Carbon::parse($date),
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator PREVIOUS_X_DAYS', function () {
+    global $bookCollection;
+    $value = 2;
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_X_DAYS, $value));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'    => 'between',
+            'column'  => '"books"."published_at"',
+            'boolean' => 'and',
+            'not'     => false,
+            'values'  => [
+                Carbon::now(TIMEZONE)->subDays($value)->startOfDay(),
+                Carbon::now(TIMEZONE)->subDay()->endOfDay(),
+            ],
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator PREVIOUS_X_DAYS_TO_DATE', function () {
+    global $bookCollection;
+    $value = 2;
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_X_DAYS_TO_DATE, $value));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'    => 'between',
+            'column'  => '"books"."published_at"',
+            'boolean' => 'and',
+            'not'     => false,
+            'values'  => [
+                Carbon::now(TIMEZONE)->subDays($value)->startOfDay(),
+                Carbon::now(TIMEZONE)->endOfDay(),
+            ],
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator PAST', function () {
+    global $bookCollection;
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PAST));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'     => 'Basic',
+            'column'   => '"books"."published_at"',
+            'operator' => '<=',
+            'boolean'  => 'and',
+            'value'    => Carbon::now(TIMEZONE),
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator FUTURE', function () {
+    global $bookCollection;
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::FUTURE));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'     => 'Basic',
+            'column'   => '"books"."published_at"',
+            'operator' => '>=',
+            'boolean'  => 'and',
+            'value'    => Carbon::now(TIMEZONE),
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator BEFORE_X_HOURS_AGO', function () {
+    global $bookCollection;
+    $value = 2;
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::BEFORE_X_HOURS_AGO, $value));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'     => 'Basic',
+            'column'   => '"books"."published_at"',
+            'operator' => '<',
+            'boolean'  => 'and',
+            'value'    => Carbon::now(TIMEZONE)->subHours($value),
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator AFTER_X_HOURS_AGO', function () {
+    global $bookCollection;
+    $value = 2;
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::AFTER_X_HOURS_AGO, $value));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'     => 'Basic',
+            'column'   => '"books"."published_at"',
+            'operator' => '>',
+            'boolean'  => 'and',
+            'value'    => Carbon::now(TIMEZONE)->subHours($value),
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator YESTERDAY', function () {
+    global $bookCollection;
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::YESTERDAY));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'    => 'between',
+            'column'  => '"books"."published_at"',
+            'boolean' => 'and',
+            'not'     => false,
+            'values'  => [
+                Carbon::now(TIMEZONE)->subDay()->startOfDay(),
+                Carbon::now(TIMEZONE)->subDay()->endOfDay(),
+            ],
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator PREVIOUS_WEEK', function () {
+    global $bookCollection;
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_WEEK));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'    => 'between',
+            'column'  => '"books"."published_at"',
+            'boolean' => 'and',
+            'not'     => false,
+            'values'  => [
+                Carbon::now(TIMEZONE)->subWeek()->startOfWeek(),
+                Carbon::now(TIMEZONE)->subWeek()->endOfWeek(),
+            ],
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator PREVIOUS_MONTH', function () {
+    global $bookCollection;
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_MONTH));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'    => 'between',
+            'column'  => '"books"."published_at"',
+            'boolean' => 'and',
+            'not'     => false,
+            'values'  => [
+                Carbon::now(TIMEZONE)->subMonth()->startOfMonth(),
+                Carbon::now(TIMEZONE)->subMonth()->endOfMonth(),
+            ],
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator PREVIOUS_QUARTER', function () {
+    global $bookCollection;
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_QUARTER));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'    => 'between',
+            'column'  => '"books"."published_at"',
+            'boolean' => 'and',
+            'not'     => false,
+            'values'  => [
+                Carbon::now(TIMEZONE)->subQuarter()->startOfQuarter(),
+                Carbon::now(TIMEZONE)->subQuarter()->endOfQuarter(),
+            ],
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator PREVIOUS_YEAR', function () {
+    global $bookCollection;
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_YEAR));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'    => 'between',
+            'column'  => '"books"."published_at"',
+            'boolean' => 'and',
+            'not'     => false,
+            'values'  => [
+                Carbon::now(TIMEZONE)->subYear()->startOfYear(),
+                Carbon::now(TIMEZONE)->subYear()->endOfYear(),
+            ],
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator PREVIOUS_WEEK_TO_DATE', function () {
+    global $bookCollection;
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_WEEK_TO_DATE));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'    => 'between',
+            'column'  => '"books"."published_at"',
+            'boolean' => 'and',
+            'not'     => false,
+            'values'  => [
+                Carbon::now(TIMEZONE)->startOfWeek(),
+                Carbon::now(TIMEZONE),
+            ],
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator PREVIOUS_MONTH_TO_DATE', function () {
+    global $bookCollection;
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_MONTH_TO_DATE));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'    => 'between',
+            'column'  => '"books"."published_at"',
+            'boolean' => 'and',
+            'not'     => false,
+            'values'  => [
+                Carbon::now(TIMEZONE)->startOfMonth(),
+                Carbon::now(TIMEZONE),
+            ],
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator PREVIOUS_QUARTER_TO_DATE', function () {
+    global $bookCollection;
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_QUARTER_TO_DATE));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'    => 'between',
+            'column'  => '"books"."published_at"',
+            'boolean' => 'and',
+            'not'     => false,
+            'values'  => [
+                Carbon::now(TIMEZONE)->startOfQuarter(),
+                Carbon::now(TIMEZONE),
+            ],
+        ]);
+});
+
+test('QueryConverter should apply conditionTree with operator PREVIOUS_YEAR_TO_DATE', function () {
+    global $bookCollection;
+    $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_YEAR_TO_DATE));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+
+    expect($query->wheres[0])
+        ->toEqual([
+            'type'    => 'between',
+            'column'  => '"books"."published_at"',
+            'boolean' => 'and',
+            'not'     => false,
+            'values'  => [
+                Carbon::now(TIMEZONE)->startOfYear(),
+                Carbon::now(TIMEZONE),
+            ],
+        ]);
 });
