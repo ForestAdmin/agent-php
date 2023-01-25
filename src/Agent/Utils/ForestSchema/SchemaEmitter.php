@@ -17,18 +17,23 @@ class SchemaEmitter
     {
         if (config('isProduction')) {
             if (config('schemaPath') && file_exists(config('schemaPath'))) {
-                return json_decode(file_get_contents(config('schemaPath')), true);
+                $schema = json_decode(file_get_contents(config('schemaPath')), true, 512, JSON_THROW_ON_ERROR);
             } else {
                 throw new ForestException('The .forestadmin-schema.json file doesn\'t exist');
             }
         } else {
             $schema = self::generate($datasource);
             $hash = sha1(json_encode($schema, JSON_THROW_ON_ERROR));
-            $pretty = json_encode(['meta' => self::meta($hash), 'collections' => $schema], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
-            file_put_contents(config('schemaPath'), $pretty);
+            $schema = [
+                'meta'        => self::meta($hash),
+                'collections' => $schema,
+            ];
 
-            return self::serialize($schema, $hash);
+            $pretty = json_encode($schema, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT);
+            file_put_contents(config('schemaPath'), $pretty);
         }
+
+        return self::serialize($schema);
     }
 
     private static function meta(string $hash): array
@@ -56,13 +61,12 @@ class SchemaEmitter
             ->toArray();
     }
 
-    private static function serialize(array $schema, string $hash): array
+    private static function serialize(array $schema): array
     {
         $data = [];
         $included = [];
-        $meta = self::meta($hash);
-
-        foreach ($schema as $collection) {
+//        dd($schema);
+        foreach ($schema['collections'] as $collection) {
             $collectionActions = $collection['actions'];
             $collectionSegments = $collection['segments'];
             unset($collection['actions'], $collection['segments']);
@@ -88,7 +92,7 @@ class SchemaEmitter
         return [
             'data'     => $data,
             'included' => array_merge(...$included),
-            'meta'     => $meta,
+            'meta'     => $schema['meta'],
         ];
     }
 

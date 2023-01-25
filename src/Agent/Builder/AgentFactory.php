@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use function ForestAdmin\config;
 
 class AgentFactory
 {
@@ -73,17 +74,17 @@ class AgentFactory
     /**
      * @throws \JsonException
      */
-    public function sendSchema(): void
+    public static function sendSchema(bool $force = false): void
     {
-        if ($this->hasEnvSecret) {
-            $schema = SchemaEmitter::getSerializedSchema($this->customizer->getStack()->dataSource);
+        if (config('envSecret')) {
+            $schema = SchemaEmitter::getSerializedSchema(self::get('datasource'));
 
             $schemaIsKnown = false;
             if (Cache::get('schemaFileHash') === $schema['meta']['schemaFileHash']) {
                 $schemaIsKnown = true;
             }
 
-            if (! $schemaIsKnown) {
+            if (! $schemaIsKnown || $force) {
                 // TODO this.options.logger('Info', 'Schema was updated, sending new version');
                 ForestHttpApi::uploadSchema($schema);
                 Cache::put('schemaFileHash', $schema['meta']['schemaFileHash'], self::TTL_SCHEMA);
