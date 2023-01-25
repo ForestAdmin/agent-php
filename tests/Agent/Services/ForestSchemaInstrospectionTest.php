@@ -6,14 +6,8 @@ use JsonPath\JsonObject;
 
 function introspection()
 {
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'authSecret'   => AUTH_SECRET,
-        'isProduction' => false,
-        'debug'        => false,
-        'schemaPath'   => 'tests/Datasets/.forestadmin-schema.json',
-    ];
+    $options = AGENT_OPTIONS;
+    $options['schemaPath'] = 'tests/Datasets/.forestadmin-schema.json';
     new AgentFactory($options, []);
 
     return new ForestSchemaIntrospection();
