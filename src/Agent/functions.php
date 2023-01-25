@@ -46,7 +46,7 @@ if (! function_exists(__NAMESPACE__ . '\config')) {
             return $config;
         }
 
-        if (array_key_exists($key, $config)) {
+        if (is_array($config) && array_key_exists($key, $config)) {
             return $config[$key];
         }
 

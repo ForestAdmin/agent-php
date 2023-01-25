@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use function ForestAdmin\config;
 
 class AgentFactory
 {
@@ -20,9 +21,11 @@ class AgentFactory
     protected static Container $container;
 
     protected DatasourceCustomizer $customizer;
+    private bool $hasEnvSecret;
 
     public function __construct(array $config, array $services = [])
     {
+        $this->hasEnvSecret = isset($config['envSecret']);
         $this->customizer = new DatasourceCustomizer();
         $this->buildContainer($services);
         $this->buildCache($config);
@@ -39,7 +42,7 @@ class AgentFactory
     {
         self::$container->set('datasource', $this->customizer->getStack()->dataSource);
 
-        $this->sendSchema();
+        self::sendSchema();
     }
 
     /**
@@ -71,21 +74,23 @@ class AgentFactory
     /**
      * @throws \JsonException
      */
-    public function sendSchema(): void
+    public static function sendSchema(bool $force = false): void
     {
-        $schema = SchemaEmitter::getSerializedSchema($this->customizer->getStack()->dataSource);
+        if (config('envSecret')) {
+            $schema = SchemaEmitter::getSerializedSchema(self::get('datasource'));
 
-        $schemaIsKnown = false;
-        if (Cache::get('schemaFileHash') === $schema['meta']['schemaFileHash']) {
-            $schemaIsKnown = true;
-        }
+            $schemaIsKnown = false;
+            if (Cache::get('schemaFileHash') === $schema['meta']['schemaFileHash']) {
+                $schemaIsKnown = true;
+            }
 
-        if (! $schemaIsKnown) {
-            // TODO this.options.logger('Info', 'Schema was updated, sending new version');
-            ForestHttpApi::uploadSchema($schema);
-            Cache::put('schemaFileHash', $schema['meta']['schemaFileHash'], self::TTL_SCHEMA);
-        } else {
-            // TODO this.options.logger('Info', 'Schema was not updated since last run');
+            if (! $schemaIsKnown || $force) {
+                // TODO this.options.logger('Info', 'Schema was updated, sending new version');
+                ForestHttpApi::uploadSchema($schema);
+                Cache::put('schemaFileHash', $schema['meta']['schemaFileHash'], self::TTL_SCHEMA);
+            } else {
+                // TODO this.options.logger('Info', 'Schema was not updated since last run');
+            }
         }
     }
 
@@ -103,6 +108,9 @@ class AgentFactory
         $filesystem = new Filesystem();
         $directory = $config['cacheDir'];
         self::$container->set('cache', new CacheServices($filesystem, $directory));
-        self::$container->get('cache')->add('config', $config, self::TTL_CONFIG);
+
+        if ($this->hasEnvSecret) {
+            self::$container->get('cache')->add('config', $config, self::TTL_CONFIG);
+        }
     }
 }

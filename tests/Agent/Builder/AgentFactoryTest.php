@@ -39,12 +39,12 @@ test('build() should add datasource to the container', function () {
         ]
     );
     $datasource->addCollection($collectionUser);
+    $options = AGENT_OPTIONS;
+    unset($options['envSecret']);
     $mockAgent = $this->getMockBuilder(AgentFactory::class)
-        ->setConstructorArgs(['config' => AGENT_OPTIONS])
+        ->setConstructorArgs(['config' => $options])
         ->onlyMethods(['sendSchema'])
         ->getMock();
-    $mockAgent->expects($this->atLeast(1))
-        ->method('sendSchema');
     $mockAgent->addDatasource($datasource);
     $mockAgent->build();
 
