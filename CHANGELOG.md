@@ -1,3 +1,10 @@
+# [1.0.0-beta.6](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.5...v1.0.0-beta.6) (2023-01-25)
+
+
+### Bug Fixes
+
+* **onboarding:** create cache only if env secret was set ([#27](https://github.com/ForestAdmin/agent-php/issues/27)) ([561b871](https://github.com/ForestAdmin/agent-php/commit/561b871283287f1b408c3b8c352062cd10028b04))
+
 # [1.0.0-beta.5](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2023-01-24)
 
 
