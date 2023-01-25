@@ -3,7 +3,10 @@
 namespace ForestAdmin\AgentPHP\DatasourceDoctrine;
 
 use Doctrine\ORM\EntityManagerInterface;
+use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseDatasource;
+use Illuminate\Support\Str;
+use function ForestAdmin\config;
 
 /**
  * @codeCoverageIgnore
@@ -15,8 +18,15 @@ class DoctrineDatasource extends BaseDatasource
      */
     public function __construct(private EntityManagerInterface $entityManager, array $databaseConfig)
     {
-        parent::__construct($databaseConfig);
+        // replace var %kernel.project_dir% by real path for Sqlite DB
+        if (isset($databaseConfig['url'])
+            && Str::contains($databaseConfig['url'], '%kernel.project_dir%')
+            && config('projectDir') !== null
+        ) {
+            $databaseConfig['url'] = Str::replace('%kernel.project_dir%', config('projectDir'), $databaseConfig['url']);
+        }
 
+        parent::__construct($databaseConfig);
         $this->generate();
     }
 
