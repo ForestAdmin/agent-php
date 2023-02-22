@@ -9,7 +9,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContra
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results\ActionResult;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection as IlluminateCollection;
 
@@ -38,7 +37,7 @@ class Collection implements CollectionContract
         return $this->name;
     }
 
-    public function execute(Caller $caller, string $name, array $formValues, ?Filter $filter = null): ActionResult
+    public function execute(Caller $caller, string $name, array $formValues, ?Filter $filter = null)
     {
         if (! $this->actions->get($name)) {
             throw new ForestException("Action $name is not implemented.");

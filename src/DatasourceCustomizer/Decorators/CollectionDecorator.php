@@ -10,7 +10,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results\ActionResult;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use Illuminate\Support\Collection as IlluminateCollection;
 
@@ -39,7 +38,7 @@ class CollectionDecorator implements CollectionContract
         return $this->childCollection->getFields();
     }
 
-    public function execute(Caller $caller, string $name, array $data, ?Filter $filter = null): ActionResult
+    public function execute(Caller $caller, string $name, array $data, ?Filter $filter = null)
     {
         $refinedFilter = $this->refineFilter($caller, $filter);
 
