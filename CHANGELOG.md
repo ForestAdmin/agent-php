@@ -1,3 +1,10 @@
+# [1.0.0-beta.7](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.6...v1.0.0-beta.7) (2023-02-27)
+
+
+### Bug Fixes
+
+* **query-converter:** patch the query converter with mariadb and mysql ([#28](https://github.com/ForestAdmin/agent-php/issues/28)) ([29d41b6](https://github.com/ForestAdmin/agent-php/commit/29d41b61c96f2efcc0d4d83906c503f8f873268f))
+
 # [1.0.0-beta.6](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.5...v1.0.0-beta.6) (2023-01-25)
 
 
