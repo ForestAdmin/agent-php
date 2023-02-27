@@ -20,6 +20,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Carbon;
+
 use function Spatie\PestPluginTestTime\testTime;
 
 const TIMEZONE = 'Europe/Paris';
@@ -118,15 +119,28 @@ test('QueryConverter should select only fields from the given projection', funct
     global $bookCollection;
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', null, new Projection(['id', 'title', 'published_at']));
 
-    expect($query->columns[0]->getValue())->toEqual('"books"."id", "books"."title", "books"."published_at"');
+    expect($query->columns)
+        ->toEqual(
+            [
+                'books.id',
+                'books.title',
+                'books.published_at',
+            ]
+        );
 });
 
 test('QueryConverter should select only fields from the given projection and work with relations', function () {
     global $bookCollection;
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', null, new Projection(['id', 'title', 'reviews:author']));
 
-    expect($query->columns[0]->getValue())
-        ->toEqual('"books"."id", "books"."title", "reviews"."author" as "reviews.author"');
+    expect($query->columns)
+        ->toEqual(
+            [
+                'books.id',
+                'books.title',
+                'reviews.author as reviews.author',
+            ]
+        );
 });
 
 test('QueryConverter should add all the joins with ManyToMany relation', function () {
@@ -214,8 +228,7 @@ test('QueryConverter should apply sort on relation', function () {
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'author:name']));
 
     expect($query->orders)->toHaveCount(1)
-        ->and($query->orders[0]['column'])->toBeInstanceOf(Illuminate\Database\Query\Expression::class)
-        ->and($query->orders[0]['column']->getValue())->toEqual('"author.name"')
+        ->and($query->orders[0]['column'])->toEqual('author.name')
         ->and($query->orders[0]['direction'])->toEqual('desc');
 });
 
@@ -374,9 +387,11 @@ test('QueryConverter should apply conditionTree with operator ICONTAINS', functi
 
     expect($query->wheres[0])
         ->toEqual([
-            'type'    => 'raw',
-            'sql'     => 'LOWER("books"."title") LIKE LOWER(?)',
-            'boolean' => 'and',
+            'type'     => 'Basic',
+            'operator' => 'ilike',
+            'value'    => '%foo%',
+            'boolean'  => 'and',
+            'column'   => 'books.title',
         ])
         ->and($query->bindings['where'][0])->toEqual('%foo%');
 });
@@ -388,11 +403,12 @@ test('QueryConverter should apply conditionTree with operator CONTAINS', functio
 
     expect($query->wheres[0])
         ->toEqual([
-            'type'    => 'raw',
-            'sql'     => '"books"."title" LIKE ?',
-            'boolean' => 'and',
-        ])
-        ->and($query->bindings['where'][0])->toEqual('%foo%');
+            'type'     => 'Basic',
+            'operator' => 'like',
+            'value'    => '%foo%',
+            'boolean'  => 'and',
+            'column'   => 'books.title',
+        ]);
 });
 
 test('QueryConverter should apply conditionTree with operator NOT_CONTAINS', function () {
@@ -402,11 +418,12 @@ test('QueryConverter should apply conditionTree with operator NOT_CONTAINS', fun
 
     expect($query->wheres[0])
         ->toEqual([
-            'type'    => 'raw',
-            'sql'     => '"books"."title" NOT LIKE ?',
-            'boolean' => 'and',
-        ])
-        ->and($query->bindings['where'][0])->toEqual('%foo%');
+            'type'     => 'Basic',
+            'operator' => 'not like',
+            'value'    => '%foo%',
+            'boolean'  => 'and',
+            'column'   => 'books.title',
+        ]);
 });
 
 test('QueryConverter should apply conditionTree with operator IN', function () {
@@ -444,11 +461,12 @@ test('QueryConverter should apply conditionTree with operator STARTS_WITH', func
 
     expect($query->wheres[0])
         ->toEqual([
-            'type'    => 'raw',
-            'sql'     => '"books"."title" LIKE ?',
-            'boolean' => 'and',
-        ])
-    ->and($query->bindings['where'][0])->toEqual('foo%');
+            'type'     => 'Basic',
+            'operator' => 'like',
+            'value'    => 'foo%',
+            'boolean'  => 'and',
+            'column'   => 'books.title',
+        ]);
 });
 
 test('QueryConverter should apply conditionTree with operator ENDS_WITH', function () {
@@ -458,11 +476,12 @@ test('QueryConverter should apply conditionTree with operator ENDS_WITH', functi
 
     expect($query->wheres[0])
         ->toEqual([
-            'type'    => 'raw',
-            'sql'     => '"books"."title" LIKE ?',
-            'boolean' => 'and',
-        ])
-        ->and($query->bindings['where'][0])->toEqual('%foo');
+            'type'     => 'Basic',
+            'operator' => 'like',
+            'value'    => '%foo',
+            'boolean'  => 'and',
+            'column'   => 'books.title',
+        ]);
 });
 
 test('QueryConverter should apply conditionTree with operator ISTARTS_WITH', function () {
@@ -472,11 +491,12 @@ test('QueryConverter should apply conditionTree with operator ISTARTS_WITH', fun
 
     expect($query->wheres[0])
         ->toEqual([
-            'type'    => 'raw',
-            'sql'     => 'LOWER("books"."title") LIKE LOWER(?)',
-            'boolean' => 'and',
-        ])
-        ->and($query->bindings['where'][0])->toEqual('foo%');
+            'type'     => 'Basic',
+            'operator' => 'ilike',
+            'value'    => 'foo%',
+            'boolean'  => 'and',
+            'column'   => 'books.title',
+        ]);
 });
 
 test('QueryConverter should apply conditionTree with operator IENDS_WITH', function () {
@@ -486,11 +506,12 @@ test('QueryConverter should apply conditionTree with operator IENDS_WITH', funct
 
     expect($query->wheres[0])
         ->toEqual([
-            'type'    => 'raw',
-            'sql'     => 'LOWER("books"."title") LIKE LOWER(?)',
-            'boolean' => 'and',
-        ])
-        ->and($query->bindings['where'][0])->toEqual('%foo');
+            'type'     => 'Basic',
+            'operator' => 'ilike',
+            'value'    => '%foo',
+            'boolean'  => 'and',
+            'column'   => 'books.title',
+        ]);
 });
 
 // test date operators
@@ -503,7 +524,7 @@ test('QueryConverter should apply conditionTree with operator TODAY', function (
     expect($query->wheres[0])
         ->toEqual([
             'type'    => 'between',
-            'column'  => '"books"."published_at"',
+            'column'  => 'books.published_at',
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
@@ -522,7 +543,7 @@ test('QueryConverter should apply conditionTree with operator BEFORE', function 
     expect($query->wheres[0])
         ->toEqual([
             'type'     => 'Basic',
-            'column'   => '"books"."published_at"',
+            'column'   => 'books.published_at',
             'operator' => '<',
             'boolean'  => 'and',
             'value'    => Carbon::parse($date),
@@ -538,7 +559,7 @@ test('QueryConverter should apply conditionTree with operator AFTER', function (
     expect($query->wheres[0])
         ->toEqual([
             'type'     => 'Basic',
-            'column'   => '"books"."published_at"',
+            'column'   => 'books.published_at',
             'operator' => '>',
             'boolean'  => 'and',
             'value'    => Carbon::parse($date),
@@ -554,7 +575,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_X_DAYS', 
     expect($query->wheres[0])
         ->toEqual([
             'type'    => 'between',
-            'column'  => '"books"."published_at"',
+            'column'  => 'books.published_at',
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
@@ -573,7 +594,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_X_DAYS_TO
     expect($query->wheres[0])
         ->toEqual([
             'type'    => 'between',
-            'column'  => '"books"."published_at"',
+            'column'  => 'books.published_at',
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
@@ -591,7 +612,7 @@ test('QueryConverter should apply conditionTree with operator PAST', function ()
     expect($query->wheres[0])
         ->toEqual([
             'type'     => 'Basic',
-            'column'   => '"books"."published_at"',
+            'column'   => 'books.published_at',
             'operator' => '<=',
             'boolean'  => 'and',
             'value'    => Carbon::now(TIMEZONE),
@@ -606,7 +627,7 @@ test('QueryConverter should apply conditionTree with operator FUTURE', function 
     expect($query->wheres[0])
         ->toEqual([
             'type'     => 'Basic',
-            'column'   => '"books"."published_at"',
+            'column'   => 'books.published_at',
             'operator' => '>=',
             'boolean'  => 'and',
             'value'    => Carbon::now(TIMEZONE),
@@ -622,7 +643,7 @@ test('QueryConverter should apply conditionTree with operator BEFORE_X_HOURS_AGO
     expect($query->wheres[0])
         ->toEqual([
             'type'     => 'Basic',
-            'column'   => '"books"."published_at"',
+            'column'   => 'books.published_at',
             'operator' => '<',
             'boolean'  => 'and',
             'value'    => Carbon::now(TIMEZONE)->subHours($value),
@@ -638,7 +659,7 @@ test('QueryConverter should apply conditionTree with operator AFTER_X_HOURS_AGO'
     expect($query->wheres[0])
         ->toEqual([
             'type'     => 'Basic',
-            'column'   => '"books"."published_at"',
+            'column'   => 'books.published_at',
             'operator' => '>',
             'boolean'  => 'and',
             'value'    => Carbon::now(TIMEZONE)->subHours($value),
@@ -653,7 +674,7 @@ test('QueryConverter should apply conditionTree with operator YESTERDAY', functi
     expect($query->wheres[0])
         ->toEqual([
             'type'    => 'between',
-            'column'  => '"books"."published_at"',
+            'column'  => 'books.published_at',
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
@@ -671,7 +692,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_WEEK', fu
     expect($query->wheres[0])
         ->toEqual([
             'type'    => 'between',
-            'column'  => '"books"."published_at"',
+            'column'  => 'books.published_at',
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
@@ -689,7 +710,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_MONTH', f
     expect($query->wheres[0])
         ->toEqual([
             'type'    => 'between',
-            'column'  => '"books"."published_at"',
+            'column'  => 'books.published_at',
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
@@ -707,7 +728,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_QUARTER',
     expect($query->wheres[0])
         ->toEqual([
             'type'    => 'between',
-            'column'  => '"books"."published_at"',
+            'column'  => 'books.published_at',
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
@@ -725,7 +746,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_YEAR', fu
     expect($query->wheres[0])
         ->toEqual([
             'type'    => 'between',
-            'column'  => '"books"."published_at"',
+            'column'  => 'books.published_at',
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
@@ -743,7 +764,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_WEEK_TO_D
     expect($query->wheres[0])
         ->toEqual([
             'type'    => 'between',
-            'column'  => '"books"."published_at"',
+            'column'  => 'books.published_at',
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
@@ -761,7 +782,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_MONTH_TO_
     expect($query->wheres[0])
         ->toEqual([
             'type'    => 'between',
-            'column'  => '"books"."published_at"',
+            'column'  => 'books.published_at',
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
@@ -779,7 +800,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_QUARTER_T
     expect($query->wheres[0])
         ->toEqual([
             'type'    => 'between',
-            'column'  => '"books"."published_at"',
+            'column'  => 'books.published_at',
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
@@ -797,7 +818,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_YEAR_TO_D
     expect($query->wheres[0])
         ->toEqual([
             'type'    => 'between',
-            'column'  => '"books"."published_at"',
+            'column'  => 'books.published_at',
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
