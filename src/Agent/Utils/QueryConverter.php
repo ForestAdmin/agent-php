@@ -301,15 +301,15 @@ class QueryConverter
 
                 break;
             case Operators::ICONTAINS:
-                $query->whereRaw("LOWER($field) LIKE LOWER(?)", ['%' . $value . '%'], $aggregator);
+                $query->where($field, 'ilike', '%'.$value.'%', $aggregator);
 
                 break;
             case Operators::CONTAINS:
-                $query->whereRaw("$field LIKE ?", ['%' . $value . '%'], $aggregator);
+                $query->where($field, 'like', '%'.$value.'%', $aggregator);
 
                 break;
             case Operators::NOT_CONTAINS:
-                $query->whereRaw("$field NOT LIKE ?", ['%' . $value . '%'], $aggregator);
+                $query->where($field, 'not like', '%'.$value.'%', $aggregator);
 
                 break;
             case Operators::IN:
@@ -323,19 +323,19 @@ class QueryConverter
 
                 break;
             case Operators::STARTS_WITH:
-                $query->whereRaw("$field LIKE ?", [$value . '%'], $aggregator);
+                $query->where($field, 'like', $value.'%', $aggregator);
 
                 break;
             case Operators::ENDS_WITH:
-                $query->whereRaw("$field LIKE ?", ['%' . $value], $aggregator);
+                $query->where($field, 'like', '%'.$value, $aggregator);
 
                 break;
             case Operators::ISTARTS_WITH:
-                $query->whereRaw("LOWER($field) LIKE LOWER(?)", [$value . '%'], $aggregator);
+                $query->where($field, 'ilike', $value.'%', $aggregator);
 
                 break;
             case Operators::IENDS_WITH:
-                $query->whereRaw("LOWER($field) LIKE LOWER(?)", ['%' . $value], $aggregator);
+                $query->where($field, 'ilike', '%'.$value, $aggregator);
 
                 break;
         }
