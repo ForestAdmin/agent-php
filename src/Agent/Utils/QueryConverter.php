@@ -350,10 +350,10 @@ class QueryConverter
                 ->getCollection($relation->getForeignCollection())->getTableName();
             $this->addJoinRelation($relation, $tableName);
 
-            return '"' . $tableName . '"' . '."' . Str::after($leaf->getField(), ':') . '"';
+            return $tableName . '.' . Str::after($leaf->getField(), ':');
         }
 
-        return '"' . $this->tableName . '"' . '."' . $leaf->getField() . '"';
+        return $this->tableName . '.' . $leaf->getField();
     }
 
     private function isJoin(string $joinTable): bool
