@@ -73,17 +73,19 @@ class QueryConverter
     {
         if ($this->projection && $this->projection->isNotEmpty()) {
             $selectRaw = collect($this->projection->columns())
-                ->map(fn ($field) => "\"$this->tableName\".\"$field\"")
-                ->implode(', ');
+                ->map(fn ($field) => "$this->tableName.$field")
+                ->toArray();
             foreach ($this->projection->relations() as $relation => $relationFields) {
                 /** @var RelationSchema $relation */
                 $relationSchema = $this->collection->getFields()[$relation];
                 $relationTableName = $this->collection->getDataSource()->getCollection($relationSchema->getForeignCollection())->getTableName();
                 $this->addJoinRelation($relationSchema, $relationTableName);
-                $selectRaw .= ', ' . $relationFields->map(fn ($field) => "\"$relationTableName\".\"$field\" as \"$relation.$field\"")->implode(', ');
+                $relationFields->map(function ($field) use (&$selectRaw, $relationTableName, $relation) {
+                    $selectRaw[] = "$relationTableName.$field as $relation.$field";
+                });
             }
 
-            $this->query->selectRaw($selectRaw);
+            $this->query->select($selectRaw);
         }
     }
 
@@ -137,10 +139,13 @@ class QueryConverter
         if (method_exists($this->filter, 'getSort') && $sort = $this->filter->getSort()) {
             foreach ($sort as $value) {
                 if (! Str::contains($value['field'], ':')) {
-                    $this->query->orderBy($this->tableName . '.' . $value['field'], $value['ascending'] ? 'ASC' : 'DESC');
+                    $this->query->orderBy(
+                        $this->tableName . '.' . $value['field'],
+                        $value['ascending'] ? 'ASC' : 'DESC'
+                    );
                 } else {
                     $this->query->orderBy(
-                        $this->query->raw('"' . Str::before($value['field'], ':') . '.' . Str::after($value['field'], ':') . '"'),
+                        Str::before($value['field'], ':') . '.' . Str::after($value['field'], ':'),
                         $value['ascending'] ? 'ASC' : 'DESC'
                     );
                 }
@@ -296,15 +301,15 @@ class QueryConverter
 
                 break;
             case Operators::ICONTAINS:
-                $query->whereRaw("LOWER($field) LIKE LOWER(?)", ['%' . $value . '%'], $aggregator);
+                $query->where($field, 'ilike', '%'.$value.'%', $aggregator);
 
                 break;
             case Operators::CONTAINS:
-                $query->whereRaw("$field LIKE ?", ['%' . $value . '%'], $aggregator);
+                $query->where($field, 'like', '%'.$value.'%', $aggregator);
 
                 break;
             case Operators::NOT_CONTAINS:
-                $query->whereRaw("$field NOT LIKE ?", ['%' . $value . '%'], $aggregator);
+                $query->where($field, 'not like', '%'.$value.'%', $aggregator);
 
                 break;
             case Operators::IN:
@@ -318,19 +323,19 @@ class QueryConverter
 
                 break;
             case Operators::STARTS_WITH:
-                $query->whereRaw("$field LIKE ?", [$value . '%'], $aggregator);
+                $query->where($field, 'like', $value.'%', $aggregator);
 
                 break;
             case Operators::ENDS_WITH:
-                $query->whereRaw("$field LIKE ?", ['%' . $value], $aggregator);
+                $query->where($field, 'like', '%'.$value, $aggregator);
 
                 break;
             case Operators::ISTARTS_WITH:
-                $query->whereRaw("LOWER($field) LIKE LOWER(?)", [$value . '%'], $aggregator);
+                $query->where($field, 'ilike', $value.'%', $aggregator);
 
                 break;
             case Operators::IENDS_WITH:
-                $query->whereRaw("LOWER($field) LIKE LOWER(?)", ['%' . $value], $aggregator);
+                $query->where($field, 'ilike', '%'.$value, $aggregator);
 
                 break;
         }
@@ -345,10 +350,10 @@ class QueryConverter
                 ->getCollection($relation->getForeignCollection())->getTableName();
             $this->addJoinRelation($relation, $tableName);
 
-            return '"' . $tableName . '"' . '."' . Str::after($leaf->getField(), ':') . '"';
+            return $tableName . '.' . Str::after($leaf->getField(), ':');
         }
 
-        return '"' . $this->tableName . '"' . '."' . $leaf->getField() . '"';
+        return $this->tableName . '.' . $leaf->getField();
     }
 
     private function isJoin(string $joinTable): bool
