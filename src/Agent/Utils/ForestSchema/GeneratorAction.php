@@ -3,35 +3,38 @@
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\BaseAction;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Concerns\ActionFieldType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ActionSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 
 class GeneratorAction
 {
-    public static $defaultFields = [
-        'field'        => 'Loading...',
-        'type'         => 'String',
-        'isReadOnly'   => true,
-        'defaultValue' => 'Form is loading',
-        'value'        => null,
-        'description'  => '',
-        'enums'        => null,
-        'hook'         => null,
-        'isRequired'   => false,
-        'reference'    => null,
-        'widget'       => null,
+    public static array $defaultFields = [
+        [
+            'field'        => 'Loading...',
+            'type'         => 'String',
+            'isReadOnly'   => true,
+            'defaultValue' => 'Form is loading',
+            'value'        => null,
+            'description'  => '',
+            'enums'        => null,
+            'hook'         => null,
+            'isRequired'   => false,
+            'reference'    => null,
+            'widget'       => null,
+        ],
     ];
 
-    public static function buildSchema(string $prefix, Collection $collection, string $name): array
+    public static function buildSchema(CollectionContract $collection, string $name): array
     {
         $collectionName = $collection->getName();
+        /** @var BaseAction $action */
         $action = $collection->getActions()[$name];
         $index = $collection->getActions()->keys()->search($name);
-        $slug = preg_replace('/[^a-z0-9-]+/', '-', gstrtolower($name));
+        $slug = preg_replace('/[^a-z0-9-]+/', '-', strtolower($name));
 
         $fields = self::buildFields($collection, $name, $action);
         // todo => const fields = await SchemaGeneratorActions.buildFields(collection, name, schema);
@@ -47,7 +50,7 @@ class GeneratorAction
             'download'   => $action->isGenerateFile(),
             'fields'     => $fields,
             'hooks'      => [
-                'load'   => ! $action->isStaticForm(),
+                'load'   => ! $action->hasForm(),
                 // Always registering the change hook has no consequences, even if we don't use it.
                 'change' => ['changeHook'],// todo question to devXP
             ],
@@ -94,10 +97,10 @@ class GeneratorAction
         return $output;
     }
 
-    private static function buildFields(Collection $collection, string $name, ActionSchema $schema): string
+    private static function buildFields(CollectionContract $collection, string $name, BaseAction $action): array
     {
         // We want the schema to be generated on usage => send dummy schema
-        if (! $schema->isStaticForm()) {
+        if (! $action->hasForm()) {
             return self::$defaultFields;
         }
 

@@ -16,6 +16,8 @@ trait CollectionMethods
 
     protected IlluminateCollection $segments;
 
+    protected IlluminateCollection $actions;
+
     public function getFields(): IlluminateCollection
     {
         return $this->fields;
@@ -40,10 +42,10 @@ trait CollectionMethods
 //        $this->actions->put($name, $action);
 //    }
 
-//    public function getActions(): IlluminateCollection
-//    {
-//        return $this->actions;
-//    }
+    public function getActions(): IlluminateCollection
+    {
+        return $this->actions;
+    }
 
     public function isSearchable(): bool
     {

@@ -7,7 +7,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ResultBuilder;
 
 class BaseAction
 {
-    protected ?bool $generateFile = null;
+    protected bool $isGenerateFile = false;
 
     protected array $form = [];
 
@@ -26,6 +26,19 @@ class BaseAction
     public function getScope(): string
     {
         return $this->scope;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isGenerateFile(): bool
+    {
+        return $this->isGenerateFile;
+    }
+
+    public function hasForm(): bool
+    {
+        return ! empty($this->form);
     }
 
     // generateFile?: boolean;

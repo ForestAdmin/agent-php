@@ -11,8 +11,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 
 class ActionCollection extends CollectionDecorator
 {
-    protected array $actions = [];
-
     public function addAction(string $name, BaseAction $action)
     {
         $this->actions[$name] = $action;
@@ -29,7 +27,8 @@ class ActionCollection extends CollectionDecorator
         $resultBuilder = new ResultBuilder();
         $result = $action->callExecute($context, $resultBuilder);
 
-        return $result || $resultBuilder->success();
+        // todo check value of result
+        return $result ?? $resultBuilder->success();
     }
 
     private function getContext(Caller $caller, BaseAction $action, array $formValues, ?Filter $filter = null, ?string $used = null): ActionContext

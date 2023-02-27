@@ -65,7 +65,6 @@ class SchemaEmitter
     {
         $data = [];
         $included = [];
-//        dd($schema);
         foreach ($schema['collections'] as $collection) {
             $collectionActions = $collection['actions'];
             $collectionSegments = $collection['segments'];

@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators;
 
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ActionCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsEmulate\OperatorsEmulateCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsReplace\OperatorsReplaceCollection;
@@ -24,6 +25,7 @@ class DecoratorsStack
     public DatasourceDecorator $segment;
     public DatasourceDecorator $sort;
     public DatasourceDecorator $relation;
+    public DatasourceDecorator $action;
 
     public function __construct(DatasourceContract $dataSource)
     {
@@ -47,6 +49,8 @@ class DecoratorsStack
         $last = $this->search = new DatasourceDecorator($last, SearchCollection::class);
         $last = $this->segment = new DatasourceDecorator($last, SegmentCollection::class);
         $last = $this->sort = new DatasourceDecorator($last, SortCollection::class);
+
+        $last = $this->action = new DatasourceDecorator($last, ActionCollection::class);
 
         $this->dataSource = &$last;
     }
