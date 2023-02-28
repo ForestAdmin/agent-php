@@ -11,7 +11,7 @@ class SchemaEmitter
 {
     public const LIANA_NAME = 'agent-php';
 
-    public const LIANA_VERSION = '1.0.0-beta.7';
+    public const LIANA_VERSION = '1.0.0-beta.8';
 
     public static function getSerializedSchema(Datasource $datasource)
     {

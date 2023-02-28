@@ -1,3 +1,10 @@
+# [1.0.0-beta.8](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2023-02-28)
+
+
+### Features
+
+* update composer.json to enable agent for symfony 5.4 ([#29](https://github.com/ForestAdmin/agent-php/issues/29)) ([c280067](https://github.com/ForestAdmin/agent-php/commit/c2800674c7ba259aaa46a2af3528402583929d41))
+
 # [1.0.0-beta.7](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.6...v1.0.0-beta.7) (2023-02-27)
 
 
