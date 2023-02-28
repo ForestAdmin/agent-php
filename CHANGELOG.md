@@ -1,3 +1,5 @@
+# [1.0.0-beta.9](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.8...v1.0.0-beta.9) (2023-02-28)
+
 # [1.0.0-beta.8](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2023-02-28)
 
 
