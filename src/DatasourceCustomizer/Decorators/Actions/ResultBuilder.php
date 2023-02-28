@@ -7,6 +7,7 @@ class ResultBuilder
     public function success(?string $message = null, array $options = [])
     {
         return [
+            'is_action' => true,
             'type'      => 'Success',
             'message'   => $message ?? 'Success',
             'invalided' => $options['invalidated'] ?? [],
@@ -17,34 +18,38 @@ class ResultBuilder
     public function error(?string $message = null, array $options = [])
     {
         return [
-            'type'    => 'Error',
-            'message' => $message ?? 'Error',
-            'html'    => $options['html'] ?? [],
+            'is_action' => true,
+            'type'      => 'Error',
+            'message'   => $message ?? 'Error',
+            'html'      => $options['html'] ?? [],
         ];
     }
 
     public function webhook(string $url, $method = 'POST', array $headers = [], array $body = [])
     {
         $type = 'Webhook';
+        $is_action = true;
 
-        return compact('type', 'url', 'method', 'headers', 'body');
+        return compact('is_action', 'type', 'url', 'method', 'headers', 'body');
     }
 
-    public function file(string $name = 'file', string $mimeType = 'application/octet-stream')
+    public function file($content, string $name = 'file', string $mimeType = 'application/octet-stream')
     {
         return [
-            'type'     => 'File',
-            'name'     => $name,
-            'mimeType' => $mimeType,
-            'stream'   => null, //todo
+            'is_action' => true,
+            'type'      => 'File',
+            'name'      => $name,
+            'mimeType'  => $mimeType,
+            'stream'    => $content,
         ];
     }
 
     public function redirectTo(string $path)
     {
         return [
-            'type' => 'Redirect',
-            'path' => $path,
+            'is_action' => true,
+            'type'      => 'Redirect',
+            'path'      => $path,
         ];
     }
 }

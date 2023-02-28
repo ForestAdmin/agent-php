@@ -9,6 +9,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Concerns\ActionFieldType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
+use Illuminate\Support\Str;
 
 class GeneratorAction
 {
@@ -34,7 +35,7 @@ class GeneratorAction
         /** @var BaseAction $action */
         $action = $collection->getActions()[$name];
         $index = $collection->getActions()->keys()->search($name);
-        $slug = preg_replace('/[^a-z0-9-]+/', '-', strtolower($name));
+        $slug = Str::slug($name);
 
         $fields = self::buildFields($collection, $name, $action);
         // todo => const fields = await SchemaGeneratorActions.buildFields(collection, name, schema);
@@ -44,7 +45,7 @@ class GeneratorAction
             'name'       => $name,
             'type'       => strtolower($action->getScope()),
             'baseUrl'    => null,
-            'endpoint'   => '', // todo path.join('/', prefix, '_actions', collection.name, String(actionIndex), slug),
+            'endpoint'   => "/forest/_actions/$collectionName/$index/$slug", // todo path.join('/', prefix, '_actions', collection.name, String(actionIndex), slug),
             'httpMethod' => 'POST',
             'redirect'   => null, // frontend ignores this attribute
             'download'   => $action->isGenerateFile(),

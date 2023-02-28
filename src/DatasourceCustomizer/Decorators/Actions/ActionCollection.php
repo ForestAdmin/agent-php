@@ -22,6 +22,7 @@ class ActionCollection extends CollectionDecorator
             return $this->childCollection->execute($caller, $name, $data, $filter);
         }
 
+        /** @var BaseAction $action */
         $action = $this->actions[$name];
         $context = $this->getContext($caller, $action, $data, $filter);
         $resultBuilder = new ResultBuilder();

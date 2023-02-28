@@ -17,7 +17,7 @@ class BaseAction
 
     public function callExecute(ActionContext $context, ResultBuilder $resultBuilder)
     {
-        return $this->execute($context, $resultBuilder);
+        return call_user_func($this->execute, $context, $resultBuilder);
     }
 
     /**
