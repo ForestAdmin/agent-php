@@ -29,6 +29,12 @@ class ForestController
             return new Response($data['content'], $data['status'] ?? 200, $data['headers']);
         }
 
+        if (isset($data['is_action'])) {
+            unset($data['is_action']);
+
+            return new JsonResponse($data);
+        }
+
         return new JsonResponse($data['content'], $data['status'] ?? 200, $data['headers'] ?? []);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Http;
 
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Routes\Actions\Actions;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Count;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Destroy;
@@ -38,6 +40,19 @@ class Router
             AssociateRelated::make()->getRoutes(),
             DissociateRelated::make()->getRoutes(),
             CountRelated::make()->getRoutes(),
+            self::getActionsRoutes(),
         );
+    }
+
+    private static function getActionsRoutes(): array
+    {
+        $routes = [];
+        foreach (AgentFactory::get('datasource')->getCollections() as $collection) {
+            foreach ($collection->getActions() as $actionName => $action) {
+                $routes[] = (new Actions($collection, $actionName))->getRoutes();
+            }
+        }
+
+        return array_merge(...$routes);
     }
 }
