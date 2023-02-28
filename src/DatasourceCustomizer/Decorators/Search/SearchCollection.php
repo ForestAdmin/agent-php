@@ -141,7 +141,7 @@ class SearchCollection extends CollectionDecorator
     {
         $haystack = collect($haystack);
 
-        return $haystack->firstWhere(fn ($value) => $value === trim($needle)) ??
-            $haystack->firstWhere(fn ($value) => strtolower($value) === strtolower(trim($needle)));
+        return $haystack->first(fn ($value) => $value === trim($needle)) ??
+            $haystack->first(fn ($value) => strtolower($value) === strtolower(trim($needle)));
     }
 }

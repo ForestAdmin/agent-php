@@ -4,6 +4,7 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Validations;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use Illuminate\Support\Str;
+use JsonException;
 
 class TypeGetter
 {
@@ -50,7 +51,7 @@ class TypeGetter
             return PrimitiveType::NUMBER;
         }
 
-        if (Str::isJson($value)) {
+        if (self::isJson($value)) {
             return PrimitiveType::JSON;
         }
 
@@ -68,6 +69,24 @@ class TypeGetter
         return count($potentialPoint) === 2 &&
             $typeContext === PrimitiveType::POINT &&
             self::get(array_map(static fn ($item) => (float) $item, $potentialPoint), PrimitiveType::NUMBER) === ArrayType::Number();
+    }
+
+    /**
+     * @throws \JsonException
+     */
+    private static function isJson($value): bool
+    {
+        if (! is_string($value)) {
+            return false;
+        }
+
+        try {
+            json_decode($value, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            return false;
+        }
+
+        return true;
     }
 
     private static function getArrayType(array $value, ?string $typeContext = null): ArrayType
