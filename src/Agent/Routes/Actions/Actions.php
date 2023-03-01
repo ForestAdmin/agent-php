@@ -76,9 +76,11 @@ class Actions extends AbstractAuthenticatedRoute
 
     public function handleHookLoadRequest(array $args = []): array
     {
+        return ['content' => 1];
     }
 
     public function handleHookChangeRequest(array $args = []): array
     {
+        return ['content' => 1];
     }
 }

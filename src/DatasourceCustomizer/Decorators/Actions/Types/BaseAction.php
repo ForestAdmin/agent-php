@@ -7,11 +7,9 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ResultBuilder;
 
 class BaseAction
 {
-    protected bool $isGenerateFile = false;
-
     protected array $form = [];
 
-    public function __construct(protected string $scope, protected \Closure $execute)
+    public function __construct(protected string $scope, protected \Closure $execute, protected bool $isGenerateFile = false)
     {
     }
 
@@ -40,12 +38,4 @@ class BaseAction
     {
         return ! empty($this->form);
     }
-
-    // generateFile?: boolean;
-    //  scope: Scope;
-    //  form?: DynamicField<Context>[];
-    //  execute(
-    //    context: Context,
-    //    resultBuilder: ResultBuilder,
-    //  ): void | ActionResult | Promise<void> | Promise<ActionResult>;
 }

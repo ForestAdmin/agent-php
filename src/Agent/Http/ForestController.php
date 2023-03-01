@@ -2,9 +2,11 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Http;
 
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 class ForestController
 {
@@ -31,6 +33,16 @@ class ForestController
 
         if (isset($data['is_action'])) {
             unset($data['is_action']);
+
+            if ($data['type'] === 'File') {
+                $response = new BinaryFileResponse($data['stream'], 200, ['Content-Type' => $data['mimeType'], 'Access-Control-Expose-Headers' => 'Content-Disposition']);
+                $response->setContentDisposition(
+                    ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                    $data['name']
+                );
+
+                return $response;
+            }
 
             return new JsonResponse($data);
         }
