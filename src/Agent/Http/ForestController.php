@@ -44,7 +44,7 @@ class ForestController
                 return $response;
             }
 
-            return new JsonResponse($data);
+            return new JsonResponse($data, $data['status'] ?? 200);
         }
 
         return new JsonResponse($data['content'], $data['status'] ?? 200, $data['headers'] ?? []);

@@ -9,6 +9,8 @@ class BaseAction
 {
     protected array $form = [];
 
+    protected bool $staticForm = true;
+
     public function __construct(protected string $scope, protected \Closure $execute, protected bool $isGenerateFile = false)
     {
     }
@@ -27,6 +29,14 @@ class BaseAction
     }
 
     /**
+     * @return string
+     */
+    public function getForm(): array
+    {
+        return $this->form;
+    }
+
+    /**
      * @return bool
      */
     public function isGenerateFile(): bool
@@ -34,8 +44,8 @@ class BaseAction
         return $this->isGenerateFile;
     }
 
-    public function hasForm(): bool
+    public function isStaticForm(): bool
     {
-        return ! empty($this->form);
+        return $this->staticForm;
     }
 }

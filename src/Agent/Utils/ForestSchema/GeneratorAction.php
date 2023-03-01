@@ -51,7 +51,7 @@ class GeneratorAction
             'download'   => $action->isGenerateFile(),
             'fields'     => $fields,
             'hooks'      => [
-                'load'   => ! $action->hasForm(),
+                'load'   => ! $action->isStaticForm(),
                 // Always registering the change hook has no consequences, even if we don't use it.
                 'change' => ['changeHook'],// todo question to devXP
             ],
@@ -101,24 +101,24 @@ class GeneratorAction
     private static function buildFields(CollectionContract $collection, string $name, BaseAction $action): array
     {
         // We want the schema to be generated on usage => send dummy schema
-        if (! $action->hasForm()) {
+        if (! $action->isStaticForm()) {
             return self::$defaultFields;
         }
 
-        // Ask the action to generate a form
-        $fields = $collection->getForm(null, $name);
-
-        if ($fields) {
-            // When sending to server, we need to rename 'value' into 'defaultValue'
-            // otherwise, it does not gets applied 🤷‍♂️
-            return $fields.map(static function ($field) {
-                $newField = self::buildFieldSchema(AgentFactory::get('datasource'), $field);
-                $newField['defaultValue'] = $newField['value'];
-                unset($newField['value']);
-
-                return $newField;
-            });
-        }
+//        // Ask the action to generate a form
+//        $fields = $collection->getForm(null, $name);
+//
+//        if ($fields) {
+//            // When sending to server, we need to rename 'value' into 'defaultValue'
+//            // otherwise, it does not gets applied 🤷‍♂️
+//            return $fields.map(static function ($field) {
+//                $newField = self::buildFieldSchema(AgentFactory::get('datasource'), $field);
+//                $newField['defaultValue'] = $newField['value'];
+//                unset($newField['value']);
+//
+//                return $newField;
+//            });
+//        }
 
         return [];
     }
