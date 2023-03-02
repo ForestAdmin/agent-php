@@ -18,7 +18,7 @@ class ActionContext
         protected Caller $caller,
         protected array $formValues,
         protected ?Filter $filter = null,
-        protected ?string $used = null
+        protected array $used = []
     ) {
     }
 }
