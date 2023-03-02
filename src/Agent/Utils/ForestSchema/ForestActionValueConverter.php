@@ -2,8 +2,8 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Concerns\ActionFieldType;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\File;
 
 /**
@@ -12,19 +12,19 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\File;
  */
 class ForestActionValueConverter
 {
-    public static function valueToForest(ActionField $field)
+    public static function valueToForest(DynamicField $field)
     {
         $value = $field->getValue();
 
-        if ($field->getType() === ActionFieldType::Collection()) {
+        if ($field->getType() === FieldType::COLLECTION) {
             return implode('|', (array) $value);
         }
 
-        if (is_a($value, File::class) && $field->getType() === ActionFieldType::File()) {
+        if (is_a($value, File::class) && $field->getType() === FieldType::FILE) {
             return self::makeDataUri($value);
         }
 
-        if (is_a($value, File::class) && $field->getType() === ActionFieldType::FileList()) {
+        if (is_a($value, File::class) && $field->getType() === FieldType::FILE_LIST) {
             return array_map(
                 static fn ($file) => self::makeDataUri($file)
             );

@@ -3,9 +3,9 @@
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\BaseAction;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Concerns\ActionFieldType;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseAction;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
@@ -58,40 +58,37 @@ class GeneratorAction
         ];
     }
 
-    public static function buildFieldSchema(Datasource $datasource, ActionField $field)
+    public static function buildFieldSchema(Datasource $datasource, DynamicField $field)
     {
         $output = [
             'description' => $field->getDescription(),
             'isRequired'  => $field->isRequired(),
             'isReadOnly'  => $field->isReadOnly(),
             'field'       => $field->getLabel(),
-            'value'       => ForestActionValueConverter::valueToForest($field),
+            'value'       => ForestActionValueConverter::valueToForest($field), // to check
+            'hook'        => 'changeHook',
         ];
 
-        if ($field->isWatchChanges()) {
-            $output['hook'] = 'changeHook'; // todo how it's work
-        }
-
-        if ($field->getType() === ActionFieldType::Collection()) {
+        if ($field->getType() === FieldType::COLLECTION) {
             $collection = $datasource->getCollection($field->getCollectionName());
             [$pk] = SchemaUtils::getPrimaryKeys($collection);
             $pkSchema = $collection->getFields()[$pk];
 
             $output['type'] = $pkSchema->getColumnType();
-            $output['reference'] = $collection->getName().$pk;
+            $output['reference'] = $collection->getName() . '.' . $pk;
         } elseif (
             in_array(
-                [ActionFieldType::FileList(), ActionFieldType::EnumList(), ActionFieldType::NumberList(), ActionFieldType::StringList()],
                 $field->getType(),
+                [FieldType::FILE_LIST, FieldType::ENUM_LIST, FieldType::NUMBER_LIST, FieldType::STRING_LIST],
                 true
             )
         ) {
-            $output['type'] = '[' . substr($field->getType(),  0, strlen($field->getType()) - 4) . ']';
+            $output['type'] = '[' . Str::before($field->getType(), 'List') . ']';
         } else {
             $output['type'] = $field->getType();
         }
 
-        if ($field->getType() === ActionFieldType::Enum() || $field->getType() === ActionFieldType::EnumList()) {
+        if ($field->getType() === FieldType::ENUM || $field->getType() === FieldType::ENUM_LIST) {
             $output['enums'] = $field->getEnumValues();
         }
 
@@ -105,20 +102,21 @@ class GeneratorAction
             return self::$defaultFields;
         }
 
-//        // Ask the action to generate a form
-//        $fields = $collection->getForm(null, $name);
-//
-//        if ($fields) {
+        $fields = $action->getForm();
+
+        if ($fields) {
 //            // When sending to server, we need to rename 'value' into 'defaultValue'
 //            // otherwise, it does not gets applied 🤷‍♂️
-//            return $fields.map(static function ($field) {
-//                $newField = self::buildFieldSchema(AgentFactory::get('datasource'), $field);
-//                $newField['defaultValue'] = $newField['value'];
-//                unset($newField['value']);
-//
-//                return $newField;
-//            });
-//        }
+            return collect($fields)->map(
+                static function ($field) {
+                    $fieldSchema = self::buildFieldSchema(AgentFactory::get('datasource'), $field);
+                    $fieldSchema['defaultValue'] = $fieldSchema['value'];
+                    unset($fieldSchema['value']);
+
+                    return $fieldSchema;
+                }
+            )->toArray();
+        }
 
         return [];
     }
