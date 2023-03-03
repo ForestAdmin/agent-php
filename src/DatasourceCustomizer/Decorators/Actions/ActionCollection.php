@@ -47,21 +47,21 @@ class ActionCollection extends CollectionDecorator
             return [];
         }
 
-        $formValues = $data ? [...$data] : $data;
+        $formValues = $data ? [...$data] : [];
         $used = [];
         $context = $this->getContext($caller, $action, $formValues, $filter, $used);
 
-        $dynamicFields = [];
+        $dynamicFields = $action->getForm();
         $dynamicFields = $this->dropDefaults($context, $dynamicFields, empty($data), $formValues);
-        $dynamicFields = $this->dropIfs($context, $dynamicFields);
+//        $dynamicFields = $this->dropIfs($context, $dynamicFields);
 
         $fields = $this->dropDeferred($context, $dynamicFields);
 
         /** @var ActionField $field */
         foreach ($fields as $field) {
             // customer did not define a handler to rewrite the previous value => reuse current one.
-            if (null === $field['value']) {
-                $field['value'] = $formValues[$field['label']];
+            if (null === $field->getValue()) {
+                $field->setValue($formValues[$field->getLabel()]);
             }
 
             // fields that were accessed through the context.formValues.X getter should be watched.
@@ -71,7 +71,7 @@ class ActionCollection extends CollectionDecorator
         return $fields;
     }
 
-    private function getContext(Caller $caller, BaseAction $action, array $formValues, ?Filter $filter = null, array &$used = []): ActionContext
+    private function getContext(Caller $caller, BaseAction $action, ?array $formValues, ?Filter $filter = null, array &$used = []): ActionContext
     {
         if ($action->getScope() === ActionScope::SINGLE) {
             return new ActionContextSingle($this, $caller, $formValues, $filter, $used);
@@ -83,15 +83,11 @@ class ActionCollection extends CollectionDecorator
     private function dropDefaults(ActionContext $context, array $fields, bool $isFirstCall, array &$data): array
     {
         if ($isFirstCall) {
-            $defaults = collect($fields)->map(fn ($field) => $this->evaluate($context, $field['defaultValue']));
+            $defaults = collect($fields)->map(fn ($field) => $this->evaluate($context, $field->getDefaultValue()));
 
             foreach ($fields as $index => $field) {
-                $data[$field['label']] = $defaults[$index];
+                $data[$field->getLabel()] = $defaults[$index];
             }
-        }
-
-        foreach ($fields as &$field) {
-            unset($field['defaultValue']);
         }
 
         return $fields;
@@ -104,25 +100,29 @@ class ActionCollection extends CollectionDecorator
 
     private function dropIfs(ActionContext $context, array $fields): array
     {
-        // Remove fields which have falsy if
-        $fields = collect($fields);
-        $ifValues = $fields->map(fn ($field) => ! isset($field['if']) || $this->evaluate($context, $field['if']));
+//        const ifValues = await Promise.all(
+//          fields.map(field => !field.if || this.evaluate(context, field.if)),
+//        );
+//        const newFields = fields.filter((_, index) => ifValues[index]);
 
-        $newFields = $fields->filter(fn ($field, $index) => $ifValues[$index]);
+//
+//        return newFields;
 
-        foreach ($newFields as &$field) {
-            unset($field['defaultValue']);
-        }
 
-        return $newFields;
+        $ifValues = collect($fields)
+            ->map(fn ($field) => $this->evaluate($context, $field->getIf()))
+            ->filter();
+
+        return collect($fields)->filter(fn ($field, $index) => $ifValues[$index])->toArray();
     }
 
     private function dropDeferred(ActionContext $context, array $fields): array
     {
         $newFields = [];
+
         foreach ($fields as $field) {
-            foreach ($field as &$value) {
-                $value = $this->evaluate($context, $value);
+            foreach ($field->keys() as $key) {
+                $field->__set($key, $this->evaluate($context, $field->__get($key)));
             }
             $newFields[] = ActionField::buildFromDynamicField($field);
         }

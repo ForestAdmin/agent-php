@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseAction;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
@@ -58,7 +59,7 @@ class GeneratorAction
         ];
     }
 
-    public static function buildFieldSchema(Datasource $datasource, DynamicField $field)
+    public static function buildFieldSchema(Datasource $datasource, ActionField|DynamicField $field)
     {
         $output = [
             'description' => $field->getDescription(),

@@ -18,28 +18,21 @@ class DynamicField
     ) {
     }
 
-    /**
-     * @return \Closure|string|null
-     */
-    public function getCollectionName(): \Closure|string|null
+    public function __set($name, $value)
     {
-        return $this->collectionName;
+        $this->$name = $value;
     }
 
-    /**
-     * @return array|\Closure|null
-     */
-    public function getEnumValues(): array|\Closure|null
+    public function __get($name)
     {
-        return $this->enumValues;
+        return $this->$name;
     }
 
-    /**
-     * @return \Closure|null
-     */
-    public function getIf(): ?\Closure
+    public function __isset($name)
     {
-        return $this->if;
+        echo "Is '$name' set?\n";
+
+        return isset($this->data[$name]);
     }
 
     /**
@@ -51,11 +44,27 @@ class DynamicField
     }
 
     /**
+     * @param string $type
+     */
+    public function setType(string $type): void
+    {
+        $this->type = $type;
+    }
+
+    /**
      * @return string
      */
     public function getLabel(): string
     {
         return $this->label;
+    }
+
+    /**
+     * @param string $label
+     */
+    public function setLabel(string $label): void
+    {
+        $this->label = $label;
     }
 
     /**
@@ -67,11 +76,27 @@ class DynamicField
     }
 
     /**
+     * @param string|null $description
+     */
+    public function setDescription(?string $description): void
+    {
+        $this->description = $description;
+    }
+
+    /**
      * @return bool
      */
     public function isRequired(): bool
     {
         return $this->isRequired;
+    }
+
+    /**
+     * @param bool $isRequired
+     */
+    public function setIsRequired(bool $isRequired): void
+    {
+        $this->isRequired = $isRequired;
     }
 
     /**
@@ -83,19 +108,91 @@ class DynamicField
     }
 
     /**
-     * @return \Closure|null
+     * @param bool $isReadOnly
      */
-    public function getValue(): \Closure|string|null
+    public function setIsReadOnly(bool $isReadOnly): void
     {
-        return $this->value;
+        $this->isReadOnly = $isReadOnly;
     }
 
     /**
      * @return \Closure|null
      */
-    public function getDefaultValue(): \Closure|string|null
+    public function getIf(): ?\Closure
+    {
+        return $this->if;
+    }
+
+    /**
+     * @param \Closure|null $if
+     */
+    public function setIf(?\Closure $if): void
+    {
+        $this->if = $if;
+    }
+
+    /**
+     * @return \Closure|string|null
+     */
+    public function getValue(): string|\Closure|null
+    {
+        return $this->value;
+    }
+
+    /**
+     * @param \Closure|string|null $value
+     */
+    public function setValue(string|\Closure|null $value): void
+    {
+        $this->value = $value;
+    }
+
+    /**
+     * @return \Closure|string|null
+     */
+    public function getDefaultValue(): string|\Closure|null
     {
         return $this->defaultValue;
+    }
+
+    /**
+     * @param \Closure|string|null $defaultValue
+     */
+    public function setDefaultValue(string|\Closure|null $defaultValue): void
+    {
+        $this->defaultValue = $defaultValue;
+    }
+
+    /**
+     * @return \Closure|string|null
+     */
+    public function getCollectionName(): string|\Closure|null
+    {
+        return $this->collectionName;
+    }
+
+    /**
+     * @param \Closure|string|null $collectionName
+     */
+    public function setCollectionName(string|\Closure|null $collectionName): void
+    {
+        $this->collectionName = $collectionName;
+    }
+
+    /**
+     * @return array|\Closure|null
+     */
+    public function getEnumValues(): array|\Closure|null
+    {
+        return $this->enumValues;
+    }
+
+    /**
+     * @param array|\Closure|null $enumValues
+     */
+    public function setEnumValues(array|\Closure|null $enumValues): void
+    {
+        $this->enumValues = $enumValues;
     }
 
     public function isStatic(): bool
@@ -107,5 +204,10 @@ class DynamicField
         }
 
         return true;
+    }
+
+    public function keys(): array
+    {
+        return array_keys(get_object_vars($this));
     }
 }

@@ -3,14 +3,13 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Concerns\ActionFieldType;
 
 class ActionField
 {
     public function __construct(
-        protected ActionFieldType $type,
+        protected string $type,
         protected string $label,
-        protected bool $watchChanges,
+        protected bool $watchChanges = false,
         protected ?string $description = null,
         protected bool $isRequired = false,
         protected bool $isReadOnly = false,
@@ -35,9 +34,9 @@ class ActionField
     }
 
     /**
-     * @return ActionFieldType
+     * @return string
      */
-    public function getType(): ActionFieldType
+    public function getType(): string
     {
         return $this->type;
     }
@@ -96,6 +95,14 @@ class ActionField
     public function getValue(): mixed
     {
         return $this->value;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function setValue(mixed $value): void
+    {
+        $this->value = $value;
     }
 
     /**

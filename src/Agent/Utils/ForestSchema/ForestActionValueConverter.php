@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\File;
 use Illuminate\Support\Str;
@@ -15,7 +16,7 @@ use Illuminate\Support\Str;
  */
 class ForestActionValueConverter
 {
-    public static function valueToForest(DynamicField $field)
+    public static function valueToForest(ActionField|DynamicField $field)
     {
         $value = $field->getValue();
 

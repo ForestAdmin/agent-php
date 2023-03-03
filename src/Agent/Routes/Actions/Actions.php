@@ -87,11 +87,11 @@ class Actions extends AbstractAuthenticatedRoute
         $this->build($args);
 
         $forestFields = $this->request->input('data.attributes.fields');
-        $data = $forestFields ?? ForestActionValueConverter::makeFormDataFromFields(AgentFactory::get('datasource'), $forestFields);
+        $data = $forestFields !== null ? ForestActionValueConverter::makeFormDataFromFields(AgentFactory::get('datasource'), $forestFields) : null;
         $filter = $this->getRecordSelection();
         $fields = $this->collection->getForm($this->caller, $this->actionName, $data, $filter);
 
-        return ['content' => collect($fields)->map(fn ($field) => GeneratorAction::buildFieldSchema(AgentFactory::get('datasource'), $field))];
+        return ['content' => ['fields' => collect($fields)->map(fn ($field) => GeneratorAction::buildFieldSchema(AgentFactory::get('datasource'), $field))]];
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
 //        const body = context.request.body as any;

@@ -16,7 +16,7 @@ class ActionContext
     public function __construct(
         protected ActionCollection $collection,
         protected Caller $caller,
-        protected array $formValues,
+        protected ?array $formValues,
         protected ?Filter $filter = null,
         protected array $used = []
     ) {
