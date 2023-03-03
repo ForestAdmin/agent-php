@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components;
 
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Concerns\ActionFieldType;
 
 class ActionField
@@ -17,6 +18,20 @@ class ActionField
         protected ?array $enumValues = null,
         protected ?string $collectionName = null,
     ) {
+    }
+
+    public static function buildFromDynamicField(DynamicField $field)
+    {
+        return new static(
+            type: $field->getType(),
+            label: $field->getLabel(),
+            description: $field->getDescription(),
+            isRequired: $field->isRequired(),
+            isReadOnly: $field->isReadOnly(),
+            value: $field->getValue(),
+            enumValues: $field->getEnumValues(),
+            collectionName: $field->getCollectionName(),
+        );
     }
 
     /**
@@ -41,6 +56,14 @@ class ActionField
     public function isWatchChanges(): bool
     {
         return $this->watchChanges;
+    }
+
+    /**
+     * @param bool $watchChanges
+     */
+    public function setWatchChanges(bool $watchChanges): void
+    {
+        $this->watchChanges = $watchChanges;
     }
 
     /**
