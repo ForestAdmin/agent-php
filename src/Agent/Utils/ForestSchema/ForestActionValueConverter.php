@@ -42,7 +42,7 @@ class ForestActionValueConverter
         $data = [];
         foreach ($fields as $field) {
             // Skip fields from the default form
-            if (! collect(GeneratorAction::$defaultFields)->map(fn ($f) => $f['field'].includes($field['field']))) {
+            if (! collect(GeneratorAction::$defaultFields)->map(fn ($f) => $f['field'])->contains($field['field'])) {
                 if ($field['reference'] && $field['value']) {
                     $collectionName = Str::before($field['reference'], '.');
                     $collection = $datasource->getCollection($collectionName);

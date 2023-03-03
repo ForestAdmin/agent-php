@@ -18,21 +18,19 @@ class DynamicField
     ) {
     }
 
-    public function __set($name, $value)
+    public function __set($key, $value)
     {
-        $this->$name = $value;
+        $this->$key = $value;
     }
 
-    public function __get($name)
+    public function __get($key)
     {
-        return $this->$name;
+        return $this->$key;
     }
 
-    public function __isset($name)
+    public function __isset($key)
     {
-        echo "Is '$name' set?\n";
-
-        return isset($this->data[$name]);
+        return isset($this->$key);
     }
 
     /**
