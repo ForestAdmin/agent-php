@@ -122,8 +122,6 @@ class Actions extends AbstractAuthenticatedRoute
 
     private function getRecordSelection(bool $includeUserScope = true): Filter
     {
-        $attributes = $this->request->input('data.attributes');
-
         // Match user filter + search + scope? + segment.
         $scope = $includeUserScope ? $this->permissions->getScope($this->collection) : null;
         $filter = ContextFilterFactory::buildPaginated($this->collection, $this->request, $scope);
@@ -133,7 +131,7 @@ class Actions extends AbstractAuthenticatedRoute
             $selectionIds = Id::parseSelectionIds($this->collection, $this->request);
             $selectedIds = ConditionTreeFactory::matchIds($this->collection, $selectionIds['ids']);
             if ($selectionIds['areExcluded']) {
-                $conditionTreeIds = $selectedIds->inverse();
+                $selectedIds->inverse();
             }
 
             $filter = $filter->override(conditionTree: ConditionTreeFactory::intersect($filter->getConditionTree(), $selectionIds));
