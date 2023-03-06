@@ -71,7 +71,7 @@ class ActionCollection extends CollectionDecorator
         return $fields;
     }
 
-    private function getContext(Caller $caller, BaseAction $action, ?array $formValues, ?Filter $filter = null, array &$used = []): ActionContext
+    private function getContext(Caller $caller, BaseAction $action, array $formValues = [], ?Filter $filter = null, array &$used = []): ActionContext
     {
         if ($action->getScope() === ActionScope::SINGLE) {
             return new ActionContextSingle($this, $caller, $formValues, $filter, $used);
