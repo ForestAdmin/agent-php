@@ -47,7 +47,7 @@ class ActionCollection extends CollectionDecorator
             return [];
         }
 
-        $formValues = $data ? [...$data] : [];
+        $formValues = $data ?: [];
         $used = [];
         $context = $this->getContext($caller, $action, $formValues, $filter, $used);
 
