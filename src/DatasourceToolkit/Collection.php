@@ -42,8 +42,6 @@ class Collection implements CollectionContract
         if (! $this->actions->get($name)) {
             throw new ForestException("Action $name is not implemented.");
         }
-
-        // TODO QUESTION HOW TO RETURN ACTIONRESULT + CHECK DUMMYDATA SOURCE PARAMETERS ARE MISSING ? (base.ts -> override async execute(): Promise<ActionResult>)
     }
 
     public function getForm(Caller $caller, string $name, ?array $formValues = null, ?Filter $filter = null): array
