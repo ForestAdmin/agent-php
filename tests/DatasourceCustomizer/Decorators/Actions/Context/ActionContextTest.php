@@ -36,11 +36,6 @@ function factoryActionContext()
         ->shouldReceive('list')
         ->andReturn($records);
 
-//    if ($aggregation) {
-//        $collectionBook->shouldReceive('aggregate')
-//            ->andReturn($aggregation->apply($records, 'Europe/Paris'));
-//    }
-
     $datasource->addCollection($collectionBook->getMock());
     buildAgent($datasource);
 
@@ -85,7 +80,7 @@ test('getRecords should return the correct values of the list collection', closu
     );
 })->with('caller');
 
-test('getRecordIds ', closure: function (Caller $caller) {
+test('getRecordIds should return the pk list', closure: function (Caller $caller) {
     $actionCollection = factoryActionContext();
     $context = new ActionContext($actionCollection, $caller, new PaginatedFilter(), ['title' => 'Foundation']);
 
