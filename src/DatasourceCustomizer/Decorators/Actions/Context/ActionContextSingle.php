@@ -11,11 +11,11 @@ class ActionContextSingle extends ActionContext
         return $records[0] ?? [];
     }
 
-    public function getRecordId(): array
+    public function getRecordId()
     {
         $compositeId = $this->getCompositeRecordId();
 
-        return $compositeId[0] ?? [];
+        return $compositeId[0] ?? null;
     }
 
     public function getCompositeRecordId(): array
