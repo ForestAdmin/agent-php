@@ -26,7 +26,6 @@
         "symfony/http-kernel": "^5.4|^6.0"
     },
     "require-dev": {
-        "monolog/monolog": "~2.1",
         "friendsofphp/php-cs-fixer": "^3.0",
         "pestphp/pest": "^1.21",
         "pestphp/pest-plugin-mock": "^1.0",
