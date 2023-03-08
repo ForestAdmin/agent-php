@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 function factoryBaseAction($withGeneratedFile = false, $staticForm = false)
@@ -47,7 +48,8 @@ function factoryBaseAction($withGeneratedFile = false, $staticForm = false)
 test('callExecute() should work', function (Caller $caller) {
     [$datasourceDecorator, $datasource, $baseAction] = factoryBaseAction();
 
-    $context = new ActionContext(new ActionCollection($datasourceDecorator->getCollection('Product'), $datasource), $caller);
+    $context = new ActionContext(new ActionCollection($datasourceDecorator->getCollection('Product'), $datasource), $caller, new PaginatedFilter());
+
     $resultBuilder = new ResultBuilder();
 
     expect($baseAction->callExecute($context, $resultBuilder))->toEqual(
@@ -63,7 +65,7 @@ test('callExecute() should work', function (Caller $caller) {
     );
 })->with('caller');
 
-test('getForm() should work', function (Caller $caller) {
+test('getForm() should work', function () {
     [$datasourceDecorator, $datasource, $baseAction] = factoryBaseAction();
 
     expect($baseAction->getForm())->toEqual([
@@ -78,7 +80,7 @@ test('getForm() should work', function (Caller $caller) {
             }
         ),
     ]);
-})->with('caller');
+});
 
 test('getScope() should work', function () {
     [$datasourceDecorator, $datasource, $baseAction] = factoryBaseAction();

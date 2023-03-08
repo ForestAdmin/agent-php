@@ -4,7 +4,7 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Context;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ActionCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ProjectionValidator;
@@ -14,8 +14,8 @@ class ActionContext
     public function __construct(
         protected ActionCollection $collection,
         protected Caller $caller,
+        protected PaginatedFilter $filter,
         protected array $formValues = [],
-        protected ?Filter $filter = null,
         protected array $used = []
     ) {
     }
@@ -33,11 +33,14 @@ class ActionContext
      * @example
      * .getRecords(['id', 'isActive', 'name']);
      */
-    public function getRecords(array $fields): array
+    public function getRecords(array|Projection $fields): array
     {
+        if (is_array($fields)) {
+            $fields = new Projection($fields);
+        }
         ProjectionValidator::validate($this->collection, $fields);
 
-        return $this->collection->list($this->caller, $this->filter, new Projection($fields));
+        return $this->collection->list($this->caller, $this->filter, $fields);
     }
 
     /**

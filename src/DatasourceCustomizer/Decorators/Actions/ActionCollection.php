@@ -9,6 +9,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 
 class ActionCollection extends CollectionDecorator
 {
@@ -73,10 +74,11 @@ class ActionCollection extends CollectionDecorator
 
     private function getContext(Caller $caller, BaseAction $action, array $formValues = [], ?Filter $filter = null, array &$used = []): ActionContext
     {
+        $filter = $filter ? new PaginatedFilter($filter->getConditionTree(), $filter->getSearch(), $filter->getSearchExtended(), $filter->getSegment()) : new PaginatedFilter();
         if ($action->getScope() === ActionScope::SINGLE) {
-            return new ActionContextSingle($this, $caller, $formValues, $filter, $used);
+            return new ActionContextSingle($this, $caller, $filter, $formValues, $used);
         } else {
-            return new ActionContext($this, $caller, $formValues, $filter, $used);
+            return new ActionContext($this, $caller, $filter, $formValues, $used);
         }
     }
 

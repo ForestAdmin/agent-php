@@ -92,7 +92,7 @@ function factoryComputedCollection(?Aggregation $aggregation = null)
     return ['datasource' => $datasource, 'datasourceDecorator' => $datasourceDecorator];
 }
 
-test('registerComputed() should throw if defining a field with no dependenciese', closure: function () {
+test('registerComputed() should throw if defining a field with no dependencies', closure: function () {
     ['datasourceDecorator' => $datasourceDecorator] = factoryComputedCollection();
     /** @var ComputedCollection $computedCollection */
     $computedCollection = $datasourceDecorator->getCollection('Book');
