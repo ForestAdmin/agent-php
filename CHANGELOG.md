@@ -1,3 +1,10 @@
+# [1.0.0-beta.10](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.9...v1.0.0-beta.10) (2023-03-08)
+
+
+### Bug Fixes
+
+* **config:** allow packages versions for symfony 6 ([#31](https://github.com/ForestAdmin/agent-php/issues/31)) ([d74ecc9](https://github.com/ForestAdmin/agent-php/commit/d74ecc94e95beb94a45298c88d9711e74e7bd139))
+
 # [1.0.0-beta.9](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.8...v1.0.0-beta.9) (2023-02-28)
 
 # [1.0.0-beta.8](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2023-02-28)
