@@ -63,4 +63,9 @@ class ActionContext
 
       return collect($records)->map(fn ($record) => Record::getPrimaryKeys($this->collection, $record))->toArray();
   }
+
+    public function getUsed(): array
+    {
+        return $this->used;
+    }
 }

@@ -18,7 +18,7 @@ class ActionCollection extends CollectionDecorator
         $this->actions[$name] = $action;
     }
 
-    public function execute(Caller $caller, string $name, array $data, ?Filter $filter = null)
+    public function execute(Caller $caller, string $name, array $data, ?Filter $filter = null): array
     {
         if (! isset($this->actions[$name])) {
             return $this->childCollection->execute($caller, $name, $data, $filter);
@@ -30,7 +30,6 @@ class ActionCollection extends CollectionDecorator
         $resultBuilder = new ResultBuilder();
         $result = $action->callExecute($context, $resultBuilder);
 
-        // todo check value of result
         return $result ?? $resultBuilder->success();
     }
 
@@ -40,7 +39,6 @@ class ActionCollection extends CollectionDecorator
         $action = $this->actions[$name] ?? null;
 
         if (! $action) {
-            // todo check base getForm
             return $this->childCollection->getForm($caller, $name, $data, $filter);
         }
 
@@ -56,16 +54,17 @@ class ActionCollection extends CollectionDecorator
         $dynamicFields = $this->dropDefaults($context, $dynamicFields, empty($data), $formValues);
         $dynamicFields = $this->dropIfs($context, $dynamicFields);
         $fields = $this->dropDeferred($context, $dynamicFields);
+        $used = $context->getUsed();
 
         /** @var ActionField $field */
         foreach ($fields as $field) {
             // customer did not define a handler to rewrite the previous value => reuse current one.
             if (null === $field->getValue()) {
-                $field->setValue($formValues[$field->getLabel()]);
+                $field->setValue($formValues[$field->getLabel()] ?? null);
             }
 
             // fields that were accessed through the context.formValues.X getter should be watched.
-            $field->setWatchChanges(isset($used['label']));
+            $field->setWatchChanges(isset($used[$field->getLabel()]));
         }
 
         return $fields;
@@ -119,6 +118,7 @@ class ActionCollection extends CollectionDecorator
     private function dropDeferred(ActionContext $context, array $fields): array
     {
         $newFields = [];
+
 
         foreach ($fields as $field) {
             foreach ($field->keys() as $key) {
