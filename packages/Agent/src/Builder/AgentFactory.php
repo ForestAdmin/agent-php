@@ -13,24 +13,29 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 use function ForestAdmin\config;
 
+use Psr\Log\LoggerInterface;
+
 class AgentFactory
 {
-    private const TTL_CONFIG = 3600;
+    protected const TTL_CONFIG = 3600;
 
-    private const TTL_SCHEMA = 7200;
-
-    protected static Container $container;
+    protected const TTL_SCHEMA = 7200;
 
     protected DatasourceCustomizer $customizer;
 
-    private bool $hasEnvSecret;
+    protected bool $hasEnvSecret;
 
-    public function __construct(array $config, array $services = [])
+    protected static Container $container;
+
+    public static ?LoggerInterface $logger;
+
+    public function __construct(array $config)
     {
         $this->hasEnvSecret = isset($config['envSecret']);
         $this->customizer = new DatasourceCustomizer();
-        $this->buildContainer($services);
+        $this->buildContainer();
         $this->buildCache($config);
+        self::$logger = null;
     }
 
     public function addDatasource(Datasource $datasource, array $options = []): self
@@ -102,22 +107,25 @@ class AgentFactory
             }
 
             if (! $schemaIsKnown || $force) {
-                // TODO this.options.logger('Info', 'Schema was updated, sending new version');
+                self::$logger?->info('schema was updated, sending new version');
                 ForestHttpApi::uploadSchema($schema);
                 Cache::put('schemaFileHash', $schema['meta']['schemaFileHash'], self::TTL_SCHEMA);
             } else {
-                // TODO this.options.logger('Info', 'Schema was not updated since last run');
+                self::$logger?->info('Schema was not updated since last run');
             }
         }
     }
 
-    private function buildContainer(array $services): void
+    public function setLogger(LoggerInterface $logger): self
+    {
+        self::$logger = $logger;
+
+        return $this;
+    }
+
+    private function buildContainer(): void
     {
         self::$container = new Container();
-
-        foreach ($services as $key => $value) {
-            self::$container->set($key, $value);
-        }
     }
 
     private function buildCache(array $config): void
