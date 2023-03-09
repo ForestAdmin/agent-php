@@ -54,8 +54,7 @@ class ActionCollection extends CollectionDecorator
 
         $dynamicFields = $action->getForm();
         $dynamicFields = $this->dropDefaults($context, $dynamicFields, empty($data), $formValues);
-//        $dynamicFields = $this->dropIfs($context, $dynamicFields);
-
+        $dynamicFields = $this->dropIfs($context, $dynamicFields);
         $fields = $this->dropDeferred($context, $dynamicFields);
 
         /** @var ActionField $field */
@@ -102,20 +101,19 @@ class ActionCollection extends CollectionDecorator
 
     private function dropIfs(ActionContext $context, array $fields): array
     {
-//        const ifValues = await Promise.all(
-//          fields.map(field => !field.if || this.evaluate(context, field.if)),
-//        );
-//        const newFields = fields.filter((_, index) => ifValues[index]);
+        /**
+         * @var DynamicField $field
+         */
+        foreach ($fields as $key => &$field) {
+            $ifValue = $this->evaluate($context, $field->getIf());
+            if ($ifValue !== null && ! $ifValue) {
+                unset($fields[$key]);
+            } else {
+                $field->setIf(null);
+            }
+        }
 
-//
-//        return newFields;
-
-
-        $ifValues = collect($fields)
-            ->map(fn ($field) => $this->evaluate($context, $field->getIf()))
-            ->filter();
-
-        return collect($fields)->filter(fn ($field, $index) => $ifValues[$index])->toArray();
+        return $fields;
     }
 
     private function dropDeferred(ActionContext $context, array $fields): array
