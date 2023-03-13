@@ -97,7 +97,7 @@ class EmptyCollection extends CollectionDecorator
                 $valuesByField[$leaf->getField()] = $leaf->getValue();
             } elseif (isset($valuesByField[$leaf->getField()]) && $leaf->getOperator() === 'Equal') {
                 // float of $leaf->getValue() because ConditionTreeParser can return an array of float [1.0, 2.0]
-                // in php 1 !== 1.0 :/
+                // in php : 1 !== 1.0 :/
                 $valuesByField[$leaf->getField()] = in_array((float) $leaf->getValue(), $valuesByField[$leaf->getField()], true) ? [$leaf->getValue()] : [];
             } elseif (isset($valuesByField[$leaf->getField()]) && $leaf->getOperator() === 'In') {
                 $valuesByField[$leaf->getField()] = collect($valuesByField[$leaf->getField()])->filter(fn ($v) => in_array($v, $leaf->getValue(), true));
