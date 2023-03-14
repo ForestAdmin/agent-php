@@ -16,6 +16,7 @@ class CollectionCustomizer
 
     public function disableCount()
     {
+        $this->stack->schema->getCollection($this->name)->overrideSchema('countable', false);
     }
 
     public function importField(string $name, array $options)

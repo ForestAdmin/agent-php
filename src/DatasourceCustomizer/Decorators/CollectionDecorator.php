@@ -124,4 +124,9 @@ class CollectionDecorator implements CollectionContract
     {
         return $this->childCollection->getSegments();
     }
+
+    public function isCountable()
+    {
+        return $this->childCollection->countable;
+    }
 }
