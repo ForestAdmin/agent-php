@@ -38,7 +38,7 @@ function factoryEmptyCollection($args = [])
     if (isset($args['update'])) {
         $collectionProduct = mock($collectionProduct)
             ->shouldReceive('update')
-            ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type([]))
+            ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type('array'))
             ->andReturnNull()
             ->getMock();
     }
@@ -150,14 +150,14 @@ test('valid queries - update() should be called with overlapping Order incompati
         $caller,
         new PaginatedFilter(
             conditionTree: new ConditionTreeBranch(
-                aggregator: 'And',
+                aggregator: 'Or',
                 conditions: [
                     new ConditionTreeLeaf(field: 'id', operator: 'Equal', value: 4),
                     new ConditionTreeLeaf(field: 'id', operator: 'Equal', value: 5),
                 ]
             )
         ),
-        ['title' => 'new Title']
+        []
     );
 
     expect($records)->toBeNull();
@@ -191,4 +191,121 @@ test('valid queries - aggregate() should be called with simple query', closure: 
     );
 
     expect($records)->toEqual($data);
+})->with('caller');
+
+test('Queries which target an impossible filter - list() should not be called with empty In', closure: function (Caller $caller) {
+    [$datasourceDecorator, $collection] = factoryEmptyCollection();
+
+    /** @var EmptyCollection $newCollectionProduct */
+    $newCollectionProduct = $datasourceDecorator->getCollection('Product');
+    $records = $newCollectionProduct->list(
+        $caller,
+        new PaginatedFilter(
+            conditionTree: new ConditionTreeLeaf(field: 'id', operator: 'In', value: [])
+        ),
+        new Projection()
+    );
+
+    expect($records)->toEqual([]);
+})->with('caller');
+
+test('Queries which target an impossible filter - list() should not be called with nested empty In', closure: function (Caller $caller) {
+    [$datasourceDecorator, $collection] = factoryEmptyCollection();
+
+    /** @var EmptyCollection $newCollectionProduct */
+    $newCollectionProduct = $datasourceDecorator->getCollection('Product');
+    $records = $newCollectionProduct->list(
+        $caller,
+        new PaginatedFilter(
+            conditionTree: new ConditionTreeBranch(
+                aggregator: 'And',
+                conditions: [
+                    new ConditionTreeBranch(
+                        aggregator: 'And',
+                        conditions: [
+                            new ConditionTreeBranch(
+                                'And',
+                                conditions: [
+                                    new ConditionTreeBranch(
+                                        aggregator: 'Or',
+                                        conditions: [
+                                            new ConditionTreeLeaf(field: 'id', operator: 'In', value: []),
+                                        ]
+                                    ),
+                                ]
+                            ),
+                        ]
+                    ),
+                ]
+            )
+        ),
+        new Projection()
+    );
+
+    expect($records)->toEqual([]);
+})->with('caller');
+
+test('Queries which target an impossible filter - delete() should not be called with incompatible Equals', closure: function (Caller $caller) {
+    [$datasourceDecorator, $collection] = factoryEmptyCollection(['delete' => true]);
+
+    /** @var EmptyCollection $newCollectionProduct */
+    $newCollectionProduct = $datasourceDecorator->getCollection('Product');
+    $records = $newCollectionProduct->delete(
+        $caller,
+        new Filter(
+            conditionTree: new ConditionTreeBranch(
+                aggregator: 'And',
+                conditions: [
+                    new ConditionTreeLeaf(field: 'id', operator: 'Equal', value: 12),
+                    new ConditionTreeLeaf(field: 'id', operator: 'Equal', value: 13),
+                ]
+            )
+        ),
+    );
+
+    expect($records)->toBeNull();
+})->with('caller');
+
+test('Queries which target an impossible filter - update() should not be called with incompatible Equal/In', closure: function (Caller $caller) {
+    [$datasourceDecorator, $collection] = factoryEmptyCollection(['update' => null]);
+
+    /** @var EmptyCollection $newCollectionProduct */
+    $newCollectionProduct = $datasourceDecorator->getCollection('Product');
+    $records = $newCollectionProduct->update(
+        $caller,
+        new PaginatedFilter(
+            conditionTree: new ConditionTreeBranch(
+                aggregator: 'And',
+                conditions: [
+                    new ConditionTreeLeaf(field: 'id', operator: 'Equal', value: 12),
+                    new ConditionTreeLeaf(field: 'id', operator: 'Equal', value: [13]),
+                ]
+            )
+        ),
+        ['name' => 'something else']
+    );
+
+    expect($records)->toBeNull();
+})->with('caller');
+
+test('Queries which target an impossible filter - aggregate() should not be called with incompatible Ins', closure: function (Caller $caller) {
+    [$datasourceDecorator, $collection] = factoryEmptyCollection(['aggregate' => []]);
+
+    /** @var EmptyCollection $newCollectionProduct */
+    $newCollectionProduct = $datasourceDecorator->getCollection('Product');
+    $records = $newCollectionProduct->aggregate(
+        $caller,
+        new Filter(
+            conditionTree: new ConditionTreeBranch(
+                aggregator: 'And',
+                conditions: [
+                    new ConditionTreeLeaf(field: 'id', operator: 'Equal', value: [34, 32]),
+                    new ConditionTreeLeaf(field: 'id', operator: 'Equal', value: [13]),
+                ]
+            )
+        ),
+        new Aggregation('Count')
+    );
+
+    expect($records)->toEqual([]);
 })->with('caller');

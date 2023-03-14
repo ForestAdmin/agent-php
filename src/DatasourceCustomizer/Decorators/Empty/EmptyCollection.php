@@ -26,7 +26,7 @@ class EmptyCollection extends CollectionDecorator
     public function update(Caller $caller, Filter $filter, array $patch)
     {
         if (! $this->returnsEmptySet($filter->getConditionTree())) {
-            parent::update($caller, $filter, $patch);
+            return parent::update($caller, $filter, $patch);
         }
     }
 
