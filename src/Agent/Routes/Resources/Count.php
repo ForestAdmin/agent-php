@@ -25,15 +25,26 @@ class Count extends AbstractCollectionRoute
     {
         $this->build($args);
         $this->permissions->can('browse:' . $this->collection->getName());
-        $scope = $this->permissions->getScope($this->collection);
-        $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
 
-        $aggregation = new Aggregation(operation: 'Count');
+        if ($this->collection->isCountable()) {
+            $scope = $this->permissions->getScope($this->collection);
+            $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
 
-        return [
-            'content' => [
-                'count' => $this->collection->aggregate($this->caller, $this->filter, $aggregation),
-            ],
-        ];
+            $aggregation = new Aggregation(operation: 'Count');
+
+            return [
+                'content' => [
+                    'count' => $this->collection->aggregate($this->caller, $this->filter, $aggregation),
+                ],
+            ];
+        } else {
+            return [
+                'content' => [
+                    'meta' => [
+                        'count' => 'deactivated',
+                    ],
+                ],
+            ];
+        }
     }
 }
