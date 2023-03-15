@@ -377,3 +377,14 @@ test('replaceSearch() should call the search decorator', function () {
 
     expect(invokeProperty($computedCollection, 'replacer'))->toEqual($condition);
 });
+
+test('disableCount() should disable count on the collection', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+
+    $stack = $datasourceCustomizer->getStack();
+    $book = $stack->schema->getCollection('Book');
+
+    $customizer->disableCount();
+
+    expect($book->isCountable())->toBeFalse();
+});
