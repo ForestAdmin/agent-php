@@ -127,6 +127,6 @@ class CollectionDecorator implements CollectionContract
 
     public function isCountable()
     {
-        return $this->childCollection->countable;
+        return $this->childCollection->isCountable();
     }
 }
