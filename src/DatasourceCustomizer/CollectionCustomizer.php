@@ -51,6 +51,13 @@ class CollectionCustomizer
         return $this;
     }
 
+    public function addFieldValidation(string $name, string $operator, ?string $value): self
+    {
+        $this->stack->validation->getCollection($this->name)->addValidation($name, compact('operator', 'value'));
+
+        return $this;
+    }
+
     public function addManyToOneRelation(string $name, string $foreignCollection, string $foreignKey, ?string $foreignKeyTarget = null)
     {
         $this->pushRelation(
@@ -127,7 +134,7 @@ class CollectionCustomizer
     {
     }
 
-    public function addSegment(string $name, \Closure $definition)
+    public function addSegment(string $name, \Closure $definition): self
     {
         $this->stack->segment->getCollection($this->name)->addSegment($name, $definition);
 
