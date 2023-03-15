@@ -12,7 +12,6 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\SchemaCollection
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Search\SearchCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Segment\SegmentCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Sort\SortCollection;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Validation\ValidationCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 
 class DecoratorsStack
