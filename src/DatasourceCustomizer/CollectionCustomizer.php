@@ -14,9 +14,11 @@ class CollectionCustomizer
     {
     }
 
-    public function disableCount()
+    public function disableCount(): self
     {
         $this->stack->schema->getCollection($this->name)->overrideSchema('countable', false);
+
+        return $this;
     }
 
     public function importField(string $name, array $options)
