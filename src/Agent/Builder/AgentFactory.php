@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+
 use function ForestAdmin\config;
 
 class AgentFactory
@@ -21,6 +22,7 @@ class AgentFactory
     protected static Container $container;
 
     protected DatasourceCustomizer $customizer;
+
     private bool $hasEnvSecret;
 
     public function __construct(array $config, array $services = [])

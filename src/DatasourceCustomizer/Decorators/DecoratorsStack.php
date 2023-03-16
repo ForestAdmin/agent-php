@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Empty\EmptyCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsEmulate\OperatorsEmulateCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsReplace\OperatorsReplaceCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Relation\RelationCollection;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\SchemaCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Search\SearchCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Segment\SegmentCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Sort\SortCollection;
@@ -28,6 +29,7 @@ class DecoratorsStack
     public DatasourceDecorator $sort;
     public DatasourceDecorator $relation;
     public DatasourceDecorator $action;
+    public DatasourceDecorator $schema;
 
     public function __construct(DatasourceContract $dataSource)
     {
@@ -54,7 +56,9 @@ class DecoratorsStack
         $last = $this->segment = new DatasourceDecorator($last, SegmentCollection::class);
         $last = $this->sort = new DatasourceDecorator($last, SortCollection::class);
 
+        // Step 3: Access to all fields AND emulated capabilities
         $last = $this->action = new DatasourceDecorator($last, ActionCollection::class);
+        $last = $this->schema = new DataSourceDecorator($last, SchemaCollection::class);
 
         $this->dataSource = &$last;
     }
@@ -72,6 +76,8 @@ class DecoratorsStack
         $this->search->build();
         $this->segment->build();
         $this->sort->build();
+        $this->action->build();
+        $this->schema->build();
         $this->dataSource->build();
     }
 }

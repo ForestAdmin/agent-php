@@ -18,6 +18,8 @@ trait CollectionMethods
 
     protected IlluminateCollection $actions;
 
+    protected bool $countable = true;
+
     public function getFields(): IlluminateCollection
     {
         return $this->fields;
@@ -96,5 +98,15 @@ trait CollectionMethods
         foreach ($fields as $key => $value) {
             $this->addField($key, $value);
         }
+    }
+
+    public function isCountable(): bool
+    {
+        return $this->countable;
+    }
+
+    public function setCountable(bool $countable): void
+    {
+        $this->countable = $countable;
     }
 }

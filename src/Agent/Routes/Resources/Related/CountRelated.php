@@ -27,21 +27,32 @@ class CountRelated extends AbstractRelationRoute
     {
         $this->build($args);
         $scope = $this->permissions->getScope($this->childCollection);
-        $this->filter = ContextFilterFactory::build($this->childCollection, $this->request, $scope);
 
-        $id = Id::unpackId($this->collection, $args['id']);
+        if ($this->childCollection->isCountable()) {
+            $this->filter = ContextFilterFactory::build($this->childCollection, $this->request, $scope);
 
-        $count = CollectionUtils::aggregateRelation(
-            $this->collection,
-            $id,
-            $args['relationName'],
-            $this->caller,
-            $this->filter,
-            new Aggregation(operation: 'Count')
-        );
+            $id = Id::unpackId($this->collection, $args['id']);
 
-        return [
-            'content' => compact('count'),
-        ];
+            $count = CollectionUtils::aggregateRelation(
+                $this->collection,
+                $id,
+                $args['relationName'],
+                $this->caller,
+                $this->filter,
+                new Aggregation(operation: 'Count')
+            );
+
+            return [
+                'content' => compact('count'),
+            ];
+        } else {
+            return [
+                'content' => [
+                    'meta' => [
+                        'count' => 'deactivated',
+                    ],
+                ],
+            ];
+        }
     }
 }

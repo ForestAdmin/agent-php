@@ -5,6 +5,7 @@ use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Count;
 use ForestAdmin\AgentPHP\Agent\Services\Permissions;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\SchemaCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
@@ -31,6 +32,16 @@ function factoryCount($args = []): Count
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class))
             ->andReturn(count($args['count']))
             ->getMock();
+    }
+
+    if (isset($args['countDisable'])) {
+        $collectionUser = mock($collectionUser)
+            ->shouldReceive('isCountable')
+            ->andReturnFalse()
+            ->getMock();
+
+        $schemaCollection = new SchemaCollection($collectionUser, $datasource);
+        $schemaCollection->overrideSchema('countable', false);
     }
 
     $datasource->addCollection($collectionUser);
@@ -96,4 +107,16 @@ test('handleRequest() should return a response 200', function () {
                 ],
             ]
         );
+});
+
+test('handleRequest() should return deactivate count when the collecion is not countable', function () {
+    $count = factoryCount(['countDisable' => true]);
+
+    expect($count->handleRequest(['collectionName' => 'User']))->toEqual([
+        'content' => [
+            'meta' => [
+                'count' => 'deactivated',
+            ],
+        ],
+    ]);
 });
