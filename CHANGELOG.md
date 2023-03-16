@@ -1,3 +1,10 @@
+# [1.0.0-beta.11](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.10...v1.0.0-beta.11) (2023-03-16)
+
+
+### Features
+
+* **action:** add action decorator ([#33](https://github.com/ForestAdmin/agent-php/issues/33)) ([38c07f2](https://github.com/ForestAdmin/agent-php/commit/38c07f2885d2a61fb991155d37dfc866fa890a8d))
+
 # [1.0.0-beta.10](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.9...v1.0.0-beta.10) (2023-03-08)
 
 
