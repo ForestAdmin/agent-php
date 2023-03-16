@@ -1,3 +1,10 @@
+# [1.0.0-beta.13](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.12...v1.0.0-beta.13) (2023-03-16)
+
+
+### Features
+
+* add schema decorator ([#35](https://github.com/ForestAdmin/agent-php/issues/35)) ([82cccb8](https://github.com/ForestAdmin/agent-php/commit/82cccb8d38f7d937b7867d562a1ef83ab855e5e0))
+
 # [1.0.0-beta.12](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.11...v1.0.0-beta.12) (2023-03-16)
 
 
