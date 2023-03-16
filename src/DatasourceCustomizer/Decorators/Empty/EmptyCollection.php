@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
@@ -67,7 +68,7 @@ class EmptyCollection extends CollectionDecorator
     {
         // Empty 'in` always return zero records.
 
-        return $leaf->getOperator() === 'In' && count($leaf->getValue()) === 0;
+        return $leaf->getOperator() === Operators::IN && count($leaf->getValue()) === 0;
     }
 
     private function orReturnsEmptySet(array $conditions): bool
@@ -91,15 +92,15 @@ class EmptyCollection extends CollectionDecorator
 
         /** @var ConditionTreeLeaf $leaf */
         foreach ($leafs->all() as $leaf) {
-            if (! isset($valuesByField[$leaf->getField()]) && $leaf->getOperator() === 'Equal') {
+            if (! isset($valuesByField[$leaf->getField()]) && $leaf->getOperator() === Operators::EQUAL) {
                 $valuesByField[$leaf->getField()] = [$leaf->getValue()];
-            } elseif (! isset($valuesByField[$leaf->getField()]) && $leaf->getOperator() === 'In') {
+            } elseif (! isset($valuesByField[$leaf->getField()]) && $leaf->getOperator() === Operators::IN) {
                 $valuesByField[$leaf->getField()] = $leaf->getValue();
-            } elseif (isset($valuesByField[$leaf->getField()]) && $leaf->getOperator() === 'Equal') {
+            } elseif (isset($valuesByField[$leaf->getField()]) && $leaf->getOperator() === Operators::EQUAL) {
                 // float of $leaf->getValue() because ConditionTreeParser can return an array of float [1.0, 2.0]
                 // in php : 1 !== 1.0 :/
                 $valuesByField[$leaf->getField()] = in_array((float) $leaf->getValue(), $valuesByField[$leaf->getField()], true) ? [$leaf->getValue()] : [];
-            } elseif (isset($valuesByField[$leaf->getField()]) && $leaf->getOperator() === 'In') {
+            } elseif (isset($valuesByField[$leaf->getField()]) && $leaf->getOperator() === Operators::IN) {
                 $valuesByField[$leaf->getField()] = collect($valuesByField[$leaf->getField()])->filter(fn ($v) => in_array($v, $leaf->getValue(), true));
             }
         }
