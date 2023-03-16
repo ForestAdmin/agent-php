@@ -40,9 +40,9 @@ class ActionContext extends CollectionCustomizationContext
         if (is_array($fields)) {
             $fields = new Projection($fields);
         }
-        ProjectionValidator::validate($this->collection, $fields);
+        ProjectionValidator::validate($this->realCollection, $fields);
 
-        return $this->collection->list($this->caller, $this->filter, $fields);
+        return $this->realCollection->list($this->caller, $this->filter, $fields);
     }
 
     /**
@@ -60,10 +60,10 @@ class ActionContext extends CollectionCustomizationContext
    */
   public function getCompositeRecordIds(): array
   {
-      $projection = (new Projection())->withPks($this->collection);
+      $projection = (new Projection())->withPks($this->realCollection);
       $records = $this->getRecords($projection);
 
-      return collect($records)->map(fn ($record) => Record::getPrimaryKeys($this->collection, $record))->toArray();
+      return collect($records)->map(fn ($record) => Record::getPrimaryKeys($this->realCollection, $record))->toArray();
   }
 
     public function getUsed(): array
