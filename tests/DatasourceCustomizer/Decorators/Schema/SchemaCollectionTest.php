@@ -44,13 +44,3 @@ test('should not overwrite fields from the schema when the overrideSchema is not
     expect($collection->isCountable())->toBeTrue()
         ->and($schemaCollection->isCountable())->toBeTrue();
 });
-
-// CUSTOMIZER
-//    $datasourceCustomizer = new DatasourceCustomizer();
-//    $datasourceCustomizer->addDatasource($datasource);
-//    $customizer = new CollectionCustomizer($datasourceCustomizer->getStack(), 'Product');
-//    $customizer->disableCount();
-//    dd($datasourceCustomizer->getStack()->schema->getCollection('Product')->isCountable());
-//
-//    $segmentCollection = new SchemaCollection($collectionProduct, $datasource);
-//    dd($segmentCollection->isCountable());
