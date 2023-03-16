@@ -4,6 +4,7 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ActionCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedCollection;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Empty\EmptyCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsEmulate\OperatorsEmulateCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsReplace\OperatorsReplaceCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Relation\RelationCollection;
@@ -15,6 +16,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContra
 class DecoratorsStack
 {
     public DatasourceContract|DatasourceDecorator $dataSource;
+    public DatasourceDecorator $empty;
     public DatasourceDecorator $earlyComputed;
 //    public DatasourceDecorator $earlyOpEmulate;
 //    public DatasourceDecorator $earlyOpReplace;
@@ -30,6 +32,8 @@ class DecoratorsStack
     public function __construct(DatasourceContract $dataSource)
     {
         $last = &$dataSource;
+
+        $last = $this->empty = new DatasourceDecorator($last, EmptyCollection::class);
 
         // Step 0: Do not query datasource when we know the result with yield an empty set.
         // last = this.empty = new DataSourceDecorator(last, EmptyCollectionDecorator);
@@ -57,6 +61,7 @@ class DecoratorsStack
 
     public function build(): void
     {
+        $this->empty->build();
         $this->earlyComputed->build();
 //        $this->earlyOpEmulate->build();
 //        $this->earlyOpReplace->build();

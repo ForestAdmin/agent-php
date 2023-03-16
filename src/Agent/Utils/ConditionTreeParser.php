@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContra
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 
@@ -43,7 +44,7 @@ class ConditionTreeParser
     {
         $schema = CollectionUtils::getFieldSchema($collection, $leaf['field']);
 
-        if ($leaf['operator'] === 'In' && is_string($leaf['value'])) {
+        if (ucfirst($leaf['operator']) === Operators::IN && is_string($leaf['value'])) {
             $values = collect(explode(',', $leaf['value']))
                 ->map(fn ($item) => trim($item));
 
@@ -54,7 +55,7 @@ class ConditionTreeParser
             }
 
             if ($schema->getColumnType() === PrimitiveType::NUMBER) {
-                return $values->each(fn ($item) => (float) $item)
+                return $values->map(fn ($item) => (float) $item)
                     ->filter(fn ($number) => ! is_nan($number) && is_finite($number))
                     ->all();
             }
