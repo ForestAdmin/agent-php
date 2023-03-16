@@ -9,8 +9,10 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestHandlingException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ConditionTreeValidator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\FieldValidator;
+use Illuminate\Support\Collection as IlluminateCollection;
 
 class ValidationCollection extends CollectionDecorator
 {
@@ -18,7 +20,7 @@ class ValidationCollection extends CollectionDecorator
 
     public function addValidation(string $name, array $validation): void
     {
-        FieldValidator::validate($this, $name);
+        FieldValidator::validate($this->childCollection, $name);
 
         $field = $this->childCollection->getFields()[$name];
 
@@ -29,8 +31,10 @@ class ValidationCollection extends CollectionDecorator
         if ($field->isReadOnly()) {
             throw new ForestException('Cannot add validators on a readonly field');
         }
+
         $this->validation[$name] ??= [];
         $this->validation[$name][] = $validation;
+
         $this->markSchemaAsDirty();
     }
 
@@ -50,12 +54,24 @@ class ValidationCollection extends CollectionDecorator
         parent::update($caller, $filter, $patch);
     }
 
+    public function getFields(): IlluminateCollection
+    {
+        $fields = $this->childCollection->getFields();
+
+        foreach ($this->validation as $name => $rules) {
+            $validation = $this->deduplicate(array_merge($fields[$name]->getValidation(), $rules));
+            $fields[$name]->setValidation($validation);
+        }
+
+        return $fields;
+    }
+
     private function validate(array $record, string $timezone, bool $allFields): void
     {
         foreach ($this->validation as $name => $rules) {
             if ($allFields || isset($record[$name])) {
                 // When setting a field to null, only the "Present" validator is relevant
-                $applicableRules = $record[$name] === null ? collect($rules).filter(fn ($r) => $r->getOperator() === Operators::PRESENT) : $rules;
+                $applicableRules = $record[$name] === null ? collect($rules) . filter(fn ($r) => $r->getOperator() === Operators::PRESENT) : $rules;
 
                 foreach ($applicableRules as $validator) {
                     $rawLeaf = array_merge(['field' => $name], $validator);
@@ -67,10 +83,71 @@ class ValidationCollection extends CollectionDecorator
                         $message = "$name failed validation rule :";
                         $rule = $validator['value'] ? $validator['operator'] . '(' . $validator['value'] . ')' : $validator['operator'];
 
-                        throw new ForestException("$message $rule");
+                        throw new ForestHandlingException("$message $rule");
                     }
                 }
             }
         }
+    }
+
+    /**
+     * @param array $rules
+     * @return array
+     * Deduplicate rules which the frontend understand
+     * We ignore other rules as duplications are not an issue within the agent
+     */
+    private function deduplicate(array $rules): array
+    {
+        $values = [];
+
+        foreach ($rules as $rule) {
+            $values[$rule['operator']] ??= [];
+            $values[$rule['operator']][] = $rule;
+        }
+
+        // Remove duplicate "Present"
+        if (isset($values[Operators::PRESENT])) {
+            $values[Operators::PRESENT] = [$values[Operators::PRESENT][0]];
+        }
+
+        // Merge duplicate 'GreaterThan', 'After' and 'LongerThan' (keep the max value)
+        foreach ([Operators::GREATER_THAN, Operators::AFTER, Operators::LONGER_THAN] as $operator) {
+            if (isset($values[$operator])) {
+                while (count($values[$operator]) > 1) {
+                    $last = array_pop($values[$operator]);
+
+                    $values[$operator][0] = [
+                        'operator' => $operator,
+                        'value'    => $this->max($last['value'], $values[$operator][0]['value']),
+                    ];
+                }
+            }
+        }
+
+        // Merge duplicate 'LessThan', 'Before' and 'ShorterThan' (keep the min value)
+        foreach ([Operators::LESS_THAN, Operators::BEFORE, Operators::SHORTER_THAN] as $operator) {
+            if (isset($values[$operator])) {
+                while (count($values[$operator]) > 1) {
+                    $last = array_pop($values[$operator]);
+
+                    $values[$operator][0] = [
+                        'operator' => $operator,
+                        'value'    => $this->min($last['value'], $values[$operator][0]['value']),
+                    ];
+                }
+            }
+        }
+
+        return collect($values)->reduce(fn ($memo, $r) => array_merge($memo, $r), []);
+    }
+
+    private function min($valueA, $valueB)
+    {
+        return $valueA < $valueB ? $valueA : $valueB;
+    }
+
+    private function max($valueA, $valueB)
+    {
+        return $valueA < $valueB ? $valueB : $valueA;
     }
 }

@@ -51,7 +51,7 @@ class CollectionCustomizer
         return $this;
     }
 
-    public function addFieldValidation(string $name, string $operator, ?string $value): self
+    public function addFieldValidation(string $name, string $operator, $value = null): self
     {
         $this->stack->validation->getCollection($this->name)->addValidation($name, compact('operator', 'value'));
 
