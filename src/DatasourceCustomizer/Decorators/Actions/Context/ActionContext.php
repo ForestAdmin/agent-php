@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Context;
 
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ActionCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
@@ -9,15 +10,16 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projectio
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ProjectionValidator;
 
-class ActionContext
+class ActionContext extends CollectionCustomizationContext
 {
     public function __construct(
-        protected ActionCollection $collection,
-        protected Caller $caller,
+        ActionCollection $collection,
+        Caller $caller,
         protected PaginatedFilter $filter,
         protected array $formValues = [],
         protected array $used = []
     ) {
+        parent::__construct($collection, $caller);
     }
 
     public function getFormValue(string $key)
