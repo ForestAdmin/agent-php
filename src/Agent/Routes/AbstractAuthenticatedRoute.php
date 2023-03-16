@@ -16,11 +16,6 @@ abstract class AbstractAuthenticatedRoute extends AbstractRoute
 
     protected Permissions $permissions;
 
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     public function build(array $args = []): void
     {
         $this->checkIp(new ForestApiRequester());

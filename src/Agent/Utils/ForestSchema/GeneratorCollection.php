@@ -9,7 +9,7 @@ class GeneratorCollection
     public static function buildSchema(CollectionContract $collection): array
     {
         return [
-            'actions'              => [],
+            'actions'              => $collection->getActions()->map(fn ($action, $name) => GeneratorAction::buildSchema($collection, $name))->values()->toArray(),
             'fields'               => $collection->getFields()->map(fn ($field, $name) => GeneratorField::buildSchema($collection, $name))->values()->toArray(),
             'icon'                 => null,
             'integration'          => null,

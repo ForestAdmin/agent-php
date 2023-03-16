@@ -7,7 +7,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Results\ActionResult;
 
 interface CollectionContract
 {
@@ -15,7 +14,7 @@ interface CollectionContract
 
     public function getName(): string;
 
-    public function execute(Caller $caller, string $name, array $formValues, ?Filter $filter = null): ActionResult;
+    public function execute(Caller $caller, string $name, array $formValues, ?Filter $filter = null);
 
     public function getForm(Caller $caller, string $name, ?array $formValues = null, ?Filter $filter = null): array;
 

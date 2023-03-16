@@ -2,14 +2,14 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Concerns\ActionFieldType;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 
 class ActionField
 {
     public function __construct(
-        protected ActionFieldType $type,
+        protected string $type,
         protected string $label,
-        protected bool $watchChanges,
+        protected bool $watchChanges = false,
         protected ?string $description = null,
         protected bool $isRequired = false,
         protected bool $isReadOnly = false,
@@ -19,10 +19,24 @@ class ActionField
     ) {
     }
 
+    public static function buildFromDynamicField(DynamicField $field)
+    {
+        return new static(
+            type: $field->getType(),
+            label: $field->getLabel(),
+            description: $field->getDescription(),
+            isRequired: $field->isRequired(),
+            isReadOnly: $field->isReadOnly(),
+            value: $field->getValue(),
+            enumValues: $field->getEnumValues(),
+            collectionName: $field->getCollectionName(),
+        );
+    }
+
     /**
-     * @return ActionFieldType
+     * @return string
      */
-    public function getType(): ActionFieldType
+    public function getType(): string
     {
         return $this->type;
     }
@@ -41,6 +55,14 @@ class ActionField
     public function isWatchChanges(): bool
     {
         return $this->watchChanges;
+    }
+
+    /**
+     * @param bool $watchChanges
+     */
+    public function setWatchChanges(bool $watchChanges): void
+    {
+        $this->watchChanges = $watchChanges;
     }
 
     /**
@@ -73,6 +95,14 @@ class ActionField
     public function getValue(): mixed
     {
         return $this->value;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public function setValue(mixed $value): void
+    {
+        $this->value = $value;
     }
 
     /**

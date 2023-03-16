@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer;
 
 use Closure;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseAction;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedDefinition;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DecoratorsStack;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsEmulate\OperatorsEmulateCollection;
@@ -29,8 +30,11 @@ class CollectionCustomizer
     {
     }
 
-    public function addAction(string $name, $definition)
+    public function addAction(string $name, BaseAction $definition)
     {
+        $this->stack->action->getCollection($this->name)->addAction($name, $definition);
+
+        return $this;
     }
 
     public function addField(string $fieldName, ComputedDefinition $definition): self

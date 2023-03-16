@@ -12,35 +12,35 @@ trait CollectionMethods
 {
     protected IlluminateCollection $fields;
 
-    protected IlluminateCollection $actions;
-
     protected bool $searchable = false;
 
     protected IlluminateCollection $segments;
+
+    protected IlluminateCollection $actions;
 
     public function getFields(): IlluminateCollection
     {
         return $this->fields;
     }
 
-    public function addActions(array $actions): void
-    {
-        foreach ($actions as $key => $value) {
-            $this->addAction($key, $value);
-        }
-    }
-
-    /**
-     * @throws ForestException
-     */
-    public function addAction(string $name, ActionSchema $action): void
-    {
-        if ($this->actions->has($name)) {
-            throw new ForestException('Action ' . $name . ' already defined in collection');
-        }
-
-        $this->actions->put($name, $action);
-    }
+//    public function addActions(array $actions): void
+//    {
+//        foreach ($actions as $key => $value) {
+//            $this->addAction($key, $value);
+//        }
+//    }
+//
+//    /**
+//     * @throws ForestException
+//     */
+//    public function addAction(string $name, ActionSchema $action): void
+//    {
+//        if ($this->actions->has($name)) {
+//            throw new ForestException('Action ' . $name . ' already defined in collection');
+//        }
+//
+//        $this->actions->put($name, $action);
+//    }
 
     public function getActions(): IlluminateCollection
     {
