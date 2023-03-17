@@ -28,50 +28,31 @@ class ColumnSchema
     ) {
     }
 
-    /**
-     * @return array|string
-     */
     public function getColumnType(): array|string
     {
         return $this->columnType;
     }
 
-    /**
-     * @return array
-     */
     public function getFilterOperators(): array
     {
         return $this->filterOperators;
     }
 
-    /**
-     * @return bool
-     */
     public function isPrimaryKey(): bool
     {
         return $this->isPrimaryKey;
     }
 
-    /**
-     * @return bool
-     */
     public function isReadOnly(): bool
     {
         return $this->isReadOnly;
     }
 
-    /**
-     * @return bool
-     */
     public function isSortable(): bool
     {
         return $this->isSortable;
     }
 
-    /**
-     * @param bool $sortable
-     * @return ColumnSchema
-     */
     public function setSortable(bool $sortable): self
     {
         $this->isSortable = $sortable;
@@ -79,41 +60,31 @@ class ColumnSchema
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getType(): string
     {
         return $this->type;
     }
 
-    /**
-     * @return string|null
-     */
     public function getDefaultValue(): ?string
     {
         return $this->defaultValue;
     }
 
-    /**
-     * @return array
-     */
     public function getEnumValues(): array
     {
         return $this->enumValues;
     }
 
-    /**
-     * @return array
-     */
     public function getValidation(): array
     {
         return $this->validation;
     }
 
-    /**
-     * @param array $filterOperators
-     */
+    public function setValidation(array $validation): void
+    {
+        $this->validation = $validation;
+    }
+
     public function setFilterOperators(array $filterOperators): void
     {
         $this->filterOperators = $filterOperators;
