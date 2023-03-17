@@ -65,7 +65,7 @@ class AssociateRelated extends AbstractRelationRoute
             )
         );
         $value = CollectionUtils::getValue($this->collection, $this->caller, $parentId, $relation->getOriginKeyTarget());
-        $this->childCollection->update($this->caller, $filter, ['attributes' => [$relation->getOriginKey() => $value]]);
+        $this->childCollection->update($this->caller, $filter, [$relation->getOriginKey() => $value]);
     }
 
     private function associateManyToMany(ManyToManySchema $relation, array $parentId, array $targetedRelationId)
@@ -74,10 +74,9 @@ class AssociateRelated extends AbstractRelationRoute
         $foreign = CollectionUtils::getValue($this->childCollection, $this->caller, $targetedRelationId, $id);
         $id = SchemaUtils::getPrimaryKeys($this->collection)[0];
         $origin = CollectionUtils::getValue($this->collection, $this->caller, $parentId, $id);
-        $record = ['attributes' => [
-                $relation->getOriginKey()  => $origin,
-                $relation->getForeignKey() => $foreign,
-            ],
+        $record = [
+            $relation->getOriginKey()  => $origin,
+            $relation->getForeignKey() => $foreign,
         ];
 
         $throughCollection = $this->datasource->getCollection($relation->getThroughCollection());

@@ -13,7 +13,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use Illuminate\Support\Arr;
 
 class BaseCollection extends ForestCollection
@@ -36,7 +35,6 @@ class BaseCollection extends ForestCollection
 
     public function create(Caller $caller, array $data)
     {
-        $data = $this->formatAttributes($data);
         $query = QueryConverter::of($this, $caller->getTimezone());
         $id = $query->insertGetId($data);
 
@@ -53,8 +51,7 @@ class BaseCollection extends ForestCollection
      */
     public function update(Caller $caller, Filter $filter, array $patch): void
     {
-        $data = $this->formatAttributes($patch);
-        QueryConverter::of($this, $caller->getTimezone(), $filter)->update($data);
+        QueryConverter::of($this, $caller->getTimezone(), $filter)->update($patch);
     }
 
     public function delete(Caller $caller, Filter $filter): void
@@ -77,26 +74,6 @@ class BaseCollection extends ForestCollection
         } else {
             return $query->count();
         }
-    }
-
-    public function formatAttributes(array $data)
-    {
-        $entityAttributes = [];
-        $attributes = $data['attributes'] ?? [];
-        $relationships = $data['relationships'] ?? [];
-        foreach ($attributes as $key => $value) {
-            $entityAttributes[$key] = $value;
-        }
-
-        foreach ($relationships as $key => $value) {
-            $relation = $this->getFields()[$key];
-            $attributes = $value['data'];
-            if ($relation instanceof ManyToOneSchema) {
-                $entityAttributes[$relation->getForeignKey()] = $attributes[$relation->getForeignKeyTarget()];
-            }
-        }
-
-        return $entityAttributes;
     }
 
     public function toArray($record, ?Projection $projection = null): array
