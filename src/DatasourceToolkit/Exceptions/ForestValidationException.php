@@ -5,7 +5,7 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions;
 /**
  * @codeCoverageIgnore
  */
-class ForestHandlingException extends \HttpException
+class ForestValidationException extends \Exception
 {
     /**
      * @param string         $message

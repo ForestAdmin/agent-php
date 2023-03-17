@@ -3,7 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes;
 
 use Closure;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 
 class ConditionTreeBranch extends ConditionTree
@@ -44,7 +44,7 @@ class ConditionTreeBranch extends ConditionTree
         );
     }
 
-    public function match(array $record, Collection $collection, string $timezone): bool
+    public function match(array $record, CollectionContract $collection, string $timezone): bool
     {
         return $this->aggregator === 'And'
             ? $this->everyLeaf(fn ($condition) => $condition->match($record, $collection, $timezone))

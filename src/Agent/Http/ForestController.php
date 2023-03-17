@@ -2,11 +2,13 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Http;
 
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Throwable;
 
 class ForestController
 {
@@ -22,7 +24,11 @@ class ForestController
         $params = $request->get('_route_params');
         $routes = Router::getRoutes();
 
-        return $this->response(call_user_func($routes[$route]['closure'], $params));
+        try {
+            return $this->response(call_user_func($routes[$route]['closure'], $params));
+        } catch (Throwable $exception) {
+            return $this->exceptionHandler($exception);
+        }
     }
 
     protected function response(array $data): Response|JsonResponse
@@ -48,5 +54,24 @@ class ForestController
         }
 
         return new JsonResponse($data['content'], $data['status'] ?? 200, $data['headers'] ?? []);
+    }
+
+    protected function exceptionHandler(Throwable $exception): JsonResponse|Throwable
+    {
+        if ($exception instanceof ForestValidationException) {
+            $data = [
+                'errors' => [
+                    [
+                        'name'   => 'ForestValidationException',
+                        'detail' => $exception->getMessage(),
+                        'status' => 400,
+                    ],
+                ],
+            ];
+
+            return new JsonResponse($data, 400);
+        }
+
+        return $exception;
     }
 }
