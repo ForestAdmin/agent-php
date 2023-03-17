@@ -10,7 +10,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operat
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestHandlingException;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ConditionTreeValidator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\FieldValidator;
 use Illuminate\Support\Collection as IlluminateCollection;
 
@@ -22,13 +21,13 @@ class ValidationCollection extends CollectionDecorator
     {
         FieldValidator::validate($this->childCollection, $name);
 
-        $field = $this->childCollection->getFields()[$name];
+        $field = $this->childCollection->getFields()[$name] ?? null;
 
-        if ($field->getType() !== 'Column') {
+        if ($field?->getType() !== 'Column') {
             throw new ForestException('Cannot add validators on a relation, use the foreign key instead');
         }
 
-        if ($field->isReadOnly()) {
+        if ($field?->isReadOnly()) {
             throw new ForestException('Cannot add validators on a readonly field');
         }
 
@@ -40,9 +39,7 @@ class ValidationCollection extends CollectionDecorator
 
     public function create(Caller $caller, array $data)
     {
-        foreach ($data as $record) {
-            $this->validate($record, $caller->getTimezone(), true);
-        }
+        $this->validate($data, $caller->getTimezone(), true);
 
         return parent::create($caller, $data);
     }
@@ -69,19 +66,18 @@ class ValidationCollection extends CollectionDecorator
     private function validate(array $record, string $timezone, bool $allFields): void
     {
         foreach ($this->validation as $name => $rules) {
-            if ($allFields || isset($record[$name])) {
+            if ($allFields || array_key_exists($name, $record)) {
                 // When setting a field to null, only the "Present" validator is relevant
-                $applicableRules = $record[$name] === null ? collect($rules) . filter(fn ($r) => $r->getOperator() === Operators::PRESENT) : $rules;
+                $applicableRules = $record[$name] === null ? collect($rules)->filter(fn ($r) => $r['operator'] === Operators::PRESENT) : $rules;
 
                 foreach ($applicableRules as $validator) {
                     $rawLeaf = array_merge(['field' => $name], $validator);
                     /** @var ConditionTreeLeaf $tree */
                     $tree = ConditionTreeFactory::fromArray($rawLeaf);
-                    ConditionTreeValidator::validate($tree, $this);
 
                     if (! $tree->match($record, $this, $timezone)) {
                         $message = "$name failed validation rule :";
-                        $rule = $validator['value'] ? $validator['operator'] . '(' . $validator['value'] . ')' : $validator['operator'];
+                        $rule = ($validator['value'] ?? null) ? $validator['operator'] . '(' . $validator['value'] . ')' : $validator['operator'];
 
                         throw new ForestHandlingException("$message $rule");
                     }

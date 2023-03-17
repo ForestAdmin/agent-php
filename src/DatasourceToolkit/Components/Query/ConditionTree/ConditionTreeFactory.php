@@ -60,7 +60,7 @@ class ConditionTreeFactory
     public static function fromArray(array $tree): ConditionTree
     {
         if (self::isLeaf($tree)) {
-            return new ConditionTreeLeaf($tree['field'], ucwords($tree['operator'], '_'), $tree['value']);
+            return new ConditionTreeLeaf($tree['field'], ucwords($tree['operator'], '_'), $tree['value'] ?? null);
         }
 
         if (self::isBranch($tree)) {
@@ -141,7 +141,7 @@ class ConditionTreeFactory
     {
         return array_key_exists('field', $tree)
             && array_key_exists('operator', $tree)
-            && array_key_exists('value', $tree);
+            && ($tree['operator'] === Operators::PRESENT || array_key_exists('value', $tree));
     }
 
     private static function isBranch(array $tree): bool
