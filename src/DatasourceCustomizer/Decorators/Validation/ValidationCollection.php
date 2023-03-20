@@ -77,7 +77,11 @@ class ValidationCollection extends CollectionDecorator
 
                     if (! $tree->match($record, $this, $timezone)) {
                         $message = "$name failed validation rule :";
-                        $rule = ($validator['value'] ?? null) ? $validator['operator'] . '(' . is_array($validator['value']) ? implode(',', $validator['value']) : $validator['value'] . ')' : $validator['operator'];
+                        if (isset($validator['value'])) {
+                            $rule = $validator['operator'] . '(' . (is_array($validator['value']) ? implode(',', $validator['value']) : $validator['value']). ')';
+                        } else {
+                            $rule = $validator['operator'];
+                        }
 
                         throw new ForestValidationException("$message $rule");
                     }

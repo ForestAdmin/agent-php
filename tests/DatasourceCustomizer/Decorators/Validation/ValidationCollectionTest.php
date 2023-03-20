@@ -10,7 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operat
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestHandlingException;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestValidationException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
@@ -136,7 +136,7 @@ test('Field selection when validating - should validate all fields when creating
     $newBooks->addValidation('sub_title', ['operator' => Operators::LONGER_THAN, 'value' => 5]);
 
     expect(fn () => $newBooks->create($caller, ['title' => 'longtitle', 'sub_title' => '']))
-        ->toThrow(ForestHandlingException::class, 'sub_title failed validation rule : Longer_Than(5)');
+        ->toThrow(ForestValidationException::class, 'sub_title failed validation rule : Longer_Than(5)');
 })->with('caller');
 
 test('Field selection when validating - should validate only changed fields when updating', function (Caller $caller) {
@@ -166,7 +166,7 @@ test('Validation when setting to null (null forbidden) - should not forward crea
     $newBooks->addValidation('title', ['operator' => Operators::LONGER_THAN, 'value' => 5]);
     $newBooks->addValidation('title', ['operator' => Operators::PRESENT]);
 
-    expect(fn () => $newBooks->create($caller, ['title' => null]))->toThrow(ForestHandlingException::class, "title failed validation rule : Present");
+    expect(fn () => $newBooks->create($caller, ['title' => null]))->toThrow(ForestValidationException::class, "title failed validation rule : Present");
 })->with('caller');
 
 test('Validation when setting to null (null forbidden) - should not forward updates that respect the rule', function (Caller $caller) {
@@ -174,7 +174,7 @@ test('Validation when setting to null (null forbidden) - should not forward upda
     $newBooks->addValidation('title', ['operator' => Operators::LONGER_THAN, 'value' => 5]);
     $newBooks->addValidation('title', ['operator' => Operators::PRESENT]);
 
-    expect(fn () => $newBooks->update($caller, new Filter(), ['title' => null]))->toThrow(ForestHandlingException::class, "title failed validation rule : Present");
+    expect(fn () => $newBooks->update($caller, new Filter(), ['title' => null]))->toThrow(ForestValidationException::class, "title failed validation rule : Present");
 })->with('caller');
 
 test('Validation on a defined value - should forward create that respect the rule', function (Caller $caller) {
@@ -195,12 +195,12 @@ test('Validation on a defined value - should reject create that do not respect t
     $newBooks = factoryValidationCollection();
     $newBooks->addValidation('title', ['operator' => Operators::LONGER_THAN, 'value' => 5]);
 
-    expect(fn () => $newBooks->create($caller, ['title' => '1234']))->toThrow(ForestHandlingException::class, 'title failed validation rule : Longer_Than(5)');
+    expect(fn () => $newBooks->create($caller, ['title' => '1234']))->toThrow(ForestValidationException::class, 'title failed validation rule : Longer_Than(5)');
 })->with('caller');
 
 test('Validation on a defined value - should reject updates that do not respect the rule', function (Caller $caller) {
     $newBooks = factoryValidationCollection();
     $newBooks->addValidation('title', ['operator' => Operators::LONGER_THAN, 'value' => 5]);
 
-    expect(fn () => $newBooks->update($caller, new Filter(), ['title' => '1234']))->toThrow(ForestHandlingException::class, 'title failed validation rule : Longer_Than(5)');
+    expect(fn () => $newBooks->update($caller, new Filter(), ['title' => '1234']))->toThrow(ForestValidationException::class, 'title failed validation rule : Longer_Than(5)');
 })->with('caller');

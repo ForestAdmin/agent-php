@@ -27,7 +27,7 @@ function factoryStore($args = []): Store
     if (isset($args['store'])) {
         $collectionCar = mock($collectionCar)
             ->shouldReceive('create')
-            ->with(\Mockery::type(Caller::class), $_GET['data'])
+            ->with(\Mockery::type(Caller::class), \Mockery::type('array'))
             ->andReturn(($args['store']))
             ->getMock();
     }
