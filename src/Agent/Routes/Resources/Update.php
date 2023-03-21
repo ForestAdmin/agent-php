@@ -42,7 +42,7 @@ class Update extends AbstractCollectionRoute
             )
         );
 
-        $this->collection->update($this->caller, $filter, $this->request->get('data'));
+        $this->collection->update($this->caller, $filter, $this->formatAttributes($this->request->get('data')));
 
         $filter = new PaginatedFilter($filter->getConditionTree(), $filter->getSearch(), $filter->getSearchExtended(), $filter->getSegment());
         $result = $this->collection->list(
@@ -52,8 +52,8 @@ class Update extends AbstractCollectionRoute
         )[0] ?? [];
 
         return [
-            'name'              => $args['collectionName'],
-            'content'           => JsonApi::renderItem($result, $this->collection->makeTransformer(), $args['collectionName']),
+            'name'      => $args['collectionName'],
+            'content'   => JsonApi::renderItem($result, $this->collection->makeTransformer(), $args['collectionName']),
         ];
     }
 }

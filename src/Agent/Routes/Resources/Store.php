@@ -24,7 +24,7 @@ class Store extends AbstractCollectionRoute
     {
         $this->build($args);
         $this->permissions->can('add:' . $this->collection->getName());
-        $result = $this->collection->create($this->caller, $this->request->get('data'));
+        $result = $this->collection->create($this->caller, $this->formatAttributes($this->request->get('data')));
 
         return [
             'name'              => $args['collectionName'],

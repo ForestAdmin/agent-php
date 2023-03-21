@@ -101,7 +101,6 @@ class Collection extends BaseCollection
      */
     public function create(Caller $caller, array $data)
     {
-        $data = $this->formatAttributes($data);
         $data[$this->getIdentifier()] = $this->entityMetadata->idGenerator->generateId($this->datasource->getEntityManager(), new $this->className());
         $query = QueryConverter::of($this, $caller->getTimezone());
         $id = $query->insertGetId($data);

@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 
 abstract class AbstractCollectionRoute extends AbstractAuthenticatedRoute
 {
@@ -23,5 +24,21 @@ abstract class AbstractCollectionRoute extends AbstractAuthenticatedRoute
 
         $this->datasource = AgentFactory::get('datasource');
         $this->collection = $this->datasource->getCollection($args['collectionName']);
+    }
+
+    public function formatAttributes(array $data)
+    {
+        $entityAttributes = $data['attributes'] ?? [];
+        $relationships = $data['relationships'] ?? [];
+
+        foreach ($relationships as $key => $value) {
+            $relation = $this->collection->getFields()[$key];
+            $attributes = $value['data'];
+            if ($relation instanceof ManyToOneSchema) {
+                $entityAttributes[$relation->getForeignKey()] = $attributes[$relation->getForeignKeyTarget()];
+            }
+        }
+
+        return $entityAttributes;
     }
 }
