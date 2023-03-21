@@ -1,3 +1,10 @@
+# [1.0.0-beta.14](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.13...v1.0.0-beta.14) (2023-03-21)
+
+
+### Features
+
+* add validation decorator ([#36](https://github.com/ForestAdmin/agent-php/issues/36)) ([711fae2](https://github.com/ForestAdmin/agent-php/commit/711fae2b107785f3ee4fb9574c575c0197761b82))
+
 # [1.0.0-beta.13](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.12...v1.0.0-beta.13) (2023-03-16)
 
 
