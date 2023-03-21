@@ -18,8 +18,9 @@ use ForestAdmin\AgentPHP\Agent\Routes\Security\ScopeInvalidation;
 use ForestAdmin\AgentPHP\Agent\Routes\System\HealthCheck;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
-test('getHeaders() should work', function () {
+test('getRoutes() should work', function () {
     buildAgent(new Datasource());
+
 
     expect(Router::getRoutes())
         ->toEqual(

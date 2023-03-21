@@ -17,15 +17,16 @@ class ForestController
     /**
      * @param Request $request
      * @return JsonResponse|Response
+     * @throws Throwable
      */
     public function __invoke(Request $request): JsonResponse|Response
     {
         $route = $request->get('_route');
         $params = $request->get('_route_params');
-        $routes = Router::getRoutes();
+        $closure = $this->getClosure($route);
 
         try {
-            return $this->response(call_user_func($routes[$route]['closure'], $params));
+            return $this->response($closure($params));
         } catch (Throwable $exception) {
             return $this->exceptionHandler($exception);
         }
@@ -56,7 +57,10 @@ class ForestController
         return new JsonResponse($data['content'], $data['status'] ?? 200, $data['headers'] ?? []);
     }
 
-    protected function exceptionHandler(Throwable $exception): JsonResponse|Throwable
+    /**
+     * @throws Throwable
+     */
+    protected function exceptionHandler(Throwable $exception): JsonResponse
     {
         if ($exception instanceof ForestValidationException) {
             $data = [
@@ -72,6 +76,13 @@ class ForestController
             return new JsonResponse($data, 400);
         }
 
-        return $exception;
+        throw $exception;
+    }
+
+    protected function getClosure(string $routeName): \Closure
+    {
+        $routes = Router::getRoutes();
+
+        return $routes[$routeName]['closure'];
     }
 }
