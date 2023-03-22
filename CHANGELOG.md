@@ -1,3 +1,10 @@
+# [1.0.0-beta.15](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.14...v1.0.0-beta.15) (2023-03-22)
+
+
+### Bug Fixes
+
+* **schema:** sort actions by id and fields by name in the schema ([#37](https://github.com/ForestAdmin/agent-php/issues/37)) ([ce3367e](https://github.com/ForestAdmin/agent-php/commit/ce3367e21994e0838f294a57f8f38ffab9b96f95))
+
 # [1.0.0-beta.14](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.13...v1.0.0-beta.14) (2023-03-21)
 
 
