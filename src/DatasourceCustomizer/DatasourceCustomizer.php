@@ -43,6 +43,13 @@ class DatasourceCustomizer
         return $this;
     }
 
+    public function addChart(string $name, \Closure $definition): self
+    {
+        $this->stack->chart->addChart($name, $definition);
+
+        return $this;
+    }
+
     /**
      * Allow to interact with a decorated collection
      * @param string   $name the name of the collection to manipulate

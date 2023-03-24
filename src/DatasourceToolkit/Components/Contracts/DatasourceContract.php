@@ -4,14 +4,13 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\Chart;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\DataSourceSchema;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 interface DatasourceContract
 {
     public function getCollections(): IlluminateCollection;
 
-    public function getSchema(): DataSourceSchema;
+    public function getCharts(): IlluminateCollection;
 
     public function getCollection(string $name): CollectionContract;
 

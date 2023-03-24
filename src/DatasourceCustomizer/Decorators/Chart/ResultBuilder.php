@@ -13,16 +13,16 @@ use Illuminate\Support\Str;
 
 class ResultBuilder
 {
-    public function value(int|float $value, null|int|float $previousValue): ValueChart
+    public function value(int|float $value, null|int|float $previousValue = null): ValueChart
     {
-        // todo check with Matthieu ValueChart acceept only INT
         return new ValueChart($value, $previousValue);
     }
 
     public function distribution(array $distribution): PieChart
     {
-        // todo test
-        return new PieChart($distribution);
+        return new PieChart(
+            collect($distribution)->map(fn ($value, $key) => compact('key', 'value'))->toArray()
+        );
     }
 
     public function timeBased(string $timeRange, array $values): LineChart
@@ -53,14 +53,18 @@ class ResultBuilder
         return new PercentageChart($value);
     }
 
-    public function objective(int|float $value, null|int|float $objective): ObjectiveChart
+    public function objective(int|float $value, null|int|float $objective = null): ObjectiveChart
     {
         return new ObjectiveChart($value, $objective);
     }
 
     public function leaderboard(array $value): LeaderboardChart
     {
-        return new LeaderboardChart($value);
+        $data = collect($this->distribution($value)->serialize())
+            ->sort(fn ($a, $b) => $b['value'] - $a['value'])
+            ->toArray();
+
+        return new LeaderboardChart($data);
     }
 
     public function smart($data)

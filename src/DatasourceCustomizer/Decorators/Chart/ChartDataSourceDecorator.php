@@ -3,23 +3,21 @@
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Chart;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\AgentCustomizationContext;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ResultBuilder;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\Chart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use Illuminate\Support\Collection as IlluminateCollection;
 
 class ChartDataSourceDecorator extends DatasourceDecorator
 {
-    private array $charts = [];
-
     public function __construct(DatasourceContract|DatasourceDecorator $childDataSource)
     {
         parent::__construct($childDataSource, ChartCollectionDecorator::class);
     }
 
-    public function addChart(string $name, array $definition): void
+    public function addChart(string $name, \Closure $definition): void
     {
         if (isset($this->charts[$name])) {
             throw new ForestException("Chart '$name' already exists.");
@@ -36,18 +34,19 @@ class ChartDataSourceDecorator extends DatasourceDecorator
             return $chart(new AgentCustomizationContext($this, $caller), new ResultBuilder());
         }
 
-        parent::renderChart($caller, $name);
+        return parent::renderChart($caller, $name);
     }
 
-    /*
-      override get schema(): DataSourceSchema {
-        const myCharts = Object.keys(this.charts);
-        const otherCharts = this.childDataSource.schema.charts;
+    public function getCharts(): IlluminateCollection
+    {
+        $myCharts = collect($this->charts)->keys();
+        $otherCharts = $this->childDataSource->getCharts();
 
-        const duplicate = myCharts.find(name => otherCharts.includes(name));
-        if (duplicate) throw new Error(`Chart '${duplicate}' is defined twice.`);
+        $duplicate = $myCharts->first(fn ($name) => $otherCharts->contains($name));
+        if ($duplicate) {
+            throw new ForestException("Chart '$duplicate' is defined twice.");
+        }
 
-        return { ...this.childDataSource.schema, charts: [...myCharts, ...otherCharts] };
-      }
-     */
+        return $otherCharts->merge($myCharts);
+    }
 }

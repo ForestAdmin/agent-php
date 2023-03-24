@@ -40,6 +40,13 @@ class AgentFactory
         return $this;
     }
 
+    public function addChart(string $name, \Closure $definition): self
+    {
+        $this->customizer->addChart($name, $definition);
+
+        return $this;
+    }
+
     public function build(): void
     {
         self::$container->set('datasource', $this->customizer->getStack()->dataSource);
@@ -50,7 +57,7 @@ class AgentFactory
     /**
      * Allow to interact with a decorated collection
      * @example
-     * .customizeCollection('books', books => books.renameField('xx', 'yy'))
+     * ->customizeCollection('books', books => books.renameField('xx', 'yy'))
      * @param string   $name the name of the collection to manipulate
      * @param \Closure $handle a function that provide a
      *   collection builder on the given collection name
