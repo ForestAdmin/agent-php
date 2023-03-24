@@ -13,6 +13,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Arr;
 
 class BaseCollection extends ForestCollection
@@ -87,5 +88,10 @@ class BaseCollection extends ForestCollection
     public function getTableName(): string
     {
         return $this->tableName;
+    }
+
+    public function renderChart(Caller $caller, string $name, array $recordId)
+    {
+        throw new ForestException("Chart $name is not implemented.");
     }
 }

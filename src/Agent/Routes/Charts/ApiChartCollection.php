@@ -2,20 +2,17 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\Charts;
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractAuthenticatedRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
+use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 
-class ApiChartDatasource extends AbstractAuthenticatedRoute
+class ApiChartCollection extends AbstractAuthenticatedRoute
 {
-    protected DatasourceContract $datasource;
-
-    public function __construct(protected string $chartName)
+    public function __construct(protected CollectionContract $collection, protected string $chartName)
     {
-        $this->datasource = AgentFactory::get('datasource');
         parent::__construct();
         $this->setupRoutes();
     }
@@ -24,16 +21,16 @@ class ApiChartDatasource extends AbstractAuthenticatedRoute
     {
         // Mount both GET and POST, respectively for smart and api charts.
         $this->addRoute(
-            "forest.chart.get.$this->chartName",
+            "forest.chart.collection.get.$this->chartName",
             'get',
-            "/_charts/$this->chartName",
+            "/_charts/{collectionName}/$this->chartName",
             fn () => $this->handleSmartChart()
         );
 
         $this->addRoute(
-            "forest.chart.post.$this->chartName",
+            "forest.chart.collection.post.$this->chartName",
             'post',
-            "/_charts/$this->chartName",
+            "/_charts/{collectionName}/$this->chartName",
             fn () => $this->handleApiChart()
         );
 
@@ -44,9 +41,10 @@ class ApiChartDatasource extends AbstractAuthenticatedRoute
     {
         return [
             'content' => JsonApi::renderChart(
-                $this->datasource->renderChart(
+                $this->collection->renderChart(
                     QueryStringParser::parseCaller($this->request),
-                    $this->chartName
+                    $this->chartName,
+                    Id::unpackId($this->collection, $this->request->input('record_id'))
                 )
             ),
         ];
@@ -54,9 +52,10 @@ class ApiChartDatasource extends AbstractAuthenticatedRoute
 
     public function handleSmartChart(): array
     {
-        return $this->datasource->renderChart(
+        return $this->collection->renderChart(
             QueryStringParser::parseCaller($this->request),
-            $this->chartName
+            $this->chartName,
+            Id::unpackId($this->collection, $this->request->input('record_id'))
         );
     }
 }

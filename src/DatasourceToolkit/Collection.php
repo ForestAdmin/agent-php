@@ -25,6 +25,7 @@ class Collection implements CollectionContract
         $this->fields = new IlluminateCollection();
         $this->actions = new IlluminateCollection();
         $this->segments = new IlluminateCollection();
+        $this->charts = new IlluminateCollection();
     }
 
     public function getDataSource(): DatasourceContract
@@ -82,5 +83,9 @@ class Collection implements CollectionContract
     {
         // by default $record is an array
         return $record;
+    }
+
+    public function renderChart(Caller $caller, string $name, array $recordId)
+    {
     }
 }

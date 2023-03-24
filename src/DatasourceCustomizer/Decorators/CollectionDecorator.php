@@ -26,6 +26,7 @@ class CollectionDecorator implements CollectionContract
         $this->fields = new IlluminateCollection();
         $this->actions = new IlluminateCollection();
         $this->segments = new IlluminateCollection();
+        $this->charts = new IlluminateCollection();
     }
 
     public function isSearchable(): bool
@@ -128,5 +129,15 @@ class CollectionDecorator implements CollectionContract
     public function isCountable()
     {
         return $this->childCollection->isCountable();
+    }
+
+    public function renderChart(Caller $caller, string $name, array $recordId)
+    {
+        return $this->childCollection->renderChart($caller, $name, $recordId);
+    }
+
+    public function getCharts()
+    {
+        return $this->childCollection->getCharts();
     }
 }

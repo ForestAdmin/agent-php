@@ -12,7 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 class CollectionChartContext extends CollectionCustomizationContext
 {
     public function __construct(
-        ChartCollection $collection,
+        ChartCollectionDecorator $collection,
         Caller $caller,
         protected array $compositeRecordId
     ) {

@@ -18,6 +18,8 @@ trait CollectionMethods
 
     protected IlluminateCollection $actions;
 
+    protected IlluminateCollection $charts;
+
     protected bool $countable = true;
 
     public function getFields(): IlluminateCollection
@@ -108,5 +110,13 @@ trait CollectionMethods
     public function setCountable(bool $countable): void
     {
         $this->countable = $countable;
+    }
+
+    /**
+     * @return IlluminateCollection
+     */
+    public function getCharts(): IlluminateCollection
+    {
+        return $this->charts;
     }
 }
