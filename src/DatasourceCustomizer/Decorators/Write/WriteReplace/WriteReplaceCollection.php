@@ -13,7 +13,7 @@ class WriteReplaceCollection extends CollectionDecorator
 {
     private array $handlers = [];
 
-//    override readonly dataSource: DataSourceDecorator<WriteReplacerCollectionDecorator>;
+    private array $used = [];
 
     public function replaceFieldWriting(string $fieldName, \Closure $definition): void
     {
@@ -45,18 +45,13 @@ class WriteReplaceCollection extends CollectionDecorator
 
     public function update(Caller $caller, Filter $filter, array $patch)
     {
-        $patch = [
-            "reference" => "aa bb",
-            "id"        => "57",
-        ];
-
-
         $newPatch = $this->rewritePatch($caller, 'update', $patch);
+        dd($newPatch);
 
         parent::update($caller, $filter, $newPatch);
     }
 
-    private function rewritePatch(Caller $caller, string $action, array $patch, array $usedHandlers = []): array
+    private function rewritePatch(Caller $caller, string $action, array $patch): array
     {
         if (! in_array($action, ['create', 'update'], true)) {
             throw new ForestException("The action $action is not allowed (only create or update)");
@@ -64,11 +59,10 @@ class WriteReplaceCollection extends CollectionDecorator
 
         // We rewrite the patch by applying all handlers on each field.
         $context = new WriteCustomizationContext($this, $caller, $action, $patch);
-        $patches = collect($patch)->map(fn ($item, $key) => $this->rewriteKey($context, $key, $usedHandlers));
+        $patches = collect($patch)->map(fn ($item, $key) => $this->rewriteKey($context, $key));
 
         // We now have a list of patches (one per field) that we can merge.
-        $newPatch = $this->deepMerge($patches);
-
+        $newPatch = $this->deepMerge(...$patches); //->toArray()
         // Check that the customer handlers did not introduce invalid data.
         if (count($newPatch) > 0) {
             RecordValidator::validate($this, $newPatch);
@@ -77,31 +71,32 @@ class WriteReplaceCollection extends CollectionDecorator
         return $newPatch;
     }
 
-    private function rewriteKey(WriteCustomizationContext $context, string $key, array $used): array
+    private function rewriteKey(WriteCustomizationContext $context, string $key)//: array
     {
-        // PHP SEMBLE IMPOSSIBLE CE CAS
-        // Guard against infinite recursion.
-        // if (used.includes(key)) throw new Error(`Cycle detected: ${used.join(' -> ')}.`);
+        if (! in_array($key, $this->used, true)) {
+            $this->used[] = $key;
+        } else {
+            throw new ForestException("Conflict value on the field $key. It received several values.");
+        }
 
         $field = $this->getFields()[$key];
         // Handle Column fields.
         if ($field?->getType() === 'Column') {
             // We either call the customer handler or a default one that does nothing.
-            $handler = $this->handlers[$key] ?? static fn ($v) => [$key => $v]; // TODO A CHECKER
-            $fieldPatch = $handler($context->getRecord()[$key], $context) ?? [];
-            dd($fieldPatch);
+            $handler = $this->handlers[$key] ?? static fn ($v) => [$key => $v];
+            $fieldPatch = isset($context->getRecord()[$key]) && $handler($context->getRecord()[$key], $context) ? $handler($context->getRecord()[$key], $context) : [];
 
-            // TODO A CHECKER EN PHP
-            if (null !== $fieldPatch || ! is_array($fieldPatch)) {
-                throw new Error("The write handler of $key should return an object or nothing.");
+            if (! is_array($fieldPatch)) {
+                throw new ForestException("The write handler of $key should return an function or nothing.");
             }
 
             // Isolate change to our own value (which should not recurse) and the rest which should
             // trigger the other handlers.
-            //const { [key]: value, ...recursionPatch } = fieldPatch;
-            //$newPatch = $this->rewritePatch($context->getCaller(), $context->getAction(), recursionPatch, [...used, key]);
+            $value = $fieldPatch[$key] ?? null;
+            unset($fieldPatch[$key]);
+            $newPatch = $this->rewritePatch($context->getCaller(), $context->getAction(), $fieldPatch);
 
-            //return $value !== null ? $this->deepMerge([$key => $value], $newPatch) : $newPatch;
+            return $value !== null ? $this->deepMerge([$key => $value], $newPatch) : $newPatch;
         }
 
         // Handle relation fields.
@@ -122,18 +117,21 @@ class WriteReplaceCollection extends CollectionDecorator
     {
         $acc = [];
 
-        foreach ($patches as $patch) {
-            foreach ($patch as $key => $value) {
-                // We could check that this is a relation field but we choose to only check for objects
-                // to allow customers to use this for JSON fields.
-                if (! array_key_exists($key, $acc)) {
-                    $acc[$key] = $value;
-                } elseif (is_array($value)) {
-                    $this->deepMerge([$acc[$key], $value]);
+        foreach ($patches as $key => $patch) {
+            $patch = ! is_array($patch) ? [$key => $patch] : $patch;
+
+            foreach ($patch as $subKey => $subValue) {
+                if (! array_key_exists($subKey, $acc)) {
+                    $acc[$subKey] = $subValue;
+                } elseif (is_array($subValue)) {
+                    dd('relation');
+                    $acc[$subKey] = $this->deepMerge([$acc[$subKey], $subValue]);
                 } else {
-                    throw new ForestException("Conflict value on the field $key. It received several values.");
+                    throw new ForestException("Conflict value on the field $subKey. It received several values.");
                 }
             }
         }
+
+        return $acc;
     }
 }

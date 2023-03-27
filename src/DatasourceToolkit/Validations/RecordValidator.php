@@ -13,7 +13,7 @@ class RecordValidator
             throw new ForestException('The record data is empty');
         }
 
-        foreach ($recordData as $key) {
+        foreach (array_keys($recordData) as $key) {
             $field = $collection->getFields()[$key];
 
             if (! $field) {
