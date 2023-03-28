@@ -34,19 +34,49 @@ class ResultBuilder
             $label = date($format, strtotime($date));
             $formatted[$label] = ($formatted[$label] ?? 0) + $value;
         }
+
         $dataPoints = [];
         $dates = collect($values)->keys()
-            ->sort(fn ($dateA, $dateB) => $dateA > $dateB);
-        $first = Carbon::parse($dates->first())->startOf($timeRange);
-        $last = Carbon::parse($dates->last());
+            ->sort(function ($dateA, $dateB) {
+                if ($dateA > $dateB) {
+                    return 1;
+                } elseif ($dateA < $dateB) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            });
+
+        $first = Carbon::parse($dates->first())->settings(['monthOverflow' => false])->startOf($timeRange);
+        $last = Carbon::parse($dates->last())->endOf($timeRange);
         /** @var Carbon $current */
         for ($current = $first; $current <= $last; $current->add($timeRange, 1)) {
-            $label = $current->format($format);
+            $label = $current->endOf($timeRange)->format($format);
             $dataPoints[] = ['label' => $label, 'values' => [ 'value' => $formatted[$label] ?? 0]];
         }
 
         return new LineChart($dataPoints);
     }
+
+    /*
+
+    for (const [date, value] of Object.entries(values)) {
+      const label = DateTime.fromISO(date).toFormat(format);
+      formatted[label] = (formatted[label] ?? 0) + value;
+    }
+
+    const dataPoints = [];
+    const dates = Object.keys(values).sort((dateA, dateB) => dateA.localeCompare(dateB));
+    const first = DateTime.fromISO(dates[0]).startOf(timeRange.toLowerCase() as DateTimeUnit);
+    const last = DateTime.fromISO(dates[dates.length - 1]);
+
+    for (let current = first; current <= last; current = current.plus({ [timeRange]: 1 })) {
+      const label = current.toFormat(format);
+      dataPoints.push({ label, values: { value: formatted[label] ?? 0 } });
+    }
+
+    return dataPoints;
+    */
 
     public function percentage(int|float $value): PercentageChart
     {
@@ -62,6 +92,7 @@ class ResultBuilder
     {
         $data = collect($this->distribution($value)->serialize())
             ->sort(fn ($a, $b) => $b['value'] - $a['value'])
+            ->values()
             ->toArray();
 
         return new LeaderboardChart($data);
