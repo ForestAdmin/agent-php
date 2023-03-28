@@ -40,15 +40,14 @@ class WriteReplaceCollection extends CollectionDecorator
     {
         $newRecords = $this->rewritePatch($caller, 'create', $data);
 
-        return parent::create($caller, $newRecords);
+        return $this->dataSource->getCreateRelationsOfCollection($this->getName())->create($caller, $newRecords);
     }
 
     public function update(Caller $caller, Filter $filter, array $patch)
     {
         $newPatch = $this->rewritePatch($caller, 'update', $patch);
-        dd($newPatch);
 
-        parent::update($caller, $filter, $newPatch);
+        return $this->dataSource->getUpdateRelationsOfCollection($this->getName())->update($caller, $filter, $newPatch);
     }
 
     private function rewritePatch(Caller $caller, string $action, array $patch): array
@@ -124,7 +123,6 @@ class WriteReplaceCollection extends CollectionDecorator
                 if (! array_key_exists($subKey, $acc)) {
                     $acc[$subKey] = $subValue;
                 } elseif (is_array($subValue)) {
-                    dd('relation');
                     $acc[$subKey] = $this->deepMerge([$acc[$subKey], $subValue]);
                 } else {
                     throw new ForestException("Conflict value on the field $subKey. It received several values.");

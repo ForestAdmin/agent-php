@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 
@@ -14,9 +15,9 @@ class UpdateRelationsCollection extends CollectionDecorator
     public function update(Caller $caller, Filter $filter, array $patch)
     {
         // Step 1: Perform the normal update
-        if (collect($patch)->contains(fn ($key) => $this->getFields()[$key]->getType() === 'Column')) {
+        if (collect(array_keys($patch))->contains(fn ($key) => $this->getFields()[$key]->getType() === 'Column')) {
             $patchWithoutRelations = collect($patch)->reduce(
-                fn ($memo, $key) => $this->getFields()[$key]->getType() === 'Column' ? array_merge($memo, [$key => $patch[$key]]) : $memo,
+                fn ($carry, $value, $key) => $this->getFields()[$key]->getType() === 'Column' ? array_merge($carry, [$key => $patch[$key]]) : $carry,
                 []
             );
 
@@ -24,13 +25,13 @@ class UpdateRelationsCollection extends CollectionDecorator
         }
 
         // Step 2: Perform additional updates for relations
-        if (collect($patch)->contains(fn ($key) => $this->getFields()[$key]->getType() === 'Column')) {
+        if (collect(array_keys($patch))->contains(fn ($key) => $this->getFields()[$key]->getType() !== 'Column')) {
             // Fetch the records that will be updated, to know which relations need to be created/updated
             $projection = $this->buildProjection($patch);
-            $records = $this->list($caller, $filter, $projection);
+            $records = $this->list($caller, new PaginatedFilter($filter->getConditionTree(), $filter->getSearch(), $filter->getSearchExtended(), $filter->getSegment()), $projection);
 
             // Perform the updates for each relation
-            collect($patch)
+            collect(array_keys($patch))
                 ->filter(fn ($key) => $this->getFields()[$key]->getType() !== 'Column')
                 ->map(fn ($key) => $this->createOrUpdateRelation($caller, $records, $key, $patch[$key]));
         }
@@ -42,11 +43,11 @@ class UpdateRelationsCollection extends CollectionDecorator
      * - the values that will be used to build filters to target records
      * - the values that will be used to create/update the relations
      */
-    private function buildProject(array $patch): Projection
+    private function buildProjection(array $patch): Projection
     {
         $projection = (new Projection())->withPks($this);
 
-        foreach ($patch as $key) {
+        foreach (array_keys($patch) as $key) {
             $schema = $this->getFields()[$key];
 
             if ($schema->getType() !== 'Column') {
@@ -82,7 +83,7 @@ class UpdateRelationsCollection extends CollectionDecorator
                 $subRecord = $relation->create($caller, $patch);
 
                 // Set foreign key on the parent records
-                $conditionTree = ConditionTreeFactory::matchRecords($this->getFields(), $creates->all());
+                $conditionTree = ConditionTreeFactory::matchRecords($this, $creates->all());
                 $parentPatch = [$schema->getForeignKey() => $subRecord[$schema->getForeignKeyTarget()]];
 
                 $this->update($caller, new Filter($conditionTree), $parentPatch);
@@ -100,7 +101,7 @@ class UpdateRelationsCollection extends CollectionDecorator
         // Update the relations that already exist
         if ($updates) {
             $subRecords = $updates->map(fn ($record) => $record[$key]);
-            $conditionTree = ConditionTreeFactory::matchRecords($relation->getFields(), $subRecords);
+            $conditionTree = ConditionTreeFactory::matchRecords($relation, $subRecords->toArray());
 
             $relation->update($caller, new Filter($conditionTree), $patch);
         }

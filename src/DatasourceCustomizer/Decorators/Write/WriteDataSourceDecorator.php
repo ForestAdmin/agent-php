@@ -10,21 +10,39 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContra
 
 class WriteDataSourceDecorator extends DatasourceDecorator
 {
-    protected DatasourceDecorator $create;
+    protected DatasourceDecorator $createRelations;
 
-    protected DatasourceDecorator $update;
+    protected DatasourceDecorator $updateRelations;
 
     public function __construct(DatasourceContract|DatasourceDecorator $childDataSource)
     {
         parent::__construct($childDataSource, WriteReplaceCollection::class);
-        $this->create = new DatasourceDecorator($this->childDataSource, CreateRelationsCollection::class);
-        $this->update = new DatasourceDecorator($this->childDataSource, UpdateRelationsCollection::class);
+        $this->createRelations = new DatasourceDecorator($this->childDataSource, CreateRelationsCollection::class);
+        $this->updateRelations = new DatasourceDecorator($this->childDataSource, UpdateRelationsCollection::class);
     }
 
     public function build()
     {
+        $this->createRelations->build();
+        $this->updateRelations->build();
         parent::build();
-        $this->create->build();
-        $this->update->build();
+    }
+
+    /**
+     * @param string $collectionName
+     * @return CreateRelationsCollection
+     */
+    public function getCreateRelationsOfCollection(string $collectionName): CreateRelationsCollection
+    {
+        return $this->createRelations->getCollection($collectionName);
+    }
+
+    /**
+     * @param string $collectionName
+     * @return UpdateRelationsCollection
+     */
+    public function getUpdateRelationsOfCollection(string $collectionName): UpdateRelationsCollection
+    {
+        return $this->updateRelations->getCollection($collectionName);
     }
 }
