@@ -14,7 +14,7 @@ class ChartDataSourceDecorator extends DatasourceDecorator
 {
     public function __construct(DatasourceContract|DatasourceDecorator $childDataSource)
     {
-        parent::__construct($childDataSource, ChartCollectionDecorator::class);
+        parent::__construct($childDataSource, ChartCollection::class);
     }
 
     public function addChart(string $name, \Closure $definition): void

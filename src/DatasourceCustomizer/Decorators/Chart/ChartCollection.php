@@ -7,7 +7,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection as IlluminateCollection;
 
-class ChartCollectionDecorator extends CollectionDecorator
+class ChartCollection extends CollectionDecorator
 {
     public function addChart(string $name, \Closure $definition): void
     {
