@@ -11,7 +11,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-function factoryWriteRelationCollection($data = [])
+function factoryWriteSimpleCollection($data = [])
 {
     $datasource = new Datasource();
     $collectionBook = new Collection($datasource, 'Book');
@@ -53,7 +53,7 @@ test('replaceFieldWriting() should work', function (Caller $caller) {
         ],
     ];
     /** @var WriteReplaceCollection $newAuthor */
-    $newBook = factoryWriteRelationCollection($data);
+    $newBook = factoryWriteSimpleCollection($data);
 
     $newBook->replaceFieldWriting('title', fn ($value) => ['title' => 'another value']);
 
