@@ -11,7 +11,7 @@ class ChartCollection extends CollectionDecorator
 {
     public function addChart(string $name, \Closure $definition): void
     {
-        if (isset($this->charts[$name])) {
+        if ($this->getCharts()->contains($name)) {
             throw new ForestException("Chart '$name' already exists.");
         }
 
@@ -33,11 +33,6 @@ class ChartCollection extends CollectionDecorator
     {
         $myCharts = collect($this->charts)->keys();
         $otherCharts = $this->childCollection->getCharts();
-
-        $duplicate = $myCharts->first(fn ($name) => $otherCharts->contains($name));
-        if ($duplicate) {
-            throw new ForestException("Chart '$duplicate' is defined twice.");
-        }
 
         return $otherCharts->merge($myCharts);
     }
