@@ -50,26 +50,6 @@ class ResultBuilder
         return new LineChart($dataPoints);
     }
 
-    /*
-
-    for (const [date, value] of Object.entries(values)) {
-      const label = DateTime.fromISO(date).toFormat(format);
-      formatted[label] = (formatted[label] ?? 0) + value;
-    }
-
-    const dataPoints = [];
-    const dates = Object.keys(values).sort((dateA, dateB) => dateA.localeCompare(dateB));
-    const first = DateTime.fromISO(dates[0]).startOf(timeRange.toLowerCase() as DateTimeUnit);
-    const last = DateTime.fromISO(dates[dates.length - 1]);
-
-    for (let current = first; current <= last; current = current.plus({ [timeRange]: 1 })) {
-      const label = current.toFormat(format);
-      dataPoints.push({ label, values: { value: formatted[label] ?? 0 } });
-    }
-
-    return dataPoints;
-    */
-
     public function percentage(int|float $value): PercentageChart
     {
         return new PercentageChart($value);
