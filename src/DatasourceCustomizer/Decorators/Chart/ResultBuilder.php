@@ -37,15 +37,7 @@ class ResultBuilder
 
         $dataPoints = [];
         $dates = collect($values)->keys()
-            ->sort(function ($dateA, $dateB) {
-                if ($dateA > $dateB) {
-                    return 1;
-                } elseif ($dateA < $dateB) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            });
+            ->sort(fn ($dateA, $dateB) =>  $dateA > $dateB ? 1 : -1);
 
         $first = Carbon::parse($dates->first())->settings(['monthOverflow' => false])->startOf($timeRange);
         $last = Carbon::parse($dates->last())->endOf($timeRange);
