@@ -19,7 +19,7 @@ class ChartDataSourceDecorator extends DatasourceDecorator
 
     public function addChart(string $name, \Closure $definition): void
     {
-        if (isset($this->charts[$name])) {
+        if ($this->getCharts()->contains($name)) {
             throw new ForestException("Chart '$name' already exists.");
         }
 

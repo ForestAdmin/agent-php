@@ -51,5 +51,6 @@ class Datasource implements DatasourceContract
 
     public function renderChart(Caller $caller, string $name): Chart
     {
+        throw new ForestException("No chart named '$name' exists on this datasource.");
     }
 }
