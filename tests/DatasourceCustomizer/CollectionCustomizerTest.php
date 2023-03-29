@@ -434,6 +434,5 @@ test('replaceFieldWriting() should update the field behavior of the collection',
     /** @var WriteReplaceCollection $writeReplaceCollection */
     $writeReplaceCollection = $datasourceCustomizer->getStack()->write->getCollection('Book');
 
-    expect(invokeProperty($writeReplaceCollection, 'handlers'))->toHaveKey($field)
-        ->and(invokeProperty($writeReplaceCollection, 'handlers')[$field])->toEqual($condition);
+    expect(invokeProperty($writeReplaceCollection, 'handlers'))->toEqual([$field => $condition]);
 });
