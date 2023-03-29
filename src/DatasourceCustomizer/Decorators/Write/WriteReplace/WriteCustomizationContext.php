@@ -22,19 +22,4 @@ class WriteCustomizationContext extends CollectionCustomizationContext
     {
         return $this->record;
     }
-
-//readonly action: 'update' | 'create';
-//  readonly record: TPartialSimpleRow<S, N>;
-//
-//  constructor(
-//    collection: Collection,
-//    caller: Caller,
-//    action: 'update' | 'create',
-//    record: TPartialSimpleRow<S, N>,
-//  ) {
-//    super(collection, caller);
-//
-//    this.action = action;
-//    this.record = Object.freeze({ ...record });
-//  }
 }

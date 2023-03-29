@@ -13,8 +13,6 @@ class WriteReplaceCollection extends CollectionDecorator
 {
     private array $handlers = [];
 
-    private array $used = [];
-
     public function replaceFieldWriting(string $fieldName, ?\Closure $definition): void
     {
         if (! $this->getFields()->keys()->contains($fieldName)) {
@@ -50,7 +48,7 @@ class WriteReplaceCollection extends CollectionDecorator
         return $this->dataSource->getUpdateRelationsOfCollection($this->getName())->update($caller, $filter, $newPatch);
     }
 
-    private function rewritePatch(Caller $caller, string $action, array $patch): array
+    private function rewritePatch(Caller $caller, string $action, array $patch, array $used = []): array
     {
         if (! in_array($action, ['create', 'update'], true)) {
             throw new ForestException("The action $action is not allowed (only create or update)");
@@ -58,7 +56,7 @@ class WriteReplaceCollection extends CollectionDecorator
 
         // We rewrite the patch by applying all handlers on each field.
         $context = new WriteCustomizationContext($this, $caller, $action, $patch);
-        $patches = collect($patch)->map(fn ($item, $key) => $this->rewriteKey($context, $key));
+        $patches = collect($patch)->map(fn ($item, $key) => $this->rewriteKey($context, $key, $used));
 
         // We now have a list of patches (one per field) that we can merge.
         $newPatch = $this->deepMerge(...$patches); //->toArray()
@@ -70,10 +68,10 @@ class WriteReplaceCollection extends CollectionDecorator
         return $newPatch;
     }
 
-    private function rewriteKey(WriteCustomizationContext $context, string $key)//: array
+    private function rewriteKey(WriteCustomizationContext $context, string $key, array $used): array
     {
-        if (! in_array($key, $this->used, true)) {
-            $this->used[] = $key;
+        if (! in_array($key, $used, true)) {
+            $used[] = $key;
         } else {
             throw new ForestException("Conflict value on the field $key. It received several values.");
         }
@@ -93,7 +91,7 @@ class WriteReplaceCollection extends CollectionDecorator
             // trigger the other handlers.
             $value = $fieldPatch[$key] ?? null;
             unset($fieldPatch[$key]);
-            $newPatch = $this->rewritePatch($context->getCaller(), $context->getAction(), $fieldPatch);
+            $newPatch = $this->rewritePatch($context->getCaller(), $context->getAction(), $fieldPatch, $used);
 
             return $value !== null ? $this->deepMerge([$key => $value], $newPatch) : $newPatch;
         }
@@ -123,7 +121,7 @@ class WriteReplaceCollection extends CollectionDecorator
                 if (! array_key_exists($subKey, $acc)) {
                     $acc[$subKey] = $subValue;
                 } elseif (is_array($subValue)) {
-                    $acc[$subKey] = $this->deepMerge([$acc[$subKey], $subValue]);
+                    $acc[$subKey] = $this->deepMerge($acc[$subKey], $subValue);
                 } else {
                     throw new ForestException("Conflict value on the field $subKey. It received several values.");
                 }
