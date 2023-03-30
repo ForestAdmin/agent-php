@@ -93,8 +93,8 @@ class UpdateRelationsCollection extends CollectionDecorator
                 $relation->create(
                     $caller,
                     $creates->map(
-                        fn ($record) => array_merge($patch, [$schema->getOriginKey() => $relation[$schema->getOriginKeyTarget()]])
-                    )
+                        fn ($record) => array_merge($patch, [$schema->getOriginKey() => $record[$schema->getOriginKeyTarget()]])
+                    )->toArray()
                 );
             }
         }
