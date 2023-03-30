@@ -28,7 +28,7 @@ class UpdateRelationsCollection extends CollectionDecorator
         if (collect(array_keys($patch))->contains(fn ($key) => $this->getFields()[$key]->getType() !== 'Column')) {
             // Fetch the records that will be updated, to know which relations need to be created/updated
             $projection = $this->buildProjection($patch);
-            $records = $this->list($caller, new PaginatedFilter($filter->getConditionTree(), $filter->getSearch(), $filter->getSearchExtended(), $filter->getSegment()), $projection);
+            $records = $this->childCollection->list($caller, new PaginatedFilter($filter->getConditionTree(), $filter->getSearch(), $filter->getSearchExtended(), $filter->getSegment()), $projection);
 
             // Perform the updates for each relation
             collect(array_keys($patch))
@@ -74,10 +74,11 @@ class UpdateRelationsCollection extends CollectionDecorator
         /** @var RelationSchema $schema */
         $schema = $this->getFields()[$key];
         $relation = $this->dataSource->getCollection($schema->getForeignCollection());
-        $creates = collect($records)->filter(fn ($r) => $r[$key] === null);
-        $updates = collect($records)->filter(fn ($r) => $r[$key] !== null);
 
-        if ($creates) {
+        $creates = collect($records)->filter(fn ($r) => ! array_key_exists($key, $r) || $r[$key] === null);
+        $updates = collect($records)->filter(fn ($r) => array_key_exists($key, $r) && $r[$key] !== null);
+
+        if ($creates->isNotEmpty()) {
             if ($schema->getType() === 'ManyToOne') {
                 // Create many-to-one relations
                 $subRecord = $relation->create($caller, $patch);
@@ -99,7 +100,7 @@ class UpdateRelationsCollection extends CollectionDecorator
         }
 
         // Update the relations that already exist
-        if ($updates) {
+        if ($updates->isNotEmpty()) {
             $subRecords = $updates->map(fn ($record) => $record[$key]);
             $conditionTree = ConditionTreeFactory::matchRecords($relation, $subRecords->toArray());
 
