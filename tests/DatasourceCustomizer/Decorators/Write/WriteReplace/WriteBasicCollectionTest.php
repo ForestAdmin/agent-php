@@ -3,7 +3,6 @@
 namespace ForestAdmin\AgentPHP\Tests\DatasourceCustomizer\Decorators\Schema;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Write\WriteDataSourceDecorator;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Write\WriteReplace\WriteReplaceCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
@@ -28,7 +27,6 @@ function factoryWriteBasicCollection()
     $datasourceDecorator = new WriteDataSourceDecorator($datasource);
     $datasourceDecorator->build();
 
-    /** @var WriteReplaceCollection $newBooks */
     $newBooks = $datasourceDecorator->getCollection('Book');
 
     return $newBooks;

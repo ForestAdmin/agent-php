@@ -71,9 +71,7 @@ function factoryWriteRelationCollection($data = [])
     $datasourceDecorator = new WriteDataSourceDecorator($datasource);
     $datasourceDecorator->build();
 
-    /** @var WriteReplaceCollection $newBooks */
     $newBook = $datasourceDecorator->getCollection('Book');
-    /** @var WriteReplaceCollection $newBooks */
     $newAuthor = $datasourceDecorator->getCollection('Person');
 
     return [$newBook, $newAuthor];
