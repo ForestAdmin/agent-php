@@ -24,7 +24,7 @@ function factoryWriteSimpleCollection($data = [])
         ]
     );
 
-    if (isset($data)) {
+    if (isset($data['book'])) {
         $collectionBook = mock($collectionBook)
             ->makePartial()
             ->shouldReceive('create')
@@ -62,7 +62,6 @@ test('replaceFieldWriting() should work on create', function (Caller $caller) {
         'title' => 'another value',
     ]);
 })->with('caller');
-
 
 test('replaceFieldWriting() should work on update', function (Caller $caller) {
     $data = [

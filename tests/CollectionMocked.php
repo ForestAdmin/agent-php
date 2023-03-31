@@ -14,6 +14,8 @@ class CollectionMocked extends Collection
 {
     public $paramsUpdate;
 
+    public $createReturn;
+
     public $listReturn;
 
     public function __construct(

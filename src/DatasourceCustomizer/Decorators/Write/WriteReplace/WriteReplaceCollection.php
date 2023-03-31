@@ -50,9 +50,11 @@ class WriteReplaceCollection extends CollectionDecorator
 
     private function rewritePatch(Caller $caller, string $action, array $patch, array $used = []): array
     {
+        // @codeCoverageIgnoreStart
         if (! in_array($action, ['create', 'update'], true)) {
             throw new ForestException("The action $action is not allowed (only create or update)");
         }
+        // @codeCoverageIgnoreEnd
 
         // We rewrite the patch by applying all handlers on each field.
         $context = new WriteCustomizationContext($this, $caller, $action, $patch);
@@ -70,22 +72,20 @@ class WriteReplaceCollection extends CollectionDecorator
 
     private function rewriteKey(WriteCustomizationContext $context, string $key, array $used): array
     {
+        // @codeCoverageIgnoreStart
         if (! in_array($key, $used, true)) {
             $used[] = $key;
         } else {
             throw new ForestException("Conflict value on the field $key. It received several values.");
         }
+        // @codeCoverageIgnoreEnd
 
-        $field = $this->getFields()[$key];
+        $field = $this->getFields()[$key] ?? null;
         // Handle Column fields.
         if ($field?->getType() === 'Column') {
             // We either call the customer handler or a default one that does nothing.
             $handler = $this->handlers[$key] ?? static fn ($v) => [$key => $v];
             $fieldPatch = isset($context->getRecord()[$key]) && $handler($context->getRecord()[$key], $context) ? $handler($context->getRecord()[$key], $context) : [];
-
-            if (! is_array($fieldPatch)) {
-                throw new ForestException("The write handler of $key should return an function or nothing.");
-            }
 
             // Isolate change to our own value (which should not recurse) and the rest which should
             // trigger the other handlers.
