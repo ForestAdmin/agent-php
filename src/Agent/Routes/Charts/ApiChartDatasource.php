@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\Agent\Routes\AbstractAuthenticatedRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
+use Illuminate\Support\Str;
 
 class ApiChartDatasource extends AbstractAuthenticatedRoute
 {
@@ -23,17 +24,18 @@ class ApiChartDatasource extends AbstractAuthenticatedRoute
     public function setupRoutes(): AbstractRoute
     {
         // Mount both GET and POST, respectively for smart and api charts.
+        $slug = Str::slug($this->chartName);
         $this->addRoute(
-            "forest.chart.get.$this->chartName",
+            "forest.chart.get.$slug",
             'get',
-            "/_charts/$this->chartName",
+            "/_charts/$slug",
             fn () => $this->handleSmartChart()
         );
 
         $this->addRoute(
-            "forest.chart.post.$this->chartName",
+            "forest.chart.post.$slug",
             'post',
-            "/_charts/$this->chartName",
+            "/_charts/$slug",
             fn () => $this->handleApiChart()
         );
 
