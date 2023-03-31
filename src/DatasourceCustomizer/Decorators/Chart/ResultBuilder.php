@@ -21,7 +21,7 @@ class ResultBuilder
     public function distribution(array $distribution): PieChart
     {
         return new PieChart(
-            collect($distribution)->map(fn ($value, $key) => compact('key', 'value'))->toArray()
+            collect($distribution)->map(fn ($value, $key) => compact('key', 'value'))->values()->toArray()
         );
     }
 

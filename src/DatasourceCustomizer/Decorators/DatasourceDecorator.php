@@ -7,6 +7,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\Chart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use Illuminate\Support\Collection as IlluminateCollection;
 
 class DatasourceDecorator extends Datasource
 {
@@ -16,6 +17,11 @@ class DatasourceDecorator extends Datasource
     {
         parent::__construct();
         $this->childDataSource = &$childDataSource;
+    }
+
+    public function getCharts(): IlluminateCollection
+    {
+        return $this->childDataSource->getCharts();
     }
 
     public function addCollection(CollectionDecorator|CollectionContract $collection): void

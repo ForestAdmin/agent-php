@@ -21,6 +21,7 @@ test('distribution() could return the expected format', function () {
     $data = ['a' => 10, 'b' => 11];
     $result = collect($data)
         ->map(fn ($value, $key) => compact('key', 'value'))
+        ->values()
         ->toArray();
 
     expect($resultBuilder->distribution(['a' => 10, 'b' => 11]))
