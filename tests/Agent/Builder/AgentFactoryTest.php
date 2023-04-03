@@ -90,3 +90,23 @@ test('customizeCollection() should work', function () {
 
     $spy->shouldHaveReceived('customizeCollection');
 });
+
+test('addChart() should work', function () {
+    $datasource = new Datasource();
+    $collectionUser = new Collection($datasource, 'User');
+    $collectionUser->addFields(
+        [
+            'id'         => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'first_name' => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'last_name'  => new ColumnSchema(columnType: PrimitiveType::STRING),
+        ]
+    );
+    $datasource->addCollection($collectionUser);
+    $agent = new AgentFactory(AGENT_OPTIONS);
+    $spy = Mockery::spy(DatasourceCustomizer::class);
+    invokeProperty($agent, 'customizer', $spy);
+    $agent->addChart('myChart', fn () => true);
+    $spy = invokeProperty($agent, 'customizer');
+
+    $spy->shouldHaveReceived('addChart');
+});
