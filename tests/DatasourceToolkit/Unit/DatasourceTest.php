@@ -2,14 +2,13 @@
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\DataSourceSchema;
 
 it('should instantiate properly when extended', function () {
     class ConcreteDataSource extends Datasource
     {
     }
 
-    $datasource = new ConcreteDataSource;
+    $datasource = new ConcreteDataSource();
 
     expect($datasource)->toBeInstanceOf(ConcreteDataSource::class);
 });
@@ -22,11 +21,11 @@ it('should expose collections from datasource as an Illuminate/Support/Collectio
 });
 
 
-it('should export an empty schema', function () {
+it('should export an empty charts', function () {
     $datasource = new Datasource();
 
-    expect($datasource->getSchema())->toBeInstanceOf(DataSourceSchema::class)
-        ->and($datasource->getSchema())->toEqual(new DataSourceSchema);
+    expect($datasource->getCharts())->toBeInstanceOf(\Illuminate\Support\Collection::class)
+        ->and($datasource->getCharts())->toEqual(collect());
 });
 
 it('should get collection from datasource', function () {

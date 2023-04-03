@@ -3,7 +3,6 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ActionSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use Illuminate\Support\Collection as IlluminateCollection;
@@ -18,31 +17,14 @@ trait CollectionMethods
 
     protected IlluminateCollection $actions;
 
+    protected IlluminateCollection $charts;
+
     protected bool $countable = true;
 
     public function getFields(): IlluminateCollection
     {
         return $this->fields;
     }
-
-//    public function addActions(array $actions): void
-//    {
-//        foreach ($actions as $key => $value) {
-//            $this->addAction($key, $value);
-//        }
-//    }
-//
-//    /**
-//     * @throws ForestException
-//     */
-//    public function addAction(string $name, ActionSchema $action): void
-//    {
-//        if ($this->actions->has($name)) {
-//            throw new ForestException('Action ' . $name . ' already defined in collection');
-//        }
-//
-//        $this->actions->put($name, $action);
-//    }
 
     public function getActions(): IlluminateCollection
     {
@@ -108,5 +90,13 @@ trait CollectionMethods
     public function setCountable(bool $countable): void
     {
         $this->countable = $countable;
+    }
+
+    /**
+     * @return IlluminateCollection
+     */
+    public function getCharts(): IlluminateCollection
+    {
+        return $this->charts;
     }
 }

@@ -4,6 +4,8 @@ namespace ForestAdmin\AgentPHP\Agent\Http;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Routes\Actions\Actions;
+use ForestAdmin\AgentPHP\Agent\Routes\Charts\ApiChartCollection;
+use ForestAdmin\AgentPHP\Agent\Routes\Charts\ApiChartDatasource;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Count;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Destroy;
@@ -41,6 +43,7 @@ class Router
             DissociateRelated::make()->getRoutes(),
             CountRelated::make()->getRoutes(),
             self::getActionsRoutes(),
+            self::getApiChartsRoutes(),
         );
     }
 
@@ -50,6 +53,22 @@ class Router
         foreach (AgentFactory::get('datasource')->getCollections() as $collection) {
             foreach ($collection->getActions() as $actionName => $action) {
                 $routes[] = (new Actions($collection, $actionName))->getRoutes();
+            }
+        }
+
+        return array_merge(...$routes);
+    }
+
+    private static function getApiChartsRoutes(): array
+    {
+        $routes = [];
+        foreach (AgentFactory::get('datasource')->getCharts() as $chart) {
+            $routes[] = (new ApiChartDatasource($chart))->getRoutes();
+        }
+
+        foreach (AgentFactory::get('datasource')->getCollections() as $collection) {
+            foreach ($collection->getCharts() as $chart) {
+                $routes[] = (new ApiChartCollection($collection, $chart))->getRoutes();
             }
         }
 

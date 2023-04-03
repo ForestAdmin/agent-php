@@ -2,9 +2,12 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators;
 
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\Chart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use Illuminate\Support\Collection as IlluminateCollection;
 
 class DatasourceDecorator extends Datasource
 {
@@ -16,11 +19,21 @@ class DatasourceDecorator extends Datasource
         $this->childDataSource = &$childDataSource;
     }
 
+    public function getCharts(): IlluminateCollection
+    {
+        return $this->childDataSource->getCharts();
+    }
+
     public function addCollection(CollectionDecorator|CollectionContract $collection): void
     {
         if (! $this->collections->has($collection->getName())) {
             $this->collections->put($collection->getName(), $collection);
         }
+    }
+
+    public function renderChart(Caller $caller, string $name): Chart|array
+    {
+        return $this->childDataSource->renderChart($caller, $name);
     }
 
     public function build()

@@ -388,3 +388,13 @@ test('disableCount() should disable count on the collection', function () {
 
     expect($book->isCountable())->toBeFalse();
 });
+
+test('addChart() should add a chart', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+
+    $stack = $datasourceCustomizer->getStack();
+    $book = $stack->chart->getCollection('Book');
+    $customizer->addChart('newChart', fn ($context, $resultBuilder) => $resultBuilder->value(34));
+
+    expect($book->getCharts()->toArray())->toEqual(['newChart']);
+});

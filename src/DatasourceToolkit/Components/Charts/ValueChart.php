@@ -4,7 +4,7 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts;
 
 class ValueChart extends Chart
 {
-    public function __construct(protected int $value, protected ?int $previousValue = null)
+    public function __construct(protected int|float $value, protected null|int|float $previousValue = null)
     {
     }
 

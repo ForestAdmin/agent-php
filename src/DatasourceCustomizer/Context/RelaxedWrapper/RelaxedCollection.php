@@ -40,12 +40,12 @@ class RelaxedCollection
         return $this->collection->update($this->caller, $filter, $patch);
     }
 
-    public function delete(Caller $caller, Filter $filter): void
+    public function delete(Filter $filter): void
     {
         $this->collection->delete($this->caller, $filter);
     }
 
-    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
+    public function aggregate(Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
     {
         return $this->collection->aggregate($this->caller, $filter, $aggregation, $limit, $chartType);
     }

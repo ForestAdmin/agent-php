@@ -7,18 +7,17 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\Chart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\DataSourceSchema;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class Datasource implements DatasourceContract
 {
     protected IlluminateCollection $collections;
 
-    protected DataSourceSchema $schema;
+    protected IlluminateCollection $charts;
 
     public function __construct()
     {
-        $this->schema = new DataSourceSchema();
+        $this->charts = new IlluminateCollection();
         $this->collections = new IlluminateCollection();
     }
 
@@ -27,9 +26,9 @@ class Datasource implements DatasourceContract
         return $this->collections;
     }
 
-    public function getSchema(): DataSourceSchema
+    public function getCharts(): IlluminateCollection
     {
-        return $this->schema;
+        return $this->charts;
     }
 
     public function getCollection(string $name): CollectionContract
@@ -50,7 +49,8 @@ class Datasource implements DatasourceContract
         $this->collections->put($collection->getName(), $collection);
     }
 
-    public function renderChart(Caller $caller, string $name): Chart
+    public function renderChart(Caller $caller, string $name): Chart|array
     {
+        throw new ForestException("No chart named '$name' exists on this datasource.");
     }
 }

@@ -201,6 +201,13 @@ class CollectionCustomizer
     {
     }
 
+    public function addChart(string $name, Closure $definition): self
+    {
+        $this->stack->chart->getCollection($this->name)->addChart($name, $definition);
+
+        return $this;
+    }
+
     private function pushRelation(string $name, array $definition): self
     {
         $this->stack->relation->getCollection($this->name)->addRelation($name, $definition);

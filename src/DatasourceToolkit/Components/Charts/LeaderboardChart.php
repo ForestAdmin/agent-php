@@ -17,11 +17,5 @@ class LeaderboardChart extends Chart
         }
 
         return $this->data;
-
-//        $result = collect($this->data)->each(
-//            fn ($item) => ['key' => $item['key'], 'value' => $item['value']]
-//        );
-//
-//        return $result->toArray();
     }
 }

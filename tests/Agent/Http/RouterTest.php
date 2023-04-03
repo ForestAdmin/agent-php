@@ -1,5 +1,6 @@
 <?php
 
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Http\Router;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Count;
@@ -16,11 +17,40 @@ use ForestAdmin\AgentPHP\Agent\Routes\Resources\Update;
 use ForestAdmin\AgentPHP\Agent\Routes\Security\Authentication;
 use ForestAdmin\AgentPHP\Agent\Routes\Security\ScopeInvalidation;
 use ForestAdmin\AgentPHP\Agent\Routes\System\HealthCheck;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\CollectionCustomizer;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseAction;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\ActionScope;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 test('getRoutes() should work', function () {
-    buildAgent(new Datasource());
+    $datasource = new Datasource();
+    $collectionBook = new Collection($datasource, 'Book');
+    $datasource->addCollection($collectionBook);
+    $agent = buildAgent(new Datasource());
+    $agent->addDatasource($datasource);
 
+    $config = AgentFactory::getContainer()->get('cache')->get('config');
+    unset($config['envSecret']);
+    AgentFactory::getContainer()->get('cache')->put('config', $config, 3600);
+
+    $agent->addChart('myChart', fn () => true);
+    $agent->customizeCollection(
+        'Book',
+        fn (CollectionCustomizer $builder) => $builder
+            ->addChart('myCollectionChart', fn () => true)
+            ->addAction('myAction', new BaseAction(
+                ActionScope::SINGLE,
+                fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO !!!!')
+            ))
+    );
+    $agent->build();
+
+    $reflection = new \ReflectionClass(Router::class);
+    $getApiChartsRoutesMethod = $reflection->getMethod('getApiChartsRoutes');
+    $chartRoutes = call_user_func($getApiChartsRoutesMethod->getClosure());
+    $getActionsRoutesMethod = $reflection->getMethod('getActionsRoutes');
+    $actionRoutes = call_user_func($getActionsRoutesMethod->getClosure());
 
     expect(Router::getRoutes())
         ->toEqual(
@@ -40,6 +70,8 @@ test('getRoutes() should work', function () {
                 AssociateRelated::make()->getRoutes(),
                 DissociateRelated::make()->getRoutes(),
                 CountRelated::make()->getRoutes(),
+                $actionRoutes,
+                $chartRoutes,
             )
         );
 });
