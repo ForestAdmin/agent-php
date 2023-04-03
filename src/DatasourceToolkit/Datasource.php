@@ -49,7 +49,7 @@ class Datasource implements DatasourceContract
         $this->collections->put($collection->getName(), $collection);
     }
 
-    public function renderChart(Caller $caller, string $name): Chart
+    public function renderChart(Caller $caller, string $name): Chart|array
     {
         throw new ForestException("No chart named '$name' exists on this datasource.");
     }

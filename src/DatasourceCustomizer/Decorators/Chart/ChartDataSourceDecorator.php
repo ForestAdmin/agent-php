@@ -26,7 +26,7 @@ class ChartDataSourceDecorator extends DatasourceDecorator
         $this->charts[$name] = $definition;
     }
 
-    public function renderChart(Caller $caller, string $name): Chart
+    public function renderChart(Caller $caller, string $name): Chart|array
     {
         if (isset($this->charts[$name])) {
             $chart = $this->charts[$name];

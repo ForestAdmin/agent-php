@@ -16,5 +16,5 @@ interface DatasourceContract
 
     public function addCollection(CollectionContract $collection): void;
 
-    public function renderChart(Caller $caller, string $name): Chart;
+    public function renderChart(Caller $caller, string $name): Chart|array;
 }

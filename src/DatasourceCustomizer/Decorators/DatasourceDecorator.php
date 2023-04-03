@@ -31,7 +31,7 @@ class DatasourceDecorator extends Datasource
         }
     }
 
-    public function renderChart(Caller $caller, string $name): Chart
+    public function renderChart(Caller $caller, string $name): Chart|array
     {
         return $this->childDataSource->renderChart($caller, $name);
     }
