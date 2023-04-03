@@ -10,12 +10,18 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
+use Illuminate\Support\Collection as IlluminateCollection;
 
 class ActionCollection extends CollectionDecorator
 {
     public function addAction(string $name, BaseAction $action)
     {
         $this->actions[$name] = $action;
+    }
+
+    public function getActions(): IlluminateCollection
+    {
+        return $this->actions;
     }
 
     public function execute(Caller $caller, string $name, array $data, ?Filter $filter = null): array

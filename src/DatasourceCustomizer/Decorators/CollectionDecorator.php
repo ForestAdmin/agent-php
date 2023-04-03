@@ -140,4 +140,9 @@ class CollectionDecorator implements CollectionContract
     {
         return $this->childCollection->getCharts();
     }
+
+    public function getActions(): IlluminateCollection
+    {
+        return $this->childCollection->getActions();
+    }
 }
