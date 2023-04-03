@@ -1,3 +1,10 @@
+# [1.0.0-beta.16](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.15...v1.0.0-beta.16) (2023-04-03)
+
+
+### Features
+
+* **chart:** add support of chart decorator ([#38](https://github.com/ForestAdmin/agent-php/issues/38)) ([9499919](https://github.com/ForestAdmin/agent-php/commit/9499919b35aa02c6f3778d7e42548113848f1ed0))
+
 # [1.0.0-beta.15](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.14...v1.0.0-beta.15) (2023-03-22)
 
 
