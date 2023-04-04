@@ -48,6 +48,11 @@ class ColumnSchema
         return $this->isReadOnly;
     }
 
+    public function setIsReadOnly(bool $isReadOnly): void
+    {
+        $this->isReadOnly = $isReadOnly;
+    }
+
     public function isSortable(): bool
     {
         return $this->isSortable;

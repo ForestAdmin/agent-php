@@ -4,7 +4,9 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\CollectionCustomizer;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedDefinition;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Write\WriteReplace\WriteReplaceCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
@@ -21,16 +23,17 @@ function factoryCollectionCustomizer($collectionName = 'Book')
     $collectionBook = new Collection($datasource, 'Book');
     $collectionBook->addFields(
         [
-            'id'       => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true, filterOperators: [Operators::EQUAL, Operators::IN]),
-            'title'    => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'childId'  => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN]),
-            'authorId' => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true, isSortable: true),
-            'author'   => new ManyToOneSchema(
+            'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true, filterOperators: [Operators::EQUAL, Operators::IN]),
+            'title'     => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'reference' => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'childId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN]),
+            'authorId'  => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true, isSortable: true),
+            'author'    => new ManyToOneSchema(
                 foreignKey: 'authorId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
             ),
-            'persons'  => new ManyToManySchema(
+            'persons'   => new ManyToManySchema(
                 originKey: 'bookId',
                 originKeyTarget: 'id',
                 foreignKey: 'personId',
@@ -372,10 +375,10 @@ test('replaceSearch() should call the search decorator', function () {
     $customizer->replaceSearch($condition);
     \Mockery::close();
 
-    /** @var ComputedCollection $computedCollection */
-    $computedCollection = $datasourceCustomizer->getStack()->search->getCollection('Book');
+    /** @var $searchCollection $searchCollection */
+    $searchCollection = $datasourceCustomizer->getStack()->search->getCollection('Book');
 
-    expect(invokeProperty($computedCollection, 'replacer'))->toEqual($condition);
+    expect(invokeProperty($searchCollection, 'replacer'))->toEqual($condition);
 });
 
 test('disableCount() should disable count on the collection', function () {
@@ -389,6 +392,7 @@ test('disableCount() should disable count on the collection', function () {
     expect($book->isCountable())->toBeFalse();
 });
 
+
 test('addChart() should add a chart', function () {
     [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
 
@@ -397,4 +401,38 @@ test('addChart() should add a chart', function () {
     $customizer->addChart('newChart', fn ($context, $resultBuilder) => $resultBuilder->value(34));
 
     expect($book->getCharts()->toArray())->toEqual(['newChart']);
+});
+
+test('replaceFieldWriting() should update the field behavior of the collection', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+
+    $stack = $datasourceCustomizer->getStack();
+    $write = $stack->write;
+    $write = mock($write)
+        ->shouldReceive('getCollection')
+        ->once()
+        ->andReturn($datasourceCustomizer->getStack()->write->getCollection('Book'))
+        ->getMock();
+
+    invokeProperty($stack, 'write', $write);
+    invokeProperty($datasourceCustomizer, 'stack', $stack);
+    invokeProperty($customizer, 'stack', $stack);
+
+    $field = 'title';
+    $condition = function ($value, $context) {
+        $reference = $value . '-2023';
+        $title = $value;
+
+        return $context->getCollection()->update(
+            new Filter(new ConditionTreeLeaf('id', Operators::EQUAL, $context->getRecord()['id'])),
+            compact('reference', 'title')
+        );
+    };
+    $customizer->replaceFieldWriting($field, $condition);
+    \Mockery::close();
+
+    /** @var WriteReplaceCollection $writeReplaceCollection */
+    $writeReplaceCollection = $datasourceCustomizer->getStack()->write->getCollection('Book');
+
+    expect(invokeProperty($writeReplaceCollection, 'handlers'))->toEqual([$field => $condition]);
 });

@@ -58,7 +58,7 @@ function factoryValidationCollection()
     /** @var ValidationCollection $newBooks */
     $newBooks = $datasourceDecorator->getCollection('Book');
 
-    return $newBooks; //[$collectionBook, $datasource];
+    return $newBooks;
 }
 
 test('addValidation() should throw if the field does not exists', function () {

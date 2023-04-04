@@ -42,7 +42,11 @@ class Update extends AbstractCollectionRoute
             )
         );
 
-        $this->collection->update($this->caller, $filter, $this->formatAttributes($this->request->get('data')));
+
+        $data = $this->formatAttributes($this->request->get('data'));
+        $data['id'] = $this->request->input('data.id');
+
+        $this->collection->update($this->caller, $filter, $data);
 
         $filter = new PaginatedFilter($filter->getConditionTree(), $filter->getSearch(), $filter->getSearchExtended(), $filter->getSegment());
         $result = $this->collection->list(

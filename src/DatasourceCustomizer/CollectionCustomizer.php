@@ -183,16 +183,16 @@ class CollectionCustomizer
         return $this;
     }
 
-    public function replaceFieldWriting()
+    public function replaceFieldWriting(string $name, ?\Closure $definition): self
     {
+        $this->stack->write->getCollection($this->name)->replaceFieldWriting($name, $definition);
+
+        return $this;
     }
 
     public function replaceSearch(Closure $closure): self
     {
-        $this->stack
-            ->search
-            ->getCollection($this->name)
-            ->replaceSearch($closure);
+        $this->stack->search->getCollection($this->name)->replaceSearch($closure);
 
         return $this;
     }
