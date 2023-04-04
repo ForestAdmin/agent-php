@@ -58,29 +58,6 @@ class ForestActionValueConverter
         }
 
         return $data;
-
-        //(dataSource: DataSource, fields: any[]): FormData {
-//        const data: FormData = {};
-//
-//        for (const field of fields) {
-//                // Skip fields from the default form
-//                if (!SchemaGeneratorActions.defaultFields.map(f => f.field).includes(field.field)) {
-//                    if (field.reference && field.value) {
-//                        const [collectionName] = field.reference.split('.');
-        //              const collection = dataSource.getCollection(collectionName);
-        //              data[field.field] = IdUtils.unpackId(collection.schema, field.value as string);
-        //            } else if (field.type === 'File') {
-        //                        data[field.field] = this.parseDataUri(field.value as string);
-        //            } else if (Array.isArray(field.type) && field.type[0] === 'File') {
-        //                        data[field.field] = (field.value as string[])?.map(v => this.parseDataUri(v));
-        //            } else {
-        //                        data[field.field] = field.value;
-//                    }
-//                }
-//        }
-//
-//        return data;
-//      }
     }
 
     private static function makeDataUri(File $file): ?string
@@ -117,22 +94,6 @@ class ForestActionValueConverter
         }
 
         return $result;
-
-//        if (!dataUri) return null;
-//
-//            // Poor man's data uri parser (spec compliants one don't get the filename).
-//            // Hopefully this does not break.
-//            const [header, data] = dataUri.substring(5).split(',');
-//        const [mimeType, ...mediaTypes] = header.split(';');
-//        const result = { mimeType, buffer: Buffer.from(data, 'base64') };
-//
-//        for (const mediaType of mediaTypes) {
-//            const index = mediaType.indexOf('=');
-//            if (index !== -1)
-//                result[mediaType.substring(0, index)] = decodeURIComponent(mediaType.substring(index + 1));
-//        }
-//
-//        return result as File;
     }
 
     private static function isDataUri($value): bool
