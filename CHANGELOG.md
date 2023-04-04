@@ -1,3 +1,10 @@
+# [1.0.0-beta.17](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.16...v1.0.0-beta.17) (2023-04-04)
+
+
+### Features
+
+* add write decorator  ([#39](https://github.com/ForestAdmin/agent-php/issues/39)) ([8f28498](https://github.com/ForestAdmin/agent-php/commit/8f28498cf326431c2c7181065f786392596ace73))
+
 # [1.0.0-beta.16](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.15...v1.0.0-beta.16) (2023-04-03)
 
 
