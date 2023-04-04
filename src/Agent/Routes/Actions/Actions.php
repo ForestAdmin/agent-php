@@ -25,7 +25,7 @@ class Actions extends AbstractAuthenticatedRoute
     public function __construct(protected CollectionContract $collection, protected string $actionName)
     {
         $this->action = $this->collection->getActions()->get($this->actionName);
-        $this->index = $collection->getActions()->keys()->search($actionName);
+        $this->index = $collection->getActions()->keys()->search($this->actionName);
         parent::__construct();
         $this->setupRoutes();
     }
@@ -98,7 +98,7 @@ class Actions extends AbstractAuthenticatedRoute
                 $selectedIds->inverse();
             }
 
-            $filter = $filter->override(conditionTree: ConditionTreeFactory::intersect($filter->getConditionTree(), $selectionIds));
+            $filter = $filter->override(conditionTree: ConditionTreeFactory::intersect([$filter->getConditionTree(), $selectedIds]));
         }
 
         if ($relation = $this->request->input('data.attributes.parent_association_name')) {
