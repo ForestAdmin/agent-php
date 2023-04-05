@@ -21,6 +21,10 @@ class ConditionTreeEquivalent
 
     public static function hasEquivalentTree(string $operator, array $filterOperators, string $columnType): bool
     {
+        if (in_array($operator, $filterOperators, true)) {
+            return true;
+        }
+
         return (bool) self::getReplacer($operator, $filterOperators, $columnType);
     }
 
@@ -30,7 +34,7 @@ class ConditionTreeEquivalent
             return static fn ($leaf) => $leaf;
         }
 
-        foreach (self::getAlternatives($operator) ?? [] as $key => $alt) {
+        foreach (self::getAlternatives($operator) ?? [] as $alt) {
             $replacer = $alt['replacer'];
             $dependsOn = $alt['dependsOn'];
             $valid = ! array_key_exists('forTypes', $alt) || in_array($alt['forTypes'], PrimitiveType::tree(), true);

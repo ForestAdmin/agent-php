@@ -68,7 +68,7 @@ class EmptyCollection extends CollectionDecorator
     {
         // Empty 'in` always return zero records.
 
-        return $leaf->getOperator() === Operators::IN && count($leaf->getValue()) === 0;
+        return $leaf->getOperator() === Operators::IN && empty($leaf->getValue());
     }
 
     private function orReturnsEmptySet(array $conditions): bool

@@ -34,7 +34,7 @@ class ComputedCollection extends CollectionDecorator
 
     public function getFields(): IlluminateCollection
     {
-        $fields = parent::getFields();
+        $fields = $this->childCollection->getFields();
         /** @var ComputedDefinition $computed */
         foreach ($this->computeds as $fieldName => $computed) {
             $fields->put(

@@ -42,7 +42,7 @@ class RelationCollection extends CollectionDecorator
 
     public function getFields(): IlluminateCollection
     {
-        $fields = parent::getFields();
+        $fields = $this->childCollection->getFields();
         foreach ($this->relations as $name => $relation) {
             $fields->put($name, $relation);
         }

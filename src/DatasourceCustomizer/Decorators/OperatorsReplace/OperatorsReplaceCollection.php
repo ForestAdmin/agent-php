@@ -2,10 +2,10 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsReplace;
 
+use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeEquivalent;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
@@ -17,12 +17,10 @@ class OperatorsReplaceCollection extends CollectionDecorator
     public function getFields(): IlluminateCollection
     {
         $fields = $this->childCollection->getFields();
-        /**
-         * @var ColumnSchema $schema
-         */
+
         foreach ($fields as $schema) {
             if ($schema instanceof ColumnSchema) {
-                $newOperators = collect(Operators::getAllOperators())
+                $newOperators = collect(FrontendFilterable::getRequiredOperators($schema->getColumnType()))
                     ->filter(fn ($operator) => ConditionTreeEquivalent::hasEquivalentTree($operator, $schema->getFilterOperators(), $schema->getColumnType()))
                     ->toArray();
 
