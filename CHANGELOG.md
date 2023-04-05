@@ -1,3 +1,10 @@
+# [1.0.0-beta.18](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.17...v1.0.0-beta.18) (2023-04-05)
+
+
+### Features
+
+* **operator:** improve the operator equivalence behaviour ([#41](https://github.com/ForestAdmin/agent-php/issues/41)) ([a8b7024](https://github.com/ForestAdmin/agent-php/commit/a8b70243a9f72930619e4d47e43cc0466c7ef3b3))
+
 # [1.0.0-beta.17](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.16...v1.0.0-beta.17) (2023-04-04)
 
 
