@@ -59,7 +59,6 @@ class Id
     public static function parseSelectionIds(CollectionContract $collection, Request $request): array
     {
         $attributes = $request->input('data.attributes');
-
         $areExcluded = $attributes && array_key_exists('all_records', $attributes) ? $attributes['all_records'] : false;
         $inputIds = $attributes && array_key_exists('ids', $attributes)
             ? $attributes['ids']
