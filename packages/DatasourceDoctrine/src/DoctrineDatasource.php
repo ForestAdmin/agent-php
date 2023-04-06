@@ -3,9 +3,13 @@
 namespace ForestAdmin\AgentPHP\DatasourceDoctrine;
 
 use Doctrine\ORM\EntityManagerInterface;
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseDatasource;
-use Illuminate\Support\Str;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
+
 use function ForestAdmin\config;
+
+use Illuminate\Support\Str;
 
 /**
  * @codeCoverageIgnore
@@ -27,6 +31,20 @@ class DoctrineDatasource extends BaseDatasource
 
         parent::__construct($databaseConfig);
         $this->generate();
+    }
+
+    public function addCollection(CollectionContract $collection): void
+    {
+        if (! $this->collections->has($collection->getName())) {
+            $this->collections->put($collection->getName(), $collection);
+        } else {
+            $existingCollection = $this->collections->get($collection->getName());
+            AgentFactory::$logger?->info(
+                'can not add the collection ' . $collection->getName() .
+                ' (' . $collection->getClassName() . '), because another collection with the same name exists from: ' .
+                $existingCollection->getClassName()
+            );
+        }
     }
 
     /**
