@@ -2,6 +2,8 @@
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use Psr\Log\LoggerInterface;
 
 it('should instantiate properly when extended', function () {
     class ConcreteDataSource extends Datasource
@@ -43,13 +45,23 @@ it('should fail to get collection if one with the same name is not present', fun
     $datasource->getCollection('__no_such_collection__');
 })->throws(Exception::class, 'Collection __no_such_collection__ not found.');
 
-it('should prevent instanciation when adding collection with duplicated name', function () {
+it('should call logger when adding collection with duplicated name', function () {
+    $agent = buildAgent(new  Datasource());
+    // Create the mock
+    $mockLogger = $this->createMock(LoggerInterface::class);
+    // Expect a call to info, with the e-mail address in the message
+    $mockLogger->expects($this->once())
+        ->method('info')
+        ->with($this->stringContains('Collection __duplicated__ already defined in datasource'));
+    $agent->setLogger($mockLogger);
+
     $datasource = new Datasource();
     $duplicatedCollection = new Collection($datasource, '__duplicated__');
     $datasource->addCollection($duplicatedCollection);
     $datasource->addCollection($duplicatedCollection);
-})->throws(Exception::class, 'Collection __duplicated__ already defined in datasource');
+});
 
-//it('should throw if renderChart() is called', function () {
-//    //todo
-//});
+it('should throw when call renderChart', function ($caller) {
+    $datasource = new Datasource();
+    expect(fn () => $datasource->renderChart($caller, 'myChart'))->toThrow(ForestException::class);
+})->with('caller');

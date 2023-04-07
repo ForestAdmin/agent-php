@@ -7,6 +7,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use Psr\Log\LoggerInterface;
 
 test('addDatasource() should add datasource to the datasourceCustomizer', function () {
     $datasource = new Datasource();
@@ -55,20 +56,12 @@ test('build() should add datasource to the container', function () {
         ->toEqual($expected->dataSource->getCollections()->first());
 });
 
-test('create agent with services should add services to the container', function () {
-    $datasource = new Datasource();
-    $collectionUser = new Collection($datasource, 'User');
-    $collectionUser->addFields(
-        [
-            'id'         => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'first_name' => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'last_name'  => new ColumnSchema(columnType: PrimitiveType::STRING),
-        ]
-    );
-    $datasource->addCollection($collectionUser);
-    new AgentFactory(AGENT_OPTIONS, ['my_service' => 'foo']);
+test('setLogger should add logger to the agent instance', function () {
+    $agent = new AgentFactory(AGENT_OPTIONS);
+    $mockLogger = $this->createMock(LoggerInterface::class);
+    $agent->setLogger($mockLogger);
 
-    expect(AgentFactory::get('my_service'))->toEqual('foo');
+    expect(AgentFactory::$logger)->toEqual($mockLogger);
 });
 
 test('customizeCollection() should work', function () {
