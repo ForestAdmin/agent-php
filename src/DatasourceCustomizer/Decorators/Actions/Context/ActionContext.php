@@ -22,6 +22,22 @@ class ActionContext extends CollectionCustomizationContext
         parent::__construct($collection, $caller);
     }
 
+    /**
+     * @return PaginatedFilter
+     */
+    public function getFilter(): PaginatedFilter
+    {
+        return $this->filter;
+    }
+
+    /**
+     * @return array
+     */
+    public function getFormValues(): array
+    {
+        return $this->formValues;
+    }
+
     public function getFormValue(string $key)
     {
         $this->used[$key] = $key;
