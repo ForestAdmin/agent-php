@@ -2,6 +2,7 @@
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ActionCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseAction;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Context\ActionContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\ActionScope;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
@@ -10,6 +11,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
@@ -268,4 +270,21 @@ test('getForm() should be able to compute form with a if condition', function (C
             enumValues: [1,2,3,4,5]
         ),
     ]);
+})->with('caller');
+
+
+test('evaluate() should not evaluate a string that is a PHP function name', function (Caller $caller) {
+    $datasourceDecorator = factoryActionCollection()[0];
+    $collection = $datasourceDecorator->getCollection('Product');
+    $context = new ActionContext($collection, $caller, new PaginatedFilter());
+
+    expect(invokeMethod($collection, 'evaluate', [$context, 'date']))->toEqual('date');
+})->with('caller');
+
+test('evaluate() should evaluate the closure', function (Caller $caller) {
+    $datasourceDecorator = factoryActionCollection()[0];
+    $collection = $datasourceDecorator->getCollection('Product');
+    $context = new ActionContext($collection, $caller, new PaginatedFilter());
+
+    expect(invokeMethod($collection, 'evaluate', [$context, fn () => 'result']))->toEqual('result');
 })->with('caller');
