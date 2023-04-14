@@ -1,3 +1,10 @@
+# [1.0.0-beta.19](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.18...v1.0.0-beta.19) (2023-04-14)
+
+
+### Features
+
+* **action:** add missing getters on action context ([#42](https://github.com/ForestAdmin/agent-php/issues/42)) ([bbab309](https://github.com/ForestAdmin/agent-php/commit/bbab3093a74f57d2d14f74c4a070a05f9af68635))
+
 # [1.0.0-beta.18](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.17...v1.0.0-beta.18) (2023-04-05)
 
 
