@@ -106,7 +106,6 @@ class CollectionCustomizer
     public function addManyToManyRelation(
         string  $name,
         string  $foreignCollection,
-        string  $throughTable,
         string  $throughCollection,
         string  $originKey,
         string  $foreignKey,
@@ -118,7 +117,6 @@ class CollectionCustomizer
             [
                 'type'              => 'ManyToMany',
                 'foreignCollection' => $foreignCollection,
-                'throughTable'      => $throughTable,
                 'throughCollection' => $throughCollection,
                 'originKey'         => $originKey,
                 'originKeyTarget'   => $originKeyTarget,
