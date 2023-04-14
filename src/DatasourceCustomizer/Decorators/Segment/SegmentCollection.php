@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Segment;
 
 use Closure;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
@@ -40,7 +41,7 @@ class SegmentCollection extends CollectionDecorator
 
         if ($segment && isset($this->computedSegments[$segment])) {
             $definition = $this->computedSegments[$segment];
-            $result = $definition();
+            $result = $definition(new CollectionCustomizationContext($this, $caller));
 
             if ($result instanceof ConditionTreeLeaf) {
                 $result = ['field' => $result->getField(), 'operator' => $result->getOperator(), 'value' => $result->getValue()];
