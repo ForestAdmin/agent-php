@@ -101,7 +101,7 @@ class ActionCollection extends CollectionDecorator
 
     private function evaluate(ActionContext $context, $value)
     {
-        return is_callable($value) ? $value($context) : $value;
+        return is_callable($value) && ! is_string($value) ? $value($context) : $value;
     }
 
     private function dropIfs(ActionContext $context, array $fields): array
@@ -124,7 +124,6 @@ class ActionCollection extends CollectionDecorator
     private function dropDeferred(ActionContext $context, array $fields): array
     {
         $newFields = [];
-
 
         foreach ($fields as $field) {
             foreach ($field->keys() as $key) {

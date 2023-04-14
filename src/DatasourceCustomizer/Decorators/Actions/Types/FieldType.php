@@ -6,6 +6,10 @@ final class FieldType
 {
     public const BOOLEAN = 'Boolean';
 
+    public const DATE = 'Date';
+
+    public const DATE_ONLY = 'Dateonly';
+
     public const COLLECTION = 'Collection';
 
     public const ENUM = 'Enum';

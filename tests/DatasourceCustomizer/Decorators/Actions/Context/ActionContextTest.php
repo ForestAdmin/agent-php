@@ -86,3 +86,17 @@ test('getRecordIds should return the pk list', closure: function (Caller $caller
 
     expect($context->getRecordIds())->toEqual([1, 2]);
 })->with('caller');
+
+test('getFormValues should return all form values', closure: function (Caller $caller) {
+    $actionCollection = factoryActionContext();
+    $context = new ActionContext($actionCollection, $caller, new PaginatedFilter(), ['title' => 'Foundation']);
+
+    expect($context->getFormValues())->toEqual(['title' => 'Foundation']);
+})->with('caller');
+
+test('getFilter should return the context filter', closure: function (Caller $caller) {
+    $actionCollection = factoryActionContext();
+    $context = new ActionContext($actionCollection, $caller, new PaginatedFilter(), ['title' => 'Foundation']);
+
+    expect($context->getFilter())->toEqual(new PaginatedFilter());
+})->with('caller');
