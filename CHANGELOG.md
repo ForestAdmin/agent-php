@@ -1,3 +1,10 @@
+# [1.0.0-beta.20](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.19...v1.0.0-beta.20) (2023-04-17)
+
+
+### Bug Fixes
+
+* **segment:** add collection customization context to the segment function definition ([#43](https://github.com/ForestAdmin/agent-php/issues/43)) ([2549a54](https://github.com/ForestAdmin/agent-php/commit/2549a5488d19a27241f3da9c1e534cf583a39c7f))
+
 # [1.0.0-beta.19](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.18...v1.0.0-beta.19) (2023-04-14)
 
 
