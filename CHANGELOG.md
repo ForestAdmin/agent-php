@@ -1,3 +1,10 @@
+# [1.0.0-beta.21](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.20...v1.0.0-beta.21) (2023-04-17)
+
+
+### Bug Fixes
+
+* **validator:** get datasource from collection instead of container ([#44](https://github.com/ForestAdmin/agent-php/issues/44)) ([560fc04](https://github.com/ForestAdmin/agent-php/commit/560fc04cae8341ea9766c3057cc636e0d8d9de3f))
+
 # [1.0.0-beta.20](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.19...v1.0.0-beta.20) (2023-04-17)
 
 
