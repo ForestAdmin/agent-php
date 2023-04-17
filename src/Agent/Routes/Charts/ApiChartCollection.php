@@ -56,10 +56,12 @@ class ApiChartCollection extends AbstractAuthenticatedRoute
 
     public function handleSmartChart(): array
     {
-        return $this->collection->renderChart(
-            QueryStringParser::parseCaller($this->request),
-            $this->chartName,
-            Id::unpackId($this->collection, $this->request->input('record_id'))
-        );
+        return [
+            'content' => $this->collection->renderChart(
+                QueryStringParser::parseCaller($this->request),
+                $this->chartName,
+                Id::unpackId($this->collection, $this->request->input('record_id'))
+            ),
+        ];
     }
 }

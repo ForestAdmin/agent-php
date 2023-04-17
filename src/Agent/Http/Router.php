@@ -27,6 +27,8 @@ class Router
     public static function getRoutes(): array
     {
         return array_merge(
+            self::getActionsRoutes(),
+            self::getApiChartsRoutes(),
             HealthCheck::make()->getRoutes(),
             Authentication::make()->getRoutes(),
             Charts::make()->getRoutes(),
@@ -42,8 +44,6 @@ class Router
             AssociateRelated::make()->getRoutes(),
             DissociateRelated::make()->getRoutes(),
             CountRelated::make()->getRoutes(),
-            self::getActionsRoutes(),
-            self::getApiChartsRoutes(),
         );
     }
 
