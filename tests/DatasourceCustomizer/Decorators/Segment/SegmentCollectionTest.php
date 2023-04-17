@@ -1,5 +1,6 @@
 <?php
 
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Segment\SegmentCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
@@ -129,4 +130,28 @@ test('refineFilter() when there is a filter when the segment is managed by this 
     );
 
     expect(fn () => $segmentCollection->refineFilter($caller, $filter))->toThrow(ForestException::class, '🌳🌳🌳 Column not found Product.do not exists');
+})->with('caller');
+
+test('refineFilter() should work when there is a segment that use context in closure', function (Caller $caller) {
+    [$datasource, $collection] = factorySegmentCollection();
+    $segmentCollection = new SegmentCollection($collection, $datasource);
+    $segmentCollection->addSegment(
+        'segmentName',
+        function (CollectionCustomizationContext $context) {
+            return new ConditionTreeLeaf(field: 'name', operator: Operators::EQUAL, value: $context->getCaller()->getValue('firstName'));
+        }
+    );
+
+    $filter = new Filter(
+        segment: 'segmentName'
+    );
+
+    expect($segmentCollection->refineFilter($caller, $filter))->toEqual(
+        new Filter(
+            conditionTree: new ConditionTreeLeaf(field: 'name', operator: Operators::EQUAL, value: 'sarah'),
+            search: null,
+            searchExtended: null,
+            segment: null
+        ),
+    );
 })->with('caller');
