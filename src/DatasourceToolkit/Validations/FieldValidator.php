@@ -2,7 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Validations;
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
@@ -52,7 +51,7 @@ class FieldValidator
             }
 
             $suffix = Str::after($field, ':');
-            $association = AgentFactory::get('datasource')->getCollection($relation->getForeignCollection());
+            $association = $collection->getDataSource()->getCollection($relation->getForeignCollection());
             self::validate($association, $suffix, $values);
         }
     }
