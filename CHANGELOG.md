@@ -1,3 +1,10 @@
+# [1.0.0-beta.22](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.21...v1.0.0-beta.22) (2023-04-18)
+
+
+### Bug Fixes
+
+* **chart:** fix response of api smart chart ([#45](https://github.com/ForestAdmin/agent-php/issues/45)) ([fe2312b](https://github.com/ForestAdmin/agent-php/commit/fe2312bd7a16cbe28351a5304e1d48af72fe1757))
+
 # [1.0.0-beta.21](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.20...v1.0.0-beta.21) (2023-04-17)
 
 
