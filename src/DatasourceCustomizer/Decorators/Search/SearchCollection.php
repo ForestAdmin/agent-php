@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Search;
 
 use Closure;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
@@ -43,7 +44,7 @@ class SearchCollection extends CollectionDecorator
             $tree = $this->defaultReplacer($filter->getSearch(), $filter->getSearchExtended());
 
             if ($this->replacer) {
-                $plainTree = call_user_func($this->replacer, $filter->getSearch(), $filter->getSearchExtended());
+                $plainTree = call_user_func($this->replacer, $filter->getSearch(), $filter->getSearchExtended(), new CollectionCustomizationContext($this, $caller));
                 $tree = ConditionTreeFactory::fromArray($plainTree);
             }
 
