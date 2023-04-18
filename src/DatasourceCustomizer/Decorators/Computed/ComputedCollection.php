@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed;
 
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\Utils\ComputeField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
@@ -69,8 +70,9 @@ class ComputedCollection extends CollectionDecorator
     {
         $childProjection = $projection->replaceItem(fn ($path) => $this->rewriteField($this, $path));
         $records = $this->childCollection->list($caller, $filter, $childProjection);
+        $context = new CollectionCustomizationContext($this, $caller);
 
-        return ComputeField::computeFromRecords($this, $childProjection, $projection, $records);
+        return ComputeField::computeFromRecords($context, $this, $childProjection, $projection, $records);
     }
 
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
