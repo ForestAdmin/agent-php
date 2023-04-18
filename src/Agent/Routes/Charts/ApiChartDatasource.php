@@ -56,9 +56,11 @@ class ApiChartDatasource extends AbstractAuthenticatedRoute
 
     public function handleSmartChart(): array
     {
-        return $this->datasource->renderChart(
-            QueryStringParser::parseCaller($this->request),
-            $this->chartName
-        );
+        return [
+            'content' => $this->datasource->renderChart(
+                QueryStringParser::parseCaller($this->request),
+                $this->chartName
+            ),
+        ];
     }
 }
