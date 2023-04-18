@@ -59,5 +59,5 @@ test('handleSmartChart() should return an array', function () {
     invokeProperty($chartDatasourceApi, 'chartName', 'mySmartChart');
     $result = $chartDatasourceApi->handleSmartChart();
 
-    expect($result)->toBeArray();
+    expect($result)->toBeArray()->and($result['content']);
 });

@@ -55,6 +55,8 @@ test('getRoutes() should work', function () {
     expect(Router::getRoutes())
         ->toEqual(
             array_merge(
+                $actionRoutes,
+                $chartRoutes,
                 HealthCheck::make()->getRoutes(),
                 Authentication::make()->getRoutes(),
                 Charts::make()->getRoutes(),
@@ -70,8 +72,6 @@ test('getRoutes() should work', function () {
                 AssociateRelated::make()->getRoutes(),
                 DissociateRelated::make()->getRoutes(),
                 CountRelated::make()->getRoutes(),
-                $actionRoutes,
-                $chartRoutes,
             )
         );
 });
