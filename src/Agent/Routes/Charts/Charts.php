@@ -20,6 +20,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactor
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class Charts extends AbstractCollectionRoute
@@ -146,7 +147,6 @@ class Charts extends AbstractCollectionRoute
             field: $this->request->get('aggregate_field'),
             groups: $this->request->get('label_field') ? [['field' => $this->request->get('label_field')]] : []
         );
-        $aggregate = Str::lower($this->request->get('aggregate'));
 
         if (! $foreignCollectionName || ! $aggregation->getGroups()) {
             throw new ForestException('Failed to generate leaderboard chart: parameters do not match pre-requisites');
@@ -154,31 +154,24 @@ class Charts extends AbstractCollectionRoute
         $filter = $this->filter->nest($foreignCollectionName);
         $result = $this->collection->aggregate($this->caller, $filter, $aggregation, $this->request->get('limit'), $this->type);
 
-        return new LeaderboardChart($this->mapArrayToKeyValueAggregate($result, $aggregate));
+        return new LeaderboardChart($this->mapArrayToKeyValueAggregate($result));
     }
 
     private function computeValue(Filter $filter): int
     {
         $aggregation = new Aggregation(operation: $this->request->get('aggregate'), field: $this->request->get('aggregate_field'));
         $result = $this->collection->aggregate($this->caller, $filter, $aggregation, null, $this->type);
-        $rows = array_shift($result);
 
-        return array_values($rows)[0] ?? 0;
+        return $result[0]['value'] ?? 0;
     }
 
-    private function mapArrayToKeyValueAggregate($array, string $aggregate): array
+    private function mapArrayToKeyValueAggregate($array): array
     {
         return collect($array)
-            ->map(function ($item) use ($aggregate) {
+            ->map(function ($item) {
                 // @codeCoverageIgnoreStart
-                $keys = array_keys($item);
-                if ($keys[0] === Str::lower($aggregate)) {
-                    $key = $item[$keys[1]];
-                    $value = $item[$keys[0]];
-                } else {
-                    $key = $item[$keys[0]];
-                    $value = $item[$keys[1]];
-                }
+                $key = array_shift($item['group']);
+                $value = $item['value'];
                 // @codeCoverageIgnoreEnd
 
                 return compact('key', 'value');
@@ -188,13 +181,32 @@ class Charts extends AbstractCollectionRoute
     private function mapArrayToLabelValue($array): array
     {
         return collect($array)
-            ->map(function ($value, $label) {
+            ->map(function ($item) {
                 return [
-                    'label'  => $label,
-                    'values' => compact('value'),
+                    'label'  => Carbon::parse(array_shift($item['group']))
+                        ->format($this->getFormat()),
+                    'values' => ['value' => $item['value']],
                 ];
             })
             ->values()
             ->toArray();
+    }
+
+    /**
+     * @return string
+     */
+    private function getFormat(): string
+    {
+        if (! $this->request->get('time_range')) {
+            throw new ForestException("The parameter time_range is not defined");
+        }
+
+        return match (Str::lower($this->request->get('time_range'))) {
+            'day'   => 'd/m/Y',
+            'week'  => '\WW-Y',
+            'month' => 'M Y',
+            'year'  => 'Y',
+            default => '',
+        };
     }
 }
