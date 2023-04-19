@@ -4,7 +4,7 @@ namespace ForestAdmin\AgentPHP\BaseDatasource;
 
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
-use ForestAdmin\AgentPHP\Agent\Utils\QueryCharts;
+use ForestAdmin\AgentPHP\Agent\Utils\QueryAggregate;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\BaseDatasource\Contracts\BaseDatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection as ForestCollection;
@@ -65,16 +65,7 @@ class BaseCollection extends ForestCollection
      */
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
     {
-        $query = QueryConverter::of($this, $caller->getTimezone(), $filter, $aggregation->getProjection());
-
-        if ($chartType) {
-            return QueryCharts::of($this, $query, $aggregation, $limit)
-                ->{'query' . $chartType}()
-                ->map(fn ($result) => is_array($result) || is_object($result) ? Arr::undot($result) : $result)
-                ->toArray();
-        } else {
-            return $query->count();
-        }
+        return QueryAggregate::of($this, QueryConverter::of($this, $caller->getTimezone(), $filter), $aggregation, $limit)->get();
     }
 
     public function toArray($record, ?Projection $projection = null): array
