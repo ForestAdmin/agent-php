@@ -1,3 +1,10 @@
+# [1.0.0-beta.23](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.22...v1.0.0-beta.23) (2023-04-25)
+
+
+### Features
+
+* **decorators:** add context in closure function for search and computed field decorators ([#46](https://github.com/ForestAdmin/agent-php/issues/46)) ([93ee036](https://github.com/ForestAdmin/agent-php/commit/93ee0365e6136185db25a33eb3fbb526ba496c7c))
+
 # [1.0.0-beta.22](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.21...v1.0.0-beta.22) (2023-04-18)
 
 
