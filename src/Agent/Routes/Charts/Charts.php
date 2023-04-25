@@ -108,11 +108,10 @@ class Charts extends AbstractCollectionRoute
             field: $this->request->get('aggregate_field'),
             groups: $this->request->get('group_by_field') ? [['field' => $this->request->get('group_by_field')]] : []
         );
-        $aggregate = Str::lower($this->request->get('aggregate'));
 
         $result = $this->collection->aggregate($this->caller, $this->filter, $aggregation, null, $this->type);
 
-        return new PieChart($this->mapArrayToKeyValueAggregate($result, $aggregate));
+        return new PieChart($this->mapArrayToKeyValueAggregate($result));
     }
 
     private function makeLine(): LineChart
