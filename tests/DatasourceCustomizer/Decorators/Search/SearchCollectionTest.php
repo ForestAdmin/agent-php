@@ -1,5 +1,6 @@
 <?php
 
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Search\SearchCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
@@ -338,6 +339,36 @@ test('refineFilter() when the search is defined and the collection schema is not
             ),
             search: null,
             searchExtended: true,
+            segment: null
+        ),
+    );
+})->with('caller');
+
+test('refineFilter() should work when there is a replacer that use context in closure', function (Caller $caller) {
+    [$datasource, $collection] = factorySearchCollection();
+    $searchCollection = new SearchCollection($collection, $datasource);
+    $filter = new Filter(search: 'something');
+    $replace = fn ($value, $extended, CollectionCustomizationContext $context) =>  [
+        'aggregator' => 'And',
+        'conditions' => [
+            ['field' => 'id', 'operator' => Operators::EQUAL, 'value' => $context->getCaller()->getId()],
+            ['field' => 'foo', 'operator' => Operators::EQUAL, 'value' => $value],
+        ],
+    ];
+    $searchCollection->replaceSearch($replace);
+
+    expect($searchCollection->refineFilter($caller, $filter))->toEqual(
+        new Filter(
+            conditionTree: ConditionTreeFactory::fromArray(
+                [
+                    'aggregator' => 'And',
+                    'conditions' => [
+                        ['field' => 'id', 'operator' => Operators::EQUAL, 'value' => $caller->getId()],
+                        ['field' => 'foo', 'operator' => Operators::EQUAL, 'value' => 'something'],
+                    ],
+                ]
+            ),
+            search: null,
             segment: null
         ),
     );

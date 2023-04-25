@@ -2,10 +2,12 @@
 
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedDefinition;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
@@ -155,6 +157,30 @@ test('getFields() should contain the computedField', closure: function () {
         );
 });
 
+test('list() result should contain the computed that use context', closure: function (Caller $caller) {
+    ['datasourceDecorator' => $datasourceDecorator] = factoryComputedCollection();
+    $datasourceDecorator->getCollection('Person')->registerComputed(
+        'firstNameWithContext',
+        new ComputedDefinition(
+            columnType: 'String',
+            dependencies: ['firstName'],
+            values: fn ($records, CollectionCustomizationContext $context) => collect($records)->map(fn ($record) => $record['firstName'] . '-' . $context->getCaller()->getId()),
+        )
+    );
+    /** @var ComputedCollection $computedCollection */
+    $computedCollection = $datasourceDecorator->getCollection('Book');
+    $request = Request::createFromGlobals();
+    $caller = QueryStringParser::parseCaller($request);
+    $records = $computedCollection->list($caller, new PaginatedFilter(), new Projection(['title', 'author:firstNameWithContext']));
+
+    expect($records)->toEqual(
+        [
+            ['title' => 'Foundation', 'author' => ['firstNameWithContext' => 'Isaac-1']],
+            ['title' => 'Beat the dealer', 'author' => ['firstNameWithContext' => 'Edward O.-1' ]],
+        ]
+    );
+})->with('caller');
+
 test('list() result should contain the computed', closure: function () {
     ['datasourceDecorator' => $datasourceDecorator] = factoryComputedCollection();
     /** @var ComputedCollection $computedCollection */
@@ -171,7 +197,7 @@ test('list() result should contain the computed', closure: function () {
     );
 });
 
-test('aggregate() aggregate() should use the child implementation when relevantd', closure: function () {
+test('aggregate() aggregate() should use the child implementation when relevant', closure: function () {
     $aggregate = new Aggregation(operation: 'Count');
     ['datasourceDecorator' => $datasourceDecorator] = factoryComputedCollection($aggregate);
     /** @var ComputedCollection $computedCollection */

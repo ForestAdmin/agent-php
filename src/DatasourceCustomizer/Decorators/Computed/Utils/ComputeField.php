@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\Utils;
 
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedDefinition;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
@@ -10,6 +11,7 @@ use Illuminate\Support\Str;
 class ComputeField
 {
     public static function computeFromRecords(
+        CollectionCustomizationContext $context,
         ComputedCollection $collection,
         Projection         $recordsProjection,
         Projection         $desiredProjection,
@@ -19,7 +21,7 @@ class ComputeField
         $flatten = Flattener::flatten($records, $paths);
 
         foreach ($desiredProjection as $path) {
-            self::queueField($collection, $path, $paths, $flatten);
+            self::queueField($context, $collection, $path, $paths, $flatten);
         }
 
         return Flattener::unFlatten(
@@ -29,6 +31,7 @@ class ComputeField
     }
 
     public static function queueField(
+        CollectionCustomizationContext $context,
         ComputedCollection $collection,
         string             $newPath,
         Projection         $paths,
@@ -40,24 +43,25 @@ class ComputeField
                 ->nest(Str::contains($newPath, ':') ? Str::before($newPath, ':') : null);
 
             foreach ($nestedDependencies as $path) {
-                self::queueField($collection, $path, $paths, $flatten);
+                self::queueField($context, $collection, $path, $paths, $flatten);
             }
 
             $dependencyValues = $nestedDependencies->map(fn ($path) => $flatten[$paths->search($path)])->toArray();
             $paths->push($newPath);
 
-            $flatten[] = self::computeField($computed, $computed->getDependencies(), $dependencyValues);
+            $flatten[] = self::computeField($context, $computed, $computed->getDependencies(), $dependencyValues);
         }
     }
 
     public static function computeField(
+        CollectionCustomizationContext $context,
         ComputedDefinition $computed,
         array              $computedDependencies,
         array              &$flatten
     ): array {
         return self::transformUniqueValues(
             Flattener::unFlatten($flatten, new Projection($computedDependencies)),
-            static fn ($uniquePartials) => $computed->getValues($uniquePartials)
+            static fn ($uniquePartials) => $computed->getValues($uniquePartials, $context)
         );
     }
 

@@ -16,9 +16,9 @@ class ComputedDefinition
     ) {
     }
 
-    public function getValues($args)
+    public function getValues(...$args)
     {
-        return call_user_func($this->values, $args);
+        return call_user_func($this->values, ...$args);
     }
 
     /**
