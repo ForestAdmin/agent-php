@@ -29,7 +29,10 @@ beforeEach(function () {
     testTime()->freeze(Carbon::now(TIMEZONE));
     global $datasource, $bookCollection, $reviewCollection, $bookReviewCollection, $userCollection;
     $datasource = new BaseDatasource(
-        ['url' => 'sqlite://../../Datasets/test.db']
+        [
+            'driver'   => 'sqlite',
+            'database' => ':memory:',
+        ]
     );
 
     $bookCollection = new BaseCollection($datasource, 'Book', 'books');
