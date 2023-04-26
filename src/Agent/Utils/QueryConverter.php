@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Utils;
 
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
+use ForestAdmin\AgentPHP\Agent\Utils\Traits\FormatQuery;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
@@ -24,6 +25,8 @@ use Illuminate\Support\Str;
 
 class QueryConverter
 {
+    use FormatQuery;
+
     protected Builder $query;
 
     protected string $tableName;
@@ -192,7 +195,7 @@ class QueryConverter
 
     private function computeDateOperator(ConditionTreeLeaf $conditionTreeLeaf, Builder $query, string $aggregator): void
     {
-        $field = $this->getFieldFromLeaf($conditionTreeLeaf);
+        $field = $this->formatField($this->collection, $conditionTreeLeaf->getField());
         $value = $conditionTreeLeaf->getValue();
         $operator = $conditionTreeLeaf->getOperator();
 
@@ -282,7 +285,7 @@ class QueryConverter
 
     private function computeMainOperator(ConditionTreeLeaf $conditionTreeLeaf, Builder $query, string $aggregator): void
     {
-        $field = $this->getFieldFromLeaf($conditionTreeLeaf);
+        $field = $this->formatField($this->collection, $conditionTreeLeaf->getField());
         $value = $conditionTreeLeaf->getValue();
         switch ($conditionTreeLeaf->getOperator()) {
             case Operators::BLANK:
@@ -339,21 +342,6 @@ class QueryConverter
 
                 break;
         }
-    }
-
-    private function getFieldFromLeaf(ConditionTreeLeaf $leaf): string
-    {
-        if (Str::contains($leaf->getField(), ':')) {
-            $relation = $this->collection->getFields()[Str::before($leaf->getField(), ':')];
-            $tableName = $this->collection
-                ->getDataSource()
-                ->getCollection($relation->getForeignCollection())->getTableName();
-            $this->addJoinRelation($relation, $tableName);
-
-            return $tableName . '.' . Str::after($leaf->getField(), ':');
-        }
-
-        return $this->tableName . '.' . $leaf->getField();
     }
 
     private function isJoin(string $joinTable): bool
