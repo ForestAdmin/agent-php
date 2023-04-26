@@ -2,15 +2,17 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils;
 
+use ForestAdmin\AgentPHP\Agent\Utils\Traits\FormatQuery;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class QueryAggregate
 {
+    use FormatQuery;
+
     protected string $aggregate;
 
     protected string $field;
@@ -22,9 +24,7 @@ class QueryAggregate
         protected ?int $limit = null
     ) {
         $this->aggregate = strtolower($aggregation->getOperation());
-        $this->field = Str::contains($aggregation->getField(), ':')
-            ? Str::replace(':', '.', $aggregation->getField())
-            : $this->collection->getTableName() . ($aggregation->getField() ? '.' . $aggregation->getField() : null);
+        $this->field = $aggregation->getField() ? $this->formatField($this->collection, $aggregation->getField()) : '*';
     }
 
     public static function of(CollectionContract $collection, Builder $query, Aggregation $aggregation, ?int $limit = null): self
@@ -35,26 +35,15 @@ class QueryAggregate
     public function get(): array
     {
         foreach ($this->aggregation->getGroups() as $group) {
-            $field = Str::contains($group['field'], ':')
-                ? Str::replace(':', '.', $group['field'])
-                : $this->collection->getTableName() . '.' . $group['field'];
+            $field = $this->formatField($this->collection, $group['field']);
             $this->query->addSelect($field)->groupBy($field);
         }
 
-        $field = $this->aggregation->getField() ?? '*';
-        $this->query->addSelect(self::raw("$this->aggregate($field) AS $this->aggregate"))
+        $this->query->addSelect(self::raw("$this->aggregate($this->field) AS '$this->aggregate'"))
             ->orderBy($this->aggregate, 'DESC')
             ->limit($this->limit);
 
-
         return $this->computeResultAggregate($this->query->get());
-    }
-
-    public function formatField(string $originalField): string
-    {
-        return Str::contains($originalField, ':')
-            ? Str::replace(':', '.', $originalField)
-            : $this->collection->getTableName() . '.' . $originalField;
     }
 
     private static function raw(string $value): Expression
