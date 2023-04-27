@@ -2,40 +2,34 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils;
 
-use ForestAdmin\AgentPHP\Agent\Utils\Traits\FormatQuery;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
+use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
-use Illuminate\Database\Query\Builder;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Collection;
 
-class QueryAggregate
+class QueryAggregate extends QueryConverter
 {
-    use FormatQuery;
-
     protected string $aggregate;
 
     protected string $field;
 
     public function __construct(
-        protected CollectionContract $collection,
-        protected Builder $query,
+        protected BaseCollection $collection,
+        protected string $timezone,
         protected Aggregation $aggregation,
+        protected ?Filter $filter = null,
         protected ?int $limit = null
     ) {
+        parent::__construct($collection, $timezone, $filter, $this->aggregation->getProjection());
         $this->aggregate = strtolower($aggregation->getOperation());
-        $this->field = $aggregation->getField() ? $this->formatField($this->collection, $aggregation->getField()) : '*';
-    }
-
-    public static function of(CollectionContract $collection, Builder $query, Aggregation $aggregation, ?int $limit = null): self
-    {
-        return (new static($collection, $query, $aggregation, $limit));
+        $this->field = $aggregation->getField() ? $this->formatField($aggregation->getField()) : '*';
     }
 
     public function get(): array
     {
         foreach ($this->aggregation->getGroups() as $group) {
-            $field = $this->formatField($this->collection, $group['field']);
+            $field = $this->formatField($group['field']);
             $this->query->addSelect($field)->groupBy($field);
         }
 

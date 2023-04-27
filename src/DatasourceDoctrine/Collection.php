@@ -102,14 +102,14 @@ class Collection extends BaseCollection
     public function create(Caller $caller, array $data)
     {
         $data[$this->getIdentifier()] = $this->entityMetadata->idGenerator->generateId($this->datasource->getEntityManager(), new $this->className());
-        $query = QueryConverter::of($this, $caller->getTimezone());
+        $query = QueryConverter::of($this, $caller->getTimezone())->getQuery();
         $id = $query->insertGetId($data);
 
         $filter = new Filter(
             conditionTree: new ConditionTreeLeaf($this->getIdentifier(), Operators::EQUAL, $id)
         );
 
-        return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->first());
+        return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->getQuery()->first());
     }
 
     /**

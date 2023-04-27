@@ -2,8 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\BaseDatasource;
 
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryAggregate;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\BaseDatasource\Contracts\BaseDatasourceContract;
@@ -29,6 +27,7 @@ class BaseCollection extends ForestCollection
     public function list(Caller $caller, Filter $filter, Projection $projection): array
     {
         return QueryConverter::of($this, $caller->getTimezone(), $filter, $projection)
+            ->getQuery()
             ->get()
             ->map(fn ($record) => Arr::undot($record))
             ->toArray();
@@ -36,7 +35,7 @@ class BaseCollection extends ForestCollection
 
     public function create(Caller $caller, array $data)
     {
-        $query = QueryConverter::of($this, $caller->getTimezone());
+        $query = QueryConverter::of($this, $caller->getTimezone())->getQuery();
         $id = $query->insertGetId($data);
 
         $filter = new Filter(
@@ -46,18 +45,14 @@ class BaseCollection extends ForestCollection
         return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->first());
     }
 
-    /**
-     * @throws NonUniqueResultException
-     * @throws NoResultException
-     */
     public function update(Caller $caller, Filter $filter, array $patch): void
     {
-        QueryConverter::of($this, $caller->getTimezone(), $filter)->update($patch);
+        QueryConverter::of($this, $caller->getTimezone(), $filter)->getQuery()->update($patch);
     }
 
     public function delete(Caller $caller, Filter $filter): void
     {
-        QueryConverter::of($this, $caller->getTimezone(), $filter)->delete();
+        QueryConverter::of($this, $caller->getTimezone(), $filter)->getQuery()->delete();
     }
 
     /**
@@ -65,7 +60,7 @@ class BaseCollection extends ForestCollection
      */
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
     {
-        return QueryAggregate::of($this, QueryConverter::of($this, $caller->getTimezone(), $filter), $aggregation, $limit)->get();
+        return QueryAggregate::of($this, $caller->getTimezone(), $filter, $aggregation, $limit)->get();
     }
 
     public function toArray($record, ?Projection $projection = null): array
