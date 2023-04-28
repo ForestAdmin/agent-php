@@ -15,6 +15,11 @@ abstract class SingleRelationSchema extends RelationSchema
         parent::__construct($foreignCollection, $type);
     }
 
+    public function setOriginKey(string $originKey): void
+    {
+        $this->originKey = $originKey;
+    }
+
     public function getOriginKey(): string
     {
         return $this->originKey;

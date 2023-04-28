@@ -15,6 +15,11 @@ class ManyToManySchema extends ManyRelationSchema
         parent::__construct($foreignKey, $foreignKeyTarget, $foreignCollection, 'ManyToMany');
     }
 
+    public function setOriginKey(string $originKey): void
+    {
+        $this->originKey = $originKey;
+    }
+
     public function getThroughCollection(): string
     {
         return $this->throughCollection;
