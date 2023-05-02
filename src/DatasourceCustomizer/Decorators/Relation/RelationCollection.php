@@ -60,13 +60,13 @@ class RelationCollection extends CollectionDecorator
         return $projection->apply($records)->all();
     }
 
-    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
+    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null)
     {
         $newFilter = $this->refineFilter($caller, $filter);
 
         // No emulated relations are used in the aggregation
         if ($aggregation->getProjection()->relations()->every(fn ($relation, $prefix) => ! isset($this->relations[$prefix]))) {
-            return $this->childCollection->aggregate($caller, $newFilter, $aggregation, $limit, $chartType);
+            return $this->childCollection->aggregate($caller, $newFilter, $aggregation, $limit);
         }
 
         $filter = new PaginatedFilter(

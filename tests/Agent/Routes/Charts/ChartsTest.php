@@ -91,8 +91,14 @@ function factoryChart($args = []): Charts
 
     if (isset($args['books']['results'])) {
         $collectionBooks = mock($collectionBooks)
-            ->shouldReceive('aggregate')
-            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null, \Mockery::type('string'));
+            ->shouldReceive('aggregate');
+
+        if (isset($args['type']) && $args['type'] === 'leaderboard') {
+            $collectionBooks->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null);
+        } else {
+            $collectionBooks->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class));
+        }
+
         if (isset($args['books']['previous'])) {
             $collectionBooks = $collectionBooks->andReturn($args['books']['results'][0], $args['books']['results'][1])
                 ->getMock();
@@ -517,6 +523,7 @@ test('makeLine() with month year should return a LineChart', function () {
 test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation', function () {
     $chart = factoryChart(
         [
+            'type'    => 'leaderboard',
             'books'   => [
                 'results' => [
                     [
@@ -567,6 +574,7 @@ test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation
 test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relation', function () {
     $chart = factoryChart(
         [
+            'type'    => 'leaderboard',
             'books'   => [
                 'results' => [
                     [

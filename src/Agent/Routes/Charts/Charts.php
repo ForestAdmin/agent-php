@@ -109,7 +109,7 @@ class Charts extends AbstractCollectionRoute
             groups: $this->request->get('group_by_field') ? [['field' => $this->request->get('group_by_field')]] : []
         );
 
-        $result = $this->collection->aggregate($this->caller, $this->filter, $aggregation, null, $this->type);
+        $result = $this->collection->aggregate($this->caller, $this->filter, $aggregation);
 
         return new PieChart($this->mapArrayToKeyValueAggregate($result));
     }
@@ -122,7 +122,7 @@ class Charts extends AbstractCollectionRoute
             groups: [['field' => $this->request->get('group_by_date_field'), 'operation' => $this->request->get('time_range')]]
         );
 
-        $result = $this->collection->aggregate($this->caller, $this->filter, $aggregation, null, $this->type);
+        $result = $this->collection->aggregate($this->caller, $this->filter, $aggregation);
 
         return new LineChart($this->mapArrayToLabelValue($result));
     }
@@ -151,7 +151,7 @@ class Charts extends AbstractCollectionRoute
             throw new ForestException('Failed to generate leaderboard chart: parameters do not match pre-requisites');
         }
         $filter = $this->filter->nest($foreignCollectionName);
-        $result = $this->collection->aggregate($this->caller, $filter, $aggregation, $this->request->get('limit'), $this->type);
+        $result = $this->collection->aggregate($this->caller, $filter, $aggregation, $this->request->get('limit'));
 
         return new LeaderboardChart($this->mapArrayToKeyValueAggregate($result));
     }
@@ -159,7 +159,7 @@ class Charts extends AbstractCollectionRoute
     private function computeValue(Filter $filter): int
     {
         $aggregation = new Aggregation(operation: $this->request->get('aggregate'), field: $this->request->get('aggregate_field'));
-        $result = $this->collection->aggregate($this->caller, $filter, $aggregation, null, $this->type);
+        $result = $this->collection->aggregate($this->caller, $filter, $aggregation);
 
         return $result[0]['value'] ?? 0;
     }

@@ -45,8 +45,8 @@ class RelaxedCollection
         $this->collection->delete($this->caller, $filter);
     }
 
-    public function aggregate(Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
+    public function aggregate(Filter $filter, Aggregation $aggregation, ?int $limit = null)
     {
-        return $this->collection->aggregate($this->caller, $filter, $aggregation, $limit, $chartType);
+        return $this->collection->aggregate($this->caller, $filter, $aggregation, $limit);
     }
 }

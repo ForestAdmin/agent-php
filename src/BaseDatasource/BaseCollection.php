@@ -58,7 +58,7 @@ class BaseCollection extends ForestCollection
     /**
      * @throws \Exception
      */
-    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
+    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null)
     {
         return QueryAggregate::of($this, $caller->getTimezone(), $filter, $aggregation, $limit)->get();
     }

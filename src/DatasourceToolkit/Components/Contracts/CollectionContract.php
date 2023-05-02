@@ -30,7 +30,7 @@ interface CollectionContract
 
     public function delete(Caller $caller, Filter $filter): void;
 
-    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null);
+    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null);
 
     public function renderChart(Caller $caller, string $name, array $recordId);
 }
