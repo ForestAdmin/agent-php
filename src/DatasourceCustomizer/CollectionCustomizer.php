@@ -7,11 +7,18 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseAction;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedDefinition;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DecoratorsStack;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsEmulate\OperatorsEmulateCollection;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Plugins\AddExternalRelation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 
 class CollectionCustomizer
 {
-    public function __construct(private DecoratorsStack $stack, private string $name)
+    public function __construct(private DatasourceCustomizer $datasourceCustomizer, private DecoratorsStack $stack, private string $name)
     {
+    }
+
+    public function getSchema(): CollectionContract
+    {
+        return $this->stack->validation->getCollection($this->name);
     }
 
     public function disableCount(): self
@@ -142,8 +149,16 @@ class CollectionCustomizer
         return $this;
     }
 
-    public function addExternalRelation(string $name, $definition)
+    public function use(string $plugin, ?array $options): self
     {
+        new $plugin($this->datasourceCustomizer, $this, $options);
+
+        return $this;
+    }
+
+    public function addExternalRelation(string $name, array $definition): self
+    {
+        return $this->use(AddExternalRelation::class, array_merge(['name' => $name], $definition));
     }
 
     public function addSegment(string $name, \Closure $definition): self
