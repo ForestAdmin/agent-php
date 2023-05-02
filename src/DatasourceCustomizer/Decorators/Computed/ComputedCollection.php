@@ -75,10 +75,10 @@ class ComputedCollection extends CollectionDecorator
         return ComputeField::computeFromRecords($context, $this, $childProjection, $projection, $records);
     }
 
-    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
+    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null)
     {
         if (! $aggregation->getProjection()->some(fn ($field) => $this->getComputed($field))) {
-            return $this->childCollection->aggregate($caller, $filter, $aggregation, $limit, $chartType);
+            return $this->childCollection->aggregate($caller, $filter, $aggregation, $limit);
         }
 
         $filter = new PaginatedFilter($filter->getConditionTree(), $filter->getSearch(), $filter->getSearchExtended(), $filter->getSegment());

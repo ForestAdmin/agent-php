@@ -79,11 +79,11 @@ class CollectionDecorator implements CollectionContract
         $this->childCollection->delete($caller, $refinedFilter);
     }
 
-    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
+    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null)
     {
         $refinedFilter = $this->refineFilter($caller, $filter);
 
-        return $this->childCollection->aggregate($caller, $refinedFilter, $aggregation, $limit, $chartType);
+        return $this->childCollection->aggregate($caller, $refinedFilter, $aggregation, $limit);
     }
 
     protected function markSchemaAsDirty(): void

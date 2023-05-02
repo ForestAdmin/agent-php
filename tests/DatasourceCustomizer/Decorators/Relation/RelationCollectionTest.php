@@ -118,7 +118,7 @@ function factoryRelationCollection()
             }
         )
         ->shouldReceive('aggregate')
-        ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null, null)
+        ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
         ->andReturnUsing(
             function (Caller $caller, Filter $filter, Aggregation $aggregation) use ($personsRecords) {
                 return $aggregation->apply($personsRecords, 'Europe/Paris');

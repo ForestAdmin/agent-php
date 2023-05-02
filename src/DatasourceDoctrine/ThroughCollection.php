@@ -115,7 +115,7 @@ class ThroughCollection extends BaseCollection
      */
     public function create(Caller $caller, array $data)
     {
-        $query = QueryConverter::of($this, $caller->getTimezone());
+        $query = QueryConverter::of($this, $caller->getTimezone())->getQuery();
         $primaryKeys = SchemaUtils::getPrimaryKeys($this);
         if (collect($primaryKeys)->every(fn ($value) => array_key_exists($value, $data))) {
             $query->insert($data);
@@ -129,6 +129,6 @@ class ThroughCollection extends BaseCollection
             );
         }
 
-        return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->first());
+        return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->getQuery()->first());
     }
 }

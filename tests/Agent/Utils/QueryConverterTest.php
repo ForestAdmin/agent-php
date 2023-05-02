@@ -17,7 +17,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Carbon;
 
@@ -29,7 +28,10 @@ beforeEach(function () {
     testTime()->freeze(Carbon::now(TIMEZONE));
     global $datasource, $bookCollection, $reviewCollection, $bookReviewCollection, $userCollection;
     $datasource = new BaseDatasource(
-        ['url' => 'sqlite://../../Datasets/test.db']
+        [
+            'driver'   => 'sqlite',
+            'database' => ':memory:',
+        ]
     );
 
     $bookCollection = new BaseCollection($datasource, 'Book', 'books');
@@ -105,19 +107,20 @@ beforeEach(function () {
 
 test('of() should return a Illuminate\\Database\\Query\\Builder instance', function () {
     global $bookCollection;
-    expect(QueryConverter::of($bookCollection, 'Europe/Paris'))->toBeInstanceOf(Builder::class);
+    expect(QueryConverter::of($bookCollection, 'Europe/Paris'))->toBeInstanceOf(QueryConverter::class);
 });
 
 test('QueryConverter should select all when no projection is given', function () {
     global $bookCollection;
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris');
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris')->getQuery();
 
     expect($query->toSql())->toEqual('select * from "books" as "books"');
 });
 
 test('QueryConverter should select only fields from the given projection', function () {
     global $bookCollection;
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', null, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', null, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->columns)
         ->toEqual(
@@ -131,7 +134,8 @@ test('QueryConverter should select only fields from the given projection', funct
 
 test('QueryConverter should select only fields from the given projection and work with relations', function () {
     global $bookCollection;
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', null, new Projection(['id', 'title', 'reviews:author']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', null, new Projection(['id', 'title', 'reviews:author']))
+        ->getQuery();
 
     expect($query->columns)
         ->toEqual(
@@ -145,7 +149,8 @@ test('QueryConverter should select only fields from the given projection and wor
 
 test('QueryConverter should add all the joins with ManyToMany relation', function () {
     global $bookCollection;
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', null, new Projection(['id', 'title', 'reviews:author']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', null, new Projection(['id', 'title', 'reviews:author']))
+        ->getQuery();
 
     expect($query->joins)->toHaveCount(2)
         ->and($query->joins[0]->table)->toEqual('book_review as book_review')
@@ -174,7 +179,8 @@ test('QueryConverter should add all the joins with ManyToMany relation', functio
 
 test('QueryConverter should add the join with ManyToOne relation', function () {
     global $bookReviewCollection;
-    $query = QueryConverter::of($bookReviewCollection, 'Europe/Paris', null, new Projection(['id', 'review:author']));
+    $query = QueryConverter::of($bookReviewCollection, 'Europe/Paris', null, new Projection(['id', 'review:author']))
+        ->getQuery();
 
     expect($query->joins)->toHaveCount(1)
         ->and($query->joins[0]->table)->toEqual('reviews as reviews')
@@ -192,7 +198,8 @@ test('QueryConverter should add the join with ManyToOne relation', function () {
 
 test('QueryConverter should add the join with OneToMany / OneToOne relation', function () {
     global $userCollection;
-    $query = QueryConverter::of($userCollection, 'Europe/Paris', null, new Projection(['id', 'books:title']));
+    $query = QueryConverter::of($userCollection, 'Europe/Paris', null, new Projection(['id', 'books:title']))
+        ->getQuery();
 
     expect($query->joins)->toHaveCount(1)
         ->and($query->joins[0]->table)->toEqual('books as books')
@@ -211,7 +218,7 @@ test('QueryConverter should add the join with OneToMany / OneToOne relation', fu
 test('QueryConverter should apply sort', function () {
     global $bookCollection;
     $filter = new PaginatedFilter(sort: new Sort([['field' => 'title', 'ascending' => false]]));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter);
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter)->getQuery();
 
     expect($query->orders)->toHaveCount(1)
         ->and($query->orders[0])->toEqual(
@@ -225,7 +232,8 @@ test('QueryConverter should apply sort', function () {
 test('QueryConverter should apply sort on relation', function () {
     global $bookCollection;
     $filter = new PaginatedFilter(sort: new Sort([['field' => 'author:name', 'ascending' => false]]));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'author:name']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'author:name']))
+        ->getQuery();
 
     expect($query->orders)->toHaveCount(1)
         ->and($query->orders[0]['column'])->toEqual('author.name')
@@ -235,7 +243,8 @@ test('QueryConverter should apply sort on relation', function () {
 test('QueryConverter should apply pagination', function () {
     global $bookCollection;
     $filter = new PaginatedFilter(page: new Page(20, 10));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'author:name']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'author:name']))
+        ->getQuery();
 
     expect($query->limit)->toEqual(10)
         ->and($query->offset)->toEqual(20);
@@ -244,7 +253,8 @@ test('QueryConverter should apply pagination', function () {
 test('QueryConverter apply conditionTree should add join with nested field', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('author:name', Operators::PRESENT));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
+        ->getQuery();
 
     expect($query->joins)
         ->toHaveCount(1)
@@ -269,7 +279,8 @@ test('QueryConverter apply conditionTree should add join with nested field', fun
 test('QueryConverter apply conditionTree should not add joins twice', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('author:name', Operators::PRESENT));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'author:name']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'author:name']))
+        ->getQuery();
 
     expect($query->joins)->toHaveCount(1);
 });
@@ -285,7 +296,8 @@ test('QueryConverter apply conditionTree should with conditionTreeBranch', funct
             ]
         )
     );
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'author:name']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'author:name']))
+        ->getQuery();
 
     expect($query->wheres)->toHaveCount(1)
         ->and($query->wheres[0]['type'])->toEqual('Nested')
@@ -297,7 +309,8 @@ test('QueryConverter apply conditionTree should with conditionTreeBranch', funct
 test('QueryConverter should apply conditionTree with operator BLANK', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::BLANK));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -310,7 +323,8 @@ test('QueryConverter should apply conditionTree with operator BLANK', function (
 test('QueryConverter should apply conditionTree with operator PRESENT', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::PRESENT));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -323,7 +337,8 @@ test('QueryConverter should apply conditionTree with operator PRESENT', function
 test('QueryConverter should apply conditionTree with operator EQUAL', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::EQUAL, 'foo'));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -338,7 +353,8 @@ test('QueryConverter should apply conditionTree with operator EQUAL', function (
 test('QueryConverter should apply conditionTree with operator NOT_EQUAL', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::NOT_EQUAL, 'foo'));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -353,7 +369,8 @@ test('QueryConverter should apply conditionTree with operator NOT_EQUAL', functi
 test('QueryConverter should apply conditionTree with operator GREATER_THAN', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('id', Operators::GREATER_THAN, 1));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -368,7 +385,8 @@ test('QueryConverter should apply conditionTree with operator GREATER_THAN', fun
 test('QueryConverter should apply conditionTree with operator LESS_THAN', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('id', Operators::LESS_THAN, 1));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -383,7 +401,8 @@ test('QueryConverter should apply conditionTree with operator LESS_THAN', functi
 test('QueryConverter should apply conditionTree with operator ICONTAINS', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::ICONTAINS, 'foo'));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -399,7 +418,8 @@ test('QueryConverter should apply conditionTree with operator ICONTAINS', functi
 test('QueryConverter should apply conditionTree with operator CONTAINS', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::CONTAINS, 'foo'));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -414,7 +434,8 @@ test('QueryConverter should apply conditionTree with operator CONTAINS', functio
 test('QueryConverter should apply conditionTree with operator NOT_CONTAINS', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::NOT_CONTAINS, 'foo'));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -429,7 +450,8 @@ test('QueryConverter should apply conditionTree with operator NOT_CONTAINS', fun
 test('QueryConverter should apply conditionTree with operator IN', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::IN, 'foo, value'));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -443,7 +465,8 @@ test('QueryConverter should apply conditionTree with operator IN', function () {
 test('QueryConverter should apply conditionTree with operator NOT_IN', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::NOT_IN, 'foo, value'));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -457,7 +480,8 @@ test('QueryConverter should apply conditionTree with operator NOT_IN', function 
 test('QueryConverter should apply conditionTree with operator STARTS_WITH', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::STARTS_WITH, 'foo'));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -472,7 +496,8 @@ test('QueryConverter should apply conditionTree with operator STARTS_WITH', func
 test('QueryConverter should apply conditionTree with operator ENDS_WITH', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::ENDS_WITH, 'foo'));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -487,7 +512,8 @@ test('QueryConverter should apply conditionTree with operator ENDS_WITH', functi
 test('QueryConverter should apply conditionTree with operator ISTARTS_WITH', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::ISTARTS_WITH, 'foo'));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -502,7 +528,8 @@ test('QueryConverter should apply conditionTree with operator ISTARTS_WITH', fun
 test('QueryConverter should apply conditionTree with operator IENDS_WITH', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::IENDS_WITH, 'foo'));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -519,7 +546,8 @@ test('QueryConverter should apply conditionTree with operator IENDS_WITH', funct
 test('QueryConverter should apply conditionTree with operator TODAY', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::TODAY));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -538,7 +566,8 @@ test('QueryConverter should apply conditionTree with operator BEFORE', function 
     global $bookCollection;
     $date = '2022-01-01 12:00:00';
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::BEFORE, $date));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -554,7 +583,8 @@ test('QueryConverter should apply conditionTree with operator AFTER', function (
     global $bookCollection;
     $date = '2022-01-01 12:00:00';
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::AFTER, $date));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -570,7 +600,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_X_DAYS', 
     global $bookCollection;
     $value = 2;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_X_DAYS, $value));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -589,7 +620,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_X_DAYS_TO
     global $bookCollection;
     $value = 2;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_X_DAYS_TO_DATE, $value));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -607,7 +639,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_X_DAYS_TO
 test('QueryConverter should apply conditionTree with operator PAST', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PAST));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -622,7 +655,8 @@ test('QueryConverter should apply conditionTree with operator PAST', function ()
 test('QueryConverter should apply conditionTree with operator FUTURE', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::FUTURE));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -638,7 +672,8 @@ test('QueryConverter should apply conditionTree with operator BEFORE_X_HOURS_AGO
     global $bookCollection;
     $value = 2;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::BEFORE_X_HOURS_AGO, $value));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -654,7 +689,8 @@ test('QueryConverter should apply conditionTree with operator AFTER_X_HOURS_AGO'
     global $bookCollection;
     $value = 2;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::AFTER_X_HOURS_AGO, $value));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -669,7 +705,8 @@ test('QueryConverter should apply conditionTree with operator AFTER_X_HOURS_AGO'
 test('QueryConverter should apply conditionTree with operator YESTERDAY', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::YESTERDAY));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -687,7 +724,8 @@ test('QueryConverter should apply conditionTree with operator YESTERDAY', functi
 test('QueryConverter should apply conditionTree with operator PREVIOUS_WEEK', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_WEEK));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -705,7 +743,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_WEEK', fu
 test('QueryConverter should apply conditionTree with operator PREVIOUS_MONTH', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_MONTH));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -723,7 +762,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_MONTH', f
 test('QueryConverter should apply conditionTree with operator PREVIOUS_QUARTER', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_QUARTER));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -741,7 +781,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_QUARTER',
 test('QueryConverter should apply conditionTree with operator PREVIOUS_YEAR', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_YEAR));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -759,7 +800,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_YEAR', fu
 test('QueryConverter should apply conditionTree with operator PREVIOUS_WEEK_TO_DATE', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_WEEK_TO_DATE));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -777,7 +819,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_WEEK_TO_D
 test('QueryConverter should apply conditionTree with operator PREVIOUS_MONTH_TO_DATE', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_MONTH_TO_DATE));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -795,7 +838,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_MONTH_TO_
 test('QueryConverter should apply conditionTree with operator PREVIOUS_QUARTER_TO_DATE', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_QUARTER_TO_DATE));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -813,7 +857,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_QUARTER_T
 test('QueryConverter should apply conditionTree with operator PREVIOUS_YEAR_TO_DATE', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_YEAR_TO_DATE));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']));
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
+        ->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([

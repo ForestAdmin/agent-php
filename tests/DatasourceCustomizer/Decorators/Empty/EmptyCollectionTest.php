@@ -54,7 +54,7 @@ function factoryEmptyCollection($args = [])
     if (isset($args['aggregate'])) {
         $collectionProduct = mock($collectionProduct)
             ->shouldReceive('aggregate')
-            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null, null)
+            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
             ->andReturn($args['aggregate'])
             ->getMock();
     }

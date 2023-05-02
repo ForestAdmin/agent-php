@@ -91,8 +91,14 @@ function factoryChart($args = []): Charts
 
     if (isset($args['books']['results'])) {
         $collectionBooks = mock($collectionBooks)
-            ->shouldReceive('aggregate')
-            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null, \Mockery::type('string'));
+            ->shouldReceive('aggregate');
+
+        if (isset($args['type']) && $args['type'] === 'leaderboard') {
+            $collectionBooks->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null);
+        } else {
+            $collectionBooks->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class));
+        }
+
         if (isset($args['books']['previous'])) {
             $collectionBooks = $collectionBooks->andReturn($args['books']['results'][0], $args['books']['results'][1])
                 ->getMock();
@@ -162,7 +168,7 @@ test('makeValue() should return a ValueChart', function () {
             'books'   => [
                 'results' => [
                     [
-                        'sum' => 10,
+                        'value' => 10,
                     ],
                 ],
             ],
@@ -197,8 +203,8 @@ test('makeValue() with previous filter should return a ValueChart', function () 
         [
             'books'   => [
                 'results'  => [
-                    [['sum' => 10]],
-                    [['previous' => 5]],
+                    [['value' => 10]],
+                    [['value' => 5]],
                 ],
                 'previous' => true,
             ],
@@ -235,7 +241,7 @@ test('makeObjective() should return a ObjectiveChart', function () {
             'books'   => [
                 'results' => [
                     [
-                        'count' => 10,
+                        'value' => 10,
                     ],
                 ],
             ],
@@ -271,12 +277,12 @@ test('makePie() should return a PieChart', function () {
             'books'   => [
                 'results' => [
                     [
-                        'year'  => 2021,
-                        'count' => 100,
+                        'group' => ['year' => 2021],
+                        'value' => 100,
                     ],
                     [
-                        'year'  => 2022,
-                        'count' => 150,
+                        'group' => ['year' => 2022],
+                        'value' => 150,
                     ],
                 ],
             ],
@@ -319,8 +325,14 @@ test('makeLine() with day filter should return a LineChart', function () {
         [
             'books'   => [
                 'results' => [
-                    '03/01/2022' => 10,
-                    '10/01/2022' => 15,
+                    [
+                        'value' => 10,
+                        'group' => ['date' => '2022-01-03 00:00:00'],
+                    ],
+                    [
+                        'value' => 15,
+                        'group' => ['date' => '2022-01-10 00:00:00'],
+                    ],
                 ],
             ],
             'payload' => [
@@ -363,8 +375,14 @@ test('makeLine() with week filter should return a LineChart', function () {
         [
             'books'   => [
                 'results' => [
-                    'W01-2022' => 10,
-                    'W02-2022' => 15,
+                    [
+                        'value' => 10,
+                        'group' => ['date' => '2022-01-03 00:00:00'],
+                    ],
+                    [
+                        'value' => 15,
+                        'group' => ['date' => '2022-01-10 00:00:00'],
+                    ],
                 ],
             ],
             'payload' => [
@@ -407,8 +425,14 @@ test('makeLine() with month filter should return a LineChart', function () {
         [
             'books'   => [
                 'results' => [
-                    'Jan 2022' => 10,
-                    'Feb 2022' => 15,
+                    [
+                        'value' => 10,
+                        'group' => ['date' => '2022-01-03 00:00:00'],
+                    ],
+                    [
+                        'value' => 15,
+                        'group' => ['date' => '2022-02-03 00:00:00'],
+                    ],
                 ],
             ],
             'payload' => [
@@ -451,8 +475,14 @@ test('makeLine() with month year should return a LineChart', function () {
         [
             'books'   => [
                 'results' => [
-                    '2022' => 10,
-                    '2023' => 15,
+                    [
+                        'value' => 10,
+                        'group' => ['date' => '2022-01-03 00:00:00'],
+                    ],
+                    [
+                        'value' => 15,
+                        'group' => ['date' => '2023-01-03 00:00:00'],
+                    ],
                 ],
             ],
             'payload' => [
@@ -493,15 +523,16 @@ test('makeLine() with month year should return a LineChart', function () {
 test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation', function () {
     $chart = factoryChart(
         [
+            'type'    => 'leaderboard',
             'books'   => [
                 'results' => [
                     [
-                        'title' => 'Foundation',
-                        'count' => 15,
+                        'value' => 15,
+                        'group' => ['title' => 'Foundation'],
                     ],
                     [
-                        'title' => 'Harry Potter',
-                        'count' => 20,
+                        'value' => 20,
+                        'group' => ['title' => 'Harry Potter'],
                     ],
                 ],
             ],
@@ -543,15 +574,16 @@ test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation
 test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relation', function () {
     $chart = factoryChart(
         [
+            'type'    => 'leaderboard',
             'books'   => [
                 'results' => [
                     [
-                        'title' => 'Foundation',
-                        'count' => 15,
+                        'value' => 15,
+                        'group' => ['title' => 'Foundation'],
                     ],
                     [
-                        'title' => 'Harry Potter',
-                        'count' => 20,
+                        'value' => 20,
+                        'group' => ['title' => 'Harry Potter'],
                     ],
                 ],
             ],

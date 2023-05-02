@@ -12,22 +12,13 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
-class QueryConverter
+class QueryConverter extends QueryBuilder
 {
-    protected Builder $query;
-
-    protected string $tableName;
-
     protected array $basicSymbols = [
         Operators::EQUAL        => '=',
         Operators::NOT_EQUAL    => '!=',
@@ -36,28 +27,17 @@ class QueryConverter
     ];
 
     public function __construct(
-        protected BaseCollection $collection,
+        BaseCollection $collection,
         protected string         $timezone,
         protected ?Filter        $filter = null,
         protected ?Projection    $projection = null,
     ) {
-        $this->tableName = $this->collection->getTableName();
+        parent::__construct($collection);
         $this->build();
-    }
-
-    public static function of(BaseCollection $collection, string $timezone, ?Filter $filter = null, ?Projection $projection = null): Builder
-    {
-        return (new static($collection, $timezone, $filter, $projection))->query;
     }
 
     private function build(): void
     {
-        $this->query = $this->collection
-            ->getDataSource()
-            ->getOrm()
-            ->getConnection()
-            ->table($this->tableName, $this->tableName);
-
         $this->applyProjection();
 
         if ($this->filter) {
@@ -86,50 +66,6 @@ class QueryConverter
             }
 
             $this->query->select($selectRaw);
-        }
-    }
-
-    private function addJoinRelation(RelationSchema $relation, string $relationTableName): void
-    {
-        if ($relation instanceof ManyToManySchema) {
-            $throughTable = $this->collection->getDataSource()->getCollection($relation->getThroughCollection())->getTableName();
-            $joinTable = "$relationTableName as $relationTableName";
-            $joinThroughTable = "$throughTable as $throughTable";
-            if (! $this->isJoin($joinTable) && ! $this->isJoin($joinThroughTable)) {
-                $this->query
-                    ->leftJoin(
-                        "$throughTable as $throughTable",
-                        $this->tableName . '.' . $relation->getOriginKeyTarget(),
-                        '=',
-                        $throughTable . '.' . $relation->getOriginKey()
-                    )
-                    ->leftJoin(
-                        "$relationTableName as $relationTableName",
-                        $throughTable . '.' . $relation->getForeignKey(),
-                        '=',
-                        $relationTableName . '.' . $relation->getForeignKeyTarget()
-                    );
-            }
-        } else {
-            $joinTable = "$relationTableName as $relationTableName";
-            if (
-                ($relation instanceof OneToOneSchema || $relation instanceof OneToManySchema)
-                && ! $this->isJoin($joinTable)
-            ) {
-                $this->query->leftJoin(
-                    $joinTable,
-                    $this->tableName . '.' . $relation->getOriginKey(),
-                    '=',
-                    $relationTableName . '.' . $relation->getOriginKeyTarget()
-                );
-            } elseif ($relation instanceof ManyToOneSchema && ! $this->isJoin($joinTable)) {
-                $this->query->leftJoin(
-                    $joinTable,
-                    $this->tableName . '.' . $relation->getForeignKey(),
-                    '=',
-                    $relationTableName . '.' . $relation->getForeignKeyTarget()
-                );
-            }
         }
     }
 
@@ -192,7 +128,7 @@ class QueryConverter
 
     private function computeDateOperator(ConditionTreeLeaf $conditionTreeLeaf, Builder $query, string $aggregator): void
     {
-        $field = $this->getFieldFromLeaf($conditionTreeLeaf);
+        $field = $this->formatField($conditionTreeLeaf->getField());
         $value = $conditionTreeLeaf->getValue();
         $operator = $conditionTreeLeaf->getOperator();
 
@@ -282,7 +218,7 @@ class QueryConverter
 
     private function computeMainOperator(ConditionTreeLeaf $conditionTreeLeaf, Builder $query, string $aggregator): void
     {
-        $field = $this->getFieldFromLeaf($conditionTreeLeaf);
+        $field = $this->formatField($conditionTreeLeaf->getField());
         $value = $conditionTreeLeaf->getValue();
         switch ($conditionTreeLeaf->getOperator()) {
             case Operators::BLANK:
@@ -339,32 +275,5 @@ class QueryConverter
 
                 break;
         }
-    }
-
-    private function getFieldFromLeaf(ConditionTreeLeaf $leaf): string
-    {
-        if (Str::contains($leaf->getField(), ':')) {
-            $relation = $this->collection->getFields()[Str::before($leaf->getField(), ':')];
-            $tableName = $this->collection
-                ->getDataSource()
-                ->getCollection($relation->getForeignCollection())->getTableName();
-            $this->addJoinRelation($relation, $tableName);
-
-            return $tableName . '.' . Str::after($leaf->getField(), ':');
-        }
-
-        return $this->tableName . '.' . $leaf->getField();
-    }
-
-    private function isJoin(string $joinTable): bool
-    {
-        /** @var JoinClause $join */
-        foreach ($this->query->joins ?? [] as $join) {
-            if ($join->table === $joinTable) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

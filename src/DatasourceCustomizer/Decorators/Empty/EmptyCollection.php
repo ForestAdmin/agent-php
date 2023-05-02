@@ -38,10 +38,10 @@ class EmptyCollection extends CollectionDecorator
         }
     }
 
-    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
+    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null)
     {
         if (! $this->returnsEmptySet($filter->getConditionTree())) {
-            return parent::aggregate($caller, $filter, $aggregation, $limit, $chartType);
+            return parent::aggregate($caller, $filter, $aggregation, $limit);
         }
 
         return [];

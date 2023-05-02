@@ -70,7 +70,7 @@ class Collection implements CollectionContract
     {
     }
 
-    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
+    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null)
     {
     }
 
