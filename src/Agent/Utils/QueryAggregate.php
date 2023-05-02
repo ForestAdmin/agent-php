@@ -33,7 +33,7 @@ class QueryAggregate extends QueryConverter
             $this->query->addSelect($field)->groupBy($field);
         }
 
-        $this->query->addSelect(self::raw("$this->aggregate($this->field) AS '$this->aggregate'"))
+        $this->query->addSelect(self::raw("$this->aggregate($this->field) AS $this->aggregate"))
             ->orderBy($this->aggregate, 'DESC')
             ->limit($this->limit);
 
