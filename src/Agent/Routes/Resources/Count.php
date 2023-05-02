@@ -31,10 +31,11 @@ class Count extends AbstractCollectionRoute
             $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
 
             $aggregation = new Aggregation(operation: 'Count');
+            $result = $this->collection->aggregate($this->caller, $this->filter, $aggregation);
 
             return [
                 'content' => [
-                    'count' => $this->collection->aggregate($this->caller, $this->filter, $aggregation),
+                    'count' => $result[0]['value'] ?? 0,
                 ],
             ];
         } else {
