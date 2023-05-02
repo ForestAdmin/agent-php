@@ -1,3 +1,10 @@
+# [1.0.0-beta.24](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.23...v1.0.0-beta.24) (2023-05-02)
+
+
+### Bug Fixes
+
+* **collection:** fix aggregate function in base collection ([#47](https://github.com/ForestAdmin/agent-php/issues/47)) ([e28d97e](https://github.com/ForestAdmin/agent-php/commit/e28d97e2ce5c2272151a002245edd6c820e3ba26))
+
 # [1.0.0-beta.23](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.22...v1.0.0-beta.23) (2023-04-25)
 
 
