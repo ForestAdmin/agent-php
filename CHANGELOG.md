@@ -1,3 +1,10 @@
+# [1.0.0-beta.25](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.24...v1.0.0-beta.25) (2023-05-03)
+
+
+### Bug Fixes
+
+* **count:** fix count response ([#48](https://github.com/ForestAdmin/agent-php/issues/48)) ([3533ac9](https://github.com/ForestAdmin/agent-php/commit/3533ac9aaedf7ffa878f29ece87fae2973aece7d))
+
 # [1.0.0-beta.24](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.23...v1.0.0-beta.24) (2023-05-02)
 
 
