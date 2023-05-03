@@ -29,12 +29,11 @@ class Count extends AbstractCollectionRoute
         if ($this->collection->isCountable()) {
             $scope = $this->permissions->getScope($this->collection);
             $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
-
             $aggregation = new Aggregation(operation: 'Count');
 
             return [
                 'content' => [
-                    'count' => $this->collection->aggregate($this->caller, $this->filter, $aggregation),
+                    'count' => $this->collection->aggregate($this->caller, $this->filter, $aggregation)[0]['value'] ?? 0,
                 ],
             ];
         } else {

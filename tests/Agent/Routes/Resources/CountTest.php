@@ -30,7 +30,7 @@ function factoryCount($args = []): Count
         $collectionUser = mock($collectionUser)
             ->shouldReceive('aggregate')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class))
-            ->andReturn(count($args['count']))
+            ->andReturn($args['count'])
             ->getMock();
     }
 
@@ -85,14 +85,8 @@ test('make() should return a new instance of Count with routes', function () {
 test('handleRequest() should return a response 200', function () {
     $data = [
         [
-            'id'         => 1,
-            'first_name' => 'John',
-            'last_name'  => 'Doe',
-        ],
-        [
-            'id'         => 2,
-            'first_name' => 'Jane',
-            'last_name'  => 'Doe',
+            'value' => 2,
+            'group' => [],
         ],
     ];
 
@@ -103,7 +97,7 @@ test('handleRequest() should return a response 200', function () {
         ->toEqual(
             [
                 'content' => [
-                    'count' => count($data),
+                    'count' => $data[0]['value'],
                 ],
             ]
         );

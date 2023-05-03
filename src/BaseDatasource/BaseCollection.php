@@ -60,7 +60,7 @@ class BaseCollection extends ForestCollection
      */
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null)
     {
-        return QueryAggregate::of($this, $caller->getTimezone(), $filter, $aggregation, $limit)->get();
+        return QueryAggregate::of($this, $caller->getTimezone(), $aggregation, $filter, $limit)->get();
     }
 
     public function toArray($record, ?Projection $projection = null): array
