@@ -83,11 +83,13 @@ class GeneratorField
             return $columnType;
         }
 
-        if (is_array($columnType)) {
+        if (isset($columnType[0])) {
             return [self::convertColumnType($columnType[0])];
         }
 
-        // todo for nosql data
+        return [
+            'fields' => collect($columnType)->map(fn ($subType, $key) => ['field' => $key, 'type' => self::convertColumnType($subType)])->values(),
+        ];
     }
 
     public static function buildToManyRelationSchema(RelationSchema $relation, CollectionContract $collection, CollectionContract $foreignCollection, array $baseSchema): array
