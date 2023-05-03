@@ -21,7 +21,7 @@ class AddExternalRelation extends Plugin
         $collectionCustomizer->addField(
             $options['name'],
             new ComputedDefinition(
-                columnType: 'Number',//$options['schema'],
+                columnType: [$options['schema']],
                 dependencies: $options['dependencies'] ?? $primaryKeys,
                 values: fn ($records, $context) => collect($records)->map(fn ($record) => $options['listRecords']($record, $context))
             )
