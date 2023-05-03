@@ -1,12 +1,14 @@
 <?php
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\CollectionCustomizer;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedDefinition;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\PublicationCollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Write\WriteReplace\WriteReplaceCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
@@ -457,3 +459,50 @@ test('removeField() should remove a field in collection', function () {
 
     expect($computedCollection->getFields())->not->toHaveKey('title');
 });
+
+test('addExternalRelation() should call addField', function (Caller $caller) {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+    $data = [['id' => 1, 'title' => 'Dune']];
+
+    $stack = $datasourceCustomizer->getStack();
+
+    $lateComputed = $stack->lateComputed;
+    $lateComputed = mock($lateComputed)
+        ->shouldReceive('getCollection')
+        ->once()
+        ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))
+        ->getMock();
+
+    invokeProperty($stack, 'lateComputed', $lateComputed);
+    invokeProperty($datasourceCustomizer, 'stack', $stack);
+    invokeProperty($customizer, 'stack', $stack);
+
+    $customizer->addExternalRelation(
+        'tags',
+        [
+            'schema'      => ['etag' => 'String', 'selfLink' => 'String'],
+            'listRecords' => fn () => [
+                ['etag' => 'OTD2tB19qn4', 'selfLink' => 'https://www.googleapis.com/books/v1/volumes/_ojXNuzgHRcC'],
+                ['etag' => 'NsxMT6kCCVs', 'selfLink' => 'https://www.googleapis.com/books/v1/volumes/RJxWIQOvoZUC'],
+            ],
+        ]
+    );
+    \Mockery::close();
+
+    /** @var ComputedCollection $computedCollection */
+    $computedCollection = $datasourceCustomizer->getStack()->lateComputed->getCollection('Book');
+
+    expect($computedCollection->getFields())->toHaveKey('tags')
+        ->and($computedCollection->getComputed('tags')->getValues($data, new CollectionCustomizationContext($computedCollection, $caller)))->toEqual(collect([
+            [
+                [
+                    "etag"     => "OTD2tB19qn4",
+                    "selfLink" => "https://www.googleapis.com/books/v1/volumes/_ojXNuzgHRcC",
+                ],
+                [
+                    "etag"     => "NsxMT6kCCVs",
+                    "selfLink" => "https://www.googleapis.com/books/v1/volumes/RJxWIQOvoZUC",
+                ],
+            ],
+        ]));
+})->with('caller');
