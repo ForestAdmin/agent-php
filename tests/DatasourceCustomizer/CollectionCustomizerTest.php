@@ -105,7 +105,7 @@ function factoryCollectionCustomizer($collectionName = 'Book')
     $datasourceCustomizer = new DatasourceCustomizer();
     $datasourceCustomizer->addDatasource($datasource);
 
-    $customizer = new CollectionCustomizer($datasourceCustomizer->getStack(), $collectionName);
+    $customizer = new CollectionCustomizer($datasourceCustomizer, $datasourceCustomizer->getStack(), $collectionName);
 
     return [$customizer, $datasourceCustomizer];
 }
