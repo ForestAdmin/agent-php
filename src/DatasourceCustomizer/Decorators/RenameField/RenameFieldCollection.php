@@ -1,6 +1,6 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\RenameCollection;
+namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\RenameField;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
@@ -25,7 +25,7 @@ class RenameFieldCollection extends CollectionDecorator
 
     public function renameField(string $currentName, string $newName): void
     {
-        if ($this->childCollection->getFields()->get($currentName) === null) {
+        if ($this->getFields()->get($currentName) === null) {
             throw new ForestException("No such field '$currentName'");
         }
 
@@ -71,26 +71,25 @@ class RenameFieldCollection extends CollectionDecorator
 
     public function create(Caller $caller, array $data)
     {
-        $newRecords = $this->childCollection->create(
-            $caller,
-            collect($data)->map(fn ($record) => $this->recordToChildCollection($record))->toArray()
-        );
+        $newRecord = $this->childCollection->create($caller, $this->recordToChildCollection($data));
 
-        return collect($newRecords)->map(fn ($record) => $this->recordFromChildCollection($record))->toArray();
+        return $this->recordFromChildCollection($newRecord);
     }
 
     public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array
     {
         $childProjection = $projection->replaceItem(fn ($field) => $this->pathToChildCollection($field));
         $records = $this->childCollection->list($caller, $filter, $childProjection);
-//        if (childProjection.equals(projection)) return records;
+        if ($childProjection->diff($projection)->isEmpty()) {
+            return $records;
+        }
 
         return collect($records)->map(fn ($record) => $this->recordFromChildCollection($record))->toArray();
     }
 
     public function update(Caller $caller, Filter $filter, array $patch)
     {
-        return $this->childCollection->update($caller, $filter, $this->recordToChildCollection($patch));
+        return $this->childCollection->update($caller, $this->refineFilter($caller, $filter), $this->recordToChildCollection($patch));
     }
 
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
@@ -116,13 +115,19 @@ class RenameFieldCollection extends CollectionDecorator
 
     protected function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
     {
-        return $filter?->override(
-            conditionTree: $filter->getConditionTree()?->replaceFields(fn ($field) => $this->pathToChildCollection($field)),
-            sort: $filter->getSort()?->replaceClauses(fn ($clause) => [
-                'field'     => $this->pathToChildCollection($clause['field']),
-                'ascending' => $clause['ascending'],
-            ])
-        );
+        if ($filter instanceof Filter) {
+            return $filter?->override(
+                conditionTree: $filter->getConditionTree()?->replaceFields(fn ($field) => $this->pathToChildCollection($field)),
+            );
+        } else {
+            return $filter?->override(
+                conditionTree: $filter->getConditionTree()?->replaceFields(fn ($field) => $this->pathToChildCollection($field)),
+                sort: $filter->getSort()?->replaceClauses(fn ($clause) => [
+                    'field'     => $this->pathToChildCollection($clause['field']),
+                    'ascending' => $clause['ascending'],
+                ])
+            );
+        }
     }
 
     /** Convert field path from child collection to this collection */

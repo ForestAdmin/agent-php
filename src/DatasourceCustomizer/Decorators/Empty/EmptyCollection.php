@@ -41,7 +41,7 @@ class EmptyCollection extends CollectionDecorator
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null)
     {
         if (! $this->returnsEmptySet($filter->getConditionTree())) {
-            return parent::aggregate($caller, $filter, $aggregation, $limit);
+            return $this->childCollection->aggregate($caller, $filter, $aggregation, $limit);
         }
 
         return [];
