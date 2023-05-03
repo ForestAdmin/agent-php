@@ -14,7 +14,7 @@ class AddExternalRelation implements Plugin
     {
         $primaryKeys = SchemaUtils::getPrimaryKeys($collectionCustomizer->getSchema());
 
-        if (! $options['name'] || ! $options['schema'] || ! $options['listRecords']) {
+        if (! isset($options['name']) || ! isset($options['schema']) || ! isset($options['listRecords'])) {
             throw new ForestException('The options parameter must contains the following keys: `name, schema, listRecords`');
         }
 

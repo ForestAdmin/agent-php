@@ -13,6 +13,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
@@ -506,3 +507,9 @@ test('addExternalRelation() should call addField', function (Caller $caller) {
             ],
         ]));
 })->with('caller');
+
+test('addExternalRelation() should thrown an exception when the plugin have options keys missing', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+
+    expect(fn () => $customizer->addExternalRelation('tags', []))->toThrow(ForestException::class, '🌳🌳🌳 The options parameter must contains the following keys: `name, schema, listRecords`');
+});
