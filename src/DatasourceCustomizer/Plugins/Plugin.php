@@ -5,9 +5,7 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Plugins;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\CollectionCustomizer;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 
-abstract class Plugin
+interface Plugin
 {
-    public function __construct(DatasourceCustomizer $datasourceCustomizer, CollectionCustomizer $collectionCustomizer, $options)
-    {
-    }
+    public function run(DatasourceCustomizer $datasourceCustomizer, CollectionCustomizer $collectionCustomizer, $options): void;
 }

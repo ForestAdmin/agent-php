@@ -8,9 +8,9 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedDefini
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 
-class AddExternalRelation extends Plugin
+class AddExternalRelation implements Plugin
 {
-    public function __construct(DatasourceCustomizer $datasourceCustomizer, CollectionCustomizer $collectionCustomizer, array $options)
+    public function run(DatasourceCustomizer $datasourceCustomizer, CollectionCustomizer $collectionCustomizer, $options): void
     {
         $primaryKeys = SchemaUtils::getPrimaryKeys($collectionCustomizer->getSchema());
 
@@ -26,7 +26,5 @@ class AddExternalRelation extends Plugin
                 values: fn ($records, $context) => collect($records)->map(fn ($record) => $options['listRecords']($record, $context))
             )
         );
-
-        parent::__construct($datasourceCustomizer, $collectionCustomizer, $options);
     }
 }

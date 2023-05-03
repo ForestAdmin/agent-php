@@ -151,7 +151,7 @@ class CollectionCustomizer
 
     public function use(string $plugin, ?array $options): self
     {
-        new $plugin($this->datasourceCustomizer, $this, $options);
+        (new $plugin())->run($this->datasourceCustomizer, $this, $options);
 
         return $this;
     }
