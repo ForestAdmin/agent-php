@@ -8,12 +8,18 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedDefini
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DecoratorsStack;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsEmulate\OperatorsEmulateCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Plugins\AddExternalRelation;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Plugins\ImportField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 
 class CollectionCustomizer
 {
     public function __construct(private DatasourceCustomizer $datasourceCustomizer, private DecoratorsStack $stack, private string $name)
     {
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
     }
 
     public function getSchema(): CollectionContract
@@ -28,8 +34,9 @@ class CollectionCustomizer
         return $this;
     }
 
-    public function importField(string $name, array $options)
+    public function importField(string $name, array $options): self
     {
+        return $this->use(ImportField::class, array_merge(['name' => $name], $options));
     }
 
     /**

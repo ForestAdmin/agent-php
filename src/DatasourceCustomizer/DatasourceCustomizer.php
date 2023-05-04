@@ -65,6 +65,11 @@ class DatasourceCustomizer
         return $this;
     }
 
+    public function getCollection(string $name): CollectionCustomizer
+    {
+        return new CollectionCustomizer($this, $this->stack, $name);
+    }
+
     /**
      * @return DecoratorsStack
      */
