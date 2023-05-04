@@ -436,3 +436,14 @@ test('replaceFieldWriting() should update the field behavior of the collection',
 
     expect(invokeProperty($writeReplaceCollection, 'handlers'))->toEqual([$field => $condition]);
 });
+
+test('renameField() should rename a field in collection', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+    $customizer->renameField('title', 'newTitle');
+    /** @var ComputedCollection $computedCollection */
+    $computedCollection = $datasourceCustomizer->getStack()->renameField->getCollection('Book');
+
+    expect($computedCollection->getFields())
+        ->toHaveKey('newTitle')
+        ->not->toHaveKey('title');
+});
