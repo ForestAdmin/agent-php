@@ -65,7 +65,7 @@ class Aggregation
         $result->groups = collect($result->groups)->map(
             fn ($group) => [
                 'field'     => $handler($group['field']),
-                'operation' => $group['operation'],
+                'operation' => $group['operation'] ?? null,
             ]
         )
             ->toArray();

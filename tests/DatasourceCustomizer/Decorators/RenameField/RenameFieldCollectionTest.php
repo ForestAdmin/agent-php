@@ -56,6 +56,11 @@ beforeEach(closure: function () {
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
             ),
+            'book'   => new ManyToOneSchema(
+                foreignKey: 'bookId',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'Book',
+            ),
         ]
     );
 
@@ -158,7 +163,9 @@ test('update() should act as a pass-through when not renaming anything', closure
     /** @var Mock $collectionBook */
     global $datasourceDecorator, $collectionBook;
     $filter = new Filter();
-    $collectionBook->expects('update')->with($caller, $filter, ['id' => 1, 'title' => 'Foundation']);
+    $collectionBook->expects('update')->withArgs(function ($caller, Filter $refineFilter, $patch) use ($filter) {
+        return $filter->toArray() === $refineFilter->toArray();
+    });
 
     /** @var RenameFieldCollection $renameFieldCollection */
     $renameFieldCollection = $datasourceDecorator->getCollection('Book');
@@ -203,10 +210,6 @@ test('create() should rewrite the record when renaming columns and relations', c
 test('list() should rewrite the filter, projection and record when renaming columns and relations', closure: function (Caller $caller) {
     /** @var Mock $collectionBook */
     global $datasourceDecorator, $collectionBook;
-    $collectionBook->shouldReceive('list')
-        ->andReturn(
-            [['id' => 1, 'author' => ['firstName' => 'Isaac'], 'title' => 'Foundation']]
-        );
     /** @var RenameFieldCollection $renameFieldCollection */
     $renameFieldCollection = $datasourceDecorator->getCollection('Book');
     $renameFieldCollection->renameField('id', 'primaryKey');
@@ -221,10 +224,18 @@ test('list() should rewrite the filter, projection and record when renaming colu
         ),
     );
 
+    $collectionBook->expects('list')->withArgs(function (Caller $caller, PaginatedFilter $filter, Projection $projection) {
+        $expectedSort = [
+            ['field' => 'id', 'ascending' => false],
+            ['field' => 'author:firstName', 'ascending' => true],
+        ];
+        $expectedProjection = ['id', 'author:firstName', 'title'];
+
+        return $filter->getSort()->toArray() === $expectedSort && $projection->toArray() === $expectedProjection;
+    })->andReturn([['id' => 1, 'author' => ['firstName' => 'Isaac'], 'title' => 'Foundation']]);
+
     expect($renameFieldCollection->list($caller, $filter, $projection))
-        ->toEqual(
-            [['myNovelAuthor' => ['firstName' => 'Isaac'], 'title' => 'Foundation', 'primaryKey' => 1,]]
-        );
+        ->toEqual([['myNovelAuthor' => ['firstName' => 'Isaac'], 'title' => 'Foundation', 'primaryKey' => 1]]);
 })->with('caller');
 
 test('list() should rewrite the record with null relation when renaming columns and relations', closure: function (Caller $caller) {
@@ -267,3 +278,65 @@ test('update() should rewrite the filter and patch when not renaming anything', 
 
     $renameFieldCollection->update($caller, $filter, ['primaryKey' => 1, 'title' => 'Foundation']);
 })->with('caller');
+
+test('delete() should rewrite the filter', closure: function (Caller $caller) {
+    /** @var Mock $collectionBook */
+    global $datasourceDecorator, $collectionBook;
+    $filter = new Filter(conditionTree: new ConditionTreeLeaf('primaryKey', Operators::EQUAL, 1));
+    /** @var RenameFieldCollection $renameFieldCollection */
+    $renameFieldCollection = $datasourceDecorator->getCollection('Book');
+    $renameFieldCollection->renameField('id', 'primaryKey');
+    $collectionBook->expects('delete')->withArgs(function ($caller, $filter) {
+        return $filter->getConditionTree()->getField() === 'id';
+    });
+
+    $renameFieldCollection->delete($caller, $filter);
+})->with('caller');
+
+test('aggregate() should rewrite the filter and the result when renaming columns and relations', closure: function (Caller $caller) {
+    /** @var Mock $collectionBook */
+    global $datasourceDecorator, $collectionBook;
+    /** @var RenameFieldCollection $renameFieldCollection */
+    $renameFieldCollection = $datasourceDecorator->getCollection('Book');
+    $renameFieldCollection->renameField('author', 'myNovelAuthor');
+    $filter = new Filter(
+        conditionTree: new ConditionTreeLeaf('myNovelAuthor:firstName', Operators::NOT_EQUAL, 'abc'),
+    );
+    $aggregation = new Aggregation('Count', 'id', [['field' => 'myNovelAuthor:firstName']]);
+
+    $collectionBook->expects('aggregate')->withArgs(function (Caller $caller, Filter $filter, Aggregation $aggregation) {
+        return $filter->getConditionTree()->getField() === 'author:firstName' && $aggregation->getGroups()[0]['field'] === 'author:firstName';
+    })->andReturn([['value' => 34, 'group' => ['author:firstName' => 'foo']]]);
+    expect($renameFieldCollection->aggregate($caller, $filter, $aggregation))
+        ->toEqual([['value' => 34, 'group' => ['myNovelAuthor:firstName' => 'foo']]]);
+})->with('caller');
+
+test('the columns should be renamed in the schema when renaming foreign keys', closure: function () {
+    global $datasourceDecorator;
+    /** @var RenameFieldCollection $renameFieldCollection */
+    $renameFieldCollection = $datasourceDecorator->getCollection('BookPerson');
+    $renameFieldCollection->renameField('bookId', 'novelId');
+    $renameFieldCollection->renameField('personId', 'authorId');
+    $fields = $renameFieldCollection->getFields();
+
+    expect($fields['authorId'])->toBeInstanceOf(ColumnSchema::class)
+        ->and($fields['novelId'])->toBeInstanceOf(ColumnSchema::class)
+        ->and($fields)->not()->toHaveKeys(['bookId', 'personId']);
+});
+
+test('the relations should be updated in all collections when renaming foreign keys', closure: function () {
+    global $datasourceDecorator;
+    /** @var RenameFieldCollection $renameFieldCollection */
+    $renameFieldCollection = $datasourceDecorator->getCollection('BookPerson');
+    $renameFieldCollection->renameField('bookId', 'novelId');
+    $renameFieldCollection->renameField('personId', 'authorId');
+    $bookPersonFields = $renameFieldCollection->getFields();
+    $bookFields = $datasourceDecorator->getCollection('Book')->getFields();
+    $personFields = $datasourceDecorator->getCollection('Person')->getFields();
+
+    expect($bookFields['persons']->getForeignKey())->toEqual('authorId')
+        ->and($bookFields['persons']->getOriginKey())->toEqual('novelId')
+        ->and($bookPersonFields['book']->getForeignKey())->toEqual('novelId')
+        ->and($bookPersonFields['person']->getForeignKey())->toEqual('authorId')
+        ->and($personFields['book']->getOriginKey())->toEqual('authorId');
+});

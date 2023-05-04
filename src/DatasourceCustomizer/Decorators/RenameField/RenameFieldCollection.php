@@ -79,7 +79,7 @@ class RenameFieldCollection extends CollectionDecorator
     public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array
     {
         $childProjection = $projection->replaceItem(fn ($field) => $this->pathToChildCollection($field));
-        $records = $this->childCollection->list($caller, $filter, $childProjection);
+        $records = $this->childCollection->list($caller, $this->refineFilter($caller, $filter), $childProjection);
         if ($childProjection->diff($projection)->isEmpty()) {
             return $records;
         }
@@ -96,7 +96,7 @@ class RenameFieldCollection extends CollectionDecorator
     {
         $rows = $this->childCollection->aggregate(
             $caller,
-            $filter,
+            $this->refineFilter($caller, $filter),
             $aggregation->replaceFields(fn ($field) => $this->pathToChildCollection($field)),
             $limit
         );
@@ -115,17 +115,19 @@ class RenameFieldCollection extends CollectionDecorator
 
     protected function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
     {
-        if ($filter instanceof Filter) {
+        if ($filter instanceof PaginatedFilter) {
             return $filter?->override(
                 conditionTree: $filter->getConditionTree()?->replaceFields(fn ($field) => $this->pathToChildCollection($field)),
+                sort: $filter->getSort()?->replaceClauses(fn ($clause) => [
+                    [
+                        'field'     => $this->pathToChildCollection($clause['field']),
+                        'ascending' => $clause['ascending'],
+                    ],
+                ])
             );
         } else {
             return $filter?->override(
                 conditionTree: $filter->getConditionTree()?->replaceFields(fn ($field) => $this->pathToChildCollection($field)),
-                sort: $filter->getSort()?->replaceClauses(fn ($clause) => [
-                    'field'     => $this->pathToChildCollection($clause['field']),
-                    'ascending' => $clause['ascending'],
-                ])
             );
         }
     }
@@ -135,7 +137,7 @@ class RenameFieldCollection extends CollectionDecorator
     {
         if (Str::contains($childPath, ':')) {
             $childField = Str::before($childPath, ':');
-            $thisField = $this->toChildCollection[$childField] ?? $childField;
+            $thisField = $this->fromChildCollection[$childField] ?? $childField;
             /** @var RelationSchema $relationSchema */
             $relationSchema = $this->getFields()[$thisField];
             /** @var self $relation */
