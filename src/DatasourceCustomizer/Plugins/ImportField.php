@@ -65,5 +65,30 @@ class ImportField implements Plugin
                 return $writingPath;
             });
         }
+
+        if ((array_key_exists('readonly', $options) && ! $options['readonly']) && $schema->isReadOnly()) {
+            throw new ForestException('Readonly option should not be false because the field ' . $options['path'] . ' is not writable');
+        }
+
+        foreach ($schema->getFilterOperators() as $operator) {
+            $collectionCustomizer->replaceFieldOperator(
+                $name,
+                $operator,
+                fn ($value) => [
+                    'field'    => $options['path'],
+                    'operator' => $operator,
+                    'value'    => $value,
+                ]
+            );
+        }
+
+        if ($schema->isSortable()) {
+            $collectionCustomizer->replaceFieldSorting(
+                $name,
+                [
+                    ['field' => $options['path'], 'ascending' => true],
+                ]
+            );
+        }
     }
 }
