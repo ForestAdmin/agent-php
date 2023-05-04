@@ -210,7 +210,7 @@ class CollectionCustomizer
         /** @var OperatorsEmulateCollection $collection */
         $collection = $this->stack->earlyOpEmulate->getCollection($this->name)->getFields()->get($name)
             ? $this->stack->earlyOpEmulate->getCollection($this->name)
-            : $this->stack->lateOpEmulate->getCollection($name);
+            : $this->stack->lateOpEmulate->getCollection($this->name);
 
         $collection->replaceFieldOperator($name, $operator, $replaceBy);
 
