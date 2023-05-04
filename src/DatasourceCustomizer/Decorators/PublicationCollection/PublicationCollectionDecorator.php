@@ -58,13 +58,15 @@ class PublicationCollectionDecorator extends CollectionDecorator
 
     private function isPublished(string $name): bool
     {
-        $field = $this->childCollection->getFields()[$name];
-
-        if ($field instanceof ColumnSchema) {
-            return ! isset($this->unpublished[$name]);
-        } else {
-            return $this->isPublishedRelation($name, $field);
+        if ($field = $this->childCollection->getFields()[$name] ?? null) {
+            if ($field instanceof ColumnSchema) {
+                return ! isset($this->unpublished[$name]);
+            } else {
+                return $this->isPublishedRelation($name, $field);
+            }
         }
+
+        return false;
     }
 
     private function isPublishedRelation(string $name, RelationSchema $field): bool
