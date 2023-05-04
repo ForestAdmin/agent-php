@@ -25,8 +25,17 @@ class CollectionCustomizer
     {
     }
 
-    public function renameField($oldName, string $newName)
+    /**
+     * Allow to rename a field of a given collection.
+     *
+     * @param string $oldName the current name of the field in a given collection
+     * @param string $newName the new name of the field
+     */
+    public function renameField(string $oldName, string $newName)
     {
+        $this->stack->renameField->getCollection($this->name)->renameField($oldName, $newName);
+
+        return $this;
     }
 
     public function removeField(...$names)

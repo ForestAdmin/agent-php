@@ -9,6 +9,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Empty\EmptyCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsEmulate\OperatorsEmulateCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsReplace\OperatorsReplaceCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Relation\RelationCollection;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\RenameField\RenameFieldCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\SchemaCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Search\SearchCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Segment\SegmentCollection;
@@ -36,6 +37,7 @@ class DecoratorsStack
     public DatasourceDecorator $write;
     public DatasourceContract $validation;
     public ChartDataSourceDecorator $chart;
+    public DatasourceDecorator $renameField;
 
     public function __construct(DatasourceContract $dataSource)
     {
@@ -68,6 +70,9 @@ class DecoratorsStack
         $last = $this->schema = new DataSourceDecorator($last, SchemaCollection::class);
         $last = $this->write = new WriteDataSourceDecorator($last);
         $last = $this->validation = new DatasourceDecorator($last, ValidationCollection::class);
+
+        // Step 4: Renaming must be either the very first or very last so that naming in customer code is consistent.
+        $last = $this->renameField = new DatasourceDecorator($last, RenameFieldCollection::class);
 
         $this->dataSource = &$last;
     }
