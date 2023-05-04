@@ -95,6 +95,7 @@ class DecoratorsStack
         $this->schema->build();
         $this->write->build();
         $this->validation->build();
+        $this->renameField->build();
         $this->dataSource->build();
     }
 }
