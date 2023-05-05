@@ -17,12 +17,16 @@ class ImportField implements Plugin
             throw new ForestException('The options parameter must contains the following keys: `name, path`');
         }
 
+        if (! array_key_exists('readonly', $options)) {
+            $options['readonly'] = false;
+        }
+
         $name = $options['name'];
         $result = collect(explode(':', $options['path']))->reduce(function ($memo, $field) use ($datasourceCustomizer) {
             $collection = $datasourceCustomizer->getCollection($memo['collection']);
 
-            if (! $collection->getSchema()->getFields()[$field]) {
-                throw new ForestException("Field $field not found in collection $collection->getName()");
+            if (! $collection->getSchema()->getFields()->get($field)) {
+                throw new ForestException('Field ' . $field . ' not found in collection ' . $collection->getName());
             }
 
             $fieldSchema = $collection->getSchema()->getFields()[$field];
@@ -33,8 +37,6 @@ class ImportField implements Plugin
             if ($fieldSchema->getType() === 'ManyToOne' || $fieldSchema->getType() === 'OneToOne') {
                 return ['collection' => $fieldSchema->getForeignCollection()];
             }
-
-            throw new ForestException("Invalid options['path']");
         }, ['collection' => $collectionCustomizer->getName()]);
 
         /** @var ColumnSchema $schema */
@@ -51,7 +53,8 @@ class ImportField implements Plugin
             )
         );
 
-        if ((array_key_exists('readonly', $options) && ! $options['readonly']) && ! $schema->isReadOnly()) {
+        if (! $options['readonly'] && ! $schema->isReadOnly()) {
+            // @codeCoverageIgnoreStart
             $collectionCustomizer->replaceFieldWriting($name, function ($value) use ($options) {
                 $path = explode(':', $options['path']);
                 $writingPath = [];
@@ -64,9 +67,10 @@ class ImportField implements Plugin
 
                 return $writingPath;
             });
+            // @codeCoverageIgnoreEnd
         }
 
-        if ((array_key_exists('readonly', $options) && ! $options['readonly']) && $schema->isReadOnly()) {
+        if (! $options['readonly'] && $schema->isReadOnly()) {
             throw new ForestException('Readonly option should not be false because the field ' . $options['path'] . ' is not writable');
         }
 

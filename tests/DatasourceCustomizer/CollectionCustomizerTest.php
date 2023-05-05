@@ -27,17 +27,17 @@ function factoryCollectionCustomizer($collectionName = 'Book')
     $collectionBook = new Collection($datasource, 'Book');
     $collectionBook->addFields(
         [
-            'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true, filterOperators: [Operators::EQUAL, Operators::IN]),
-            'title'     => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'reference' => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'childId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN]),
-            'authorId'  => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true, isSortable: true),
-            'author'    => new ManyToOneSchema(
+            'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true, filterOperators: [Operators::EQUAL, Operators::IN]),
+            'title'           => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'reference'       => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'childId'         => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN]),
+            'authorId'        => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true, isSortable: true),
+            'author'          => new ManyToOneSchema(
                 foreignKey: 'authorId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
             ),
-            'persons'   => new ManyToManySchema(
+            'persons'         => new ManyToManySchema(
                 originKey: 'bookId',
                 originKeyTarget: 'id',
                 foreignKey: 'personId',
@@ -69,13 +69,15 @@ function factoryCollectionCustomizer($collectionName = 'Book')
     $collectionPerson = new Collection($datasource, 'Person');
     $collectionPerson->addFields(
         [
-            'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true),
-            'book'  => new OneToOneSchema(
+            'id'             => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true),
+            'name'           => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'nameInReadOnly' => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true),
+            'book'           => new OneToOneSchema(
                 originKey: 'authorId',
                 originKeyTarget: 'id',
                 foreignCollection: 'Book',
             ),
-            'books' => new ManyToManySchema(
+            'books'          => new ManyToManySchema(
                 originKey: 'personId',
                 originKeyTarget: 'id',
                 foreignKey: 'bookId',
@@ -512,4 +514,74 @@ test('addExternalRelation() should thrown an exception when the plugin have opti
     [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
 
     expect(fn () => $customizer->addExternalRelation('tags', []))->toThrow(ForestException::class, '🌳🌳🌳 The options parameter must contains the following keys: `name, schema, listRecords`');
+});
+
+test('importField() should call addField', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+    $stack = $datasourceCustomizer->getStack();
+
+    $lateComputed = $stack->lateComputed;
+    $lateComputed = mock($lateComputed)
+        ->shouldReceive('getCollection')
+        ->once()
+        ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))
+        ->getMock();
+
+    invokeProperty($stack, 'lateComputed', $lateComputed);
+    invokeProperty($datasourceCustomizer, 'stack', $stack);
+    invokeProperty($customizer, 'stack', $stack);
+
+    $customizer->importField(
+        'titleCopy',
+        [
+            'path' => 'title',
+        ]
+    );
+    \Mockery::close();
+
+    /** @var ComputedCollection $computedCollection */
+    $computedCollection = $datasourceCustomizer->getStack()->lateComputed->getCollection('Book');
+
+    expect($computedCollection->getFields())->toHaveKey('titleCopy')
+        ->and($computedCollection->getFields()['titleCopy'])->toBeInstanceOf(ColumnSchema::class);
+});
+
+test('importField() when the field is not writable should throw an exception', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+
+    expect(fn () => $customizer->importField(
+        'authorName',
+        [
+            'path' => 'author:nameInReadOnly',
+        ]
+    ))->toThrow(ForestException::class, '🌳🌳🌳 Readonly option should not be false because the field author:nameInReadOnly is not writable');
+});
+
+test('importField() when the "readOnly" option is false should throw an exception', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+
+    expect(fn () => $customizer->importField(
+        'authorName',
+        [
+            'path'     => 'author:nameInReadOnly',
+            'readonly' => false,
+        ]
+    ))->toThrow(ForestException::class, '🌳🌳🌳 Readonly option should not be false because the field author:nameInReadOnly is not writable');
+});
+
+test('importField() when the given field does not exist should throw an exception', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+
+    expect(fn () => $customizer->importField(
+        'authorName',
+        [
+            'path'     => 'author:doesNotExistPath',
+        ]
+    ))->toThrow(ForestException::class, '🌳🌳🌳 Field doesNotExistPath not found in collection Person');
+});
+
+test('importField() should thrown an exception when the plugin have options keys missing', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+
+    expect(fn () => $customizer->importField('titleCopy', []))->toThrow(ForestException::class, '🌳🌳🌳 The options parameter must contains the following keys: `name, path`');
 });
