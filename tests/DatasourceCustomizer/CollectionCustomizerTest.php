@@ -4,6 +4,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\CollectionCustomizer;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedDefinition;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\PublicationCollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Write\WriteReplace\WriteReplaceCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
@@ -446,4 +447,13 @@ test('renameField() should rename a field in collection', function () {
     expect($computedCollection->getFields())
         ->toHaveKey('newTitle')
         ->not->toHaveKey('title');
+});
+
+test('removeField() should remove a field in collection', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+    $customizer->removeField('title');
+    /** @var PublicationCollectionDecorator $computedCollection */
+    $computedCollection = $datasourceCustomizer->getStack()->publication->getCollection('Book');
+
+    expect($computedCollection->getFields())->not->toHaveKey('title');
 });

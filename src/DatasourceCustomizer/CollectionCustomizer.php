@@ -38,8 +38,13 @@ class CollectionCustomizer
         return $this;
     }
 
-    public function removeField(...$names)
+    public function removeField(...$fields)
     {
+        foreach ($fields as $field) {
+            $this->stack->publication->getCollection($this->name)->changeFieldVisibility($field, false);
+        }
+
+        return $this;
     }
 
     public function addAction(string $name, BaseAction $definition)
