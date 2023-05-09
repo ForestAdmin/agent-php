@@ -7,6 +7,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\P
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\RenameCollection\RenameCollectionDatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use Illuminate\Support\Collection as IlluminateCollection;
 
 class DatasourceCustomizer
 {
@@ -50,6 +51,13 @@ class DatasourceCustomizer
         return $this;
     }
 
+    public function use(string $plugin, ?array $options): self
+    {
+        (new $plugin())->run($this, null, $options);
+
+        return $this;
+    }
+
     /**
      * Allow to interact with a decorated collection
      * @param string   $name the name of the collection to manipulate
@@ -68,6 +76,11 @@ class DatasourceCustomizer
     public function getCollection(string $name): CollectionCustomizer
     {
         return new CollectionCustomizer($this, $this->stack, $name);
+    }
+
+    public function getCollections(): IlluminateCollection
+    {
+        return $this->stack->validation->getCollections()->map(fn ($c) => $this->getCollection($c));
     }
 
     /**
