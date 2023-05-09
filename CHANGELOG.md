@@ -1,3 +1,10 @@
+# [1.0.0-beta.26](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.25...v1.0.0-beta.26) (2023-05-09)
+
+
+### Features
+
+* **decorators:** add rename field decorator  ([#49](https://github.com/ForestAdmin/agent-php/issues/49)) ([2ea9821](https://github.com/ForestAdmin/agent-php/commit/2ea98216306b21e7dac3409dd98bee37715ca07e))
+
 # [1.0.0-beta.25](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.24...v1.0.0-beta.25) (2023-05-03)
 
 
