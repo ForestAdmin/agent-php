@@ -1,3 +1,10 @@
+# [1.0.0-beta.27](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.26...v1.0.0-beta.27) (2023-05-09)
+
+
+### Features
+
+* **customizer:** add remove field customizer ([#50](https://github.com/ForestAdmin/agent-php/issues/50)) ([91b279b](https://github.com/ForestAdmin/agent-php/commit/91b279bd5217ac88fb659a8019cc43febed5e1a6))
+
 # [1.0.0-beta.26](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.25...v1.0.0-beta.26) (2023-05-09)
 
 
