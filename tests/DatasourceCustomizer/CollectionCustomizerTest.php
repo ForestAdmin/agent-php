@@ -28,7 +28,7 @@ function factoryCollectionCustomizer($collectionName = 'Book')
     $collectionBook->addFields(
         [
             'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true, filterOperators: [Operators::EQUAL, Operators::IN]),
-            'title'           => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'title'           => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::EQUAL]),
             'reference'       => new ColumnSchema(columnType: PrimitiveType::STRING),
             'childId'         => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN]),
             'authorId'        => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true, isSortable: true),

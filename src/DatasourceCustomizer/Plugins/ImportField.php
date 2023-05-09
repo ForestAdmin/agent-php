@@ -67,13 +67,13 @@ class ImportField implements Plugin
 
                 return $writingPath;
             });
-            // @codeCoverageIgnoreEnd
         }
 
         if (! $options['readonly'] && $schema->isReadOnly()) {
             throw new ForestException('Readonly option should not be false because the field ' . $options['path'] . ' is not writable');
         }
 
+        // @codeCoverageIgnoreStart
         foreach ($schema->getFilterOperators() as $operator) {
             $collectionCustomizer->replaceFieldOperator(
                 $name,
@@ -85,6 +85,7 @@ class ImportField implements Plugin
                 ]
             );
         }
+        // @codeCoverageIgnoreEnd
 
         if ($schema->isSortable()) {
             $collectionCustomizer->replaceFieldSorting(
