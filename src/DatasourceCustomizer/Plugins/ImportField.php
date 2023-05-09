@@ -67,6 +67,7 @@ class ImportField implements Plugin
 
                 return $writingPath;
             });
+            // @codeCoverageIgnoreEnd
         }
 
         if (! $options['readonly'] && $schema->isReadOnly()) {
