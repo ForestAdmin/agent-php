@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query;
 
+use Closure;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record;
@@ -51,6 +52,25 @@ class Aggregation
         }
 
         return new Projection($aggregateFields);
+    }
+
+    public function replaceFields(Closure $handler): self
+    {
+        $result = clone $this;
+
+        if ($result->field) {
+            $result->field = $handler($result->field);
+        }
+
+        $result->groups = collect($result->groups)->map(
+            fn ($group) => [
+                'field'     => $handler($group['field']),
+                'operation' => $group['operation'] ?? null,
+            ]
+        )
+            ->toArray();
+
+        return $result;
     }
 
     public function override(...$args): self

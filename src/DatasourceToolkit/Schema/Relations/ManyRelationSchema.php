@@ -24,4 +24,9 @@ abstract class ManyRelationSchema extends RelationSchema
     {
         return $this->foreignKeyTarget;
     }
+
+    public function setForeignKey(string $foreignKey): void
+    {
+        $this->foreignKey = $foreignKey;
+    }
 }
