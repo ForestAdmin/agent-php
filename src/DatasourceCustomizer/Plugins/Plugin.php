@@ -7,5 +7,5 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 
 interface Plugin
 {
-    public function run(DatasourceCustomizer $datasourceCustomizer, CollectionCustomizer $collectionCustomizer, $options): void;
+    public function run(DatasourceCustomizer $datasourceCustomizer, ?CollectionCustomizer $collectionCustomizer = null, $options = []): void;
 }

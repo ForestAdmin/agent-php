@@ -10,7 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 
 class AddExternalRelation implements Plugin
 {
-    public function run(DatasourceCustomizer $datasourceCustomizer, CollectionCustomizer $collectionCustomizer, $options): void
+    public function run(DatasourceCustomizer $datasourceCustomizer, ?CollectionCustomizer $collectionCustomizer = null, $options = []): void
     {
         $primaryKeys = SchemaUtils::getPrimaryKeys($collectionCustomizer->getSchema());
 
