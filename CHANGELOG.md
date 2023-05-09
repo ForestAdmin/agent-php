@@ -1,3 +1,10 @@
+# [1.0.0-beta.28](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.27...v1.0.0-beta.28) (2023-05-09)
+
+
+### Features
+
+* add plugins import field & add external relation support ([#51](https://github.com/ForestAdmin/agent-php/issues/51)) ([16567a0](https://github.com/ForestAdmin/agent-php/commit/16567a02318dba6bd476bec18d9d82a881ce96fd))
+
 # [1.0.0-beta.27](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.26...v1.0.0-beta.27) (2023-05-09)
 
 
