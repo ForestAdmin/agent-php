@@ -1,16 +1,19 @@
 <?php
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\CollectionCustomizer;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedDefinition;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\PublicationCollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Write\WriteReplace\WriteReplaceCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
@@ -24,17 +27,17 @@ function factoryCollectionCustomizer($collectionName = 'Book')
     $collectionBook = new Collection($datasource, 'Book');
     $collectionBook->addFields(
         [
-            'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true, filterOperators: [Operators::EQUAL, Operators::IN]),
-            'title'     => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'reference' => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'childId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN]),
-            'authorId'  => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true, isSortable: true),
-            'author'    => new ManyToOneSchema(
+            'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true, filterOperators: [Operators::EQUAL, Operators::IN]),
+            'title'           => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::EQUAL]),
+            'reference'       => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'childId'         => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN]),
+            'authorId'        => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true, isSortable: true),
+            'author'          => new ManyToOneSchema(
                 foreignKey: 'authorId',
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
             ),
-            'persons'   => new ManyToManySchema(
+            'persons'         => new ManyToManySchema(
                 originKey: 'bookId',
                 originKeyTarget: 'id',
                 foreignKey: 'personId',
@@ -66,13 +69,15 @@ function factoryCollectionCustomizer($collectionName = 'Book')
     $collectionPerson = new Collection($datasource, 'Person');
     $collectionPerson->addFields(
         [
-            'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true),
-            'book'  => new OneToOneSchema(
+            'id'             => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true),
+            'name'           => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'nameInReadOnly' => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true),
+            'book'           => new OneToOneSchema(
                 originKey: 'authorId',
                 originKeyTarget: 'id',
                 foreignCollection: 'Book',
             ),
-            'books' => new ManyToManySchema(
+            'books'          => new ManyToManySchema(
                 originKey: 'personId',
                 originKeyTarget: 'id',
                 foreignKey: 'bookId',
@@ -105,7 +110,7 @@ function factoryCollectionCustomizer($collectionName = 'Book')
     $datasourceCustomizer = new DatasourceCustomizer();
     $datasourceCustomizer->addDatasource($datasource);
 
-    $customizer = new CollectionCustomizer($datasourceCustomizer->getStack(), $collectionName);
+    $customizer = new CollectionCustomizer($datasourceCustomizer, $datasourceCustomizer->getStack(), $collectionName);
 
     return [$customizer, $datasourceCustomizer];
 }
@@ -456,4 +461,127 @@ test('removeField() should remove a field in collection', function () {
     $computedCollection = $datasourceCustomizer->getStack()->publication->getCollection('Book');
 
     expect($computedCollection->getFields())->not->toHaveKey('title');
+});
+
+test('addExternalRelation() should call addField', function (Caller $caller) {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+    $data = [['id' => 1, 'title' => 'Dune']];
+
+    $stack = $datasourceCustomizer->getStack();
+
+    $lateComputed = $stack->lateComputed;
+    $lateComputed = mock($lateComputed)
+        ->shouldReceive('getCollection')
+        ->once()
+        ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))
+        ->getMock();
+
+    invokeProperty($stack, 'lateComputed', $lateComputed);
+    invokeProperty($datasourceCustomizer, 'stack', $stack);
+    invokeProperty($customizer, 'stack', $stack);
+
+    $customizer->addExternalRelation(
+        'tags',
+        [
+            'schema'      => ['etag' => 'String', 'selfLink' => 'String'],
+            'listRecords' => fn () => [
+                ['etag' => 'OTD2tB19qn4', 'selfLink' => 'https://www.googleapis.com/books/v1/volumes/_ojXNuzgHRcC'],
+                ['etag' => 'NsxMT6kCCVs', 'selfLink' => 'https://www.googleapis.com/books/v1/volumes/RJxWIQOvoZUC'],
+            ],
+        ]
+    );
+    \Mockery::close();
+
+    /** @var ComputedCollection $computedCollection */
+    $computedCollection = $datasourceCustomizer->getStack()->lateComputed->getCollection('Book');
+
+    expect($computedCollection->getFields())->toHaveKey('tags')
+        ->and($computedCollection->getComputed('tags')->getValues($data, new CollectionCustomizationContext($computedCollection, $caller)))->toEqual(collect([
+            [
+                [
+                    "etag"     => "OTD2tB19qn4",
+                    "selfLink" => "https://www.googleapis.com/books/v1/volumes/_ojXNuzgHRcC",
+                ],
+                [
+                    "etag"     => "NsxMT6kCCVs",
+                    "selfLink" => "https://www.googleapis.com/books/v1/volumes/RJxWIQOvoZUC",
+                ],
+            ],
+        ]));
+})->with('caller');
+
+test('addExternalRelation() should thrown an exception when the plugin have options keys missing', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+
+    expect(fn () => $customizer->addExternalRelation('tags', []))->toThrow(ForestException::class, '🌳🌳🌳 The options parameter must contains the following keys: `name, schema, listRecords`');
+});
+
+test('importField() should call addField', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+    $stack = $datasourceCustomizer->getStack();
+
+    $lateComputed = $stack->lateComputed;
+    $lateComputed = mock($lateComputed)
+        ->shouldReceive('getCollection')
+        ->once()
+        ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))
+        ->getMock();
+
+    invokeProperty($stack, 'lateComputed', $lateComputed);
+    invokeProperty($datasourceCustomizer, 'stack', $stack);
+    invokeProperty($customizer, 'stack', $stack);
+
+    $customizer->importField(
+        'titleCopy',
+        [
+            'path' => 'title',
+        ]
+    );
+    \Mockery::close();
+
+    /** @var ComputedCollection $computedCollection */
+    $computedCollection = $datasourceCustomizer->getStack()->lateComputed->getCollection('Book');
+
+    expect($computedCollection->getFields())->toHaveKey('titleCopy')
+        ->and($computedCollection->getFields()['titleCopy'])->toBeInstanceOf(ColumnSchema::class);
+});
+
+test('importField() when the field is not writable should throw an exception', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+
+    expect(fn () => $customizer->importField(
+        'authorName',
+        [
+            'path' => 'author:nameInReadOnly',
+        ]
+    ))->toThrow(ForestException::class, '🌳🌳🌳 Readonly option should not be false because the field author:nameInReadOnly is not writable');
+});
+
+test('importField() when the "readOnly" option is false should throw an exception', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+
+    expect(fn () => $customizer->importField(
+        'authorName',
+        [
+            'path'     => 'author:nameInReadOnly',
+            'readonly' => false,
+        ]
+    ))->toThrow(ForestException::class, '🌳🌳🌳 Readonly option should not be false because the field author:nameInReadOnly is not writable');
+});
+
+test('importField() when the given field does not exist should throw an exception', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+
+    expect(fn () => $customizer->importField(
+        'authorName',
+        [
+            'path'     => 'author:doesNotExistPath',
+        ]
+    ))->toThrow(ForestException::class, '🌳🌳🌳 Field doesNotExistPath not found in collection Person');
+});
+
+test('importField() should thrown an exception when the plugin have options keys missing', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+
+    expect(fn () => $customizer->importField('titleCopy', []))->toThrow(ForestException::class, '🌳🌳🌳 The options parameter must contains the following keys: `name, path`');
 });

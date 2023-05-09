@@ -12,14 +12,14 @@ class ConditionTreeEquivalent
 {
     private static ?array $alternatives = null;
 
-    public static function getEquivalentTree(ConditionTreeLeaf $leaf, array $operators, string $columnType, string $timezone)
+    public static function getEquivalentTree(ConditionTreeLeaf $leaf, array $operators, array|string $columnType, string $timezone)
     {
         $replacer = self::getReplacer($leaf->getOperator(), $operators, $columnType);
 
         return $replacer ? $replacer($leaf, $timezone) : null;
     }
 
-    public static function hasEquivalentTree(string $operator, array $filterOperators, string $columnType): bool
+    public static function hasEquivalentTree(string $operator, array $filterOperators, array|string $columnType): bool
     {
         if (in_array($operator, $filterOperators, true)) {
             return true;
@@ -28,7 +28,7 @@ class ConditionTreeEquivalent
         return (bool) self::getReplacer($operator, $filterOperators, $columnType);
     }
 
-    private static function getReplacer(string $operator, array $filterOperators, string $columnType, array $visited = [])
+    private static function getReplacer(string $operator, array $filterOperators, array|string $columnType, array $visited = [])
     {
         if (in_array($operator, $filterOperators, true)) {
             return static fn ($leaf) => $leaf;

@@ -7,11 +7,24 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseAction;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedDefinition;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DecoratorsStack;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsEmulate\OperatorsEmulateCollection;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Plugins\AddExternalRelation;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Plugins\ImportField;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 
 class CollectionCustomizer
 {
-    public function __construct(private DecoratorsStack $stack, private string $name)
+    public function __construct(private DatasourceCustomizer $datasourceCustomizer, private DecoratorsStack $stack, private string $name)
     {
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getSchema(): CollectionContract
+    {
+        return $this->stack->validation->getCollection($this->name);
     }
 
     public function disableCount(): self
@@ -21,8 +34,9 @@ class CollectionCustomizer
         return $this;
     }
 
-    public function importField(string $name, array $options)
+    public function importField(string $name, array $options): self
     {
+        return $this->use(ImportField::class, array_merge(['name' => $name], $options));
     }
 
     /**
@@ -142,8 +156,16 @@ class CollectionCustomizer
         return $this;
     }
 
-    public function addExternalRelation(string $name, $definition)
+    public function use(string $plugin, ?array $options): self
     {
+        (new $plugin())->run($this->datasourceCustomizer, $this, $options);
+
+        return $this;
+    }
+
+    public function addExternalRelation(string $name, array $definition): self
+    {
+        return $this->use(AddExternalRelation::class, array_merge(['name' => $name], $definition));
     }
 
     public function addSegment(string $name, \Closure $definition): self
@@ -188,7 +210,7 @@ class CollectionCustomizer
         /** @var OperatorsEmulateCollection $collection */
         $collection = $this->stack->earlyOpEmulate->getCollection($this->name)->getFields()->get($name)
             ? $this->stack->earlyOpEmulate->getCollection($this->name)
-            : $this->stack->lateOpEmulate->getCollection($name);
+            : $this->stack->lateOpEmulate->getCollection($this->name);
 
         $collection->replaceFieldOperator($name, $operator, $replaceBy);
 

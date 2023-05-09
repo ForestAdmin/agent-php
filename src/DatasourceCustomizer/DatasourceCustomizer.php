@@ -59,10 +59,15 @@ class DatasourceCustomizer
     public function customizeCollection(string $name, \Closure $handle): self
     {
         if ($this->stack->dataSource->getCollection($name)) {
-            $handle(new CollectionCustomizer($this->stack, $name));
+            $handle(new CollectionCustomizer($this, $this->stack, $name));
         }
 
         return $this;
+    }
+
+    public function getCollection(string $name): CollectionCustomizer
+    {
+        return new CollectionCustomizer($this, $this->stack, $name);
     }
 
     /**

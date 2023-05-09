@@ -7,7 +7,7 @@ use Closure;
 class ComputedDefinition
 {
     public function __construct(
-        protected string $columnType,
+        protected array|string $columnType,
         protected array $dependencies,
         protected Closure $values,
         protected bool $isBeforeRelation = false,
@@ -30,9 +30,9 @@ class ComputedDefinition
     }
 
     /**
-     * @return string
+     * @return array|string
      */
-    public function getColumnType(): string
+    public function getColumnType(): array|string
     {
         return $this->columnType;
     }
