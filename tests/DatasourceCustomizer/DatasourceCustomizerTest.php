@@ -112,3 +112,15 @@ test('customizeCollection() should provide collection customizer otherwise', fun
     expect($datasourceCustomizer->getStack()->dataSource->getCollection('Person')->getName())->toEqual('Person')
         ->and($datasourceCustomizer->getStack()->dataSource->getCollection('Category')->getName())->toEqual('Category');
 });
+
+test('use() should add a plugin', function () {
+    $datasource = factoryDatasourceCustomizer();
+    $datasourceCustomizer = new DatasourceCustomizer();
+    $datasourceCustomizer->addDatasource($datasource);
+
+    mock('overload:MyFakePlugin')
+        ->expects('run')
+        ->getMock();
+
+    $datasourceCustomizer->use('MyFakePlugin');
+});

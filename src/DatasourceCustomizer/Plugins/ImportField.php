@@ -11,7 +11,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record as RecordUtils;
 
 class ImportField implements Plugin
 {
-    public function run(DatasourceCustomizer $datasourceCustomizer, CollectionCustomizer $collectionCustomizer, $options): void
+    public function run(DatasourceCustomizer $datasourceCustomizer, ?CollectionCustomizer $collectionCustomizer = null, $options = []): void
     {
         if (! isset($options['name']) || ! isset($options['path'])) {
             throw new ForestException('The options parameter must contains the following keys: `name, path`');

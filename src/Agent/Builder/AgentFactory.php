@@ -47,6 +47,13 @@ class AgentFactory
         return $this;
     }
 
+    public function use(string $plugin, array $options = []): self
+    {
+        $this->customizer->use($plugin, $options);
+
+        return $this;
+    }
+
     public function build(): void
     {
         self::$container->set('datasource', $this->customizer->getStack()->dataSource);
