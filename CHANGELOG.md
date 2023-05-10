@@ -1,3 +1,10 @@
+# [1.0.0-beta.29](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.28...v1.0.0-beta.29) (2023-05-10)
+
+
+### Features
+
+* **plugin:** add missing use method to agent ([#52](https://github.com/ForestAdmin/agent-php/issues/52)) ([a7e9514](https://github.com/ForestAdmin/agent-php/commit/a7e9514578006db30fe4bf45abd733d4dd7a5f05))
+
 # [1.0.0-beta.28](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.27...v1.0.0-beta.28) (2023-05-09)
 
 
