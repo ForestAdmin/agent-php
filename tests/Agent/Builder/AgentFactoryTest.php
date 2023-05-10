@@ -110,3 +110,17 @@ test('addChart() should work', function () {
 
     $spy->shouldHaveReceived('addChart');
 });
+
+test('use() should work', function () {
+    $datasource = new Datasource();
+    $collectionUser = new Collection($datasource, 'User');
+    $datasource->addCollection($collectionUser);
+
+    $agent = new AgentFactory(AGENT_OPTIONS);
+    $spy = Mockery::spy(DatasourceCustomizer::class);
+    invokeProperty($agent, 'customizer', $spy);
+    $agent->use('MyFakePlugin');
+    $spy = invokeProperty($agent, 'customizer');
+
+    $spy->shouldHaveReceived('use');
+});
