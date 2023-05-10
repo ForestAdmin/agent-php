@@ -47,7 +47,7 @@ class AgentFactory
         return $this;
     }
 
-    public function use(string $plugin, ?array $options): self
+    public function use(string $plugin, array $options = []): self
     {
         $this->customizer->use($plugin, $options);
 

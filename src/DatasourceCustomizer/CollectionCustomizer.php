@@ -156,7 +156,7 @@ class CollectionCustomizer
         return $this;
     }
 
-    public function use(string $plugin, ?array $options): self
+    public function use(string $plugin, array $options = []): self
     {
         (new $plugin())->run($this->datasourceCustomizer, $this, $options);
 
