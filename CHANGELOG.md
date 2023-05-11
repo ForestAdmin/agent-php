@@ -1,3 +1,10 @@
+# [1.0.0-beta.30](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.29...v1.0.0-beta.30) (2023-05-11)
+
+
+### Features
+
+* **customizer:** add emulate field filtering method ([#53](https://github.com/ForestAdmin/agent-php/issues/53)) ([6f644a1](https://github.com/ForestAdmin/agent-php/commit/6f644a189d3c705b72f0273e7869b27371d3bd9f))
+
 # [1.0.0-beta.29](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.28...v1.0.0-beta.29) (2023-05-10)
 
 
