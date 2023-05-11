@@ -20,6 +20,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\Rules;
 
 function factoryCollectionCustomizer($collectionName = 'Book')
 {
@@ -584,4 +585,19 @@ test('importField() should thrown an exception when the plugin have options keys
     [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
 
     expect(fn () => $customizer->importField('titleCopy', []))->toThrow(ForestException::class, '🌳🌳🌳 The options parameter must contains the following keys: `name, path`');
+});
+
+test('emulateFieldFiltering() should emulate operator on field', function () {
+    /**
+     * @var DatasourceCustomizer $datasourceCustomizer
+     * @var CollectionCustomizer $customizer
+     */
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+    $customizer->emulateFieldFiltering('reference');
+    /** @var ColumnSchema $field */
+    $field = $datasourceCustomizer->getStack()->dataSource->getCollection('Book')->getFields()->get('reference');
+
+    expect($field->getFilterOperators())
+        ->toHaveCount(19)
+        ->and($field->getFilterOperators())->toEqual(Rules::getAllowedOperatorsForColumnType($field->getColumnType()));
 });
