@@ -10,6 +10,8 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsEmulate\Operat
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Plugins\AddExternalRelation;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Plugins\ImportField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\Rules;
 
 class CollectionCustomizer
 {
@@ -189,8 +191,27 @@ class CollectionCustomizer
         return $this;
     }
 
-    public function emulateFieldFiltering($name)
+    /**
+     * Enable filtering on a specific field using emulation.
+     * As for all the emulation method, the field filtering will be done in-memory.
+     * @param string $name the name of the field to enable emulation on
+     * @example emulateFieldFiltering('aField');
+     */
+    public function emulateFieldFiltering($name): self
     {
+        $collection = $this->stack->lateOpEmulate->getCollection($this->name);
+        /** @var ColumnSchema $field */
+        $field = $collection->getFields()[$name];
+        if (is_string($field->getColumnType())) {
+            $operators = Rules::getAllowedOperatorsForColumnType($field->getColumnType());
+            foreach ($operators as $operator) {
+                if (! in_array($operator, $field->getFilterOperators(), true)) {
+                    $this->emulateFieldOperator($name, $operator);
+                }
+            }
+        }
+
+        return $this;
     }
 
     public function emulateFieldOperator(string $name, string $operator): self

@@ -49,6 +49,7 @@ class OperatorsEmulateCollection extends CollectionDecorator
         }
         FieldValidator::validate($this, $name);
 
+
         // Mark the field operator as replaced.
         if (! in_array($name, $this->emulateOperators, true)) {
             $this->emulateOperators[$name] = [];
@@ -67,11 +68,12 @@ class OperatorsEmulateCollection extends CollectionDecorator
          * @var ColumnSchema $schema
          */
         foreach ($fields as $fieldName => $schema) {
-            if (in_array($fieldName, $this->emulateOperators, true)) {
-                $schema->setFilterOperators([
-                    ...$schema->getFilterOperators(),
-                    ...array_keys($this->emulateOperators[$fieldName]),
-                ]);
+            if (array_key_exists($fieldName, $this->emulateOperators)) {
+                $schema->setFilterOperators(
+                    array_unique(
+                        array_merge($schema->getFilterOperators(), array_keys($this->emulateOperators[$fieldName]))
+                    )
+                );
             }
         }
 
