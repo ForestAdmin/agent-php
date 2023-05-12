@@ -40,7 +40,7 @@ class CountRelated extends AbstractRelationRoute
                 $this->caller,
                 $this->filter,
                 new Aggregation(operation: 'Count')
-            );
+            )[0]['value'] ?? 0;
 
             return [
                 'content' => compact('count'),
