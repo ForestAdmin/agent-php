@@ -1,3 +1,10 @@
+# [1.0.0-beta.31](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.30...v1.0.0-beta.31) (2023-05-12)
+
+
+### Bug Fixes
+
+* **response:** add missing available include relationships to the response ([#54](https://github.com/ForestAdmin/agent-php/issues/54)) ([d098cd2](https://github.com/ForestAdmin/agent-php/commit/d098cd2a0f455085692b678b37b07d4859da8ad4))
+
 # [1.0.0-beta.30](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.29...v1.0.0-beta.30) (2023-05-11)
 
 
