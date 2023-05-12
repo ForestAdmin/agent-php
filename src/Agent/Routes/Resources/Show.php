@@ -27,7 +27,7 @@ class Show extends AbstractCollectionRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
-        $this->permissions->can('read:' . $this->collection->getName());
+        $this->permissions->can('read', $this->collection);
         $id = Id::unpackId($this->collection, $args['id']);
         $filter = ContextFilterFactory::buildPaginated(
             $this->collection,

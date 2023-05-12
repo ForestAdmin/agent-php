@@ -33,7 +33,7 @@ class Listing extends AbstractCollectionRoute
         }
 
         $this->build($args);
-        $this->permissions->can('browse:' . $this->collection->getName());
+        $this->permissions->can('browse', $this->collection);
         $scope = $this->permissions->getScope($this->collection);
         $this->filter = ContextFilterFactory::buildPaginated($this->collection, $this->request, $scope);
 
@@ -52,8 +52,8 @@ class Listing extends AbstractCollectionRoute
     public function handleRequestCsv(array $args = []): array
     {
         $this->build($args);
-        $this->permissions->can('browse:' . $this->collection->getName());
-        $this->permissions->can('export:' . $this->collection->getName());
+        $this->permissions->can('browse', $this->collection);
+        $this->permissions->can('export', $this->collection);
 
         $scope = $this->permissions->getScope($this->collection);
         $this->filter = ContextFilterFactory::buildPaginated($this->collection, $this->request, $scope);

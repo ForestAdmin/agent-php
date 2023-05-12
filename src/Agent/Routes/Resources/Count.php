@@ -24,7 +24,7 @@ class Count extends AbstractCollectionRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
-        $this->permissions->can('browse:' . $this->collection->getName());
+        $this->permissions->can('browse', $this->collection);
 
         if ($this->collection->isCountable()) {
             $scope = $this->permissions->getScope($this->collection);
