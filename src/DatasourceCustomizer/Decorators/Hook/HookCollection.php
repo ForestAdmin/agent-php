@@ -69,7 +69,7 @@ class HookCollection extends CollectionDecorator
         return $records;
     }
 
-    public function update(Caller $caller, Filter $filter, array $patch)
+    public function update(Caller $caller, Filter $filter, array $patch): void
     {
         $beforeContext = new HookBeforeUpdateContext($this->childCollection, $caller, $filter, $patch);
         $this->hooks['Update']->executeBefore($beforeContext);
