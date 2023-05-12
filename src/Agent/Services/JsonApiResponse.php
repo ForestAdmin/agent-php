@@ -48,6 +48,7 @@ class JsonApiResponse
     public function renderItem($data, TransformerAbstract $transformer, string $name)
     {
         $this->fractal->setSerializer(new JsonApiSerializer());
+        $transformer->setAvailableIncludes(ForestSchema::getRelatedData($name));
 
         return $this->fractal->createData(new Item($data, $transformer, $name))->toArray();
     }

@@ -52,7 +52,7 @@ function factoryCountRelated($args = []): CountRelated
         $collectionCar = mock($collectionCar)
             ->shouldReceive('aggregate')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
-            ->andReturn(count($args['count']))
+            ->andReturn($args['count'])
             ->getMock();
     }
 
@@ -108,16 +108,8 @@ test('make() should return a new instance of CountRelated with routes', function
 test('handleRequest() should return a response 200', function () {
     $data = [
         [
-            'id'      => 1,
-            'model'   => 'F8',
-            'brand'   => 'Ferrari',
-            'user_id' => 1,
-        ],
-        [
-            'id'      => 2,
-            'model'   => 'Aventador',
-            'brand'   => 'Lamborghini',
-            'user_id' => 1,
+            'value' => 2,
+            'group' => [],
         ],
     ];
 
@@ -128,7 +120,7 @@ test('handleRequest() should return a response 200', function () {
         ->toEqual(
             [
                 'content' => [
-                    'count' => count($data),
+                    'count' => $data[0]['value'],
                 ],
             ]
         );
