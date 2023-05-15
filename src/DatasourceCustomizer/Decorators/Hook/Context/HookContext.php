@@ -20,7 +20,7 @@ class HookContext extends CollectionCustomizationContext
         throw new ForbiddenError($message);
     }
 
-    public function throwUnprocessableError(string $message): HttpException
+    public function throwError(string $message): HttpException
     {
         throw new UnprocessableError($message);
     }
