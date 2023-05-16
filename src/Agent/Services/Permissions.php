@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Services;
 
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
+use ForestAdmin\AgentPHP\Agent\Facades\ForestSchema;
 use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextVariables;
@@ -11,12 +12,12 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 
 use function ForestAdmin\config;
 
 use Illuminate\Support\Collection as IlluminateCollection;
 use Illuminate\Support\Str;
-use phpDocumentor\Reflection\Types\Boolean;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -40,7 +41,7 @@ class Permissions
 
     public function invalidateCache(string $idCache): void
     {
-        Cache::forget($this->getCacheKey($idCache));
+        Cache::forget($idCache);
     }
 
     public function can(string $action, CollectionContract $collection, $allowFetch = false): bool
@@ -97,26 +98,31 @@ class Permissions
         return $isAllowed;
     }
 
-    public function canSmartAction(Request $request, CollectionContract $collection, $allowFetch = true): bool
+    public function canSmartAction(Request $request, CollectionContract $collection, Filter $filter, $allowFetch = true): bool
     {
-        dd($request->all(), $request->getPathInfo(), $request->getMethod());
-        //Caller $caller, CollectionContract $collection, array $parameters, string $endpoint, string $httpMethod
-        $actionAuthorize = new ActionAuthorize($this->caller, $collection, $request->all(), $request->getPathInfo(), $request->getMethod());
+        if (! $this->hasPermissionSystem()) {
+            return true;
+        }
 
-//        $permissions = $this->getRenderingPermissions($this->caller->getRenderingId());
-//        $isAllowed = $permissions->get('actions')?->get($action)?->contains($this->caller->getId());
-//
-//        if (! $isAllowed && $allowFetch) {
-//            $this->invalidateCache($this->caller->getRenderingId());
-//
-//            return $this->can($action, false);
-//        }
-//
-//        if (! $isAllowed) {
-//            throw new HttpException(Response::HTTP_FORBIDDEN, 'Forbidden');
-//        }
-//
-//        return $isAllowed;
+        $userData = $this->getUserData($this->caller->getId());
+        $collectionsData = $this->getCollectionsPermissionsData($allowFetch);
+
+        //try {
+        $action = $this->findActionFromEndpoint($collection->getName(), $request->getPathInfo(), $request->getMethod());
+        $smartActionApproval = new SmartActionChecker(
+            $request,
+            $collection,
+            $collectionsData[$collection->getName()]['actions'][$action['name']],
+            $this->caller,
+            $userData['roleId'],
+            $filter
+        );
+
+        return $smartActionApproval->canExecute();
+        /*} catch (\Exception $e) {
+            throw new HttpException(Response::HTTP_CONFLICT, 'The collection ' . $collection->getName() . ' doesn\'t exist');
+            //todo raise ForestLiana::Errors::ExpectedError.new(409, :conflict, "The collection #{collection} doesn't exist", 'collection not found')
+        }*/
     }
 
     public function getScope(CollectionContract $collection): ?ConditionTree
@@ -238,6 +244,36 @@ class Permissions
         );
     }
 
+    private function hasPermissionSystem()
+    {
+        return Cache::remember(
+            'forest.has_permission',
+            function () {
+                $response = $this->forestApi->get('/liana/v4/permissions/environment');
+                $body = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+
+                return ! ($body === true);
+            },
+            config('permissionExpiration')
+        );
+    }
+
+    private function findActionFromEndpoint($collectionName, $endpoint, $httpMethod): ?array
+    {
+        $actions = ForestSchema::getSmartActions($collectionName);
+
+        if (empty($actions)) {
+            return null;
+        }
+
+        $action = collect($actions)
+            ->where('endpoint', $endpoint)
+            ->where('httpMethod', $httpMethod)
+            ->first();
+
+        return $action;
+    }
+
     private function decodeCrudPermissions(array $collection): array
     {
         return [
@@ -267,27 +303,6 @@ class Permissions
 
         return $actions;
     }
-
-//    private function decodeActionPermissions(array $rawPermissions): IlluminateCollection
-//    {
-//        $actions = collect();
-//        foreach ($rawPermissions['data']['collections'] as $collectionName => $permission) {
-//            foreach ($permission['collection'] as $actionName              => $userIds) {
-//                $shortName = Str::before($actionName, 'Enabled');
-//                $userIds = $userIds instanceof Boolean ? [$this->caller->getId()] : $userIds;
-//                $actions->put("$shortName:$collectionName", collect($userIds));
-//            }
-//
-//            foreach ($permission['actions'] as $actionName => $actionPermissions) {
-//                $userIds = $actionPermissions['triggerEnabled'];
-//                $userIds = $userIds instanceof Boolean ? [$this->caller->getId()] : $userIds;
-//
-//                $actions->put("custom:$actionName:$collectionName", collect($userIds));
-//            }
-//        }
-//
-//        return $actions;
-//    }
 
     private function decodeScopePermissions(array $rawPermissions): IlluminateCollection
     {
