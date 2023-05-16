@@ -3,8 +3,10 @@
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Hook\Context\After;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Hook\Context\Before\HookBeforeAggregateContext;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 
 class HookAfterAggregateContext extends HookBeforeAggregateContext
 {
