@@ -252,8 +252,11 @@ class CollectionCustomizer
         return $this;
     }
 
-    public function addHook()
+    public function addHook(string $position, string $type, Closure $handler)
     {
+        $this->stack->hook->getCollection($this->name)->addHook($position, $type, $handler);
+
+        return $this;
     }
 
     public function addChart(string $name, Closure $definition): self

@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ActionCollectio
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Chart\ChartDataSourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Empty\EmptyCollection;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Hook\HookCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsEmulate\OperatorsEmulateCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsReplace\OperatorsReplaceCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\PublicationCollectionDecorator;
@@ -40,6 +41,7 @@ class DecoratorsStack
     public ChartDataSourceDecorator $chart;
     public DatasourceDecorator $renameField;
     public DatasourceDecorator $publication;
+    public DatasourceDecorator $hook;
 
     public function __construct(DatasourceContract $dataSource)
     {
@@ -71,6 +73,7 @@ class DecoratorsStack
         $last = $this->action = new DatasourceDecorator($last, ActionCollection::class);
         $last = $this->schema = new DataSourceDecorator($last, SchemaCollection::class);
         $last = $this->write = new WriteDataSourceDecorator($last);
+        $last = $this->hook = new DatasourceDecorator($last, HookCollection::class);
         $last = $this->validation = new DatasourceDecorator($last, ValidationCollection::class);
 
 
@@ -98,6 +101,7 @@ class DecoratorsStack
         $this->action->build();
         $this->schema->build();
         $this->write->build();
+        $this->hook->build();
         $this->validation->build();
         $this->publication->build();
         $this->renameField->build();
