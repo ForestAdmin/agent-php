@@ -5,6 +5,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationCon
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedDefinition;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Hook\HookCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\PublicationCollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Write\WriteReplace\WriteReplaceCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
@@ -600,4 +601,23 @@ test('emulateFieldFiltering() should emulate operator on field', function () {
     expect($field->getFilterOperators())
         ->toHaveCount(19)
         ->and($field->getFilterOperators())->toEqual(Rules::getAllowedOperatorsForColumnType($field->getColumnType()));
+});
+
+
+test('addHook() should add hook to the collection', function () {
+    /**
+     * @var DatasourceCustomizer $datasourceCustomizer
+     * @var CollectionCustomizer $customizer
+     */
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer();
+    $customizer->addHook('before', 'List', fn () => 'before hook');
+    /** @var HookCollection $computedCollection */
+    $hookCollection = $datasourceCustomizer->getStack()->hook->getCollection('Book');
+    $hooks = invokeProperty($hookCollection, 'hooks')['List'];
+    $beforeHooks = invokeProperty($hooks, 'before');
+
+    expect($beforeHooks)
+        ->toHaveCount(1)
+        ->and(call_user_func($beforeHooks[0]))
+        ->toEqual('before hook');
 });
