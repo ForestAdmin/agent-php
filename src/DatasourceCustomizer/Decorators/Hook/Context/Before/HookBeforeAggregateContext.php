@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Hook\Context\HookContex
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 
 class HookBeforeAggregateContext extends HookContext
 {
@@ -14,7 +15,7 @@ class HookBeforeAggregateContext extends HookContext
         Caller                $caller,
         protected Filter      $filter,
         protected Aggregation $aggregation,
-        protected int         $limit
+        protected ?int         $limit = null
     ) {
         parent::__construct($collection, $caller);
     }
@@ -36,9 +37,9 @@ class HookBeforeAggregateContext extends HookContext
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getLimit(): int
+    public function getLimit(): ?int
     {
         return $this->limit;
     }

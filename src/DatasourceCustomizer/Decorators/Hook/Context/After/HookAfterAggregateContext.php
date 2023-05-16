@@ -15,8 +15,8 @@ class HookAfterAggregateContext extends HookBeforeAggregateContext
         Caller             $caller,
         Filter             $filter,
         Aggregation        $aggregation,
-        int                $limit,
-        protected array    $aggregateResult
+        protected array    $aggregateResult,
+        ?int               $limit = null
     ) {
         parent::__construct($collection, $caller, $filter, $aggregation, $limit);
     }

@@ -98,7 +98,7 @@ class HookCollection extends CollectionDecorator
 
         $results = $this->childCollection->aggregate($caller, $beforeContext->getFilter(), $beforeContext->getAggregation(), $beforeContext->getLimit());
 
-        $afterContext = new HookAfterAggregateContext($this->childCollection, $caller, $filter, $aggregation, $limit, $results);
+        $afterContext = new HookAfterAggregateContext($this->childCollection, $caller, $filter, $aggregation, $results, $limit);
         $this->hooks['Aggregate']->executeAfter($afterContext);
 
         return $results;
