@@ -79,12 +79,16 @@ class ForestController
             $data = [
                 'errors' => [
                     [
-                        'name'   => class_basename($exception),
+                        'name'   => $exception->getName(),
                         'detail' => $exception->getMessage(),
                         'status' => $exception->getStatusCode(),
                     ],
                 ],
             ];
+
+            if (method_exists($exception, 'getData')) {
+                $data['errors'][0]['data'] = $exception->getData();
+            }
 
             return new JsonResponse($data, $exception->getStatusCode(), $exception->getHeaders());
         }
