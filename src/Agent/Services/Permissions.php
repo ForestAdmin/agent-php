@@ -107,7 +107,6 @@ class Permissions
         $userData = $this->getUserData($this->caller->getId());
         $collectionsData = $this->getCollectionsPermissionsData($allowFetch);
 
-        //try {
         $action = $this->findActionFromEndpoint($collection->getName(), $request->getPathInfo(), $request->getMethod());
         $smartActionApproval = new SmartActionChecker(
             $request,
@@ -119,10 +118,6 @@ class Permissions
         );
 
         return $smartActionApproval->canExecute();
-        /*} catch (\Exception $e) {
-            throw new HttpException(Response::HTTP_CONFLICT, 'The collection ' . $collection->getName() . ' doesn\'t exist');
-            //todo raise ForestLiana::Errors::ExpectedError.new(409, :conflict, "The collection #{collection} doesn't exist", 'collection not found')
-        }*/
     }
 
     public function getScope(CollectionContract $collection): ?ConditionTree
@@ -165,11 +160,11 @@ class Permissions
     {
         $cache = Cache::remember(
             'forest.users',
-            function () use ($userId) {
+            function () {
                 $response = $this->forestApi->get('/liana/v4/permissions/users');
                 $users = [];
                 foreach (json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR) as $user) {
-                    $users[$userId] = $user;
+                    $users[$user['id']] = $user;
                 }
 
                 return $users;
