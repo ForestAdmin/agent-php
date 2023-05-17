@@ -91,7 +91,7 @@ function factoryChart($args = []): Charts
 
     if (isset($args['books']['results'])) {
         $collectionBooks = mock($collectionBooks)
-            ->shouldReceive('aggregate');
+            ->shouldReceive('aggregator');
 
         if (isset($args['type']) && $args['type'] === 'leaderboard') {
             $collectionBooks->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null);
@@ -173,12 +173,12 @@ test('makeValue() should return a ValueChart', function () {
                 ],
             ],
             'payload' => [
-                'type'            => 'Value',
-                'collection'      => 'Book',
-                'aggregate_field' => 'price',
-                'aggregate'       => 'Sum',
-                'filters'         => null,
-                'timezone'        => 'Europe/Paris',
+                'type'                 => 'Value',
+                'sourceCollectionName' => 'Book',
+                'aggregateFieldName'   => 'price',
+                'aggregator'           => 'Sum',
+                'filters'              => null,
+                'timezone'             => 'Europe/Paris',
             ],
         ]
     );
@@ -209,12 +209,12 @@ test('makeValue() with previous filter should return a ValueChart', function () 
                 'previous' => true,
             ],
             'payload' => [
-                'type'            => 'Value',
-                'collection'      => 'Book',
-                'aggregate_field' => 'price',
-                'aggregate'       => 'Sum',
-                'filters'         => "{\"field\":\"date\",\"operator\":\"yesterday\",\"value\":null}",
-                'timezone'        => 'Europe/Paris',
+                'type'                 => 'Value',
+                'sourceCollectionName' => 'Book',
+                'aggregateFieldName'   => 'price',
+                'aggregator'           => 'Sum',
+                'filters'              => "{\"field\":\"date\",\"operator\":\"yesterday\",\"value\":null}",
+                'timezone'             => 'Europe/Paris',
             ],
         ]
     );
@@ -246,12 +246,12 @@ test('makeObjective() should return a ObjectiveChart', function () {
                 ],
             ],
             'payload' => [
-                'type'            => 'Objective',
-                'collection'      => 'Book',
-                'aggregate_field' => 'price',
-                'aggregate'       => 'Count',
-                'filters'         => null,
-                'timezone'        => 'Europe/Paris',
+                'type'                 => 'Objective',
+                'sourceCollectionName' => 'Book',
+                'aggregateFieldName'   => 'price',
+                'aggregator'           => 'Count',
+                'filters'              => null,
+                'timezone'             => 'Europe/Paris',
             ],
         ],
     );
@@ -287,11 +287,11 @@ test('makePie() should return a PieChart', function () {
                 ],
             ],
             'payload' => [
-                'type'           => 'Pie',
-                'collection'     => 'Book',
-                'group_by_field' => 'year',
-                'aggregate'      => 'Count',
-                'timezone'       => 'Europe/Paris',
+                'type'                 => 'Pie',
+                'sourceCollectionName' => 'Book',
+                'groupByFieldName'     => 'year',
+                'aggregator'           => 'Count',
+                'timezone'             => 'Europe/Paris',
             ],
         ],
     );
@@ -336,12 +336,12 @@ test('makeLine() with day filter should return a LineChart', function () {
                 ],
             ],
             'payload' => [
-                'type'                => 'Line',
-                'collection'          => 'Book',
-                'group_by_date_field' => 'date',
-                'aggregate'           => 'Count',
-                'time_range'          => 'Day',
-                'timezone'            => 'Europe/Paris',
+                'type'                 => 'Line',
+                'sourceCollectionName' => 'Book',
+                'groupByFieldName'     => 'date',
+                'aggregator'           => 'Count',
+                'timeRange'            => 'Day',
+                'timezone'             => 'Europe/Paris',
             ],
         ]
     );
@@ -386,12 +386,12 @@ test('makeLine() with week filter should return a LineChart', function () {
                 ],
             ],
             'payload' => [
-                'type'                => 'Line',
-                'collection'          => 'Book',
-                'group_by_date_field' => 'date',
-                'aggregate'           => 'Count',
-                'time_range'          => 'Week',
-                'timezone'            => 'Europe/Paris',
+                'type'                 => 'Line',
+                'sourceCollectionName' => 'Book',
+                'groupByFieldName'     => 'date',
+                'aggregator'           => 'Count',
+                'timeRange'            => 'Week',
+                'timezone'             => 'Europe/Paris',
             ],
         ]
     );
@@ -436,12 +436,12 @@ test('makeLine() with month filter should return a LineChart', function () {
                 ],
             ],
             'payload' => [
-                'type'                => 'Line',
-                'collection'          => 'Book',
-                'group_by_date_field' => 'date',
-                'aggregate'           => 'Count',
-                'time_range'          => 'Month',
-                'timezone'            => 'Europe/Paris',
+                'type'                 => 'Line',
+                'sourceCollectionName' => 'Book',
+                'groupByFieldName'     => 'date',
+                'aggregator'           => 'Count',
+                'timeRange'            => 'Month',
+                'timezone'             => 'Europe/Paris',
             ],
         ]
     );
@@ -486,12 +486,12 @@ test('makeLine() with month year should return a LineChart', function () {
                 ],
             ],
             'payload' => [
-                'type'                => 'Line',
-                'collection'          => 'Book',
-                'group_by_date_field' => 'date',
-                'aggregate'           => 'Count',
-                'time_range'          => 'Year',
-                'timezone'            => 'Europe/Paris',
+                'type'                 => 'Line',
+                'sourceCollectionName' => 'Book',
+                'groupByFieldName'     => 'date',
+                'aggregator'           => 'Count',
+                'timeRange'            => 'Year',
+                'timezone'             => 'Europe/Paris',
             ],
         ]
     );
@@ -537,12 +537,12 @@ test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation
                 ],
             ],
             'payload' => [
-                'type'               => 'Leaderboard',
-                'collection'         => 'Book',
-                'label_field'        => 'title',
-                'aggregate'          => 'Count',
-                'relationship_field' => 'bookReviews',
-                'timezone'           => 'Europe/Paris',
+                'type'                  => 'Leaderboard',
+                'sourceCollectionName'  => 'Book',
+                'labelFieldName'        => 'title',
+                'aggregator'            => 'Count',
+                'relationshipFieldName' => 'bookReviews',
+                'timezone'              => 'Europe/Paris',
             ],
         ],
     );
@@ -588,12 +588,12 @@ test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relatio
                 ],
             ],
             'payload' => [
-                'type'               => 'Leaderboard',
-                'collection'         => 'Book',
-                'label_field'        => 'title',
-                'aggregate'          => 'Count',
-                'relationship_field' => 'reviews',
-                'timezone'           => 'Europe/Paris',
+                'type'                  => 'Leaderboard',
+                'sourceCollectionName'  => 'Book',
+                'labelFieldName'        => 'title',
+                'aggregator'            => 'Count',
+                'relationshipFieldName' => 'reviews',
+                'timezone'              => 'Europe/Paris',
             ],
         ],
     );
@@ -629,11 +629,11 @@ test('makeLeaderboard() should throw a ForestException when the request is not f
                 'results' => [],
             ],
             'payload' => [
-                'type'               => 'Leaderboard',
-                'aggregate'          => 'Count',
-                'collection'         => 'Book',
-                'relationship_field' => 'reviews',
-                'timezone'           => 'Europe/Paris',
+                'type'                  => 'Leaderboard',
+                'aggregator'            => 'Count',
+                'sourceCollectionName'  => 'Book',
+                'relationshipFieldName' => 'reviews',
+                'timezone'              => 'Europe/Paris',
             ],
         ],
     );
