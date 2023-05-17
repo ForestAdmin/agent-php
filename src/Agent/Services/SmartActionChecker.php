@@ -2,6 +2,9 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Services;
 
+use ForestAdmin\AgentPHP\Agent\Http\Exceptions\ConflictError;
+use ForestAdmin\AgentPHP\Agent\Http\Exceptions\ForbiddenError;
+use ForestAdmin\AgentPHP\Agent\Http\Exceptions\RequireApproval;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Utils\ConditionTreeParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
@@ -11,8 +14,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Condit
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class SmartActionChecker
 {
@@ -30,11 +31,11 @@ class SmartActionChecker
     {
         if ($this->request->input('data.attributes.signed_approval_request') === null &&
             ! in_array($this->roleId, $this->smartAction['userApprovalEnabled'], true)) {
-            dd(1);
+            //dd(1);
 
             return $this->canTrigger();
         } else {
-            dd(2);
+            //dd(2);
 
             return $this->canApprove();
         }
@@ -43,18 +44,13 @@ class SmartActionChecker
     private function canApprove(): bool
     {
         if ((empty($this->smartAction['userApprovalConditions']) || $this->matchConditions('userApprovalConditions')) &&
-            ($this->parameters['data']['attributes']['requester_id'] !== $this->caller->getId() ||
+            ($this->request->input('data.attributes.requester_id') !== $this->caller->getId() ||
                 in_array($this->roleId, $this->smartAction['selfApprovalEnabled'], true))
         ) {
-            dd('approve 1');
-
             return true;
         }
 
-        dd('approve 2');
-
-        throw new HttpException(Response::HTTP_FORBIDDEN, 'You don\'t have the permission to trigger this action.');
-        //todo raise ForestLiana::Ability::Exceptions::TriggerForbidden.new   //CustomActionTriggerForbiddenError
+        throw new ForbiddenError('You don\'t have the permission to trigger this action.', [], 'CustomActionTriggerForbiddenError');
     }
 
     private function canTrigger(): bool
@@ -62,30 +58,19 @@ class SmartActionChecker
         if (in_array($this->roleId, $this->smartAction['triggerEnabled'], true) &&
             ! in_array($this->roleId, $this->smartAction['approvalRequired'], true)) {
             if (empty($this->smartAction['triggerConditions']) || $this->matchConditions('triggerConditions')) {
-                dd('trigger 1');
-
                 return true;
             }
         } elseif (in_array($this->roleId, $this->smartAction['approvalRequired'], true)) {
             if (empty($this->smartAction['approvalRequiredConditions']) || $this->matchConditions('approvalRequiredConditions')) {
-                dd('trigger 2');
-
-                throw new HttpException(Response::HTTP_FORBIDDEN, 'This action requires to be approved.');
-            //todo raise ForestLiana::Ability::Exceptions::RequireApproval.new(@smart_action['userApprovalEnabled'])   //CustomActionRequiresApprovalError
+                throw new RequireApproval('This action requires to be approved.', [], 'CustomActionRequiresApprovalError', $this->smartAction['userApprovalEnabled']);
             } else {
                 if (empty($this->smartAction['triggerConditions']) || $this->matchConditions('triggerConditions')) {
-                    dd('trigger 3');
-
                     return true;
                 }
             }
         }
 
-
-        dd('trriger 4');
-
-        throw new HttpException(Response::HTTP_FORBIDDEN, 'You don\'t have the permission to trigger this action.');
-        //todo raise ForestLiana::Ability::Exceptions::TriggerForbidden.new   //CustomActionTriggerForbiddenError
+        throw new ForbiddenError('You don\'t have the permission to trigger this action.', [], 'CustomActionTriggerForbiddenError');
     }
 
     private function matchConditions(string $conditionName): bool
@@ -108,8 +93,7 @@ class SmartActionChecker
 
             return ($rows[0]['value'] ?? 0) === count($this->request->input('data.attributes.ids'));
         } catch (\Exception $e) {
-            throw new HttpException(Response::HTTP_CONFLICT, 'The conditions to trigger this action cannot be verified. Please contact an administrator.');
-            // todo raise ForestLiana::Ability::Exceptions::ActionConditionError.new   //'InvalidActionConditionError'
+            throw new ConflictError('The conditions to trigger this action cannot be verified. Please contact an administrator.', [], 'InvalidActionConditionError');
         }
     }
 }
