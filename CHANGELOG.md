@@ -1,3 +1,10 @@
+# [1.0.0-beta.32](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.31...v1.0.0-beta.32) (2023-05-17)
+
+
+### Features
+
+* **hook:** add support of hook decorator ([#55](https://github.com/ForestAdmin/agent-php/issues/55)) ([607b4b4](https://github.com/ForestAdmin/agent-php/commit/607b4b4f9fd41f07b82b1854b7218bfd40d11569))
+
 # [1.0.0-beta.31](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.30...v1.0.0-beta.31) (2023-05-12)
 
 
