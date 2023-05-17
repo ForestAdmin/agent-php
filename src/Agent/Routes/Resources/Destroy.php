@@ -7,7 +7,6 @@ use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
-use Illuminate\Support\Arr;
 
 class Destroy extends AbstractCollectionRoute
 {
@@ -47,7 +46,7 @@ class Destroy extends AbstractCollectionRoute
             )
         );
 
-        $this->collection->delete($this->caller, $filter, $id);
+        $this->collection->delete($this->caller, $filter);
 
         return [
             'content' => null,
@@ -76,7 +75,7 @@ class Destroy extends AbstractCollectionRoute
             )
         );
 
-        $this->collection->delete($this->caller, $filter, Arr::flatten($selectionIds['ids']));
+        $this->collection->delete($this->caller, $filter);
 
         return [
             'content' => null,
