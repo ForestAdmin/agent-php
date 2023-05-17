@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
 class ForestController
@@ -74,6 +75,18 @@ class ForestController
             ];
 
             return new JsonResponse($data, 400);
+        } elseif ($exception instanceof HttpException) {
+            $data = [
+                'errors' => [
+                    [
+                        'name'   => class_basename($exception),
+                        'detail' => $exception->getMessage(),
+                        'status' => $exception->getStatusCode(),
+                    ],
+                ],
+            ];
+
+            return new JsonResponse($data, $exception->getStatusCode(), $exception->getHeaders());
         }
 
         throw $exception;
