@@ -130,6 +130,6 @@ class Actions extends AbstractAuthenticatedRoute
 
     public static function decodeSignedApprovalRequest($signedApprovalRequest): array
     {
-        return JWT::decode($signedApprovalRequest, new Key(config('envSecret'), 'HS256'));
+        return json_decode(json_encode(JWT::decode($signedApprovalRequest, new Key(config('envSecret'), 'HS256')), JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
     }
 }
