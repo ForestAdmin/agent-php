@@ -2,24 +2,28 @@
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
+use ForestAdmin\AgentPHP\Agent\Http\Exceptions\ForbiddenError;
 use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Services\Permissions;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+
+use function ForestAdmin\config;
+
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Str;
 use Prophecy\Argument;
 use Prophecy\Prophet;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
-function permissionsFactory($scopes = [], $post = []): Permissions
+function permissionsFactory($post = [], $roleId = 1, $userRoleId = 1)
 {
     $_POST = $post;
     $datasource = new Datasource();
@@ -36,127 +40,278 @@ function permissionsFactory($scopes = [], $post = []): Permissions
     $request = Request::createFromGlobals();
     $permissions = new Permissions(QueryStringParser::parseCaller($request));
     Cache::put(
-        $permissions->getCacheKey(10),
-        collect(
-            [
-                'actions' => collect(
-                    [
-                        'browse:Booking' => collect([1]),
-                        'read:Booking'   => collect([1]),
-                        'edit:Booking'   => collect([1]),
-                        'add:Booking'    => collect([1]),
-                        'delete:Booking' => collect([1]),
-                    ]
-                ),
-                'scopes'  => collect($scopes),
-                'charts'  => empty($post) ? collect($post) : collect(
-                    [
-                        strtolower(Str::plural($post['type'])) . ':' . sha1(json_encode(ksort($post), JSON_THROW_ON_ERROR)),
-                    ]
-                ),
-            ]
-        ),
-        300
+        'forest.users',
+        [
+            1 => [
+                'id'              => 1,
+                'firstName'       => 'John',
+                'lastName'        => 'Doe',
+                'fullName'        => 'John Doe',
+                'email'           => 'john.doe@domain.com',
+                'tags'            => [],
+                'roleId'          => $userRoleId,
+                'permissionLevel' => 'admin',
+            ],
+            3 => [
+                'id'              => 3,
+                'firstName'       => 'Admin',
+                'lastName'        => 'test',
+                'fullName'        => 'Admin test',
+                'email'           => 'admin@forestadmin.com',
+                'tags'            => [],
+                'roleId'          => 13,
+                'permissionLevel' => 'admin',
+            ],
+        ],
+        config('permissionExpiration')
     );
 
-    return $permissions;
+    Cache::put(
+        'forest.collections',
+        [
+            'Booking' => [
+                'browse'  => [
+                    1 => 13,
+                    2 => $roleId,
+                ],
+                'read'    => [
+                    1 => 13,
+                    2 => $roleId,
+                ],
+                'edit'    => [
+                    1 => 13,
+                    2 => $roleId,
+                ],
+                'add'     => [
+                    1 => 13,
+                    2 => $roleId,
+                ],
+                'delete'  => [
+                    1 => 13,
+                    2 => $roleId,
+                ],
+                'export'  => [
+                    1 => 13,
+                    2 => $roleId,
+                ],
+                'actions' => [
+                    'Mark as live' => [
+                        'triggerEnabled'             => [
+                            0 => $roleId,
+                            1 => 15,
+                        ],
+                        'triggerConditions'          => [
+                            0 => [
+                                'filter' => [
+                                    'aggregator' => 'and',
+                                    'conditions' => [
+                                        0 => [
+                                            'field'    => 'email',
+                                            'value'    => null,
+                                            'source'   => 'data',
+                                            'operator' => 'present',
+                                        ],
+                                        1 => [
+                                            'field'    => 'driverLicence:reference',
+                                            'value'    => null,
+                                            'source'   => 'data',
+                                            'operator' => 'present',
+                                        ],
+                                    ],
+                                ],
+                                'roleId' => 15,
+                            ],
+                        ],
+                        'approvalRequired'           => [
+                            0 => $roleId,
+                        ],
+                        'approvalRequiredConditions' => [
+                            0 => [
+                                'filter' => [
+                                    'aggregator' => 'and',
+                                    'conditions' => [
+                                        0 => [
+                                            'field'    => 'id',
+                                            'value'    => 60,
+                                            'source'   => 'data',
+                                            'operator' => 'greater_than',
+                                        ],
+                                    ],
+                                ],
+                                'roleId' => $roleId,
+                            ],
+                        ],
+                        'userApprovalEnabled'        => [
+                            0 => 13,
+                        ],
+                        'userApprovalConditions'     => [],
+                        'selfApprovalEnabled'        => [],
+                    ],
+                ],
+            ],
+        ],
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.has_permission',
+        true,
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.has_permission',
+        true,
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.scopes',
+        [
+            'scopes' => collect([
+                'User' => ConditionTreeFactory::fromArray([
+                    'aggregator' => 'and',
+                    'conditions' => [
+                        0 => [
+                            'field'    => 'id',
+                            'operator' => 'greater_than',
+                            'value'    => '{{currentUser.id}}',
+                        ],
+                        1 => [
+                            'field'    => 'name',
+                            'operator' => 'present',
+                            'value'    => null,
+                        ],
+                    ],
+                ]),
+            ]),
+            'team'   => [
+                'id'   => 44,
+                'name' => 'Operations',
+            ],
+        ],
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.stats',
+        [
+            0 => 'Pie:33e92c2f6c7f40d9c824b1a88503bfee1c92902e',
+            1 => 'Value:c6bccb28cf2d9ca6e62605b5169cc7e2f39d3409',
+        ],
+        config('permissionExpiration')
+    );
+
+    return [$permissions, $collectionBooking];
 }
 
-test('getCacheKey() should return the right key', function () {
-    $permissions = permissionsFactory();
-
-    expect($permissions->getCacheKey(10))->toEqual('permissions.10');
-});
-
 test('invalidate cache should delete the cache', function () {
-    $permissions = permissionsFactory();
-    $permissions->invalidateCache(10);
+    $permissions = permissionsFactory()[0];
+    $permissions->invalidateCache('forest.stats');
 
-    expect(Cache::get($permissions->getCacheKey(10)))->toBeNull();
+    expect(Cache::get('forest.stats'))->toBeNull();
 });
 
-test('can() should call getRenderingPermissions twice', function () {
-    permissionsFactory();
+test('can() should return true when user is allowed', function () {
+    [$permissions, $collection] = permissionsFactory();
+
+    expect($permissions->can('browse', $collection))->toBeTrue();
+});
+
+test('can() should call getCollectionsPermissionsData twice', function () {
+    [$permissions, $collection] = permissionsFactory();
     $request = Request::createFromGlobals();
     $mockPermissions = mock(Permissions::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
-        ->shouldReceive('getRenderingPermissions')
-        ->with(10)
+        ->shouldReceive('getCollectionsPermissionsData')
         ->andReturn(
-            collect(
-                [
-                    'actions' => collect(
-                        [
-                            'browse:Book' => collect([1]),
-                        ]
-                    ),
-                ]
-            ),
-            collect(
-                [
-                    'actions' => collect(
-                        [
-                            'browse:Booking' => collect([1]),
-                        ]
-                    ),
-                ]
-            )
+            [
+                'FakeCollection' => [
+                    'browse' => [
+                        0 => 1,
+                    ],
+                ],
+            ],
+            [
+                'Booking' => [
+                    'browse' => [
+                        0 => 1,
+                    ],
+                ],
+            ],
         )
         ->getMock();
     invokeProperty($mockPermissions, 'caller', QueryStringParser::parseCaller($request));
 
-    expect($mockPermissions->can('browse:Booking', 'Booking'))->toBeTrue();
+    expect($mockPermissions->can('browse', $collection))->toBeTrue();
 });
 
-test('can() should return true', function () {
-    $permissions = permissionsFactory();
+test('can() should throw HttpException when user doesn\'t have the right access', function () {
+    [$permissions, $collection] = permissionsFactory();
 
-    expect($permissions->can('browse:Booking', 'Booking'))->toBeTrue();
-});
-
-test('can() should throw HttpException', function () {
-    $permissions = permissionsFactory();
-
-    expect(static fn () => $permissions->can('browse:Book', false))
-        ->toThrow(HttpException::class, 'Forbidden');
-});
-
-test('canChart() should return true on allowed chart', function () {
-    $permissions = permissionsFactory(
-        [],
-        [
-            'type'           => 'Pie',
-            'aggregate'      => 'Count',
-            'collection'     => 'books',
-            'group_by_field' => 'author:firstName',
-        ]
-    );
-    $request = Request::createFromGlobals();
-
-    expect($permissions->canChart($request, false))->toBeTrue();
-});
-
-test('canChart() should call twice and return true on allowed chart', function () {
-    $post = [
-        'type'           => 'Pie',
-        'aggregate'      => 'Count',
-        'collection'     => 'books',
-        'group_by_field' => 'author:firstName',
-    ];
-    permissionsFactory([], $post);
     $request = Request::createFromGlobals();
     $mockPermissions = mock(Permissions::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
-        ->shouldReceive('getRenderingPermissions')
-        ->with(10)
+        ->shouldReceive('getCollectionsPermissionsData')
         ->andReturn(
-            collect(['charts' => collect($post)]),
-            collect(['charts' => collect([strtolower(Str::plural($post['type'])) . ':' . sha1(json_encode(ksort($post), JSON_THROW_ON_ERROR))])])
+            [
+                'Booking' => [
+                    'browse' => [
+                        0 => 100,
+                    ],
+                ],
+            ],
+            [
+                'Booking' => [
+                    'browse' => [
+                        0 => 100,
+                    ],
+                ],
+            ],
         )
         ->getMock();
-    $mockPermissions->invalidateCache(10);
+    invokeProperty($mockPermissions, 'caller', QueryStringParser::parseCaller($request));
+
+    expect(static fn () => $mockPermissions->can('browse', $collection))
+        ->toThrow(ForbiddenError::class, 'You don\'t have permission to browse this collection.');
+});
+
+test('canChart() should return true on allowed chart', function () {
+    $post = [
+        'aggregateFieldName'   => null,
+        'aggregator'           => 'Count',
+        'contextVariables'     => '{}',
+        'filter'               => null,
+        'sourceCollectionName' => 'Book',
+        'type'                 => 'Value',
+    ];
+    [$permissions, $collection] = permissionsFactory($post);
+    $request = Request::createFromGlobals();
+
+    expect($permissions->canChart($request))->toBeTrue();
+});
+
+test('canChart() should call twice and return true on allowed chart', function () {
+    $post = [
+        'aggregator'           => 'Count',
+        'groupByFieldName'     => 'registrationNumber',
+        'sourceCollectionName' => 'Car',
+        'type'                 => 'Pie',
+    ];
+    permissionsFactory($post);
+    $request = Request::createFromGlobals();
+    $mockPermissions = mock(Permissions::class)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('getChartData')
+        ->andReturn(
+            [],
+            [$post['type'] . ':' . sha1(json_encode($post, JSON_THROW_ON_ERROR))]
+        )
+        ->getMock();
+
     $caller = QueryStringParser::parseCaller($request);
     invokeProperty($caller, 'permissionLevel', 'foo');
     invokeProperty($mockPermissions, 'caller', $caller);
@@ -165,21 +320,46 @@ test('canChart() should call twice and return true on allowed chart', function (
 });
 
 test('canChart() should throw on forbidden chart', function () {
-    $permissions = permissionsFactory(
-        [],
-        [
-            'type'           => 'Pie',
-            'aggregate'      => 'Count',
-            'collection'     => 'books',
-            'group_by_field' => 'author:firstName',
-        ]
-    );
-    $_POST['type'] = 'Value';
+    $post = [
+        'aggregator'           => 'Count',
+        'groupByFieldName'     => 'registrationNumber',
+        'sourceCollectionName' => 'Car',
+        'type'                 => 'Pie',
+    ];
+    permissionsFactory($post);
     $request = Request::createFromGlobals();
+    $mockPermissions = mock(Permissions::class)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('getChartData')
+        ->andReturn(
+            [],
+        )
+        ->getMock();
 
-    expect(static fn () => $permissions->canChart($request, false))
-        ->toThrow(HttpException::class, 'Forbidden');
+    $caller = QueryStringParser::parseCaller($request);
+    invokeProperty($caller, 'permissionLevel', 'foo');
+    invokeProperty($mockPermissions, 'caller', $caller);
+
+    expect(static fn () => $mockPermissions->canChart($request))
+        ->toThrow(ForbiddenError::class, 'You don\'t have permission to access this collection.');
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 test('getScope() should return null when permission has no scopes', function () {
     $permissions = permissionsFactory();
