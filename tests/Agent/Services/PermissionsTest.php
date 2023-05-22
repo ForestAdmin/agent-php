@@ -106,13 +106,7 @@ function permissionsFactory($post = [], $roleId = 1, $userRoleId = 1)
                                     'aggregator' => 'and',
                                     'conditions' => [
                                         0 => [
-                                            'field'    => 'email',
-                                            'value'    => null,
-                                            'source'   => 'data',
-                                            'operator' => 'present',
-                                        ],
-                                        1 => [
-                                            'field'    => 'driverLicence:reference',
+                                            'field'    => 'title',
                                             'value'    => null,
                                             'source'   => 'data',
                                             'operator' => 'present',
@@ -169,7 +163,7 @@ function permissionsFactory($post = [], $roleId = 1, $userRoleId = 1)
         'forest.scopes',
         [
             'scopes' => collect([
-                'User' => ConditionTreeFactory::fromArray([
+                'Booking' => ConditionTreeFactory::fromArray([
                     'aggregator' => 'and',
                     'conditions' => [
                         0 => [
@@ -178,7 +172,7 @@ function permissionsFactory($post = [], $roleId = 1, $userRoleId = 1)
                             'value'    => '{{currentUser.id}}',
                         ],
                         1 => [
-                            'field'    => 'name',
+                            'field'    => 'title',
                             'operator' => 'present',
                             'value'    => null,
                         ],
@@ -344,6 +338,25 @@ test('canChart() should throw on forbidden chart', function () {
     expect(static fn () => $mockPermissions->canChart($request))
         ->toThrow(ForbiddenError::class, 'You don\'t have permission to access this collection.');
 });
+
+//test('canSmartAction() ', function () {
+//    [$permissions, $collection] = permissionsFactory();
+//
+//    $request = Request::createFromGlobals();
+//    $mockPermissions = mock(Permissions::class)
+//        ->makePartial()
+//        ->shouldAllowMockingProtectedMethods()
+//        ->shouldReceive('hasPermissionSystem')
+//        ->andReturnTrue()
+//        ->getMock();
+////
+////    $caller = QueryStringParser::parseCaller($request);
+////    invokeProperty($caller, 'permissionLevel', 'foo');
+////    invokeProperty($mockPermissions, 'caller', $caller);
+////
+////    expect(static fn () => $mockPermissions->canChart($request))
+////        ->toThrow(ForbiddenError::class, 'You don\'t have permission to access this collection.');
+//});
 
 
 

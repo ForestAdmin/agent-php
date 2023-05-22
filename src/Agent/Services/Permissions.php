@@ -40,6 +40,7 @@ class Permissions
         $collectionsData = $this->getCollectionsPermissionsData($allowFetch);
 
         $isAllowed = array_key_exists($collection->getName(), $collectionsData) && in_array($userData['roleId'], $collectionsData[$collection->getName()][$action], true);
+
         // Refetch
         if (! $isAllowed) {
             $collectionsData = $this->getCollectionsPermissionsData(true);

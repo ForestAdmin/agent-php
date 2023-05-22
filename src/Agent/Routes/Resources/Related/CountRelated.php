@@ -26,6 +26,7 @@ class CountRelated extends AbstractRelationRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
+        $this->permissions->can('browse', $this->collection);
         $scope = $this->permissions->getScope($this->childCollection);
 
         if ($this->childCollection->isCountable()) {

@@ -3,8 +3,6 @@
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\DissociateRelated;
-use ForestAdmin\AgentPHP\Agent\Services\Permissions;
-use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
@@ -17,6 +15,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
+
+use function ForestAdmin\config;
 
 function factoryDissociateRelated($args = []): DissociateRelated
 {
@@ -115,22 +115,48 @@ function factoryDissociateRelated($args = []): DissociateRelated
     buildAgent($datasource);
 
     $request = Request::createFromGlobals();
-    $permissions = new Permissions(QueryStringParser::parseCaller($request));
 
     Cache::put(
-        $permissions->getCacheKey(10),
+        'forest.users',
+        [
+            1 => [
+                'id'              => 1,
+                'firstName'       => 'John',
+                'lastName'        => 'Doe',
+                'fullName'        => 'John Doe',
+                'email'           => 'john.doe@domain.com',
+                'tags'            => [],
+                'roleId'          => 1,
+                'permissionLevel' => 'admin',
+            ],
+        ],
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.collections',
+        [
+            'User' => [
+                'delete'  => [
+                    0 => 1,
+                ],
+            ],
+        ],
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.scopes',
         collect(
             [
-                'actions' => collect(
-                    [
-                        'delete:User'  => collect([1]),
-                        'delete:House' => collect([1]),
-                    ]
-                ),
-                'scopes'  => collect(),
+                'scopes' => collect([]),
+                'team'   => [
+                    'id'   => 44,
+                    'name' => 'Operations',
+                ],
             ]
         ),
-        300
+        config('permissionExpiration')
     );
 
     $dissociate = mock(DissociateRelated::class)
