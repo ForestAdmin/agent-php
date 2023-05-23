@@ -3,8 +3,6 @@
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
-use ForestAdmin\AgentPHP\Agent\Services\Permissions;
-use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LeaderboardChart;
@@ -22,7 +20,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
-use Illuminate\Support\Str;
+
+use function ForestAdmin\config;
 
 function factoryChart($args = []): Charts
 {
@@ -91,7 +90,7 @@ function factoryChart($args = []): Charts
 
     if (isset($args['books']['results'])) {
         $collectionBooks = mock($collectionBooks)
-            ->shouldReceive('aggregator');
+            ->shouldReceive('aggregate');
 
         if (isset($args['type']) && $args['type'] === 'leaderboard') {
             $collectionBooks->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null);
@@ -114,24 +113,71 @@ function factoryChart($args = []): Charts
     buildAgent($datasource);
 
     $_GET = $args['payload'];
+
+    $attributes = $_GET;
+    unset($attributes['timezone']);
+    unset($attributes['collection']);
+    unset($attributes['contextVariables']);
+    if (array_key_exists('filters', $attributes) && $attributes['filters'] === null) {
+        unset($attributes['filters']);
+    }
+    ksort($attributes);
+
     $request = Request::createFromGlobals();
-    $permissions = new Permissions(QueryStringParser::parseCaller($request));
 
     Cache::put(
-        $permissions->getCacheKey(10),
-        collect(
-            [
-                'scopes' => collect(),
-                'charts' => collect(
-                    [
-                        strtolower(Str::plural($_GET['type'])) . ':' . sha1(json_encode(ksort($_GET), JSON_THROW_ON_ERROR)),
-                    ]
-                ),
-            ]
-        ),
-        300
+        'forest.stats',
+        [
+            0 => $_GET['type']. ':' . sha1(json_encode($attributes, JSON_THROW_ON_ERROR)),
+        ],
+        config('permissionExpiration')
     );
 
+    Cache::put(
+        'forest.users',
+        [
+            1 => [
+                'id'              => 1,
+                'firstName'       => 'John',
+                'lastName'        => 'Doe',
+                'fullName'        => 'John Doe',
+                'email'           => 'john.doe@domain.com',
+                'tags'            => [],
+                'roleId'          => 1,
+                'permissionLevel' => 'admin',
+            ],
+        ],
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.collections',
+        [
+            'User' => [
+                'browse'  => [
+                    0 => 1,
+                ],
+                'export'  => [
+                    0 => 1,
+                ],
+            ],
+        ],
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.scopes',
+        collect(
+            [
+                'scopes' => collect([]),
+                'team'   => [
+                    'id'   => 44,
+                    'name' => 'Operations',
+                ],
+            ]
+        ),
+        config('permissionExpiration')
+    );
     $chart = mock(Charts::class)
         ->makePartial()
         ->shouldReceive('checkIp')
@@ -173,11 +219,10 @@ test('makeValue() should return a ValueChart', function () {
                 ],
             ],
             'payload' => [
-                'type'                 => 'Value',
-                'sourceCollectionName' => 'Book',
                 'aggregateFieldName'   => 'price',
                 'aggregator'           => 'Sum',
-                'filters'              => null,
+                'sourceCollectionName' => 'Book',
+                'type'                 => 'Value',
                 'timezone'             => 'Europe/Paris',
             ],
         ]
