@@ -31,12 +31,8 @@ class SmartActionChecker
     {
         if ($this->request->input('data.attributes.signed_approval_request') === null &&
             ! in_array($this->roleId, $this->smartAction['userApprovalEnabled'], true)) {
-            //dd(1);
-
             return $this->canTrigger();
         } else {
-            //dd(2);
-
             return $this->canApprove();
         }
     }

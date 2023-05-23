@@ -87,8 +87,8 @@ class Permissions
 
         $userData = $this->getUserData($this->caller->getId());
         $collectionsData = $this->getCollectionsPermissionsData($allowFetch);
-
         $action = $this->findActionFromEndpoint($collection->getName(), $request->getPathInfo(), $request->getMethod());
+
         $smartActionApproval = new SmartActionChecker(
             $request,
             $collection,
