@@ -16,6 +16,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Condit
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+
 use function ForestAdmin\config;
 
 use Illuminate\Support\Collection as IlluminateCollection;
@@ -88,6 +90,10 @@ class Permissions
         $userData = $this->getUserData($this->caller->getId());
         $collectionsData = $this->getCollectionsPermissionsData($allowFetch);
         $action = $this->findActionFromEndpoint($collection->getName(), $request->getPathInfo(), $request->getMethod());
+
+        if (null === $action) {
+            throw new ForestException('The collection ' . $collection->getName() . ' does not have this smart action');
+        }
 
         $smartActionApproval = new SmartActionChecker(
             $request,
@@ -187,12 +193,8 @@ class Permissions
         return sha1(json_encode($data, JSON_THROW_ON_ERROR));
     }
 
-    protected function getScopeAndTeamData(int $renderingId, $forceFetch = false): IlluminateCollection
+    protected function getScopeAndTeamData(int $renderingId): IlluminateCollection
     {
-        if ($forceFetch) {
-            $this->invalidateCache('forest.scopes');
-        }
-
         return Cache::remember(
             'forest.scopes',
             function () use ($renderingId) {
@@ -285,8 +287,10 @@ class Permissions
             $response = $this->forestApi->get($url);
 
             return json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+            // @codeCoverageIgnoreStart
         } catch (\Exception $e) {
             ForestHttpApi::handleResponseError($e);
         }
+        // @codeCoverageIgnoreEnd
     }
 }
