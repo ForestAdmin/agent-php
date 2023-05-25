@@ -131,7 +131,6 @@ class Collection extends BaseCollection
      * @param string $name
      * @param array  $joinColumn
      * @param string $related
-     * @param string $inverseName
      * @return void
      * @throws MappingException
      * @throws \ReflectionException
@@ -165,7 +164,6 @@ class Collection extends BaseCollection
      * @param string      $name
      * @param array       $joinColumn
      * @param string      $related
-     * @param string      $inverseName
      * @param string|null $mappedField
      * @return void
      * @throws MappingException
@@ -201,7 +199,6 @@ class Collection extends BaseCollection
      * @param string      $name
      * @param array       $joinTable
      * @param string      $related
-     * @param string      $inverseName
      * @param string|null $mappedField
      * @return void
      * @throws MappingException
