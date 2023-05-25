@@ -94,4 +94,9 @@ class ColumnSchema
     {
         $this->filterOperators = $filterOperators;
     }
+
+    public function setColumnType(array|string $columnType): void
+    {
+        $this->columnType = $columnType;
+    }
 }

@@ -4,6 +4,7 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns;
 
 final class PrimitiveType
 {
+    public const BINARY = 'Binary';
     public const BOOLEAN = 'Boolean';
     public const DATE = 'Date';
     public const DATEONLY = 'Dateonly';
