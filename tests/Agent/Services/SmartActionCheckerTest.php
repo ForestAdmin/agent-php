@@ -1,5 +1,6 @@
 <?php
 
+use ForestAdmin\AgentPHP\Agent\Http\Exceptions\ConflictError;
 use ForestAdmin\AgentPHP\Agent\Http\Exceptions\ForbiddenError;
 use ForestAdmin\AgentPHP\Agent\Http\Exceptions\RequireApproval;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
@@ -11,7 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-function smartActionCheckerFactory($requesterId = false)
+function smartActionCheckerFactory($requesterId = false, $requestWithAllRecordsIdsExcluded = false)
 {
     $datasource = new Datasource();
     $collectionBooking = new Collection($datasource, 'Booking');
@@ -54,6 +55,11 @@ function smartActionCheckerFactory($requesterId = false)
         $_POST['data']['attributes']['signed_approval_request'] = 'AAABBBCCC';
     }
 
+    if ($requestWithAllRecordsIdsExcluded) {
+        $_POST['data']['attributes']['all_records'] = true;
+        $_POST['data']['attributes']['all_records_ids_excluded'] = [1,2,3];
+    }
+
     $request = Request::createFromGlobals();
     $smartAction = [
         'triggerEnabled'             => [],
@@ -65,17 +71,6 @@ function smartActionCheckerFactory($requesterId = false)
         'selfApprovalEnabled'        => [],
     ];
 
-//    $collection = mock($collectionBooking)
-//        ->shouldReceive('aggregate')
-//        ->andReturn([
-//           [
-//            'value' => 1,
-//            'group' => [],
-//          ],
-//        ])
-//        ->getMock();
-//
-//    return $collection;
     return [$collectionBooking, $request, $smartAction];
 }
 
@@ -129,6 +124,47 @@ test('canExecute() should return true when the user can trigger the action with 
     expect($smartActionChecker->canExecute())->toBeTrue();
 });
 
+test('canExecute() should return true when the user can trigger the action with trigger conditions with all_records_ids_excluded not empty', function () {
+    [$collection, $request, $smartAction] = smartActionCheckerFactory(false, true);
+
+    $smartAction = array_merge(
+        $smartAction,
+        [
+            'triggerEnabled'             => [1],
+            'triggerConditions'          => [
+                [
+                    'filter' => [
+                        'aggregator' => 'and',
+                        'conditions' => [
+                            [
+                                'field'    => 'title',
+                                'value'    => null,
+                                'source'   => 'data',
+                                'operator' => 'present',
+                            ],
+                        ],
+                    ],
+                    'roleId' => 1,
+                ],
+            ],
+        ]
+    );
+
+    $collection = mock($collection)
+        ->shouldReceive('aggregate')
+        ->andReturn([
+            [
+                'value' => 1,
+                'group' => [],
+            ],
+        ])
+        ->getMock();
+
+    $smartActionChecker = new SmartActionChecker($request, $collection, $smartAction, QueryStringParser::parseCaller($request), 1, new Filter());
+
+    expect($smartActionChecker->canExecute())->toBeTrue();
+});
+
 test('canExecute() should throw when the user try to trigger the action with approvalRequired and without approvalRequiredConditions', function () {
     [$collection, $request, $smartAction] = smartActionCheckerFactory();
 
@@ -140,7 +176,7 @@ test('canExecute() should throw when the user try to trigger the action with app
 
     $smartActionChecker = new SmartActionChecker($request, $collection, $smartAction, QueryStringParser::parseCaller($request), 1, new Filter());
 
-    expect(fn () => $smartActionChecker->canExecute())->toThrow(RequireApproval::class, 'This action requires approval');
+    expect(fn () => $smartActionChecker->canExecute())->toThrow(RequireApproval::class, 'This action requires to be approved');
 });
 
 test('canExecute() should throw when the user try to trigger the action with approvalRequired and match approvalRequiredConditions', function () {
@@ -178,7 +214,7 @@ test('canExecute() should throw when the user try to trigger the action with app
         ->getMock();
     $smartActionChecker = new SmartActionChecker($request, $collection, $smartAction, QueryStringParser::parseCaller($request), 1, new Filter());
 
-    expect(fn () => $smartActionChecker->canExecute())->toThrow(RequireApproval::class, 'This action requires approval');
+    expect(fn () => $smartActionChecker->canExecute())->toThrow(RequireApproval::class, 'This action requires to be approved');
 });
 
 test('canExecute() should return true when the user try to trigger the action with approvalRequired without triggerConditions and correct role into approvalRequired', function () {
@@ -453,4 +489,170 @@ test('canExecute() should return true when the user can approve and the conditio
     $smartActionChecker = new SmartActionChecker($request, $collection, $smartAction, QueryStringParser::parseCaller($request), 1, new Filter());
 
     expect($smartActionChecker->canExecute())->toBeTrue();
+});
+
+test('canExecute() throw when the user try to approve when there is no userApprovalConditions and requesterId is equal to the callerId', function () {
+    [$collection, $request, $smartAction] = smartActionCheckerFactory(1);
+
+    $smartActionChecker = new SmartActionChecker($request, $collection, $smartAction, QueryStringParser::parseCaller($request), 1, new Filter());
+
+    expect(fn () => $smartActionChecker->canExecute())->toThrow(ForbiddenError::class, 'You don\'t have the permission to trigger this action');
+});
+
+test('canExecute() should throw when the user try to approve and there is no userApprovalConditions and user roleId is not present into selfApprovalEnabled', function () {
+    [$collection, $request, $smartAction] = smartActionCheckerFactory(1);
+
+    $smartAction = array_merge($smartAction, [
+        'selfApprovalEnabled'        => [1000],
+    ]);
+
+    $smartActionChecker = new SmartActionChecker($request, $collection, $smartAction, QueryStringParser::parseCaller($request), 1, new Filter());
+
+    expect(fn () => $smartActionChecker->canExecute())->toThrow(ForbiddenError::class, 'You don\'t have the permission to trigger this action');
+});
+
+test('canExecute() should throw when the user try to approve and the condition don\'t match with userApprovalConditions and requesterId is the callerId', function () {
+    [$collection, $request, $smartAction] = smartActionCheckerFactory(1);
+
+    $smartAction = array_merge($smartAction, [
+        'userApprovalConditions'          => [
+            [
+                'filter' => [
+                    'aggregator' => 'and',
+                    'conditions' => [
+                        [
+                            'field'    => 'id',
+                            'value'    => 1,
+                            'source'   => 'data',
+                            'operator' => 'equal',
+                        ],
+                    ],
+                ],
+                'roleId' => 1,
+            ],
+        ],
+    ]);
+    $collection = mock($collection)
+        ->shouldReceive('aggregate')
+        ->andReturn(
+            [
+                [
+                    'value' => 1,
+                    'group' => [],
+                ],
+            ],
+        )
+        ->getMock();
+
+    $smartActionChecker = new SmartActionChecker($request, $collection, $smartAction, QueryStringParser::parseCaller($request), 1, new Filter());
+
+    expect(fn () => $smartActionChecker->canExecute())->toThrow(ForbiddenError::class, 'You don\'t have the permission to trigger this action');
+});
+
+test('canExecute() should throw when the user try to approve and the condition don\'t match with userApprovalConditions and requesterId is not the callerId', function () {
+    [$collection, $request, $smartAction] = smartActionCheckerFactory(20);
+
+    $smartAction = array_merge($smartAction, [
+        'userApprovalConditions'          => [
+            [
+                'filter' => [
+                    'aggregator' => 'and',
+                    'conditions' => [
+                        [
+                            'field'    => 'id',
+                            'value'    => 1000,
+                            'source'   => 'data',
+                            'operator' => 'equal',
+                        ],
+                    ],
+                ],
+                'roleId' => 1,
+            ],
+        ],
+    ]);
+    $collection = mock($collection)
+        ->shouldReceive('aggregate')
+        ->andReturn(
+            [
+                [
+                    'value' => 0,
+                    'group' => [],
+                ],
+            ],
+        )
+        ->getMock();
+
+    $smartActionChecker = new SmartActionChecker($request, $collection, $smartAction, QueryStringParser::parseCaller($request), 1, new Filter());
+
+    expect(fn () => $smartActionChecker->canExecute())->toThrow(ForbiddenError::class, 'You don\'t have the permission to trigger this action');
+});
+
+test('canExecute() should throw when the user try to approve and the condition don\'t match with userApprovalConditions and user roleId is not present into selfApprovalEnabled', function () {
+    [$collection, $request, $smartAction] = smartActionCheckerFactory(1);
+
+    $smartAction = array_merge($smartAction, [
+        'userApprovalConditions'          => [
+            [
+                'filter' => [
+                    'aggregator' => 'and',
+                    'conditions' => [
+                        [
+                            'field'    => 'id',
+                            'value'    => 1000,
+                            'source'   => 'data',
+                            'operator' => 'equal',
+                        ],
+                    ],
+                ],
+                'roleId' => 1,
+            ],
+        ],
+        'selfApprovalEnabled'             => [1000],
+    ]);
+    $collection = mock($collection)
+        ->shouldReceive('aggregate')
+        ->andReturn(
+            [
+                [
+                    'value' => 0,
+                    'group' => [],
+                ],
+            ],
+        )
+        ->getMock();
+
+    $smartActionChecker = new SmartActionChecker($request, $collection, $smartAction, QueryStringParser::parseCaller($request), 1, new Filter());
+
+    expect(fn () => $smartActionChecker->canExecute())->toThrow(ForbiddenError::class, 'You don\'t have the permission to trigger this action');
+});
+
+test('canExecute() should throw with an unknown operators', function () {
+    [$collection, $request, $smartAction] = smartActionCheckerFactory();
+
+    $smartAction = array_merge(
+        $smartAction,
+        [
+            'triggerEnabled'             => [1],
+            'triggerConditions'          => [
+                [
+                    'filter' => [
+                        'aggregator' => 'and',
+                        'conditions' => [
+                            [
+                                'field'    => 'title',
+                                'value'    => null,
+                                'source'   => 'data',
+                                'operator' => 'unknown',
+                            ],
+                        ],
+                    ],
+                    'roleId' => 1,
+                ],
+            ],
+        ]
+    );
+
+    $smartActionChecker = new SmartActionChecker($request, $collection, $smartAction, QueryStringParser::parseCaller($request), 1, new Filter());
+
+    expect(fn () => $smartActionChecker->canExecute())->toThrow(ConflictError::class, 'The conditions to trigger this action cannot be verified. Please contact an administrator.');
 });
