@@ -6,7 +6,6 @@ use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Concerns\Relation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
@@ -80,9 +79,8 @@ class GeneratorField
 
     public static function convertColumnType($columnType)
     {
-        // todo: remove this after fix BinaryCollection getFields()
         if (gettype($columnType) === 'string') {
-            return $columnType === PrimitiveType::BINARY ? PrimitiveType::STRING : $columnType;
+            return $columnType;
         }
 
         if (isset($columnType[0])) {

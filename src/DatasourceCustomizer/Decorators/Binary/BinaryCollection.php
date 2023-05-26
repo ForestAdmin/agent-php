@@ -10,30 +10,33 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFil
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use Illuminate\Support\Collection as IlluminateCollection;
 use Illuminate\Support\Str;
 
 class BinaryCollection extends CollectionDecorator
 {
-    // issue with getFields()
-//    public function getFields(): IlluminateCollection
-//    {
-//        $fields = collect();
-//        echo 1;
-//        /**
-//         * @var string $fieldName
-//         * @var ColumnSchema|RelationSchema $schema
-//         */
-//        foreach ($this->childCollection->getFields() as $fieldName => $schema) {
-//            if ($schema instanceof ColumnSchema && $schema->getColumnType() === PrimitiveType::BINARY) {
-//                $schema->setColumnType(PrimitiveType::STRING);
-//                // todo update validations
-//            }
-//
-//            $fields->put($fieldName, $schema);
-//        }
-//
-//        return $fields;
-//    }
+    protected array $binaryFields = [];
+
+    public function getFields(): IlluminateCollection
+    {
+        $fields = collect();
+
+        /**
+         * @var string $fieldName
+         * @var ColumnSchema|RelationSchema $schema
+         */
+        foreach ($this->childCollection->getFields() as $fieldName => $schema) {
+            if ($schema instanceof ColumnSchema && $schema->getColumnType() === PrimitiveType::BINARY) {
+                $this->binaryFields[] = $fieldName;
+                $schema->setColumnType(PrimitiveType::STRING);
+                // todo update validations
+            }
+
+            $fields->put($fieldName, $schema);
+        }
+
+        return $fields;
+    }
 
     public function create(Caller $caller, array $data)
     {
@@ -83,15 +86,16 @@ class BinaryCollection extends CollectionDecorator
                 : $foreignCollection->convertRecord($toBackend, $value);
         }
 
+        // todo add function shouldUseHex()
         $useHex = false;
 
-        return $this->convertValueHelper($toBackend, $schema->getColumnType(), $useHex, $value);
+        return $this->convertValueHelper($toBackend, $path, $useHex, $value);
     }
 
-    private function convertValueHelper(bool $toBackend, string $columnType, bool $useHex, $value)
+    private function convertValueHelper(bool $toBackend, string $path, bool $useHex, $value)
     {
         if ($value) {
-            if ($columnType === PrimitiveType::BINARY) {
+            if (in_array($path, $this->binaryFields, true)) {
                 return $this->convertScalar($toBackend, $useHex, $value);
             }
 
@@ -121,7 +125,7 @@ class BinaryCollection extends CollectionDecorator
     {
         if ($toBackend) {
             if (is_string($value)) {
-                $value = base64_decode(Str::after($value, 'base64,'));
+                $value = $useHex ? hex2bin($value) : base64_decode(Str::after($value, 'base64,'));
                 $fp = fopen('php://temp', 'rb+');
                 fwrite($fp, $value);
                 fseek($fp, 0);
@@ -135,9 +139,7 @@ class BinaryCollection extends CollectionDecorator
             return bin2hex(stream_get_contents($value));
         }
 
-
-        // todo: get mime type from resource, impossible ?
-        $mime = 'application/octet-stream';
+        $mime = mime_content_type($value) ?? 'application/octet-stream';
         $data = base64_encode(stream_get_contents($value));
 
         return "data:$mime;base64,$data";
