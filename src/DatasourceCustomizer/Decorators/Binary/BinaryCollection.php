@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Binary;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
@@ -29,7 +30,7 @@ class BinaryCollection extends CollectionDecorator
             if ($schema instanceof ColumnSchema && $schema->getColumnType() === PrimitiveType::BINARY) {
                 $this->binaryFields[] = $fieldName;
                 $schema->setColumnType(PrimitiveType::STRING);
-                // todo update validations
+                $schema->setValidation($this->replaceValidation($fieldName, $schema));
             }
 
             $fields->put($fieldName, $schema);
@@ -143,5 +144,35 @@ class BinaryCollection extends CollectionDecorator
         $data = base64_encode(stream_get_contents($value));
 
         return "data:$mime;base64,$data";
+    }
+
+    private function replaceValidation(string $name, ColumnSchema $schema): array
+    {
+        $validation = [];
+
+        if ($this->shouldUseHex($name)) {
+            $minlength = collect($schema->getValidation())->first(fn ($rule) => $rule['operator'] === Operators::LONGER_THAN)['value'] ?? null;
+            $maxlength = collect($schema->getValidation())->first(fn ($rule) => $rule['operator'] === Operators::SHORTER_THAN)['value'] ?? null;
+            $validation[] = ['operator' => 'Match', 'value' => '/^[0-9a-f]+$/'];
+            if ($minlength) {
+                $validation[] = ['operator' => Operators::LONGER_THAN, 'value' => $minlength * 2 + 1];
+            }
+            if ($maxlength) {
+                $validation[] = ['operator' => Operators::SHORTER_THAN, 'value' => $maxlength * 2 - 1];
+            }
+        } else {
+            $validation[] = ['operator' => 'Match', 'value' => '/^data:.*;base64,.*/'];
+        }
+
+        if (collect($schema->getValidation())->first(fn ($rule) => $rule['operator'] === Operators::PRESENT)) {
+            $validation[] = ['operator' => Operators::PRESENT];
+        }
+
+        return $validation;
+    }
+
+    private function shouldUseHex($name): bool
+    {
+        return false;
     }
 }
