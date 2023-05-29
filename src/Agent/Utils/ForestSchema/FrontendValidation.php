@@ -2,42 +2,202 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeEquivalent;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 
 final class FrontendValidation
 {
-    public const OPERATOR_VALIDATION_TYPE_MAP = [
-        Operators::PRESENT      => 'is present',
-        Operators::GREATER_THAN => 'is greater than',
-        Operators::LESS_THAN    => 'is less than',
-        Operators::LONGER_THAN  => 'is longer than',
-        Operators::SHORTER_THAN => 'is shorter than',
-        Operators::CONTAINS     => 'contains',
-        Operators::LIKE         => 'is like',
-    ];
-
-    public static function convertValidationList(array $predicates = []): array
+    /**
+     * Convert a list of our validation rules to what we'll be sending to the frontend
+     * @param ColumnSchema $column
+     * @return array
+     */
+    public static function convertValidationList(ColumnSchema $column): array
     {
-        if (empty($predicates)) {
+        if (! $column->getValidation()) {
             return [];
         }
 
-        $result = [];
-        foreach ($predicates as $predicate) {
-            if (is_array($predicate)
-                && array_key_exists('operator', $predicate)
-                && array_key_exists($predicate['operator'], self::OPERATOR_VALIDATION_TYPE_MAP)
-                && $type = self::OPERATOR_VALIDATION_TYPE_MAP[$predicate['operator']]
-            ) {
-                $errorValue = $predicate['value'] ? '(' . $predicate['value'] . ')' : '';
-                $result[] = [
-                    'type'    => $type,
-                    'value'   => $predicate['value'],
-                    'message' => 'Failed validation rule: ' . $predicate['operator'] . $errorValue,
-                ];
-            }
+//        dd($column->getValidation());
+
+        $rules = collect($column->getValidation())->map(fn ($rule) => self::simplifyRule($column->getColumnType(), $rule))
+            ->toArray();
+//
+//        $rules = collect($column->getValidation())->map(function ($rule) use ($column) {
+//            //dd($rule);
+//            return self::simplifyRule($column->getColumnType(), $rule);
+//        })->toArray();
+
+
+        self::removeDuplicatesInPlace($rules);
+
+        return collect($rules)->map(fn ($rule) => self::supported()[$rule['operator']]($rule))->toArray();
+//        return collect($rules)->map(function ($rule) {
+//            dd($rule);
+//
+//            self::supported()[$rule['operator']]($rule)->toArray();
+//        });
+    }
+
+    private static function excluded(): array
+    {
+        return [
+            Operators::FUTURE, Operators::PAST, Operators::TODAY, Operators::YESTERDAY,
+            Operators::PREVIOUS_MONTH, Operators::PREVIOUS_QUARTER, Operators::PREVIOUS_WEEK, Operators::PREVIOUS_X_DAYS, Operators::PREVIOUS_YEAR,
+            Operators::AFTER_X_HOURS_AGO, Operators::BEFORE_X_HOURS_AGO, Operators::PREVIOUS_X_DAYS_TO_DATE,
+            Operators::PREVIOUS_MONTH_TO_DATE, Operators::PREVIOUS_QUARTER_TO_DATE, Operators::PREVIOUS_WEEK_TO_DATE, Operators::PREVIOUS_YEAR_TO_DATE,
+        ];
+    }
+
+    /**
+     * This is the list of operators which are supported in the frontend implementation of the validation rules
+     * @return array
+     */
+    private static function supported(): array
+    {
+        return [
+            Operators::PRESENT      => fn () => ['type' => 'is present', 'message' => 'Field is required'],
+            Operators::AFTER        => fn ($rule) => [
+                'type'    => 'is after',
+                'value'   => $rule['value'],
+                'message' => 'Value must be after ' . $rule['value'],
+            ],
+            Operators::BEFORE       => fn ($rule) => [
+                'type'    => 'is before',
+                'value'   => $rule['value'],
+                'message' => 'Value must be before ' . $rule['value'],
+            ],
+            Operators::CONTAINS     => fn ($rule) => [
+                'type'    => 'contains',
+                'value'   => $rule['value'],
+                'message' => 'Value must contain \'' . $rule['value'] . '\'',
+            ],
+            Operators::GREATER_THAN => fn ($rule) => [
+                'type'    => 'is greater than',
+                'value'   => $rule['value'],
+                'message' => 'Value must be greater than ' . $rule['value'],
+            ],
+            Operators::LESS_THAN    => fn ($rule) => [
+                'type'    => 'is less than',
+                'value'   => $rule['value'],
+                'message' => 'Value must be lower than ' . $rule['value'],
+            ],
+            Operators::LONGER_THAN  => fn ($rule) => [
+                'type'    => 'is longer than',
+                'value'   => $rule['value'],
+                'message' => 'Value must be longer than ' . $rule['value'] . ' characters',
+            ],
+            Operators::SHORTER_THAN => fn ($rule) => [
+                'type'    => 'is shorter than',
+                'value'   => $rule['value'],
+                'message' => 'Value must be shorter than ' . $rule['value'] . ' characters',
+            ],
+            'Match'                 => fn ($rule) => [
+                'type'    => 'is like', // `is like` actually expects a regular expression, not a 'like pattern'
+                'value'   => $rule['value'],
+                'message' => 'Value must match ' . $rule['value'],
+            ],
+        ];
+    }
+
+    /**
+     * Convert one of our validation rules to a given number of frontend validation rules
+     * @param array|string $columnType
+     * @param array $rule
+     * @return array|array[]
+     */
+    private static function simplifyRule(array|string $columnType, array $rule): array
+    {
+        // Operators which we don't want to end up the schema
+        if (in_array($rule['operator'], self::excluded(), true)) {
+            return [];
         }
 
-        return $result;
+        // Operators which are natively supported by the frontend
+        if (isset(self::supported()[$rule['operator']])) {
+            return $rule; //[$rule];
+        }
+
+        try {
+            // Add the 'Equal|NotEqual' operators to unlock the `In|NotIn -> Match` replacement rules.
+            // This is a bit hacky, but it allows to reuse the existing logic.
+            $operators = array_keys(self::supported());
+            $operators[] = 'Equal';
+            $operators[] = 'NotEqual';
+
+            // Rewrite the rule to use only operators that the frontend supports.
+            $leaf = new ConditionTreeLeaf('field', $rule['operator'], $rule['value']);
+            $timezone = 'Europe/Paris'; // we're sending the schema => use random tz
+            $tree = ConditionTreeEquivalent::getEquivalentTree($leaf, $operators, $columnType, $timezone);
+
+            $conditions = [];
+
+            if ($tree instanceof ConditionTreeLeaf) {
+                $conditions = [$tree];
+            } elseif ($tree instanceof ConditionTreeBranch && $tree->getAggregator() === 'And') {
+                $conditions = $tree->getConditions();
+            }
+
+            return collect($conditions)
+                ->filter(fn ($c) => $c instanceof ConditionTreeLeaf)
+                ->filter(fn ($c) => $c->getOperator() !== 'Equal' && $c->getOperator() !== 'NotEqual')
+                ->flatMap(fn ($c) => self::simplifyRule($columnType, $c))
+                ->toArray();
+        } catch (\Exception $e) {
+            // Just ignore errors, they mean that the operator is not supported by the frontend
+            // and that we don't have an automatic conversion for it.
+            //
+            // In that case we fallback to just validating the data entry in the agent (which is better
+            // than nothing but will not be as user friendly as the frontend validation).
+        }
+
+        // Drop the rule if we don't know how to convert it (we could log a warning here).
+        return [];
+    }
+
+    /**
+     * The frontend crashes when it receives multiple rules of the same type.
+     * This method merges the rules which can be merged and drops the others.
+     * @param array $rules
+     * @return void
+     */
+    private static function removeDuplicatesInPlace(array $rules): void
+    {
+        $used = [];
+
+        foreach ($rules as $key => $value) {
+            if (isset($used[$value['operator']])) {
+                $rule = $rules[$used[$value['operator']]];
+                $newRule = $value;
+                unset($rules[$key]);
+
+                self::mergeInto($rule, $newRule);
+            } else {
+                $used[$value['operator']] = $key;
+            }
+        }
+    }
+
+    private static function mergeInto(array &$validation, array $newRule): void
+    {
+        if ($validation['operator'] === 'GreaterThan' || $validation['operator'] === 'After' || $validation['operator'] === 'LongerThan') {
+            $validation['value'] = max($validation['value'], $newRule['value']);
+        } elseif ($validation['operator'] === 'LessThan' || $validation['operator'] === 'Before' || $validation['operator'] === 'ShorterThan') {
+            $validation['value'] = min($validation['value'], $newRule['value']);
+        } elseif ($validation['operator'] === 'Match') {
+            // Make one big regex that matches both patterns
+            // @see
+            // https://stackoverflow.com/questions/870494/what-is-the-difference-between-regexp-sources-raw-and-regexp-sources
+            $regexp = $validation['value'];
+            $newRegexp = $newRule['value'];
+
+        //rule.value = new RegExp(`^(?=${regexp.source})(?=${newRegexp.source}).*$`, regexp.flags);
+        //$validation['value'] = preg_match('/^(?=' . $regexp . ')(?=' . $newRegexp . ').*$/', 'ac', $matches);
+        } else {
+            // Ignore the rules that we can't deduplicate (we could log a warning here).
+        }
     }
 }
