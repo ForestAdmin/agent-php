@@ -50,7 +50,7 @@ class GeneratorField
             'isVirtual'    => false,
             'reference'    => null,
             'type'         => self::convertColumnType($column->getColumnType()),
-            'validations'  => FrontendValidation::convertValidationList($column->getValidation()),
+            'validations'  => FrontendValidation::convertValidationList($column),
         ];
     }
 
@@ -157,7 +157,7 @@ class GeneratorField
                 'isPrimaryKey' => false,
                 'isRequired'   => false,
                 'isSortable'   => true,
-                'validations'  => [], //FrontendValidation::convertValidationList($column->getValidation()),
+                'validations'  => FrontendValidation::convertValidationList($foreignTargetColumn),
                 'reference'    => $foreignCollection->getName() . '.' . $key,
             ],
         );
