@@ -11,12 +11,15 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFil
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 use Illuminate\Support\Collection as IlluminateCollection;
 use Illuminate\Support\Str;
 
 class BinaryCollection extends CollectionDecorator
 {
     protected array $binaryFields = [];
+
+    private array $useHexConversion = [];
 
     public function getFields(): IlluminateCollection
     {
@@ -37,6 +40,22 @@ class BinaryCollection extends CollectionDecorator
         }
 
         return $fields;
+    }
+
+    public function setBinaryMode(string $name, string $type): void
+    {
+        $field = $this->childCollection->getFields()[$name];
+
+        if ($type !== 'datauri' && $type !== 'hex') {
+            throw new \Exception('Invalid binary mode');
+        }
+
+        if ($field->getType() === 'Column' && $field->getColumnType() === PrimitiveType::BINARY) {
+            $this->useHexConversion[$name] = $type === 'hex';
+            $this->markSchemaAsDirty();
+        } else {
+            throw new \Exception('Expected a binary field');
+        }
     }
 
     public function create(Caller $caller, array $data)
@@ -64,6 +83,18 @@ class BinaryCollection extends CollectionDecorator
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
     {
         return $this->childCollection->aggregate($caller, $filter, $aggregation, $limit);
+    }
+
+    private function shouldUseHex(string $name): bool
+    {
+        if (in_array($name, $this->useHexConversion, true)) {
+            return $this->useHexConversion[$name];
+        }
+
+        return (
+            SchemaUtils::isPrimaryKey($this->childCollection, $name) ||
+            SchemaUtils::isForeignKey($this->childCollection, $name)
+        );
     }
 
     private function convertRecord(bool $toBackend, array $record): array
@@ -169,10 +200,5 @@ class BinaryCollection extends CollectionDecorator
         }
 
         return $validation;
-    }
-
-    private function shouldUseHex($name): bool
-    {
-        return false;
     }
 }
