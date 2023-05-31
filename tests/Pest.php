@@ -13,7 +13,7 @@ const AUTH_SECRET = '34b6d9b573e160b957244c1082619bc5a9e36ee8abae5fe7d15991d08ac
 
 const SECRET = '34b6d9b573e160b957244c1082619bc5a9e36ee8abae5fe7d15991d08ac9f31d';
 
-const FOREST_PERMISSIONS_EXPIRATION_IN_SECONDS = 1;
+const FOREST_PERMISSIONS_EXPIRATION_IN_SECONDS = 60;
 
 define("AGENT_OPTIONS", [
     'projectDir'            => sys_get_temp_dir(),
