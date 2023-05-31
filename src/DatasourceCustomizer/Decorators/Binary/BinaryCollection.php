@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Binary;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
@@ -17,6 +18,24 @@ use Illuminate\Support\Str;
 
 class BinaryCollection extends CollectionDecorator
 {
+    public const OPERATORS_WITH_VALUE_REPLACEMENT = [
+        Operators::AFTER,
+        Operators::BEFORE,
+        Operators::CONTAINS,
+        Operators::ENDS_WITH,
+        Operators::EQUAL,
+        Operators::GREATER_THAN,
+        Operators::ICONTAINS,
+        Operators::NOT_IN,
+        Operators::IENDS_WITH,
+        Operators::ISTARTS_WITH,
+        Operators::LESS_THAN,
+        Operators::NOT_CONTAINS,
+        Operators::NOT_EQUAL,
+        Operators::STARTS_WITH,
+        Operators::IN,
+    ];
+
     protected array $binaryFields = [];
 
     private array $useHexConversion = [];
@@ -82,7 +101,44 @@ class BinaryCollection extends CollectionDecorator
 
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
     {
-        return $this->childCollection->aggregate($caller, $filter, $aggregation, $limit);
+        $rows = $this->childCollection->aggregate($caller, $filter, $aggregation, $limit);
+
+        return collect($rows)->map(function ($row) {
+            return [
+                'value' => $row['value'],
+                'group' => collect($row['group'])->map(fn ($value, $path) => $this->convertValue(false, $path, $value))->toArray(),
+            ];
+        })->toArray();
+    }
+
+    public function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
+    {
+        return $filter?->override(conditionTree: $filter->getConditionTree()->replaceLeafs(fn ($leaf) => $this->convertConditionTreeLeaf($leaf)));
+    }
+
+    private function convertConditionTreeLeaf(ConditionTreeLeaf $leaf)
+    {
+        [$prefix, $suffix] = explode(':', $leaf->getField());
+        $schema = $this->childCollection->getFields()[$prefix];
+
+        if ($schema->getType() !== 'Column') {
+            $conditionTree = $this->dataSource->getCollection($schema->getForeignCollection())
+                ->convertConditionTreeLeaf($leaf->override(['field' => $suffix]));
+
+            return $conditionTree->nest($prefix);
+        }
+
+        if (in_array($leaf->getOperator(), self::OPERATORS_WITH_VALUE_REPLACEMENT, true)) {
+            dd(11);
+            $useHex = $this->shouldUseHex($prefix);
+            $columnType = $leaf->getOperator() === Operators::IN || $leaf->getOperator() === Operators::NOT_IN
+                ? [$schema->getColumnType()]
+                : $schema->getColumnType();
+
+            return $leaf->override(['value' => $this->convertValueHelper(true, $columnType, $useHex, $leaf->getValue())]);
+        }
+
+        return $leaf;
     }
 
     private function shouldUseHex(string $name): bool
@@ -102,26 +158,17 @@ class BinaryCollection extends CollectionDecorator
         return collect($record)->map(fn ($value, $path) => $this->convertValue($toBackend, $path, $value))->toArray();
     }
 
-    private function convertValue(bool $toBackend, string $path, $value)
+    private function convertValue(bool $toBackend, string $fieldName, $value)
     {
-        $field = Str::before($path, ':');
-        $schema = $this->childCollection->getFields()->get($field);
+        $schema = $this->childCollection->getFields()->get($fieldName);
 
         if (! $schema instanceof ColumnSchema) {
-            /** @var self $foreignCollection */
-            $foreignCollection = $this->dataSource->getCollection($schema->getForeignCollection());
-
-            $field = Str::after($path, ':');
-
-            return $field
-                ? $foreignCollection->convertValue($toBackend, $field, $value)
-                : $foreignCollection->convertRecord($toBackend, $value);
+            return $this->convertRecord($toBackend, $value);
         }
 
-        // todo add function shouldUseHex()
-        $useHex = false;
+        $binaryMode = $this->shouldUseHex($fieldName);
 
-        return $this->convertValueHelper($toBackend, $path, $useHex, $value);
+        return $this->convertValueHelper($toBackend, $fieldName, $binaryMode, $value);
     }
 
     private function convertValueHelper(bool $toBackend, string $path, bool $useHex, $value)
