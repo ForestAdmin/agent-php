@@ -21,25 +21,11 @@ final class FrontendValidation
             return [];
         }
 
-//        dd($column->getValidation());
-
         $rules = collect($column->getValidation())->map(fn ($rule) => self::simplifyRule($column->getColumnType(), $rule))
             ->toArray();
-//
-//        $rules = collect($column->getValidation())->map(function ($rule) use ($column) {
-//            //dd($rule);
-//            return self::simplifyRule($column->getColumnType(), $rule);
-//        })->toArray();
-
-
         self::removeDuplicatesInPlace($rules);
 
         return collect($rules)->map(fn ($rule) => self::supported()[$rule['operator']]($rule))->toArray();
-//        return collect($rules)->map(function ($rule) {
-//            dd($rule);
-//
-//            self::supported()[$rule['operator']]($rule)->toArray();
-//        });
     }
 
     private static function excluded(): array
@@ -188,14 +174,7 @@ final class FrontendValidation
         } elseif ($validation['operator'] === 'LessThan' || $validation['operator'] === 'Before' || $validation['operator'] === 'ShorterThan') {
             $validation['value'] = min($validation['value'], $newRule['value']);
         } elseif ($validation['operator'] === 'Match') {
-            // Make one big regex that matches both patterns
-            // @see
-            // https://stackoverflow.com/questions/870494/what-is-the-difference-between-regexp-sources-raw-and-regexp-sources
-            $regexp = $validation['value'];
-            $newRegexp = $newRule['value'];
-
-        //rule.value = new RegExp(`^(?=${regexp.source})(?=${newRegexp.source}).*$`, regexp.flags);
-        //$validation['value'] = preg_match('/^(?=' . $regexp . ')(?=' . $newRegexp . ').*$/', 'ac', $matches);
+            $validation['value'] = '/^(?=' . $validation['value'] . ')(?=' . $newRule['value'] . ').*$/';
         } else {
             // Ignore the rules that we can't deduplicate (we could log a warning here).
         }
