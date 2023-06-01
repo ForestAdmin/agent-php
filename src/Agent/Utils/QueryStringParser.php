@@ -35,7 +35,7 @@ class QueryStringParser
      */
     public static function parseConditionTree(CollectionContract $collection, Request $request): ?ConditionTree
     {
-        $filters = $request->input('data.attributes.all_records_subset_query.filters') ?? $request->input('filters');
+        $filters = $request->input('data.attributes.all_records_subset_query.filters') ?? $request->input('filters') ?? $request->input('filter');
 
         // check if return is a good idea
         if (! $filters) {

@@ -5,6 +5,8 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Charts;
 use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
+use ForestAdmin\AgentPHP\Agent\Utils\ContextVariablesInjector;
+use ForestAdmin\AgentPHP\Agent\Utils\ContextVariablesInstantiator;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LeaderboardChart;
@@ -51,6 +53,7 @@ class Charts extends AbstractCollectionRoute
         $this->build($args);
         $this->permissions->canChart($this->request);
         $scope = $this->permissions->getScope($this->collection);
+        $this->injectContextVariables();
         $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
         $this->setType($this->request->get('type'));
         $this->setCaller(QueryStringParser::parseCaller($this->request));
@@ -76,6 +79,16 @@ class Charts extends AbstractCollectionRoute
     public function setCaller(Caller $caller): void
     {
         $this->caller = $caller;
+    }
+
+    private function injectContextVariables(): void
+    {
+        $contextVariables = ContextVariablesInstantiator::buildContextVariables($this->caller, $this->request->get('contextVariables'));
+        $rawFilter = $this->request->get('filter');
+        array_walk_recursive($rawFilter, static function (&$value) use ($contextVariables) {
+            $value = ContextVariablesInjector::injectContextInValue($value, $contextVariables);
+        });
+        $this->request->set('filter', $rawFilter);
     }
 
     private function makeValue(): ValueChart

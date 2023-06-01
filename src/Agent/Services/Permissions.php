@@ -63,7 +63,6 @@ class Permissions
         unset($attributes['timezone']);
         unset($attributes['collection']);
         unset($attributes['contextVariables']);
-
         $attributes = array_filter($attributes, static fn ($value) => ! is_null($value) && $value !== '');
         $hashRequest = $attributes['type'] . ':' . $this->arrayHash($attributes);
         $isAllowed = in_array($hashRequest, $this->getChartData($this->caller->getRenderingId()), true);
@@ -124,7 +123,7 @@ class Permissions
         return ContextVariablesInjector::injectContextInFilter($scope, $contextVariables);
     }
 
-    protected function getUserData(int $userId): array
+    public function getUserData(int $userId): array
     {
         $cache = Cache::remember(
             'forest.users',
@@ -141,6 +140,13 @@ class Permissions
         );
 
         return $cache[$userId];
+    }
+
+    public function getTeam(int $renderingId): array
+    {
+        $permissions = $this->getScopeAndTeamData($renderingId);
+
+        return $permissions->get('team');
     }
 
     protected function getCollectionsPermissionsData(bool $forceFetch = false): array
@@ -188,9 +194,24 @@ class Permissions
 
     protected function arrayHash(array $data): string
     {
-        ksort($data);
+        $this->ksortRecursive($data);
 
         return sha1(json_encode($data, JSON_THROW_ON_ERROR));
+    }
+
+    protected function ksortRecursive(&$array): bool
+    {
+        // exit recursive loop
+        if (! is_array($array)) {
+            return false;
+        }
+
+        ksort($array);
+        foreach ($array as &$arr) {
+            $this->ksortRecursive($arr);
+        }
+
+        return true;
     }
 
     protected function getScopeAndTeamData(int $renderingId): IlluminateCollection

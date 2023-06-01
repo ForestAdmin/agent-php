@@ -23,6 +23,11 @@ class Request extends SymfonyRequest
         return parent::createFromGlobals();
     }
 
+    public function set(string $key, $value): void
+    {
+        $this->request->set($key, $value);
+    }
+
     /**
      * Retrieve a header from the request.
      *
