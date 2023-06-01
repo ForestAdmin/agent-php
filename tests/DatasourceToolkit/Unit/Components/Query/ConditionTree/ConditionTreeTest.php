@@ -161,7 +161,7 @@ test('match() should work with many operators', function () {
                 columnType: PrimitiveType::STRING,
                 filterOperators: [Operators::EQUAL],
             ),
-            'array' => new ColumnSchema(
+            'array'  => new ColumnSchema(
                 columnType: [PrimitiveType::STRING],
                 filterOperators: [Operators::EQUAL],
             ),
@@ -170,9 +170,7 @@ test('match() should work with many operators', function () {
 
     $allConditions = new ConditionTreeBranch('And', [
         new ConditionTreeLeaf('string', Operators::PRESENT),
-        new ConditionTreeLeaf('string', Operators::LIKE, '%value%'),
-        new ConditionTreeLeaf('string', Operators::LIKE, '%value%'),
-        new ConditionTreeLeaf('string', Operators::ILIKE, '%VaLuE%'),
+        new ConditionTreeLeaf('string', Operators::MATCH, '%value%'),
         new ConditionTreeLeaf('string', Operators::LESS_THAN, 'valuf'),
         new ConditionTreeLeaf('string', Operators::EQUAL, 'value'),
         new ConditionTreeLeaf('string', Operators::GREATER_THAN, 'valud'),
@@ -180,13 +178,15 @@ test('match() should work with many operators', function () {
         new ConditionTreeLeaf('array', Operators::INCLUDES_ALL, ['value']),
         new ConditionTreeLeaf('string', Operators::LONGER_THAN, 0),
         new ConditionTreeLeaf('string', Operators::SHORTER_THAN, 999),
+        new ConditionTreeLeaf('string', Operators::STARTS_WITH, 'val'),
+        new ConditionTreeLeaf('string', Operators::ENDS_WITH, 'lue'),
     ]);
 
 
     expect($allConditions->match(['string' => 'value', 'array' => ['value']], $collection, 'Europe/Paris'))->toBeTrue();
 });
 
-test('like() should work with null value', function () {
+test('match() should work with null value', function () {
     $collection = new Collection(new Datasource(), 'myCollection');
     $collection->addFields(
         [
@@ -196,7 +196,7 @@ test('like() should work with null value', function () {
             ),
         ]
     );
-    $leaf = new ConditionTreeLeaf('string', Operators::LIKE, '%value%');
+    $leaf = new ConditionTreeLeaf('string', Operators::MATCH, '%value%');
 
     expect($leaf->match(['string' => null], $collection, 'Europe/Paris'))->toBeFalse();
 });
