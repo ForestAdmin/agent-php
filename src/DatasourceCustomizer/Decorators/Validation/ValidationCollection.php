@@ -54,9 +54,10 @@ class ValidationCollection extends CollectionDecorator
     public function getFields(): IlluminateCollection
     {
         $fields = $this->childCollection->getFields();
-
+        dd($this->validation, $fields['title']);
         foreach ($this->validation as $name => $rules) {
-            $validation = $this->deduplicate(array_merge($fields[$name]->getValidation(), $rules));
+            $validation = array_merge($fields[$name]->getValidation(), $rules);
+            dd($fields[$name]->getValidation(), $rules);
             $fields[$name]->setValidation($validation);
         }
 
@@ -88,66 +89,5 @@ class ValidationCollection extends CollectionDecorator
                 }
             }
         }
-    }
-
-    /**
-     * @param array $rules
-     * @return array
-     * Deduplicate rules which the frontend understand
-     * We ignore other rules as duplications are not an issue within the agent
-     */
-    private function deduplicate(array $rules): array
-    {
-        $values = [];
-
-        foreach ($rules as $rule) {
-            $values[$rule['operator']] ??= [];
-            $values[$rule['operator']][] = $rule;
-        }
-
-        // Remove duplicate "Present"
-        if (isset($values[Operators::PRESENT])) {
-            $values[Operators::PRESENT] = [$values[Operators::PRESENT][0]];
-        }
-
-        // Merge duplicate 'GreaterThan', 'After' and 'LongerThan' (keep the max value)
-        foreach ([Operators::GREATER_THAN, Operators::AFTER, Operators::LONGER_THAN] as $operator) {
-            if (isset($values[$operator])) {
-                while (count($values[$operator]) > 1) {
-                    $last = array_pop($values[$operator]);
-
-                    $values[$operator][0] = [
-                        'operator' => $operator,
-                        'value'    => $this->max($last['value'], $values[$operator][0]['value']),
-                    ];
-                }
-            }
-        }
-
-        // Merge duplicate 'LessThan', 'Before' and 'ShorterThan' (keep the min value)
-        foreach ([Operators::LESS_THAN, Operators::BEFORE, Operators::SHORTER_THAN] as $operator) {
-            if (isset($values[$operator])) {
-                while (count($values[$operator]) > 1) {
-                    $last = array_pop($values[$operator]);
-
-                    $values[$operator][0] = [
-                        'operator' => $operator,
-                        'value'    => $this->min($last['value'], $values[$operator][0]['value']),
-                    ];
-                }
-            }
-        }
-
-        return collect($values)->reduce(fn ($memo, $r) => array_merge($memo, $r), []);
-    }
-
-    private function min($valueA, $valueB)
-    {
-        return $valueA < $valueB ? $valueA : $valueB;
-    }
-
-    private function max($valueA, $valueB)
-    {
-        return $valueA < $valueB ? $valueB : $valueA;
     }
 }
