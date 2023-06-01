@@ -23,6 +23,7 @@ final class FrontendValidation
 
         $rules = collect($column->getValidation())->map(fn ($rule) => self::simplifyRule($column->getColumnType(), $rule))
             ->toArray();
+        //dd($rules);
         self::removeDuplicatesInPlace($rules);
 
         return collect($rules)->map(fn ($rule) => self::supported()[$rule['operator']]($rule))->toArray();
@@ -81,7 +82,7 @@ final class FrontendValidation
                 'value'   => $rule['value'],
                 'message' => 'Value must be shorter than ' . $rule['value'] . ' characters',
             ],
-            'Match'                 => fn ($rule) => [
+            Operators::MATCH        => fn ($rule) => [
                 'type'    => 'is like', // `is like` actually expects a regular expression, not a 'like pattern'
                 'value'   => $rule['value'],
                 'message' => 'Value must match ' . $rule['value'],
@@ -104,7 +105,7 @@ final class FrontendValidation
 
         // Operators which are natively supported by the frontend
         if (isset(self::supported()[$rule['operator']])) {
-            return $rule; //[$rule];
+            return $rule;
         }
 
         try {
@@ -123,10 +124,10 @@ final class FrontendValidation
 
             if ($tree instanceof ConditionTreeLeaf) {
                 $conditions = [$tree];
-            } elseif ($tree instanceof ConditionTreeBranch && $tree->getAggregator() === 'And') {
+            } elseif ($tree instanceof ConditionTreeBranch /*&& $tree->getAggregator() === 'And'*/) {
                 $conditions = $tree->getConditions();
             }
-
+            //dd($conditions);
             return collect($conditions)
                 ->filter(fn ($c) => $c instanceof ConditionTreeLeaf)
                 ->filter(fn ($c) => $c->getOperator() !== 'Equal' && $c->getOperator() !== 'NotEqual')
@@ -169,11 +170,11 @@ final class FrontendValidation
 
     private static function mergeInto(array &$validation, array $newRule): void
     {
-        if ($validation['operator'] === 'GreaterThan' || $validation['operator'] === 'After' || $validation['operator'] === 'LongerThan') {
+        if ($validation['operator'] === Operators::GREATER_THAN || $validation['operator'] === Operators::AFTER || $validation['operator'] === Operators::LONGER_THAN) {
             $validation['value'] = max($validation['value'], $newRule['value']);
-        } elseif ($validation['operator'] === 'LessThan' || $validation['operator'] === 'Before' || $validation['operator'] === 'ShorterThan') {
+        } elseif ($validation['operator'] === Operators::LESS_THAN || $validation['operator'] === Operators::BEFORE || $validation['operator'] === Operators::SHORTER_THAN) {
             $validation['value'] = min($validation['value'], $newRule['value']);
-        } elseif ($validation['operator'] === 'Match') {
+        } elseif ($validation['operator'] === Operators::MATCH) {
             $validation['value'] = '/^(?=' . $validation['value'] . ')(?=' . $newRule['value'] . ').*$/';
         } else {
             // Ignore the rules that we can't deduplicate (we could log a warning here).

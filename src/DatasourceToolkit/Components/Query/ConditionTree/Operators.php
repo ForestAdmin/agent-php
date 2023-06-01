@@ -8,6 +8,7 @@ class Operators
     public const NOT_EQUAL = 'Not_Equal';
     public const LESS_THAN = 'Less_Than';
     public const GREATER_THAN = 'Greater_Than';
+    public const MATCH = 'Match';
     public const LIKE = 'Like';
     public const ILIKE = 'ILike';
     public const NOT_CONTAINS = 'Not_Contains';
@@ -76,8 +77,7 @@ class Operators
             self::NOT_EQUAL,
             self::LESS_THAN,
             self::GREATER_THAN,
-            self::LIKE,
-            self::ILIKE,
+            self::MATCH,
             self::NOT_CONTAINS,
             self::LONGER_THAN,
             self::SHORTER_THAN,
