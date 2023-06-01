@@ -83,8 +83,8 @@ class Charts extends AbstractCollectionRoute
 
     private function injectContextVariables(): void
     {
-        $contextVariables = ContextVariablesInstantiator::buildContextVariables($this->caller, $this->request->get('contextVariables'));
-        $rawFilter = $this->request->get('filter');
+        $contextVariables = ContextVariablesInstantiator::buildContextVariables($this->caller, $this->request->get('contextVariables', []));
+        $rawFilter = $this->request->get('filter', []);
         array_walk_recursive($rawFilter, static function (&$value) use ($contextVariables) {
             $value = ContextVariablesInjector::injectContextInValue($value, $contextVariables);
         });
