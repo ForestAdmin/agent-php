@@ -73,7 +73,7 @@ final class Comparisons
                 [
                     'dependsOn' => [Operators::EQUAL],
                     'replacer'  => fn ($leaf) => ConditionTreeFactory::union(
-                        ...collect($leaf->getValue())
+                        collect($leaf->getValue())
                             ->map(fn ($item) => $leaf->override(operator: Operators::EQUAL, value: $item))
                             ->toArray()
                     ),

@@ -23,7 +23,6 @@ final class FrontendValidation
 
         $rules = collect($column->getValidation())->map(fn ($rule) => self::simplifyRule($column->getColumnType(), $rule))
             ->toArray();
-        //dd($rules);
         self::removeDuplicatesInPlace($rules);
 
         return collect($rules)->map(fn ($rule) => self::supported()[$rule['operator']]($rule))->toArray();
@@ -127,11 +126,11 @@ final class FrontendValidation
             } elseif ($tree instanceof ConditionTreeBranch /*&& $tree->getAggregator() === 'And'*/) {
                 $conditions = $tree->getConditions();
             }
-            //dd($conditions);
+
             return collect($conditions)
                 ->filter(fn ($c) => $c instanceof ConditionTreeLeaf)
-                ->filter(fn ($c) => $c->getOperator() !== 'Equal' && $c->getOperator() !== 'NotEqual')
-                ->flatMap(fn ($c) => self::simplifyRule($columnType, $c))
+                ->filter(fn ($c) => $c->getOperator() !== 'Equal' || $c->getOperator() !== 'NotEqual')
+                ->flatMap(fn ($c) => self::simplifyRule($columnType, $c->toArray()))
                 ->toArray();
         } catch (\Exception $e) {
             // Just ignore errors, they mean that the operator is not supported by the frontend

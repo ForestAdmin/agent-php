@@ -54,10 +54,8 @@ class ValidationCollection extends CollectionDecorator
     public function getFields(): IlluminateCollection
     {
         $fields = $this->childCollection->getFields();
-        dd($this->validation, $fields['title']);
         foreach ($this->validation as $name => $rules) {
             $validation = array_merge($fields[$name]->getValidation(), $rules);
-            dd($fields[$name]->getValidation(), $rules);
             $fields[$name]->setValidation($validation);
         }
 
