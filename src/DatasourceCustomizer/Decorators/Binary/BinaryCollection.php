@@ -129,7 +129,7 @@ class BinaryCollection extends CollectionDecorator
         }
 
         if (in_array($leaf->getOperator(), self::OPERATORS_WITH_VALUE_REPLACEMENT, true)) {
-            dd(11);
+            //dd(11);
             $useHex = $this->shouldUseHex($prefix);
             $columnType = $leaf->getOperator() === Operators::IN || $leaf->getOperator() === Operators::NOT_IN
                 ? [$schema->getColumnType()]
@@ -231,7 +231,7 @@ class BinaryCollection extends CollectionDecorator
         if ($this->shouldUseHex($name)) {
             $minlength = collect($schema->getValidation())->first(fn ($rule) => $rule['operator'] === Operators::LONGER_THAN)['value'] ?? null;
             $maxlength = collect($schema->getValidation())->first(fn ($rule) => $rule['operator'] === Operators::SHORTER_THAN)['value'] ?? null;
-            $validation[] = ['operator' => 'Match', 'value' => '/^[0-9a-f]+$/'];
+            $validation[] = ['operator' => Operators::MATCH, 'value' => '/^[0-9a-f]+$/'];
             if ($minlength) {
                 $validation[] = ['operator' => Operators::LONGER_THAN, 'value' => $minlength * 2 + 1];
             }
@@ -239,7 +239,7 @@ class BinaryCollection extends CollectionDecorator
                 $validation[] = ['operator' => Operators::SHORTER_THAN, 'value' => $maxlength * 2 - 1];
             }
         } else {
-            $validation[] = ['operator' => 'Match', 'value' => '/^data:.*;base64,.*/'];
+            $validation[] = ['operator' => Operators::MATCH, 'value' => '/^data:.*;base64,.*/'];
         }
 
         if (collect($schema->getValidation())->first(fn ($rule) => $rule['operator'] === Operators::PRESENT)) {
