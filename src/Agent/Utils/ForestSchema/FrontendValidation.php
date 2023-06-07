@@ -23,9 +23,11 @@ final class FrontendValidation
 
         $rules = collect($column->getValidation())->map(fn ($rule) => self::simplifyRule($column->getColumnType(), $rule))
             ->toArray();
-        self::removeDuplicatesInPlace($rules);
 
-        return collect($rules)->map(fn ($rule) => self::supported()[$rule['operator']]($rule))->toArray();
+        return  collect(self::removeDuplicatesInPlace($rules))
+            ->filter(fn ($rule) => isset($rule['operator']))
+            ->map(fn ($rule) => self::supported()[$rule['operator']]($rule))
+            ->toArray();
     }
 
     private static function excluded(): array
@@ -118,7 +120,7 @@ final class FrontendValidation
             $leaf = new ConditionTreeLeaf('field', $rule['operator'], $rule['value']);
             $timezone = 'Europe/Paris'; // we're sending the schema => use random tz
             $tree = ConditionTreeEquivalent::getEquivalentTree($leaf, $operators, $columnType, $timezone);
-
+            //dd($leaf, $tree);
             $conditions = [];
 
             if ($tree instanceof ConditionTreeLeaf) {
@@ -126,7 +128,7 @@ final class FrontendValidation
             } elseif ($tree instanceof ConditionTreeBranch /*&& $tree->getAggregator() === 'And'*/) {
                 $conditions = $tree->getConditions();
             }
-
+            //dd($conditions);
             return collect($conditions)
                 ->filter(fn ($c) => $c instanceof ConditionTreeLeaf)
                 ->filter(fn ($c) => $c->getOperator() !== 'Equal' || $c->getOperator() !== 'NotEqual')
@@ -150,33 +152,42 @@ final class FrontendValidation
      * @param array $rules
      * @return void
      */
-    private static function removeDuplicatesInPlace(array $rules): void
+    private static function removeDuplicatesInPlace(array $rules): array
     {
         $used = [];
 
         foreach ($rules as $key => $value) {
+            if (! isset($value['operator'])) {
+                continue;
+            }
             if (isset($used[$value['operator']])) {
                 $rule = $rules[$used[$value['operator']]];
                 $newRule = $value;
                 unset($rules[$key]);
 
-                self::mergeInto($rule, $newRule);
+                $rules[$used[$value['operator']]] = self::mergeInto($rule, $newRule);
             } else {
                 $used[$value['operator']] = $key;
             }
         }
+
+        return $rules;
     }
 
-    private static function mergeInto(array &$validation, array $newRule): void
+    private static function mergeInto(array $validation, array $newRule): array
     {
         if ($validation['operator'] === Operators::GREATER_THAN || $validation['operator'] === Operators::AFTER || $validation['operator'] === Operators::LONGER_THAN) {
             $validation['value'] = max($validation['value'], $newRule['value']);
         } elseif ($validation['operator'] === Operators::LESS_THAN || $validation['operator'] === Operators::BEFORE || $validation['operator'] === Operators::SHORTER_THAN) {
             $validation['value'] = min($validation['value'], $newRule['value']);
         } elseif ($validation['operator'] === Operators::MATCH) {
-            $validation['value'] = '/^(?=' . $validation['value'] . ')(?=' . $newRule['value'] . ').*$/';
+            $regex = preg_replace('/\W/', '', $validation['value']);
+            $newRegex = preg_replace('/\W/', '', $newRule['value']);
+            $validation['value'] = '/^(?=' . $regex . ')(?=' . $newRegex . ').*$/';
         } else {
             // Ignore the rules that we can't deduplicate (we could log a warning here).
         }
+
+        return $validation;
     }
 }
