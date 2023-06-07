@@ -95,22 +95,20 @@ class Rules
 
     public static function getAllowedTypesForColumnType(?string $primitiveType = null): Collection|array
     {
-        $allowedTypes = collect(
-            [
-                PrimitiveType::STRING   => [PrimitiveType::STRING, ArrayType::String(), ArrayType::Null()],
-                PrimitiveType::NUMBER   => [PrimitiveType::NUMBER, ArrayType::Number(), ArrayType::Null()],
-                PrimitiveType::DATEONLY => [PrimitiveType::DATEONLY, PrimitiveType::NUMBER, ArrayType::Null()],
-                PrimitiveType::DATE     => [PrimitiveType::DATE, PrimitiveType::NUMBER, ArrayType::Null()],
-                PrimitiveType::TIMEONLY => [PrimitiveType::TIMEONLY, ArrayType::Null()],
-                PrimitiveType::ENUM     => [PrimitiveType::ENUM, ArrayType::Enum(), ArrayType::Null()],
-                PrimitiveType::UUID     => [PrimitiveType::UUID, ArrayType::Uuid(), ArrayType::Null()],
-                PrimitiveType::JSON     => [PrimitiveType::JSON, ArrayType::Null()],
-                PrimitiveType::BOOLEAN  => [PrimitiveType::BOOLEAN, ArrayType::Boolean(), ArrayType::Null()],
-                PrimitiveType::POINT    => [PrimitiveType::POINT, ArrayType::Null()],
-            ]
-        );
+        $allowedTypes = [
+            PrimitiveType::STRING   => [PrimitiveType::STRING, null],
+            PrimitiveType::NUMBER   => [PrimitiveType::NUMBER, null],
+            PrimitiveType::DATEONLY => [PrimitiveType::DATEONLY, null],
+            PrimitiveType::DATE     => [PrimitiveType::DATE, null],
+            PrimitiveType::TIMEONLY => [PrimitiveType::TIMEONLY, null],
+            PrimitiveType::ENUM     => [PrimitiveType::ENUM, null],
+            PrimitiveType::UUID     => [PrimitiveType::UUID, null],
+            PrimitiveType::JSON     => [PrimitiveType::JSON, null],
+            PrimitiveType::BOOLEAN  => [PrimitiveType::BOOLEAN, null],
+            PrimitiveType::POINT    => [PrimitiveType::POINT, null],
+        ];
 
-        return $primitiveType ? $allowedTypes->get($primitiveType) : $allowedTypes->toArray();
+        return $primitiveType ? $allowedTypes[$primitiveType] : $allowedTypes;
     }
 
     private static function computeAllowedTypesForOperators()
@@ -133,15 +131,13 @@ class Rules
 
     public static function getAllowedTypesForOperator(?string $operator = null): array
     {
-        $noTypeAllowed = [ArrayType::Null()->value];
-        $validationTypesArray = array_values(ArrayType::toArray());
-
+        $noTypeAllowed = [null];
         $allowedTypes = collect(self::computeAllowedTypesForOperators());
         $merged = $allowedTypes->merge(
             [
-                Operators::IN                       => $validationTypesArray,
-                Operators::NOT_IN                   => $validationTypesArray,
-                Operators::INCLUDES_ALL             => $validationTypesArray,
+                Operators::IN                       => array_merge($allowedTypes->get(Operators::IN), [null]),
+                Operators::NOT_IN                   => array_merge($allowedTypes->get(Operators::NOT_IN), [null]),
+                Operators::INCLUDES_ALL             => array_merge($allowedTypes->get(Operators::INCLUDES_ALL), [null]),
                 Operators::BLANK                    => $noTypeAllowed,
                 Operators::MISSING                  => $noTypeAllowed,
                 Operators::PRESENT                  => $noTypeAllowed,

@@ -8,12 +8,11 @@ use JsonException;
 
 class TypeGetter
 {
-    public static function get($value, ?string $typeContext = null): string | ArrayType
+    public static function get($value, ?string $typeContext = null): ?string
     {
-        if (is_array($value)) {
-            return self::getArrayType($value, $typeContext);
+        if ($typeContext === PrimitiveType::JSON) {
+            return PrimitiveType::JSON;
         }
-
         if (is_string($value)) {
             return self::getTypeFromString($value, $typeContext);
         }
@@ -30,7 +29,7 @@ class TypeGetter
             return PrimitiveType::BOOLEAN;
         }
 
-        return ArrayType::Null();
+        return null;
     }
 
     private static function getTypeFromString($value, ?string $typeContext = null): string
@@ -43,7 +42,7 @@ class TypeGetter
             return PrimitiveType::UUID;
         }
 
-        if (self::isValidDate($value) && in_array($typeContext, [PrimitiveType::DATE, PrimitiveType::DATEONLY], true)) {
+        if (self::isValidDate($value) && in_array($typeContext, [PrimitiveType::DATE, PrimitiveType::DATEONLY, PrimitiveType::TIMEONLY], true)) {
             return self::getDateType($value);
         }
 
@@ -68,7 +67,10 @@ class TypeGetter
 
         return count($potentialPoint) === 2 &&
             $typeContext === PrimitiveType::POINT &&
-            self::get(array_map(static fn ($item) => (float) $item, $potentialPoint), PrimitiveType::NUMBER) === ArrayType::Number();
+            collect($potentialPoint)->every(function ($point) {
+                return is_numeric($point)
+                    && self::get((float) $point, PrimitiveType::NUMBER) === PrimitiveType::NUMBER;
+            });
     }
 
     /**
@@ -87,35 +89,6 @@ class TypeGetter
         }
 
         return true;
-    }
-
-    private static function getArrayType(array $value, ?string $typeContext = null): ArrayType
-    {
-        if (empty($value)) {
-            return ArrayType::Empty();
-        }
-
-        if (self::isArrayOf(PrimitiveType::NUMBER, $value, $typeContext)) {
-            return ArrayType::Number();
-        }
-
-        if (self::isArrayOf(PrimitiveType::UUID, $value, $typeContext)) {
-            return ArrayType::Uuid();
-        }
-
-        if (self::isArrayOf(PrimitiveType::BOOLEAN, $value, $typeContext)) {
-            return ArrayType::Boolean();
-        }
-
-        if (self::isArrayOf(PrimitiveType::STRING, $value, $typeContext)) {
-            return ArrayType::String();
-        }
-
-        if (self::isArrayOf(PrimitiveType::ENUM, $value, $typeContext)) {
-            return ArrayType::Enum();
-        }
-
-        return ArrayType::Null();
     }
 
     private static function isArrayOf(string $primitiveType, array $values, ?string $typeContext = null): bool

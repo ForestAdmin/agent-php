@@ -1,6 +1,5 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
@@ -8,8 +7,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\FieldValidator;
-
-use function ForestAdmin\cache;
 
 dataset('FieldValidatorCollection', function () {
     $datasource = new Datasource();
@@ -131,10 +128,10 @@ test('validateValue() on field of type json with valid value (string) should not
     expect(FieldValidator::validateValue('json', $column, '{"foo": "bar"}'));
 })->expectNotToPerformAssertions();
 
-test('validateValue() on field of type json invalid value type should throw error', function () {
+test('validateValue() with a failed declaration of json should also be a valid a json', function () {
     $column = new ColumnSchema(columnType: PrimitiveType::JSON);
-    expect(FieldValidator::validateValue('json', $column, '{not: "a:" valid json'));
-})->throws(ForestException::class, '🌳🌳🌳 Wrong type for json: {not: "a:" valid json. Expects Json');
+    expect(fn () => FieldValidator::validateValue('json', $column, '{not: "a:" valid json'))->not()->toThrow(ForestException::class);
+})->expectNotToPerformAssertions();
 
 test('validateValue() on field of type uuid with valid value (uuid v1) should not throw', function () {
     $column = new ColumnSchema(columnType: PrimitiveType::UUID);
