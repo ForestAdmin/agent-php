@@ -3,6 +3,7 @@
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
+use ForestAdmin\AgentPHP\Agent\Utils\ArrayHelper;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LeaderboardChart;
@@ -11,6 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ObjectiveChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\PieChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ValueChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
@@ -33,7 +35,7 @@ function factoryChart($args = []): Charts
             'title'       => new ColumnSchema(columnType: PrimitiveType::STRING),
             'price'       => new ColumnSchema(columnType: PrimitiveType::NUMBER),
             'date'        => new ColumnSchema(columnType: PrimitiveType::DATE, filterOperators: [Operators::YESTERDAY]),
-            'year'        => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'year'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL]),
             'reviews'     => new ManyToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
@@ -115,13 +117,9 @@ function factoryChart($args = []): Charts
     $_GET = $args['payload'];
 
     $attributes = $_GET;
-    unset($attributes['timezone']);
-    unset($attributes['collection']);
-    unset($attributes['contextVariables']);
-    if (array_key_exists('filters', $attributes) && $attributes['filters'] === null) {
-        unset($attributes['filters']);
-    }
-    ksort($attributes);
+    unset($attributes['timezone'], $attributes['collection'], $attributes['contextVariables']);
+    $attributes = array_filter($attributes, static fn ($value) => ! is_null($value) && $value !== '');
+    ArrayHelper::ksortRecursive($attributes);
 
     $request = Request::createFromGlobals();
 
@@ -208,6 +206,38 @@ test('setType() should throw a ForestException when the type does not exist in t
     expect(fn () => $chart->setType('Maps'))->toThrow(ForestException::class, '🌳🌳🌳 Invalid Chart type Maps');
 });
 
+
+test('injectContextVariables() should update the request', function () {
+    $chart = factoryChart(
+        [
+            'books'   => [
+                'results' => [
+                    [
+                        'value' => 10,
+                    ],
+                ],
+            ],
+            'payload' => [
+                'aggregateFieldName'   => 'price',
+                'aggregator'           => 'Sum',
+                'sourceCollectionName' => 'Book',
+                'type'                 => 'Value',
+                'timezone'             => 'Europe/Paris',
+                'filter'               => ["aggregator" => "and", "conditions" => [["operator" => "equal", "value" => "{{dropdown1.selectedValue}}", "field" => "year"]]],
+                'contextVariables'     => ['dropdown1.selectedValue' => 2022],
+            ],
+        ]
+    );
+    $chart->handleRequest(['collectionName' => 'Book']);
+    /** @var Filter $filter */
+    $filter = invokeProperty($chart, 'filter');
+
+    expect($filter->getConditionTree())
+        ->toBeInstanceOf(ConditionTreeLeaf::class)
+        ->and($filter->getConditionTree())
+        ->toEqual(new ConditionTreeLeaf('year', Operators::EQUAL, '2022'));
+});
+
 test('makeValue() should return a ValueChart', function () {
     $chart = factoryChart(
         [
@@ -258,7 +288,7 @@ test('makeValue() with previous filter should return a ValueChart', function () 
                 'sourceCollectionName' => 'Book',
                 'aggregateFieldName'   => 'price',
                 'aggregator'           => 'Sum',
-                'filters'              => "{\"field\":\"date\",\"operator\":\"yesterday\",\"value\":null}",
+                'filter'               => "{\"field\":\"date\",\"operator\":\"yesterday\",\"value\":null}",
                 'timezone'             => 'Europe/Paris',
             ],
         ]
@@ -295,7 +325,7 @@ test('makeObjective() should return a ObjectiveChart', function () {
                 'sourceCollectionName' => 'Book',
                 'aggregateFieldName'   => 'price',
                 'aggregator'           => 'Count',
-                'filters'              => null,
+                'filter'               => null,
                 'timezone'             => 'Europe/Paris',
             ],
         ],

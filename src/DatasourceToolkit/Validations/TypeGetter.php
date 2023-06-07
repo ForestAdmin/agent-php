@@ -43,7 +43,7 @@ class TypeGetter
             return PrimitiveType::UUID;
         }
 
-        if (self::isValidDate($value)) {
+        if (self::isValidDate($value) && in_array($typeContext, [PrimitiveType::DATE, PrimitiveType::DATEONLY], true)) {
             return self::getDateType($value);
         }
 
