@@ -7,6 +7,7 @@ use ForestAdmin\AgentPHP\Agent\Facades\ForestSchema;
 use ForestAdmin\AgentPHP\Agent\Http\Exceptions\ForbiddenError;
 use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
+use ForestAdmin\AgentPHP\Agent\Utils\ArrayHelper;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextVariables;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextVariablesInjector;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
@@ -60,9 +61,7 @@ class Permissions
     public function canChart(Request $request): bool
     {
         $attributes = $request->all();
-        unset($attributes['timezone']);
-        unset($attributes['collection']);
-        unset($attributes['contextVariables']);
+        unset($attributes['timezone'], $attributes['collection'], $attributes['contextVariables']);
         $attributes = array_filter($attributes, static fn ($value) => ! is_null($value) && $value !== '');
         $hashRequest = $attributes['type'] . ':' . $this->arrayHash($attributes);
         $isAllowed = in_array($hashRequest, $this->getChartData($this->caller->getRenderingId()), true);
@@ -194,24 +193,9 @@ class Permissions
 
     protected function arrayHash(array $data): string
     {
-        $this->ksortRecursive($data);
+        ArrayHelper::ksortRecursive($data);
 
         return sha1(json_encode($data, JSON_THROW_ON_ERROR));
-    }
-
-    protected function ksortRecursive(&$array): bool
-    {
-        // exit recursive loop
-        if (! is_array($array)) {
-            return false;
-        }
-
-        ksort($array);
-        foreach ($array as &$arr) {
-            $this->ksortRecursive($arr);
-        }
-
-        return true;
     }
 
     protected function getScopeAndTeamData(int $renderingId): IlluminateCollection
