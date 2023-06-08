@@ -172,22 +172,6 @@ test('convertValidationList() should handle duplication', function () {
         ]))->toBeTrue();
 });
 
-//  test('should handle rule expansion (not in with null)', () => {
-//    const validationList = FrontendValidationUtils.convertValidationList(
-//      factories.columnSchema.build({
-//        columnType: 'String',
-//        validation: [{ operator: 'NotIn', value: ['a', 'b', null] }],
-//      }),
-//    );
-//
-//    expect(validationList).toStrictEqual([
-//      {
-//        message: 'Value must match /(?!a|b)/g',
-//        type: 'is like',
-//        value: '/(?!a|b)/g',
-//      },
-//    ]);
-//  });
 test('convertValidationList() should handle rule expansion (not in with null)', function () {
     $validationList = FrontendValidation::convertValidationList(
         new ColumnSchema(
@@ -198,7 +182,6 @@ test('convertValidationList() should handle rule expansion (not in with null)', 
         )
     );
 
-//    dd('test', $validationList);
     expect($validationList)->toEqual([
         [
             'message' => 'Value must match /(?!a|b)/g',
@@ -208,17 +191,6 @@ test('convertValidationList() should handle rule expansion (not in with null)', 
     ]);
 });
 
-
-//  test('should skip validation which cannot be translated (depends on current time)', () => {
-//    const validationList = FrontendValidationUtils.convertValidationList(
-//      factories.columnSchema.build({
-//        columnType: 'Date',
-//        validation: [{ operator: 'PreviousQuarter' }],
-//      }),
-//    );
-//
-//    expect(validationList).toHaveLength(0);
-//  });
 test('convertValidationList() should skip validation which cannot be translated (depends on current time)', function () {
     $validationList = FrontendValidation::convertValidationList(
         new ColumnSchema(
@@ -233,18 +205,6 @@ test('convertValidationList() should skip validation which cannot be translated 
         ->and($validationList)->toHaveLength(0);
 });
 
-
-
-//  test('should skip validation which cannot be translated (fake enum with null)', () => {
-//    const validationList = FrontendValidationUtils.convertValidationList(
-//      factories.columnSchema.build({
-//        columnType: 'String',
-//        validation: [{ operator: 'In', value: ['a', 'b', null] }],
-//      }),
-//    );
-//
-//    expect(validationList).toStrictEqual([]);
-//  });
 test('convertValidationList() should skip validation which cannot be translated (fake enum with null)', function () {
     $validationList = FrontendValidation::convertValidationList(
         new ColumnSchema(
@@ -254,8 +214,12 @@ test('convertValidationList() should skip validation which cannot be translated 
             ],
         )
     );
-    dd($validationList);
 
-    expect($validationList)->toBeArray()
-        ->and($validationList)->toHaveLength(0);
+    expect($validationList)->toEqual([
+        [
+            'message' => 'Value must match /(a|b)/g',
+            'type'    => 'is like',
+            'value'   => '/(a|b)/g',
+        ],
+    ]);
 });

@@ -113,14 +113,13 @@ final class FrontendValidation
             // Add the 'Equal|NotEqual' operators to unlock the `In|NotIn -> Match` replacement rules.
             // This is a bit hacky, but it allows to reuse the existing logic.
             $operators = array_keys(self::supported());
-            $operators[] = 'Equal';
-            $operators[] = 'NotEqual';
+            $operators[] = Operators::EQUAL;
+            $operators[] = Operators::NOT_EQUAL;
 
             // Rewrite the rule to use only operators that the frontend supports.
             $leaf = new ConditionTreeLeaf('field', $rule['operator'], $rule['value']);
             $timezone = 'Europe/Paris'; // we're sending the schema => use random tz
             $tree = ConditionTreeEquivalent::getEquivalentTree($leaf, $operators, $columnType, $timezone);
-            //dd($leaf, $tree);
             $conditions = [];
 
             if ($tree instanceof ConditionTreeLeaf) {
@@ -128,10 +127,10 @@ final class FrontendValidation
             } elseif ($tree instanceof ConditionTreeBranch /*&& $tree->getAggregator() === 'And'*/) {
                 $conditions = $tree->getConditions();
             }
-            //dd($conditions);
+
             return collect($conditions)
                 ->filter(fn ($c) => $c instanceof ConditionTreeLeaf)
-                ->filter(fn ($c) => $c->getOperator() !== 'Equal' || $c->getOperator() !== 'NotEqual')
+                ->filter(fn ($c) => $c->getOperator() !== Operators::EQUAL && $c->getOperator() !== Operators::NOT_EQUAL)
                 ->flatMap(fn ($c) => self::simplifyRule($columnType, $c->toArray()))
                 ->toArray();
         } catch (\Exception $e) {

@@ -64,7 +64,7 @@ final class Comparisons
                                 ->filter(fn ($value) => $value !== null && $value !== '')
                                 ->toArray();
 
-                            $conditions[] = new ConditionTreeLeaf(field: $leaf->getField(), operator: Operators::MATCH, value: "/" . implode('|', $escaped) . "/g");
+                            $conditions[] = new ConditionTreeLeaf(field: $leaf->getField(), operator: Operators::MATCH, value: "/(" . implode('|', $escaped) . ")/g");
                         }
 
                         return ConditionTreeFactory::union($conditions);
@@ -103,7 +103,7 @@ final class Comparisons
                             $escaped = collect($values)
                                 ->filter(fn ($value) => $value !== null && $value !== '')
                                 ->toArray();
-                            $conditions[] = new ConditionTreeLeaf(field: $leaf->getField(), operator: Operators::MATCH, value: "/?!" . implode('|', $escaped) . "/g");
+                            $conditions[] = new ConditionTreeLeaf(field: $leaf->getField(), operator: Operators::MATCH, value: "/(?!" . implode('|', $escaped) . ")/g");
                         }
 
                         return ConditionTreeFactory::intersect($conditions);
@@ -113,7 +113,6 @@ final class Comparisons
                     'dependsOn' => [Operators::NOT_EQUAL],
                     'replacer'  => fn ($leaf) => ConditionTreeFactory::intersect(
                         collect($leaf->getValue())
-                            //->filter(fn ($value) => $value !== null && $value !== '')
                             ->map(fn ($item) => $leaf->override(operator: Operators::NOT_EQUAL, value: $item))
                             ->toArray()
                     ),

@@ -15,7 +15,6 @@ class ConditionTreeEquivalent
     public static function getEquivalentTree(ConditionTreeLeaf $leaf, array $operators, array|string $columnType, string $timezone)
     {
         $replacer = self::getReplacer($leaf->getOperator(), $operators, $columnType);
-        dd('REPLACER', $replacer);
 
         return $replacer ? $replacer($leaf, $timezone) : null;
     }
@@ -35,7 +34,6 @@ class ConditionTreeEquivalent
             return static fn ($leaf) => $leaf;
         }
 
-        dump($operator, $visited);
         foreach (self::getAlternatives($operator) ?? [] as $alt) {
             $replacer = $alt['replacer'];
             $dependsOn = $alt['dependsOn'];
@@ -44,15 +42,13 @@ class ConditionTreeEquivalent
                 (isset($alt['forTypes']) && collect($alt['forTypes'])->every(fn ($type) => in_array($type, PrimitiveType::tree(), true)));
 
             if ($valid && ! in_array($alt, $visited, true)) {
-//                dd(111);
                 $dependsReplacer = collect($dependsOn)
                     ->mapWithKeys(
                         function ($replacement) use ($filterOperators, $columnType, $visited, $alt) {
-                            //dd(self::getReplacer($replacement, $filterOperators, $columnType, (array_merge($visited, [$alt]))));
                             return [$replacement => self::getReplacer($replacement, $filterOperators, $columnType, array_merge($visited, [$alt]))];
                         }
                     );
-                //dd($dependsReplacer);
+
                 if (collect($dependsReplacer)->every(fn ($r) => (bool) $r)) {
                     return static function ($leaf, $timezone) use ($replacer, $dependsReplacer) {
                         /** @var ConditionTree $conditionTree */
@@ -68,7 +64,6 @@ class ConditionTreeEquivalent
                     };
                 }
             }
-            dump('not valid ' . $operator);
         }
 
         return null;
