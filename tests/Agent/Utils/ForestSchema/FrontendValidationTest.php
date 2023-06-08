@@ -198,7 +198,7 @@ test('convertValidationList() should handle rule expansion (not in with null)', 
         )
     );
 
-    dd($validationList);
+//    dd('test', $validationList);
     expect($validationList)->toEqual([
         [
             'message' => 'Value must match /(?!a|b)/g',

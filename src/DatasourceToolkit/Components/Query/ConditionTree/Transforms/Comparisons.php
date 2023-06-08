@@ -87,14 +87,36 @@ final class Comparisons
             ],
             Operators::NOT_IN    => [
                 [
-                    'dependsOn' => [Operators::NOT_EQUAL],
+                    'dependsOn' => [Operators::NOT_EQUAL, Operators::MATCH],
+                    'forTypes'  => ['String'],
                     'replacer'  => function ($leaf) {
-                        $trees = collect($leaf->getValue())
-                            ->map(fn ($item) => $leaf->override(operator: Operators::NOT_EQUAL, value: $item))
-                            ->toArray();
+                        $values = $leaf->getValue();
+                        $conditions = [];
 
-                        return ConditionTreeFactory::intersect($trees);
+                        foreach ([null, ''] as $value) {
+                            if (in_array($value, $values, true)) {
+                                $conditions[] = new ConditionTreeLeaf(field: $leaf->getField(), operator: Operators::NOT_EQUAL, value: $value);
+                            }
+                        }
+
+                        if (collect($values)->some(fn ($value) => $value !== null && $value !== '')) {
+                            $escaped = collect($values)
+                                ->filter(fn ($value) => $value !== null && $value !== '')
+                                ->toArray();
+                            $conditions[] = new ConditionTreeLeaf(field: $leaf->getField(), operator: Operators::MATCH, value: "/?!" . implode('|', $escaped) . "/g");
+                        }
+
+                        return ConditionTreeFactory::intersect($conditions);
                     },
+                ],
+                [
+                    'dependsOn' => [Operators::NOT_EQUAL],
+                    'replacer'  => fn ($leaf) => ConditionTreeFactory::intersect(
+                        collect($leaf->getValue())
+                            //->filter(fn ($value) => $value !== null && $value !== '')
+                            ->map(fn ($item) => $leaf->override(operator: Operators::NOT_EQUAL, value: $item))
+                            ->toArray()
+                    ),
                 ],
             ],
         ];
