@@ -1,3 +1,10 @@
+# [1.0.0-beta.33](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.32...v1.0.0-beta.33) (2023-06-08)
+
+
+### Features
+
+* add permissions v4 and conditional approval support ([#56](https://github.com/ForestAdmin/agent-php/issues/56)) ([df9487f](https://github.com/ForestAdmin/agent-php/commit/df9487fe8213d64028fd2204620d1b1b8b6f7b58))
+
 # [1.0.0-beta.32](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.31...v1.0.0-beta.32) (2023-05-17)
 
 
