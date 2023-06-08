@@ -3,9 +3,7 @@
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Show;
-use ForestAdmin\AgentPHP\Agent\Services\Permissions;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
-use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
@@ -14,6 +12,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projectio
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+
+use function ForestAdmin\config;
 
 function factoryShow($args = []): Show
 {
@@ -41,21 +41,48 @@ function factoryShow($args = []): Show
     SchemaEmitter::getSerializedSchema($datasource);
 
     $request = Request::createFromGlobals();
-    $permissions = new Permissions(QueryStringParser::parseCaller($request));
 
     Cache::put(
-        $permissions->getCacheKey(10),
+        'forest.users',
+        [
+            1 => [
+                'id'              => 1,
+                'firstName'       => 'John',
+                'lastName'        => 'Doe',
+                'fullName'        => 'John Doe',
+                'email'           => 'john.doe@domain.com',
+                'tags'            => [],
+                'roleId'          => 1,
+                'permissionLevel' => 'admin',
+            ],
+        ],
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.collections',
+        [
+            'Car' => [
+                'read'  => [
+                    0 => 1,
+                ],
+            ],
+        ],
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.scopes',
         collect(
             [
-                'actions' => collect(
-                    [
-                        'read:Car' => collect([1]),
-                    ]
-                ),
-                'scopes'  => collect(),
+                'scopes' => collect([]),
+                'team'   => [
+                    'id'   => 44,
+                    'name' => 'Operations',
+                ],
             ]
         ),
-        300
+        config('permissionExpiration')
     );
 
     $show = mock(Show::class)

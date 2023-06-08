@@ -31,7 +31,7 @@ class AssociateRelated extends AbstractRelationRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
-        $this->permissions->can('edit:' . $this->collection->getName());
+        $this->permissions->can('edit', $this->collection);
 
         $parentId = Id::unpackId($this->collection, $args['id']);
         $targetedRelationId = Id::unpackId($this->childCollection, $this->request->input('data')[0]['id']);

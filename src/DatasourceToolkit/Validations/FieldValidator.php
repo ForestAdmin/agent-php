@@ -61,43 +61,33 @@ class FieldValidator
      */
     public static function validateValue(string $field, ColumnSchema $columnSchema, $value, ?array $allowedTypes = null): void
     {
+        if ($allowedTypes === null) {
+            $allowedTypes = Rules::getAllowedTypesForColumnType($columnSchema->getColumnType());
+        }
+
         // TODO FIXME: handle complex type from ColumnType
         if (gettype($columnSchema->getColumnType()) !== PrimitiveType::STRING) {
         }
 
         $type = TypeGetter::get($value, $columnSchema->getColumnType());
         if ($columnSchema->getColumnType() === PrimitiveType::ENUM) {
-            self::checkEnumValue($type, $columnSchema, $value);
+            self::checkEnumValue($columnSchema, $value);
         }
 
-        $value = is_array($value) ? '[' . implode(',', $value) . ']' : $value;
-        if ($allowedTypes && ! in_array($type, $allowedTypes, true)) {
+        if (! in_array($type, $allowedTypes, true)) {
+            $value = is_array($value) ? '[' . implode(',', $value) . ']' : $value ?? 'null';
+            $allowedTypes = collect($allowedTypes)->map(fn ($type) => $type ?? 'Null')->toArray();
+
             throw new ForestException("Wrong type for $field: $value. Expects " . implode(',', $allowedTypes));
-        }
-
-        if ($type instanceof ArrayType) {
-            $type = $type->label;
-        }
-
-        if (! $allowedTypes && $type !== $columnSchema->getColumnType()) {
-            throw new ForestException("Wrong type for $field: $value. Expects " . $columnSchema->getColumnType());
         }
     }
 
     /**
      * @throws ForestException
      */
-    public static function checkEnumValue(string $type, ColumnSchema $columnSchema, $enumValue): void
+    public static function checkEnumValue(ColumnSchema $columnSchema, $enumValue): void
     {
-        if ($type === ArrayType::Enum()->value) {
-            $enumValuesConditionTree = collect($enumValue);
-            $isEnumAllowed = $enumValuesConditionTree->every(
-                fn ($value) => in_array($value, $columnSchema->getEnumValues(), true)
-            );
-        } else {
-            $isEnumAllowed = in_array($enumValue, $columnSchema->getEnumValues(), true);
-        }
-        $enumValue = is_array($enumValue) ? '[' . implode(',', $enumValue) . ']' : $enumValue;
+        $isEnumAllowed = in_array($enumValue, $columnSchema->getEnumValues(), true);
 
         if (! $isEnumAllowed) {
             throw new ForestException(

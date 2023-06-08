@@ -7,7 +7,6 @@ use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
-use Illuminate\Support\Arr;
 
 class Destroy extends AbstractCollectionRoute
 {
@@ -33,7 +32,7 @@ class Destroy extends AbstractCollectionRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
-        $this->permissions->can('delete:' . $this->collection->getName());
+        $this->permissions->can('delete', $this->collection);
 
         $id = Id::unpackId($this->collection, $args['id']);
         $filter = ContextFilterFactory::build(
@@ -47,7 +46,7 @@ class Destroy extends AbstractCollectionRoute
             )
         );
 
-        $this->collection->delete($this->caller, $filter, $id);
+        $this->collection->delete($this->caller, $filter);
 
         return [
             'content' => null,
@@ -58,7 +57,7 @@ class Destroy extends AbstractCollectionRoute
     public function handleRequestBulk(array $args = []): array
     {
         $this->build($args);
-        $this->permissions->can('delete:' . $this->collection->getName());
+        $this->permissions->can('delete', $this->collection);
         $selectionIds = Id::parseSelectionIds($this->collection, $this->request);
         $conditionTreeIds = ConditionTreeFactory::matchIds($this->collection, $selectionIds['ids']);
         if ($selectionIds['areExcluded']) {
@@ -76,7 +75,7 @@ class Destroy extends AbstractCollectionRoute
             )
         );
 
-        $this->collection->delete($this->caller, $filter, Arr::flatten($selectionIds['ids']));
+        $this->collection->delete($this->caller, $filter);
 
         return [
             'content' => null,

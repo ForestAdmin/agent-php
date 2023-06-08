@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContra
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
@@ -78,23 +79,9 @@ class ConditionTreeValidator
      */
     private static function throwIfValueNotAllowedWithOperator(ConditionTreeLeaf $leaf, ColumnSchema|RelationSchema $columnSchema): void
     {
-        $value = $leaf->getValue();
-        $valueType = TypeGetter::get($value, $columnSchema->getColumnType());
         $allowedTypes = Rules::getAllowedTypesForOperator($leaf->getOperator());
 
-
-        if ($valueType instanceof ArrayType) {
-            // todo refacto ValidationType
-            $valueType = $valueType->label;
-        }
-
-        if (! in_array($valueType, $allowedTypes, true)) {
-            throw new ForestException(
-                'The given value attribute ' . (is_array($value) ? '[' . implode(',', $value) . ']' : $value) .
-                ' has an unexpected value for the given operator ' . $leaf->getOperator() . '. ' .
-                count($allowedTypes) === 0 ? 'The value attribute must be empty.' : 'The allowed types of the field value are: ' . implode(',', $allowedTypes)
-            );
-        }
+        self::validateValues($leaf->getField(), $columnSchema, $leaf->getValue(), $allowedTypes);
     }
 
     /**
@@ -116,7 +103,27 @@ class ConditionTreeValidator
     private static function throwIfValueNotAllowedWithColumnType(ConditionTreeLeaf $leaf, ColumnSchema|RelationSchema $columnSchema): void
     {
         $allowedTypes = Rules::getAllowedTypesForColumnType($columnSchema->getColumnType());
+        $excludedOperators = [
+            Operators::SHORTER_THAN,
+            Operators::LONGER_THAN,
+            Operators::AFTER_X_HOURS_AGO,
+            Operators::BEFORE_X_HOURS_AGO,
+            Operators::PREVIOUS_X_DAYS,
+            Operators::PREVIOUS_X_DAYS_TO_DATE,
+        ];
+        if (! in_array($leaf->getOperator(), $excludedOperators, true)) {
+            self::validateValues($leaf->getField(), $columnSchema, $leaf->getValue(), $allowedTypes);
+        }
+    }
 
-        FieldValidator::validateValue($leaf->getField(), $columnSchema, $leaf->getValue(), $allowedTypes);
+    private static function validateValues(string $field, ColumnSchema $columnSchema, $value, array $allowedTypes): void
+    {
+        if (is_array($value)) {
+            foreach ($value as $item) {
+                FieldValidator::validateValue($field, $columnSchema, $item, $allowedTypes);
+            }
+        } else {
+            FieldValidator::validateValue($field, $columnSchema, $value, $allowedTypes);
+        }
     }
 }

@@ -28,7 +28,7 @@ class Update extends AbstractCollectionRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
-        $this->permissions->can('edit:' . $this->collection->getName());
+        $this->permissions->can('edit', $this->collection);
 
         $id = Id::unpackId($this->collection, $args['id']);
         $filter = ContextFilterFactory::build(

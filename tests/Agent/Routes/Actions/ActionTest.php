@@ -20,6 +20,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 
+use function ForestAdmin\config;
+
 function factoryAction($smartAction): Actions
 {
     $datasource = new Datasource();
@@ -62,31 +64,122 @@ function factoryAction($smartAction): Actions
 
     SchemaEmitter::getSerializedSchema($datasource);
 
-    $request = Request::createFromGlobals();
-    $permissions = new Permissions(QueryStringParser::parseCaller($request));
+    Cache::put(
+        'forest.users',
+        [
+            1 => [
+                'id'              => 1,
+                'firstName'       => 'John',
+                'lastName'        => 'Doe',
+                'fullName'        => 'John Doe',
+                'email'           => 'john.doe@domain.com',
+                'tags'            => [],
+                'roleId'          => 1,
+                'permissionLevel' => 'admin',
+            ],
+        ],
+        config('permissionExpiration')
+    );
 
     Cache::put(
-        $permissions->getCacheKey(10),
+        'forest.collections',
+        [
+            'User' => [
+                'browse'  => [
+                    0 => 1,
+                ],
+                'export'  => [
+                    0 => 1,
+                ],
+                'actions' => [
+                    'my action' => [
+                        "triggerEnabled"             => [1],
+                        "approvalRequired"           => [],
+                        "approvalRequiredConditions" => [],
+                        "userApprovalEnabled"        => [],
+                        "userApprovalConditions"     => [],
+                        "selfApprovalEnabled"        => [],
+                    ],
+                ],
+            ],
+        ],
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.scopes',
         collect(
             [
-                'actions' => collect(
-                    [
-                        'browse:User' => collect([1]),
-                        'export:User' => collect([1]),
-                    ]
-                ),
-                'scopes'  => collect(),
+                'scopes' => collect([]),
+                'team'   => [
+                    'id'   => 44,
+                    'name' => 'Operations',
+                ],
             ]
         ),
-        300
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.has_permission',
+        true,
+        config('permissionExpiration')
     );
 
     $action = mock(Actions::class)
         ->makePartial()
         ->shouldReceive('checkIp')
+        ->shouldReceive('build')
         ->getMock();
 
+    $permissions = mock(Permissions::class)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('getCollectionsPermissionsData')
+        ->andReturn(
+            [
+                'User' => [
+                    'browse'  => [
+                        0 => 1,
+                    ],
+                    'export'  => [
+                        0 => 1,
+                    ],
+                    'actions' => [
+                        'my action' => [
+                            'triggerEnabled'             => [1],
+                            'approvalRequired'           => [],
+                            'approvalRequiredConditions' => [],
+                            'userApprovalEnabled'        => [],
+                            'userApprovalConditions'     => [],
+                            'selfApprovalEnabled'        => [],
+                        ],
+                    ],
+                ],
+            ]
+        )
+        ->shouldReceive('findActionFromEndpoint')
+        ->andReturn(
+            [
+                'id'         => 'my-action',
+                'name'       => 'my action',
+                'type'       => 'single',
+                'endpoint'   => '/forest/_actions/User/0/my-action',
+                'httpMethod' => 'POST',
+                'redirect'   => null,
+                'download'   => false,
+                'fields'     => [],
+                'hooks'      => [],
+            ]
+        )
+        ->getMock();
+
+    $request = Request::createFromGlobals();
+    invokeProperty($permissions, 'caller', QueryStringParser::parseCaller($request));
+
+    invokeProperty($action, 'caller', QueryStringParser::parseCaller($request));
     invokeProperty($action, 'actionName', 'my action');
+    invokeProperty($action, 'permissions', $permissions);
     invokeProperty($action, 'collection', $collection);
 
     return $action;
@@ -139,7 +232,7 @@ test('handleRequest should return the result of an action', function () {
         'my action',
         new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')),
     ];
-    $action = factoryAction($smartAction, $type);
+    $action = factoryAction($smartAction);
 
     $data = [
         'data' => [
@@ -165,7 +258,9 @@ test('handleRequest should return the result of an action', function () {
     ];
 
     $_POST = $data;
+
     invokeProperty($action, 'request', Request::createFromGlobals());
+    invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
 
     expect($action->handleRequest(['collectionName' => 'User']))->toEqual((new ResultBuilder())->success('BRAVO'));
 });
@@ -191,7 +286,7 @@ test('handleHookRequest should return the result of an action', function () {
             ]
         ),
     ];
-    $action = factoryAction($smartAction, $type);
+    $action = factoryAction($smartAction);
 
     $data = [
         'data' => [
@@ -235,6 +330,7 @@ test('handleHookRequest should return the result of an action', function () {
     invokeProperty($action, 'request', Request::createFromGlobals());
     invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
 
+
     expect($action->handleHookRequest(['collectionName' => 'User']))->toBeArray()
         ->and($action->handleHookRequest(['collectionName' => 'User']))->toHaveKey('content')
         ->and($action->handleHookRequest(['collectionName' => 'User'])['content']['fields'])->toEqual(
@@ -258,14 +354,14 @@ test('handleHookRequest should return the result of an action', function () {
                         'hook'        => 'changeHook',
                         'type'        => 'String',
                     ], [
-                        'description' => null,
-                        'isRequired'  => false,
-                        'isReadOnly'  => true,
-                        'field'       => 'amount X10',
-                        'value'       => '0',
-                        'hook'        => 'changeHook',
-                        'type'        => 'String',
-                    ],
+                    'description' => null,
+                    'isRequired'  => false,
+                    'isReadOnly'  => true,
+                    'field'       => 'amount X10',
+                    'value'       => '0',
+                    'hook'        => 'changeHook',
+                    'type'        => 'String',
+                ],
                 ]
             )
         );
@@ -283,7 +379,7 @@ test('handleHookRequest should return the result of an action on a association',
             ]
         ),
     ];
-    $action = factoryAction($smartAction, $type);
+    $action = factoryAction($smartAction);
 
     $data = [
         'data' => [

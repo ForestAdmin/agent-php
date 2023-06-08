@@ -2,7 +2,10 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\Actions;
 
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractAuthenticatedRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\ForestActionValueConverter;
@@ -14,6 +17,9 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContra
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
+
+use function ForestAdmin\config;
+
 use Illuminate\Support\Str;
 
 class Actions extends AbstractAuthenticatedRoute
@@ -66,8 +72,9 @@ class Actions extends AbstractAuthenticatedRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
-        $scope = $this->permissions->getScope($this->collection);
-        $filter = ContextFilterFactory::buildPaginated($this->collection, $this->request, $scope);
+        $this->middlewareCustomActionApprovalRequestData();
+        $filter = $this->getRecordSelection();
+        $this->permissions->canSmartAction($this->request, $this->collection, $filter);
 
         return $this->collection->execute($this->caller, $this->actionName, $this->request->get('data'), $filter);
     }
@@ -88,7 +95,7 @@ class Actions extends AbstractAuthenticatedRoute
     {
         // Match user filter + search + scope? + segment.
         $scope = $includeUserScope ? $this->permissions->getScope($this->collection) : null;
-        $filter = ContextFilterFactory::buildPaginated($this->collection, $this->request, $scope);
+        $filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
 
         // Restrict the filter to the selected records for single or bulk actions.
         if ($this->action->getScope() === ActionScope::GLOBAL) {
@@ -108,5 +115,21 @@ class Actions extends AbstractAuthenticatedRoute
         }
 
         return $filter;
+    }
+
+    private function middlewareCustomActionApprovalRequestData(): Request
+    {
+        if ($this->request->input('data.attributes.signed_approval_request') !== null) {
+            $attributes = $this->decodeSignedApprovalRequest($this->request->input('data.attributes.signed_approval_request'));
+
+            $this->request->request->set('data', $attributes);
+        }
+
+        return $this->request;
+    }
+
+    public static function decodeSignedApprovalRequest($signedApprovalRequest): array
+    {
+        return json_decode(json_encode(JWT::decode($signedApprovalRequest, new Key(config('envSecret'), 'HS256')), JSON_THROW_ON_ERROR), true, 512, JSON_THROW_ON_ERROR);
     }
 }

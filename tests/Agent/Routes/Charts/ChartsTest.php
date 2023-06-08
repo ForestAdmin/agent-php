@@ -3,8 +3,7 @@
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
-use ForestAdmin\AgentPHP\Agent\Services\Permissions;
-use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
+use ForestAdmin\AgentPHP\Agent\Utils\ArrayHelper;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LeaderboardChart;
@@ -13,6 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ObjectiveChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\PieChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ValueChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
@@ -22,7 +22,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
-use Illuminate\Support\Str;
+
+use function ForestAdmin\config;
 
 function factoryChart($args = []): Charts
 {
@@ -34,7 +35,7 @@ function factoryChart($args = []): Charts
             'title'       => new ColumnSchema(columnType: PrimitiveType::STRING),
             'price'       => new ColumnSchema(columnType: PrimitiveType::NUMBER),
             'date'        => new ColumnSchema(columnType: PrimitiveType::DATE, filterOperators: [Operators::YESTERDAY]),
-            'year'        => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'year'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL]),
             'reviews'     => new ManyToManySchema(
                 originKey: 'book_id',
                 originKeyTarget: 'id',
@@ -114,24 +115,67 @@ function factoryChart($args = []): Charts
     buildAgent($datasource);
 
     $_GET = $args['payload'];
+
+    $attributes = $_GET;
+    unset($attributes['timezone'], $attributes['collection'], $attributes['contextVariables']);
+    $attributes = array_filter($attributes, static fn ($value) => ! is_null($value) && $value !== '');
+    ArrayHelper::ksortRecursive($attributes);
+
     $request = Request::createFromGlobals();
-    $permissions = new Permissions(QueryStringParser::parseCaller($request));
 
     Cache::put(
-        $permissions->getCacheKey(10),
-        collect(
-            [
-                'scopes' => collect(),
-                'charts' => collect(
-                    [
-                        strtolower(Str::plural($_GET['type'])) . ':' . sha1(json_encode(ksort($_GET), JSON_THROW_ON_ERROR)),
-                    ]
-                ),
-            ]
-        ),
-        300
+        'forest.stats',
+        [
+            0 => $_GET['type']. ':' . sha1(json_encode($attributes, JSON_THROW_ON_ERROR)),
+        ],
+        config('permissionExpiration')
     );
 
+    Cache::put(
+        'forest.users',
+        [
+            1 => [
+                'id'              => 1,
+                'firstName'       => 'John',
+                'lastName'        => 'Doe',
+                'fullName'        => 'John Doe',
+                'email'           => 'john.doe@domain.com',
+                'tags'            => [],
+                'roleId'          => 1,
+                'permissionLevel' => 'admin',
+            ],
+        ],
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.collections',
+        [
+            'User' => [
+                'browse'  => [
+                    0 => 1,
+                ],
+                'export'  => [
+                    0 => 1,
+                ],
+            ],
+        ],
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.scopes',
+        collect(
+            [
+                'scopes' => collect([]),
+                'team'   => [
+                    'id'   => 44,
+                    'name' => 'Operations',
+                ],
+            ]
+        ),
+        config('permissionExpiration')
+    );
     $chart = mock(Charts::class)
         ->makePartial()
         ->shouldReceive('checkIp')
@@ -162,6 +206,38 @@ test('setType() should throw a ForestException when the type does not exist in t
     expect(fn () => $chart->setType('Maps'))->toThrow(ForestException::class, '🌳🌳🌳 Invalid Chart type Maps');
 });
 
+
+test('injectContextVariables() should update the request', function () {
+    $chart = factoryChart(
+        [
+            'books'   => [
+                'results' => [
+                    [
+                        'value' => 10,
+                    ],
+                ],
+            ],
+            'payload' => [
+                'aggregateFieldName'   => 'price',
+                'aggregator'           => 'Sum',
+                'sourceCollectionName' => 'Book',
+                'type'                 => 'Value',
+                'timezone'             => 'Europe/Paris',
+                'filter'               => ["aggregator" => "and", "conditions" => [["operator" => "equal", "value" => "{{dropdown1.selectedValue}}", "field" => "year"]]],
+                'contextVariables'     => ['dropdown1.selectedValue' => 2022],
+            ],
+        ]
+    );
+    $chart->handleRequest(['collectionName' => 'Book']);
+    /** @var Filter $filter */
+    $filter = invokeProperty($chart, 'filter');
+
+    expect($filter->getConditionTree())
+        ->toBeInstanceOf(ConditionTreeLeaf::class)
+        ->and($filter->getConditionTree())
+        ->toEqual(new ConditionTreeLeaf('year', Operators::EQUAL, '2022'));
+});
+
 test('makeValue() should return a ValueChart', function () {
     $chart = factoryChart(
         [
@@ -173,12 +249,11 @@ test('makeValue() should return a ValueChart', function () {
                 ],
             ],
             'payload' => [
-                'type'            => 'Value',
-                'collection'      => 'Book',
-                'aggregate_field' => 'price',
-                'aggregate'       => 'Sum',
-                'filters'         => null,
-                'timezone'        => 'Europe/Paris',
+                'aggregateFieldName'   => 'price',
+                'aggregator'           => 'Sum',
+                'sourceCollectionName' => 'Book',
+                'type'                 => 'Value',
+                'timezone'             => 'Europe/Paris',
             ],
         ]
     );
@@ -209,12 +284,12 @@ test('makeValue() with previous filter should return a ValueChart', function () 
                 'previous' => true,
             ],
             'payload' => [
-                'type'            => 'Value',
-                'collection'      => 'Book',
-                'aggregate_field' => 'price',
-                'aggregate'       => 'Sum',
-                'filters'         => "{\"field\":\"date\",\"operator\":\"yesterday\",\"value\":null}",
-                'timezone'        => 'Europe/Paris',
+                'type'                 => 'Value',
+                'sourceCollectionName' => 'Book',
+                'aggregateFieldName'   => 'price',
+                'aggregator'           => 'Sum',
+                'filter'               => "{\"field\":\"date\",\"operator\":\"yesterday\",\"value\":null}",
+                'timezone'             => 'Europe/Paris',
             ],
         ]
     );
@@ -246,12 +321,12 @@ test('makeObjective() should return a ObjectiveChart', function () {
                 ],
             ],
             'payload' => [
-                'type'            => 'Objective',
-                'collection'      => 'Book',
-                'aggregate_field' => 'price',
-                'aggregate'       => 'Count',
-                'filters'         => null,
-                'timezone'        => 'Europe/Paris',
+                'type'                 => 'Objective',
+                'sourceCollectionName' => 'Book',
+                'aggregateFieldName'   => 'price',
+                'aggregator'           => 'Count',
+                'filter'               => null,
+                'timezone'             => 'Europe/Paris',
             ],
         ],
     );
@@ -287,11 +362,11 @@ test('makePie() should return a PieChart', function () {
                 ],
             ],
             'payload' => [
-                'type'           => 'Pie',
-                'collection'     => 'Book',
-                'group_by_field' => 'year',
-                'aggregate'      => 'Count',
-                'timezone'       => 'Europe/Paris',
+                'type'                 => 'Pie',
+                'sourceCollectionName' => 'Book',
+                'groupByFieldName'     => 'year',
+                'aggregator'           => 'Count',
+                'timezone'             => 'Europe/Paris',
             ],
         ],
     );
@@ -336,12 +411,12 @@ test('makeLine() with day filter should return a LineChart', function () {
                 ],
             ],
             'payload' => [
-                'type'                => 'Line',
-                'collection'          => 'Book',
-                'group_by_date_field' => 'date',
-                'aggregate'           => 'Count',
-                'time_range'          => 'Day',
-                'timezone'            => 'Europe/Paris',
+                'type'                 => 'Line',
+                'sourceCollectionName' => 'Book',
+                'groupByFieldName'     => 'date',
+                'aggregator'           => 'Count',
+                'timeRange'            => 'Day',
+                'timezone'             => 'Europe/Paris',
             ],
         ]
     );
@@ -386,12 +461,12 @@ test('makeLine() with week filter should return a LineChart', function () {
                 ],
             ],
             'payload' => [
-                'type'                => 'Line',
-                'collection'          => 'Book',
-                'group_by_date_field' => 'date',
-                'aggregate'           => 'Count',
-                'time_range'          => 'Week',
-                'timezone'            => 'Europe/Paris',
+                'type'                 => 'Line',
+                'sourceCollectionName' => 'Book',
+                'groupByFieldName'     => 'date',
+                'aggregator'           => 'Count',
+                'timeRange'            => 'Week',
+                'timezone'             => 'Europe/Paris',
             ],
         ]
     );
@@ -436,12 +511,12 @@ test('makeLine() with month filter should return a LineChart', function () {
                 ],
             ],
             'payload' => [
-                'type'                => 'Line',
-                'collection'          => 'Book',
-                'group_by_date_field' => 'date',
-                'aggregate'           => 'Count',
-                'time_range'          => 'Month',
-                'timezone'            => 'Europe/Paris',
+                'type'                 => 'Line',
+                'sourceCollectionName' => 'Book',
+                'groupByFieldName'     => 'date',
+                'aggregator'           => 'Count',
+                'timeRange'            => 'Month',
+                'timezone'             => 'Europe/Paris',
             ],
         ]
     );
@@ -486,12 +561,12 @@ test('makeLine() with month year should return a LineChart', function () {
                 ],
             ],
             'payload' => [
-                'type'                => 'Line',
-                'collection'          => 'Book',
-                'group_by_date_field' => 'date',
-                'aggregate'           => 'Count',
-                'time_range'          => 'Year',
-                'timezone'            => 'Europe/Paris',
+                'type'                 => 'Line',
+                'sourceCollectionName' => 'Book',
+                'groupByFieldName'     => 'date',
+                'aggregator'           => 'Count',
+                'timeRange'            => 'Year',
+                'timezone'             => 'Europe/Paris',
             ],
         ]
     );
@@ -537,12 +612,12 @@ test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation
                 ],
             ],
             'payload' => [
-                'type'               => 'Leaderboard',
-                'collection'         => 'Book',
-                'label_field'        => 'title',
-                'aggregate'          => 'Count',
-                'relationship_field' => 'bookReviews',
-                'timezone'           => 'Europe/Paris',
+                'type'                  => 'Leaderboard',
+                'sourceCollectionName'  => 'Book',
+                'labelFieldName'        => 'title',
+                'aggregator'            => 'Count',
+                'relationshipFieldName' => 'bookReviews',
+                'timezone'              => 'Europe/Paris',
             ],
         ],
     );
@@ -588,12 +663,12 @@ test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relatio
                 ],
             ],
             'payload' => [
-                'type'               => 'Leaderboard',
-                'collection'         => 'Book',
-                'label_field'        => 'title',
-                'aggregate'          => 'Count',
-                'relationship_field' => 'reviews',
-                'timezone'           => 'Europe/Paris',
+                'type'                  => 'Leaderboard',
+                'sourceCollectionName'  => 'Book',
+                'labelFieldName'        => 'title',
+                'aggregator'            => 'Count',
+                'relationshipFieldName' => 'reviews',
+                'timezone'              => 'Europe/Paris',
             ],
         ],
     );
@@ -629,11 +704,11 @@ test('makeLeaderboard() should throw a ForestException when the request is not f
                 'results' => [],
             ],
             'payload' => [
-                'type'               => 'Leaderboard',
-                'aggregate'          => 'Count',
-                'collection'         => 'Book',
-                'relationship_field' => 'reviews',
-                'timezone'           => 'Europe/Paris',
+                'type'                  => 'Leaderboard',
+                'aggregator'            => 'Count',
+                'sourceCollectionName'  => 'Book',
+                'relationshipFieldName' => 'reviews',
+                'timezone'              => 'Europe/Paris',
             ],
         ],
     );

@@ -3,28 +3,28 @@
 namespace ForestAdmin\AgentPHP\Agent\Services;
 
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
+use ForestAdmin\AgentPHP\Agent\Facades\ForestSchema;
+use ForestAdmin\AgentPHP\Agent\Http\Exceptions\ForbiddenError;
 use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
+use ForestAdmin\AgentPHP\Agent\Utils\ArrayHelper;
+use ForestAdmin\AgentPHP\Agent\Utils\ContextVariables;
+use ForestAdmin\AgentPHP\Agent\Utils\ContextVariablesInjector;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
-use Illuminate\Support\Arr;
+
+use function ForestAdmin\config;
+
 use Illuminate\Support\Collection as IlluminateCollection;
-use Illuminate\Support\Str;
-use phpDocumentor\Reflection\Types\Boolean;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class Permissions
 {
-    public const TTL = 60 * 60 * 24;
-
-    public const ALLOWED_PERMISSION_LEVELS = ['admin', 'editor', 'developer'];
-
     private ForestApiRequester $forestApi;
 
     public function __construct(protected Caller $caller)
@@ -32,186 +32,270 @@ class Permissions
         $this->forestApi = new ForestApiRequester();
     }
 
-    public function getCacheKey(int $renderingId): string
+    public function invalidateCache(string $idCache): void
     {
-        return "permissions.$renderingId";
+        Cache::forget($idCache);
     }
 
-    public function invalidateCache(int $renderingId): void
+    public function can(string $action, CollectionContract $collection, $allowFetch = false): bool
     {
-        Cache::forget($this->getCacheKey($renderingId));
-    }
+        $userData = $this->getUserData($this->caller->getId());
+        $collectionsData = $this->getCollectionsPermissionsData($allowFetch);
 
-    public function canChart(Request $request, $allowFetch = true): bool
-    {
-        $chart = $request->all();
-        unset($chart['timezone']);
-        $type = strtolower(Str::plural($request->get('type')));
+        $isAllowed = array_key_exists($collection->getName(), $collectionsData) && in_array($userData['roleId'], $collectionsData[$collection->getName()][$action], true);
 
-        // When the server sends the data of the allowed charts, the target column is not specified
-        // for relations => allow them all.
-        if ($request->input('group_by_field')
-            && Str::contains($request->input('group_by_field'), ':')
-        ) {
-            $chart['group_by_field'] = Str::before($chart['group_by_field'], ':');
-        }
-
-        $chartHash = $this->arrayHash($chart);
-        $permissions = $this->getRenderingPermissions($this->caller->getRenderingId());
-        $isAllowed = in_array($this->caller->getValue('permission_level'), self::ALLOWED_PERMISSION_LEVELS, true)
-            || $permissions->get('charts')?->contains("$type:$chartHash");
-
-        if (! $isAllowed && $allowFetch) {
-            $this->invalidateCache($this->caller->getRenderingId());
-
-            return $this->canChart($request, false);
-        }
-
+        // Refetch
         if (! $isAllowed) {
-            throw new HttpException(Response::HTTP_FORBIDDEN, 'Forbidden');
+            $collectionsData = $this->getCollectionsPermissionsData(true);
+            $isAllowed = in_array($userData['roleId'], $collectionsData[$collection->getName()][$action], true);
+        }
+
+        // still not allowed - throw forbidden message
+        if (! $isAllowed) {
+            throw new ForbiddenError('You don\'t have permission to ' . $action . ' this collection.');
         }
 
         return $isAllowed;
     }
 
-    public function can(string $action, $allowFetch = true): bool
+    public function canChart(Request $request): bool
     {
-        $permissions = $this->getRenderingPermissions($this->caller->getRenderingId());
-        $isAllowed = $permissions->get('actions')?->get($action)?->contains($this->caller->getId());
+        $attributes = $request->all();
+        unset($attributes['timezone'], $attributes['collection'], $attributes['contextVariables']);
+        $attributes = array_filter($attributes, static fn ($value) => ! is_null($value) && $value !== '');
+        $hashRequest = $attributes['type'] . ':' . $this->arrayHash($attributes);
+        $isAllowed = in_array($hashRequest, $this->getChartData($this->caller->getRenderingId()), true);
 
-        if (! $isAllowed && $allowFetch) {
-            $this->invalidateCache($this->caller->getRenderingId());
-
-            return $this->can($action, false);
+        // Refetch
+        if (! $isAllowed) {
+            $isAllowed = in_array($hashRequest, $this->getChartData($this->caller->getRenderingId(), true), true);
         }
 
+        // still not allowed - throw forbidden message
         if (! $isAllowed) {
-            throw new HttpException(Response::HTTP_FORBIDDEN, 'Forbidden');
+            throw new ForbiddenError('You don\'t have permission to access this collection.');
         }
 
         return $isAllowed;
+    }
+
+    public function canSmartAction(Request $request, CollectionContract $collection, Filter $filter, $allowFetch = true): bool
+    {
+        if (! $this->hasPermissionSystem()) {
+            return true;
+        }
+
+        $userData = $this->getUserData($this->caller->getId());
+        $collectionsData = $this->getCollectionsPermissionsData($allowFetch);
+        $action = $this->findActionFromEndpoint($collection->getName(), $request->getPathInfo(), $request->getMethod());
+
+        if (null === $action) {
+            throw new ForestException('The collection ' . $collection->getName() . ' does not have this smart action');
+        }
+
+        $smartActionApproval = new SmartActionChecker(
+            $request,
+            $collection,
+            $collectionsData[$collection->getName()]['actions'][$action['name']],
+            $this->caller,
+            $userData['roleId'],
+            $filter
+        );
+
+        return $smartActionApproval->canExecute();
     }
 
     public function getScope(CollectionContract $collection): ?ConditionTree
     {
-        $permissions = $this->getRenderingPermissions($this->caller->getRenderingId());
-        $scopes = $permissions->get('scopes')->get($collection->getName());
+        $permissions = $this->getScopeAndTeamData($this->caller->getRenderingId());
 
-        if (! $scopes) {
+        $scope = $permissions->get('scopes')->get($collection->getName());
+        $team = $permissions->get('team');
+        $user = $this->getUserData($this->caller->getId());
+
+        if (! $scope) {
             return null;
         }
 
-        return $scopes['conditionTree']->replaceLeafs(
-            function (ConditionTreeLeaf $leaf) use ($scopes) {
-                $dynamicValues = Arr::get($scopes, 'dynamicScopeValues.' . $this->caller->getId());
+        $contextVariables = new ContextVariables(team: $team, user: $user);
 
-                if (is_string($leaf->getValue()) && Str::startsWith($leaf->getValue(), '$currentUser')) {
-                    if ($dynamicValues) {
-                        return $leaf->override(value: $dynamicValues[$leaf->getValue()]);
-                    }
+        return ContextVariablesInjector::injectContextInFilter($scope, $contextVariables);
+    }
 
-                    return $leaf->override(value: Str::startsWith($leaf->getValue(), '$currentUser.tags.')
-                        ? $this->caller->getTag(Str::substr($leaf->getValue(), 18))
-                        : $this->caller->getValue(Str::substr($leaf->getValue(), 13)));
+    public function getUserData(int $userId): array
+    {
+        $cache = Cache::remember(
+            'forest.users',
+            function () {
+                $response = $this->fetch('/liana/v4/permissions/users');
+                $users = [];
+                foreach ($response as $user) {
+                    $users[$user['id']] = $user;
                 }
 
-                return $leaf;
-            }
+                return $users;
+            },
+            config('permissionExpiration')
+        );
+
+        return $cache[$userId];
+    }
+
+    public function getTeam(int $renderingId): array
+    {
+        $permissions = $this->getScopeAndTeamData($renderingId);
+
+        return $permissions->get('team');
+    }
+
+    protected function getCollectionsPermissionsData(bool $forceFetch = false): array
+    {
+        if ($forceFetch) {
+            $this->invalidateCache('forest.collections');
+        }
+
+        return Cache::remember(
+            'forest.collections',
+            function () {
+                $response = $this->fetch('/liana/v4/permissions/environment');
+                $collections = [];
+                foreach ($response['collections'] as $name => $collection) {
+                    $collections[$name] = array_merge($this->decodeCrudPermissions($collection), $this->decodeActionPermissions($collection));
+                }
+
+                return $collections;
+            },
+            config('permissionExpiration')
         );
     }
 
-    protected function getRenderingPermissions(int $renderingId): IlluminateCollection
+    protected function getChartData(int $renderingId, $forceFetch = false): array
+    {
+        if ($forceFetch) {
+            $this->invalidateCache('forest.stats');
+        }
+
+        return Cache::remember(
+            'forest.stats',
+            function () use ($renderingId) {
+                $response = $this->fetch('/liana/v4/permissions/renderings/' . $renderingId);
+                $statHash = [];
+                foreach ($response['stats'] as $stat) {
+                    $stat = array_filter($stat, static fn ($value) => ! is_null($value) && $value !== '');
+                    $statHash[] = $stat['type'] . ':' . $this->arrayHash($stat);
+                }
+
+                return $statHash;
+            },
+            config('permissionExpiration')
+        );
+    }
+
+    protected function arrayHash(array $data): string
+    {
+        ArrayHelper::ksortRecursive($data);
+
+        return sha1(json_encode($data, JSON_THROW_ON_ERROR));
+    }
+
+    protected function getScopeAndTeamData(int $renderingId): IlluminateCollection
     {
         return Cache::remember(
-            $this->getCacheKey($renderingId),
+            'forest.scopes',
             function () use ($renderingId) {
-                $permissions = $this->getPermissions($renderingId);
+                $data = collect();
+                $response = $this->fetch('/liana/v4/permissions/renderings/' . $renderingId);
 
-                return collect(
-                    [
-                        'actions' => $this->decodeActionPermissions($permissions),
-                        'scopes'  => $this->decodeScopePermissions($permissions, $renderingId),
-                        'charts'  => $this->decodeChartPermissions($permissions),
-                    ]
-                );
+                $data->put('scopes', $this->decodeScopePermissions($response['collections']));
+                $data->put('team', $response['team']);
+
+                return $data;
             },
-            self::TTL
+            config('permissionExpiration')
         );
     }
 
-    private function getPermissions(int $renderingId): array
+    protected function hasPermissionSystem()
     {
-        try {
-            $response = $this->forestApi->get(
-                '/liana/v3/permissions',
-                compact('renderingId')
-            );
-            $body = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        return Cache::remember(
+            'forest.has_permission',
+            function () {
+                $response = $this->fetch('/liana/v4/permissions/environment');
 
-            if (isset($body['meta']['rolesACLActivated']) && ! $body['meta']['rolesACLActivated']) {
-                throw new ForestException('Roles V2 are unsupported');
-            }
-
-            return $body;
-        } catch (\Exception $e) {
-            ForestHttpApi::handleResponseError($e);
-        }
+                return ! ($response === true);
+            },
+            config('permissionExpiration')
+        );
     }
 
-    private function decodeActionPermissions(array $rawPermissions): IlluminateCollection
+    protected function findActionFromEndpoint($collectionName, $endpoint, $httpMethod): ?array
     {
-        $actions = collect();
-        foreach ($rawPermissions['data']['collections'] as $collectionName => $permission) {
-            foreach ($permission['collection'] as $actionName              => $userIds) {
-                $shortName = Str::before($actionName, 'Enabled');
-                $userIds = $userIds instanceof Boolean ? [$this->caller->getId()] : $userIds;
-                $actions->put("$shortName:$collectionName", collect($userIds));
-            }
+        $actions = ForestSchema::getSmartActions($collectionName);
 
-            foreach ($permission['actions'] as $actionName => $actionPermissions) {
-                $userIds = $actionPermissions['triggerEnabled'];
-                $userIds = $userIds instanceof Boolean ? [$this->caller->getId()] : $userIds;
+        if (empty($actions)) {
+            return null;
+        }
 
-                $actions->put("custom:$actionName:$collectionName", collect($userIds));
-            }
+        $action = collect($actions)
+            ->where('endpoint', $endpoint)
+            ->where('httpMethod', $httpMethod)
+            ->first();
+
+        return $action;
+    }
+
+    protected function decodeCrudPermissions(array $collection): array
+    {
+        return [
+            'browse'  => $collection['collection']['browseEnabled']['roles'],
+            'read'    => $collection['collection']['readEnabled']['roles'],
+            'edit'    => $collection['collection']['editEnabled']['roles'],
+            'add'     => $collection['collection']['addEnabled']['roles'],
+            'delete'  => $collection['collection']['deleteEnabled']['roles'],
+            'export'  => $collection['collection']['exportEnabled']['roles'],
+        ];
+    }
+
+    protected function decodeActionPermissions(array $collection): array
+    {
+        $actions = ['actions' => []];
+        foreach ($collection['actions'] as $id => $action) {
+            $actions['actions'][$id] = [
+                'triggerEnabled'              => $action['triggerEnabled']['roles'],
+                'triggerConditions'           => $action['triggerConditions'],
+                'approvalRequired'            => $action['approvalRequired']['roles'],
+                'approvalRequiredConditions'  => $action['approvalRequiredConditions'],
+                'userApprovalEnabled'         => $action['userApprovalEnabled']['roles'],
+                'userApprovalConditions'      => $action['userApprovalConditions'],
+                'selfApprovalEnabled'         => $action['selfApprovalEnabled']['roles'],
+            ];
         }
 
         return $actions;
     }
 
-    private function decodeScopePermissions(array $rawPermissions, int $renderingId): IlluminateCollection
+    protected function decodeScopePermissions(array $rawPermissions): IlluminateCollection
     {
         $scopes = [];
-        if (isset($rawPermissions['data']['renderings'][$renderingId])) {
-            foreach ($rawPermissions['data']['renderings'][$renderingId] as $collectionName => $value) {
-                if (isset($value['scope'])) {
-                    $scopes[$collectionName] = [
-                        'conditionTree'      => ConditionTreeFactory::fromArray($value['scope']['filter']),
-                        'dynamicScopeValues' => $value['scope']['dynamicScopesValues']['users'] ?? [],
-                    ];
-                }
+        foreach ($rawPermissions as $collectionName => $value) {
+            if (null !== $value['scope']) {
+                $scopes[$collectionName] = ConditionTreeFactory::fromArray($value['scope']);
             }
         }
 
         return collect($scopes);
     }
 
-    private function decodeChartPermissions(array $rawPermissions): IlluminateCollection
+    protected function fetch(string $url)
     {
-        $actions = collect();
-        foreach ($rawPermissions['stats'] as $typeChart => $permissions) {
-            foreach ($permissions as $permission) {
-                $permission = array_filter($permission, static fn ($value) => ! is_null($value) && $value !== '');
-                $permissionHash = $this->arrayHash($permission);
-                $actions->push("$typeChart:$permissionHash");
-            }
+        try {
+            $response = $this->forestApi->get($url);
+
+            return json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+            // @codeCoverageIgnoreStart
+        } catch (\Exception $e) {
+            ForestHttpApi::handleResponseError($e);
         }
-
-        return $actions;
-    }
-
-    private function arrayHash(array $data): string
-    {
-        return sha1(json_encode(ksort($data), JSON_THROW_ON_ERROR));
+        // @codeCoverageIgnoreEnd
     }
 }

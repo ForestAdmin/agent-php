@@ -3,9 +3,7 @@
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\ListingRelated;
-use ForestAdmin\AgentPHP\Agent\Services\Permissions;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
-use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
@@ -15,6 +13,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+
+use function ForestAdmin\config;
 
 function factoryListingRelated($args = []): ListingRelated
 {
@@ -64,22 +64,51 @@ function factoryListingRelated($args = []): ListingRelated
     SchemaEmitter::getSerializedSchema($datasource);
 
     $request = Request::createFromGlobals();
-    $permissions = new Permissions(QueryStringParser::parseCaller($request));
 
     Cache::put(
-        $permissions->getCacheKey(10),
+        'forest.users',
+        [
+            1 => [
+                'id'              => 1,
+                'firstName'       => 'John',
+                'lastName'        => 'Doe',
+                'fullName'        => 'John Doe',
+                'email'           => 'john.doe@domain.com',
+                'tags'            => [],
+                'roleId'          => 1,
+                'permissionLevel' => 'admin',
+            ],
+        ],
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.collections',
+        [
+            'User' => [
+                'browse'  => [
+                    0 => 1,
+                ],
+                'export'  => [
+                    0 => 1,
+                ],
+            ],
+        ],
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.scopes',
         collect(
             [
-                'actions' => collect(
-                    [
-                        'browse:Car' => collect([1]),
-                        'export:Car' => collect([1]),
-                    ]
-                ),
-                'scopes'  => collect(),
+                'scopes' => collect([]),
+                'team'   => [
+                    'id'   => 44,
+                    'name' => 'Operations',
+                ],
             ]
         ),
-        300
+        config('permissionExpiration')
     );
 
     $listing = mock(ListingRelated::class)

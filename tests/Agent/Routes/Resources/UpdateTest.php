@@ -3,9 +3,7 @@
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Update;
-use ForestAdmin\AgentPHP\Agent\Services\Permissions;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
-use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
@@ -14,6 +12,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projectio
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+
+use function ForestAdmin\config;
 
 function factoryUpdate($args = []): Update
 {
@@ -43,21 +43,48 @@ function factoryUpdate($args = []): Update
 
     SchemaEmitter::getSerializedSchema($datasource);
     $request = Request::createFromGlobals();
-    $permissions = new Permissions(QueryStringParser::parseCaller($request));
 
     Cache::put(
-        $permissions->getCacheKey(10),
+        'forest.users',
+        [
+            1 => [
+                'id'              => 1,
+                'firstName'       => 'John',
+                'lastName'        => 'Doe',
+                'fullName'        => 'John Doe',
+                'email'           => 'john.doe@domain.com',
+                'tags'            => [],
+                'roleId'          => 1,
+                'permissionLevel' => 'admin',
+            ],
+        ],
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.collections',
+        [
+            'Car' => [
+                'edit'  => [
+                    0 => 1,
+                ],
+            ],
+        ],
+        config('permissionExpiration')
+    );
+
+    Cache::put(
+        'forest.scopes',
         collect(
             [
-                'actions' => collect(
-                    [
-                        'edit:Car' => collect([1]),
-                    ]
-                ),
-                'scopes'  => collect(),
+                'scopes' => collect([]),
+                'team'   => [
+                    'id'   => 44,
+                    'name' => 'Operations',
+                ],
             ]
         ),
-        300
+        config('permissionExpiration')
     );
 
     $update = mock(Update::class)
@@ -87,6 +114,7 @@ test('handleRequest() should return a response 200', function () {
         'attributes' => $data,
         'type'       => 'Car',
     ];
+
     $update = factoryUpdate(['update' => $data]);
 
     expect($update->handleRequest(['collectionName' => 'Car', 'id' => 2]))

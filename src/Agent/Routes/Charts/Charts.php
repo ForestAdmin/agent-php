@@ -5,6 +5,8 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Charts;
 use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
+use ForestAdmin\AgentPHP\Agent\Utils\ContextVariablesInjector;
+use ForestAdmin\AgentPHP\Agent\Utils\ContextVariablesInstantiator;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LeaderboardChart;
@@ -51,6 +53,7 @@ class Charts extends AbstractCollectionRoute
         $this->build($args);
         $this->permissions->canChart($this->request);
         $scope = $this->permissions->getScope($this->collection);
+        $this->injectContextVariables();
         $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
         $this->setType($this->request->get('type'));
         $this->setCaller(QueryStringParser::parseCaller($this->request));
@@ -76,6 +79,21 @@ class Charts extends AbstractCollectionRoute
     public function setCaller(Caller $caller): void
     {
         $this->caller = $caller;
+    }
+
+    private function injectContextVariables(): void
+    {
+        $contextVariables = ContextVariablesInstantiator::buildContextVariables($this->caller, $this->request->get('contextVariables') ?? []);
+        $rawFilter = $this->request->get('filter') ?? [];
+        if (is_string($rawFilter)) {
+            $rawFilter = json_decode($rawFilter, true, 512, JSON_THROW_ON_ERROR);
+        }
+
+        array_walk_recursive($rawFilter, static function (&$value) use ($contextVariables) {
+            $value = ContextVariablesInjector::injectContextInValue($value, $contextVariables);
+        });
+
+        $this->request->set('filter', $rawFilter);
     }
 
     private function makeValue(): ValueChart
@@ -104,9 +122,9 @@ class Charts extends AbstractCollectionRoute
     private function makePie(): PieChart
     {
         $aggregation = new Aggregation(
-            operation: $this->request->get('aggregate'),
-            field: $this->request->get('aggregate_field'),
-            groups: $this->request->get('group_by_field') ? [['field' => $this->request->get('group_by_field')]] : []
+            operation: $this->request->get('aggregator'),
+            field: $this->request->get('aggregateFieldName'),
+            groups: $this->request->get('groupByFieldName') ? [['field' => $this->request->get('groupByFieldName')]] : []
         );
 
         $result = $this->collection->aggregate($this->caller, $this->filter, $aggregation);
@@ -117,9 +135,9 @@ class Charts extends AbstractCollectionRoute
     private function makeLine(): LineChart
     {
         $aggregation = new Aggregation(
-            operation: $this->request->get('aggregate'),
-            field: $this->request->get('aggregate_field'),
-            groups: [['field' => $this->request->get('group_by_date_field'), 'operation' => $this->request->get('time_range')]]
+            operation: $this->request->get('aggregator'),
+            field: $this->request->get('aggregateFieldName'),
+            groups: [['field' => $this->request->get('groupByFieldName'), 'operation' => $this->request->get('timeRange')]]
         );
 
         $result = $this->collection->aggregate($this->caller, $this->filter, $aggregation);
@@ -130,21 +148,21 @@ class Charts extends AbstractCollectionRoute
     private function makeLeaderboard(): LeaderboardChart
     {
         /** @var RelationSchema $field */
-        $field = $this->collection->getFields()[$this->request->get('relationship_field')];
+        $field = $this->collection->getFields()[$this->request->get('relationshipFieldName')];
         $foreignCollectionName = null;
 
         if ($field->getType() === 'OneToMany') {
-            $foreignCollectionName = CollectionUtils::getInverseRelation($this->collection, $this->request->get('relationship_field'));
+            $foreignCollectionName = CollectionUtils::getInverseRelation($this->collection, $this->request->get('relationshipFieldName'));
         }
 
         if ($field->getType() === 'ManyToMany') {
-            $foreignCollectionName = CollectionUtils::getThroughTarget($this->collection, $this->request->get('relationship_field'));
+            $foreignCollectionName = CollectionUtils::getThroughTarget($this->collection, $this->request->get('relationshipFieldName'));
         }
 
         $aggregation = new Aggregation(
-            operation: $this->request->get('aggregate'),
-            field: $this->request->get('aggregate_field'),
-            groups: $this->request->get('label_field') ? [['field' => $this->request->get('label_field')]] : []
+            operation: $this->request->get('aggregator'),
+            field: $this->request->get('aggregateFieldName'),
+            groups: $this->request->get('labelFieldName') ? [['field' => $this->request->get('labelFieldName')]] : []
         );
 
         if (! $foreignCollectionName || ! $aggregation->getGroups()) {
@@ -158,7 +176,7 @@ class Charts extends AbstractCollectionRoute
 
     private function computeValue(Filter $filter): int
     {
-        $aggregation = new Aggregation(operation: $this->request->get('aggregate'), field: $this->request->get('aggregate_field'));
+        $aggregation = new Aggregation(operation: $this->request->get('aggregator'), field: $this->request->get('aggregateFieldName'));
         $result = $this->collection->aggregate($this->caller, $filter, $aggregation);
 
         return $result[0]['value'] ?? 0;
@@ -196,11 +214,11 @@ class Charts extends AbstractCollectionRoute
      */
     private function getFormat(): string
     {
-        if (! $this->request->get('time_range')) {
-            throw new ForestException("The parameter time_range is not defined");
+        if (! $this->request->get('timeRange')) {
+            throw new ForestException("The parameter timeRange is not defined");
         }
 
-        return match (Str::lower($this->request->get('time_range'))) {
+        return match (Str::lower($this->request->get('timeRange'))) {
             'day'   => 'd/m/Y',
             'week'  => '\WW-Y',
             'month' => 'M Y',
