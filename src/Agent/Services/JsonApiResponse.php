@@ -12,7 +12,6 @@ use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
 use ForestAdmin\AgentPHP\Agent\Utils\Id as IdUtils;
 
 
-use Illuminate\Support\Collection as BaseCollection;
 
 use Illuminate\Support\Str;
 
@@ -75,16 +74,6 @@ class JsonApiResponse
                 ],
             ]
         );
-    }
-
-    protected function isCollection($instance): bool
-    {
-        return $instance instanceof BaseCollection;
-    }
-
-    protected function isPaginator($instance): bool
-    {
-        // todo
     }
 
     protected function searchDecorator(Collection $resource, string $searchValue): array

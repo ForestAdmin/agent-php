@@ -39,14 +39,13 @@ class GeneratorAction
         $slug = Str::slug($name);
 
         $fields = self::buildFields($collection, $name, $action);
-        // todo => const fields = await SchemaGeneratorActions.buildFields(collection, name, schema);
 
         return [
             'id'         => "$collectionName-$index-$slug",
             'name'       => $name,
             'type'       => strtolower($action->getScope()),
             'baseUrl'    => null,
-            'endpoint'   => "/forest/_actions/$collectionName/$index/$slug", // todo path.join('/', prefix, '_actions', collection.name, String(actionIndex), slug),
+            'endpoint'   => "/forest/_actions/$collectionName/$index/$slug",
             'httpMethod' => 'POST',
             'redirect'   => null, // frontend ignores this attribute
             'download'   => $action->isGenerateFile(),
@@ -54,7 +53,7 @@ class GeneratorAction
             'hooks'      => [
                 'load'   => ! $action->isStaticForm(),
                 // Always registering the change hook has no consequences, even if we don't use it.
-                'change' => ['changeHook'],// todo question to devXP
+                'change' => ['changeHook'],
             ],
         ];
     }
@@ -106,8 +105,8 @@ class GeneratorAction
         $fields = $action->getForm();
 
         if ($fields) {
-//            // When sending to server, we need to rename 'value' into 'defaultValue'
-//            // otherwise, it does not gets applied 🤷‍♂️
+            // When sending to server, we need to rename 'value' into 'defaultValue'
+            // otherwise, it does not gets applied 🤷‍♂️
             return collect($fields)->map(
                 static function ($field) {
                     $fieldSchema = self::buildFieldSchema(AgentFactory::get('datasource'), $field);

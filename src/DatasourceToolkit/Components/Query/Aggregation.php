@@ -9,8 +9,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record;
 
 class Aggregation
 {
-    // todo checks all methods public to private?
-
     public function __construct(protected string $operation, protected ?string $field = null, protected ?array $groups = [])
     {
         $this->validate($this->operation);
