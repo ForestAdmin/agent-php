@@ -87,6 +87,7 @@ class BinaryCollection extends CollectionDecorator
 
     public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array
     {
+        $filter = $this->refineFilter($caller, $filter);
         $records = $this->childCollection->list($caller, $filter, $projection);
 
         return collect($records)->map(fn ($record) => $this->convertRecord(false, $record))->toArray();
@@ -94,6 +95,7 @@ class BinaryCollection extends CollectionDecorator
 
     public function update(Caller $caller, Filter $filter, array $patch)
     {
+        $filter = $this->refineFilter($caller, $filter);
         $patchWithBinary = $this->convertRecord(true, $patch);
 
         $this->childCollection->update($caller, $filter, $patchWithBinary);
@@ -101,6 +103,7 @@ class BinaryCollection extends CollectionDecorator
 
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null, ?string $chartType = null)
     {
+        $filter = $this->refineFilter($caller, $filter);
         $rows = $this->childCollection->aggregate($caller, $filter, $aggregation, $limit);
 
         return collect($rows)->map(function ($row) {
@@ -118,7 +121,8 @@ class BinaryCollection extends CollectionDecorator
 
     private function convertConditionTreeLeaf(ConditionTreeLeaf $leaf)
     {
-        [$prefix, $suffix] = explode(':', $leaf->getField());
+        $prefix = Str::before($leaf->getField(), ':');
+        $suffix = Str::contains($leaf->getField(), ':') ? Str::after($leaf->getField(), ':') : null;
         $schema = $this->childCollection->getFields()[$prefix];
 
         if ($schema->getType() !== 'Column') {
@@ -129,13 +133,12 @@ class BinaryCollection extends CollectionDecorator
         }
 
         if (in_array($leaf->getOperator(), self::OPERATORS_WITH_VALUE_REPLACEMENT, true)) {
-            //dd(11);
             $useHex = $this->shouldUseHex($prefix);
             $columnType = $leaf->getOperator() === Operators::IN || $leaf->getOperator() === Operators::NOT_IN
                 ? [$schema->getColumnType()]
                 : $schema->getColumnType();
 
-            return $leaf->override(['value' => $this->convertValueHelper(true, $columnType, $useHex, $leaf->getValue())]);
+            return $leaf->override(value: $this->convertValueHelper(true, $columnType, $useHex, $leaf->getValue()));
         }
 
         return $leaf;
@@ -229,14 +232,15 @@ class BinaryCollection extends CollectionDecorator
         $validation = [];
 
         if ($this->shouldUseHex($name)) {
-            $minlength = collect($schema->getValidation())->first(fn ($rule) => $rule['operator'] === Operators::LONGER_THAN)['value'] ?? null;
-            $maxlength = collect($schema->getValidation())->first(fn ($rule) => $rule['operator'] === Operators::SHORTER_THAN)['value'] ?? null;
+            $minlength = collect($schema->getValidation())->firstWhere(fn ($rule) => $rule['operator'] === Operators::LONGER_THAN)['value'] ?? null;
+            $maxlength = collect($schema->getValidation())->firstWhere(fn ($rule) => $rule['operator'] === Operators::SHORTER_THAN)['value'] ?? null;
             $validation[] = ['operator' => Operators::MATCH, 'value' => '/^[0-9a-f]+$/'];
+
             if ($minlength) {
-                $validation[] = ['operator' => Operators::LONGER_THAN, 'value' => $minlength * 2 + 1];
+                $validation[] = ['operator' => Operators::LONGER_THAN, 'value' => (int) $minlength * 2 + 1];
             }
             if ($maxlength) {
-                $validation[] = ['operator' => Operators::SHORTER_THAN, 'value' => $maxlength * 2 - 1];
+                $validation[] = ['operator' => Operators::SHORTER_THAN, 'value' => (int) $maxlength * 2 - 1];
             }
         } else {
             $validation[] = ['operator' => Operators::MATCH, 'value' => '/^data:.*;base64,.*/'];
