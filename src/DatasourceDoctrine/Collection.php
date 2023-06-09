@@ -81,8 +81,6 @@ class Collection extends BaseCollection
                 isSortable: true,
                 type: 'Column',
                 defaultValue: array_key_exists('options', $value) && array_key_exists('default', $value['options']) ? $value['options']['default'] : null,
-                enumValues: [], // todo
-                validation: [], // todo
             );
             $this->addField($value['columnName'], $field);
         }

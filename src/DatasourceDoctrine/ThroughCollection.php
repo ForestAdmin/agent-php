@@ -56,8 +56,6 @@ class ThroughCollection extends BaseCollection
                 isSortable: true,
                 type: 'Column',
                 defaultValue: $value->getDefault(),
-                enumValues: [], // todo
-                validation: [], // todo
             );
             $this->addField($value->getName(), $field);
         }

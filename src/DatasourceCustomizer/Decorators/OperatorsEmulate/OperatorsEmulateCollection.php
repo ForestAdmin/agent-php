@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsEmulate;
 
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
@@ -115,8 +116,7 @@ class OperatorsEmulateCollection extends CollectionDecorator
                 throw new ForestException('Operator replacement cycle ' . implode(' -> ', $subReplacements));
             }
 
-            // todo check if 2nd parameter is necessary in our agent
-            $result = $handler($leaf->getValue());// new CollectionCustomizationContext(this, caller));
+            $result = $handler($leaf->getValue(), new CollectionCustomizationContext($this, $caller));
             if ($result) {
                 $equivalent = $result instanceof ConditionTree ? $result : ConditionTreeFactory::fromArray($result);
 
