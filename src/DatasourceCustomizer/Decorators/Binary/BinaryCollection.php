@@ -116,7 +116,7 @@ class BinaryCollection extends CollectionDecorator
 
     public function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
     {
-        return $filter?->override(conditionTree: $filter->getConditionTree()->replaceLeafs(fn ($leaf) => $this->convertConditionTreeLeaf($leaf)));
+        return $filter?->override(conditionTree: $filter?->getConditionTree()?->replaceLeafs(fn ($leaf) => $this->convertConditionTreeLeaf($leaf)));
     }
 
     private function convertConditionTreeLeaf(ConditionTreeLeaf $leaf)
@@ -127,18 +127,15 @@ class BinaryCollection extends CollectionDecorator
 
         if ($schema->getType() !== 'Column') {
             $conditionTree = $this->dataSource->getCollection($schema->getForeignCollection())
-                ->convertConditionTreeLeaf($leaf->override(['field' => $suffix]));
+                ->convertConditionTreeLeaf($leaf->override(field: $suffix));
 
             return $conditionTree->nest($prefix);
         }
 
         if (in_array($leaf->getOperator(), self::OPERATORS_WITH_VALUE_REPLACEMENT, true)) {
             $useHex = $this->shouldUseHex($prefix);
-            $columnType = $leaf->getOperator() === Operators::IN || $leaf->getOperator() === Operators::NOT_IN
-                ? [$schema->getColumnType()]
-                : $schema->getColumnType();
 
-            return $leaf->override(value: $this->convertValueHelper(true, $columnType, $useHex, $leaf->getValue()));
+            return $leaf->override(value: $this->convertValueHelper(true, $prefix, $useHex, $leaf->getValue()));
         }
 
         return $leaf;
@@ -146,7 +143,7 @@ class BinaryCollection extends CollectionDecorator
 
     private function shouldUseHex(string $name): bool
     {
-        if (in_array($name, $this->useHexConversion, true)) {
+        if (in_array($name, array_keys($this->useHexConversion), true)) {
             return $this->useHexConversion[$name];
         }
 
@@ -156,17 +153,38 @@ class BinaryCollection extends CollectionDecorator
         );
     }
 
-    private function convertRecord(bool $toBackend, array $record): array
+    private function convertRecord(bool $toBackend, ?array $record): array
     {
         return collect($record)->map(fn ($value, $path) => $this->convertValue($toBackend, $path, $value))->toArray();
     }
 
+    //  private async convertValue(toBackend: boolean, path: string, value: unknown): Promise<unknown> {
+    //    const [prefix, suffix] = path.split(/:(.*)/);
+    //    const schema = this.childCollection.schema.fields[prefix];
+    //
+    //    if (schema.type !== 'Column') {
+    //      const foreignCollection = this.dataSource.getCollection(schema.foreignCollection);
+    //
+    //      return suffix
+    //        ? foreignCollection.convertValue(toBackend, suffix, value)
+    //        : foreignCollection.convertRecord(toBackend, value as RecordData);
+    //    }
+    //
+    //    const binaryMode = this.shouldUseHex(path);
+    //
+    //    return this.convertValueHelper(toBackend, schema.columnType, binaryMode, value);
+    //  }
+
     private function convertValue(bool $toBackend, string $fieldName, $value)
     {
-        $schema = $this->childCollection->getFields()->get($fieldName);
+        $prefix = Str::before($fieldName, ':');
+        $suffix = Str::contains($fieldName, ':') ? Str::after($fieldName, ':') : null;
+        $schema = $this->childCollection->getFields()->get($prefix);
 
         if (! $schema instanceof ColumnSchema) {
-            return $this->convertRecord($toBackend, $value);
+            $foreignCollection = $this->dataSource->getCollection($schema->getForeignCollection());
+
+            return $suffix ? $foreignCollection->convertValue($toBackend, $suffix, $value) : $foreignCollection->convertRecord($toBackend, $value);
         }
 
         $binaryMode = $this->shouldUseHex($fieldName);
@@ -176,10 +194,15 @@ class BinaryCollection extends CollectionDecorator
 
     private function convertValueHelper(bool $toBackend, string $path, bool $useHex, $value)
     {
-        if ($value) {
-            if (in_array($path, $this->binaryFields, true)) {
-                return $this->convertScalar($toBackend, $useHex, $value);
+        if ($value && in_array($path, $this->binaryFields, true)) {
+            if (is_array($value)) {
+                return collect($value)
+                    ->map(fn ($v) => $this->convertValueHelper($toBackend, $path, $useHex, $v))
+                    ->toArray();
             }
+
+
+            return $this->convertScalar($toBackend, $useHex, $value);
 
             // Never in this case with PHP agent ???
 //            if (Array.isArray(columnType)) {
@@ -197,6 +220,14 @@ class BinaryCollection extends CollectionDecorator
 //                ]);
 //
 //                return Object.fromEntries(await Promise.all(entries));
+//            }
+
+//            if (! is_string($columnType)) {
+//                $entries = collect($columnType)
+//                    ->map(fn ($type, $key) => [$key, $this->convertValueHelper($toBackend, $type, $useHex, $value[$key])])
+//                    ->toArray();
+//
+//                return array_combine($entries);
 //            }
         }
 
