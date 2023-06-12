@@ -125,9 +125,9 @@ test('convertValidationList() should perform replacements (fake enum)', function
     expect($validationList)->toEqual(
         [
             [
-                'message' => 'Value must match /a|b|c/g',
+                'message' => 'Value must match /(a|b|c)/g',
                 'type'    => 'is like',
-                'value'   => '/a|b|c/g',
+                'value'   => '/(a|b|c)/g',
             ],
         ]
     );
