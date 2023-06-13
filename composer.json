@@ -48,12 +48,13 @@
     "autoload-dev": {
         "psr-4": {
             "ForestAdmin\\AgentPHP\\Tests\\": [
-                "packages/Agent/tests/",
-                "packages/BaseDatasource/tests/",
-                "packages/DatasourceCustomizer/tests/",
-                "packages/DatasourceDoctrine/tests/",
-                "packages/DatasourceDummy/tests/",
-                "packages/DatasourceToolkit/tests/"
+                "packages/Agent/tests",
+                "packages/BaseDatasource/tests",
+                "packages/DatasourceCustomizer/tests",
+                "packages/DatasourceDoctrine/tests",
+                "packages/DatasourceDummy/tests",
+                "packages/DatasourceToolkit/tests",
+                "tests"
             ]
         }
     },
