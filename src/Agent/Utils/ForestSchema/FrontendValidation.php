@@ -124,7 +124,7 @@ final class FrontendValidation
 
             if ($tree instanceof ConditionTreeLeaf) {
                 $conditions = [$tree];
-            } elseif ($tree instanceof ConditionTreeBranch /*&& $tree->getAggregator() === 'And'*/) {
+            } elseif ($tree instanceof ConditionTreeBranch) {
                 $conditions = $tree->getConditions();
             }
 
