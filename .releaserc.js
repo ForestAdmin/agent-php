@@ -17,7 +17,15 @@ module.exports = {
       "@semantic-release/exec",
       {
         prepareCmd:
-          'sed -i "s/LIANA_VERSION = \'.*\'/LIANA_VERSION = \'${nextRelease.version}\'/g" src/Agent/Utils/ForestSchema/SchemaEmitter.php; sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' composer.json; sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' package.json;',
+          'sed -i "s/LIANA_VERSION = \'.*\'/LIANA_VERSION = \'${nextRelease.version}\'/g" packages/Agent/src/Utils/ForestSchema/SchemaEmitter.php; ' +
+          'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' composer.json; ' +
+          'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/Agent/composer.json; ' +
+          'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/BaseDatasource/composer.json; ' +
+          'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/DatasourceCustomizer/composer.json; ' +
+          'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/DatasourceDoctrine/composer.json; ' +
+          'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/DatasourceDummy/composer.json; ' +
+          'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/DatasourceToolkit/composer.json; ' +
+          'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' package.json;',
       },
     ],
     [
