@@ -158,23 +158,6 @@ class BinaryCollection extends CollectionDecorator
         return collect($record)->map(fn ($value, $path) => $this->convertValue($toBackend, $path, $value))->toArray();
     }
 
-    //  private async convertValue(toBackend: boolean, path: string, value: unknown): Promise<unknown> {
-    //    const [prefix, suffix] = path.split(/:(.*)/);
-    //    const schema = this.childCollection.schema.fields[prefix];
-    //
-    //    if (schema.type !== 'Column') {
-    //      const foreignCollection = this.dataSource.getCollection(schema.foreignCollection);
-    //
-    //      return suffix
-    //        ? foreignCollection.convertValue(toBackend, suffix, value)
-    //        : foreignCollection.convertRecord(toBackend, value as RecordData);
-    //    }
-    //
-    //    const binaryMode = this.shouldUseHex(path);
-    //
-    //    return this.convertValueHelper(toBackend, schema.columnType, binaryMode, value);
-    //  }
-
     private function convertValue(bool $toBackend, string $fieldName, $value)
     {
         $prefix = Str::before($fieldName, ':');
@@ -203,32 +186,6 @@ class BinaryCollection extends CollectionDecorator
 
 
             return $this->convertScalar($toBackend, $useHex, $value);
-
-            // Never in this case with PHP agent ???
-//            if (Array.isArray(columnType)) {
-//                const newValues = (value as unknown[]).map(v =>
-//                    this.convertValueHelper(toBackend, columnType[0], useHex, v),
-//                );
-//
-//            return Promise.all(newValues);
-//            }
-//
-//            if (typeof columnType !== 'string') {
-//                const entries = Object.entries(columnType).map(async ([key, type]) => [
-//                    key,
-//                    await this.convertValueHelper(toBackend, type, useHex, value[key]),
-//                ]);
-//
-//                return Object.fromEntries(await Promise.all(entries));
-//            }
-
-//            if (! is_string($columnType)) {
-//                $entries = collect($columnType)
-//                    ->map(fn ($type, $key) => [$key, $this->convertValueHelper($toBackend, $type, $useHex, $value[$key])])
-//                    ->toArray();
-//
-//                return array_combine($entries);
-//            }
         }
 
         return $value;
