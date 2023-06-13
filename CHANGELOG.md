@@ -1,3 +1,10 @@
+# [1.0.0-beta.34](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.33...v1.0.0-beta.34) (2023-06-13)
+
+
+### Features
+
+* add binary decorator support ([#57](https://github.com/ForestAdmin/agent-php/issues/57)) ([a8580fe](https://github.com/ForestAdmin/agent-php/commit/a8580fec549c6ced376563ddea8330668abc8c47))
+
 # [1.0.0-beta.33](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.32...v1.0.0-beta.33) (2023-06-08)
 
 
