@@ -26,6 +26,28 @@ class Schema
             ->all();
     }
 
+    public static function isPrimaryKey(CollectionContract $schema, string $fieldName): bool
+    {
+        /** @var ColumnSchema|RelationSchema $field */
+        $field = $schema->getFields()[$fieldName];
+
+        return $field->getType() === 'Column' && $field->isPrimaryKey();
+    }
+
+    public static function isForeignKey(CollectionContract $schema, string $name): bool
+    {
+        $field = $schema->getFields()[$name];
+
+        return (
+            $field->getType() === 'Column' &&
+            $schema->getFields()->some(
+                static function ($relation) use ($name) {
+                    return $relation->getType() === 'ManyToOne' && $relation->getForeignKey() === $name;
+                }
+            )
+        );
+    }
+
     public static function getToManyRelation(CollectionContract $collection, string $relationName): RelationSchema
     {
         if (! isset($collection->getFields()[$relationName])) {

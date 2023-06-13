@@ -81,8 +81,6 @@ class Collection extends BaseCollection
                 isSortable: true,
                 type: 'Column',
                 defaultValue: array_key_exists('options', $value) && array_key_exists('default', $value['options']) ? $value['options']['default'] : null,
-                enumValues: [], // todo
-                validation: [], // todo
             );
             $this->addField($value['columnName'], $field);
         }
@@ -131,7 +129,6 @@ class Collection extends BaseCollection
      * @param string $name
      * @param array  $joinColumn
      * @param string $related
-     * @param string $inverseName
      * @return void
      * @throws MappingException
      * @throws \ReflectionException
@@ -165,7 +162,6 @@ class Collection extends BaseCollection
      * @param string      $name
      * @param array       $joinColumn
      * @param string      $related
-     * @param string      $inverseName
      * @param string|null $mappedField
      * @return void
      * @throws MappingException
@@ -201,7 +197,6 @@ class Collection extends BaseCollection
      * @param string      $name
      * @param array       $joinTable
      * @param string      $related
-     * @param string      $inverseName
      * @param string|null $mappedField
      * @return void
      * @throws MappingException

@@ -184,6 +184,13 @@ class CollectionCustomizer
         return $this;
     }
 
+    public function replaceFieldBinaryMode($name, $binaryMode): self
+    {
+        $this->stack->binary->getCollection($this->name)->setBinaryMode($name, $binaryMode);
+
+        return $this;
+    }
+
     public function replaceFieldSorting($name, $equivalentSort): self
     {
         $this->stack->sort->getCollection($this->name)->replaceFieldSorting($name, $equivalentSort);

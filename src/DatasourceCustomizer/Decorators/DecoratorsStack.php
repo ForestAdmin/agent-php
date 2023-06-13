@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ActionCollection;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Binary\BinaryCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Chart\ChartDataSourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Empty\EmptyCollection;
@@ -42,6 +43,7 @@ class DecoratorsStack
     public DatasourceDecorator $renameField;
     public DatasourceDecorator $publication;
     public DatasourceDecorator $hook;
+    public DatasourceDecorator $binary;
 
     public function __construct(DatasourceContract $dataSource)
     {
@@ -75,6 +77,7 @@ class DecoratorsStack
         $last = $this->write = new WriteDataSourceDecorator($last);
         $last = $this->hook = new DatasourceDecorator($last, HookCollection::class);
         $last = $this->validation = new DatasourceDecorator($last, ValidationCollection::class);
+        $last = $this->binary = new DatasourceDecorator($last, BinaryCollection::class);
 
 
         // Step 4: Renaming must be either the very first or very last so that naming in customer code is consistent.
@@ -103,6 +106,7 @@ class DecoratorsStack
         $this->write->build();
         $this->hook->build();
         $this->validation->build();
+        $this->binary->build();
         $this->publication->build();
         $this->renameField->build();
         $this->dataSource->build();

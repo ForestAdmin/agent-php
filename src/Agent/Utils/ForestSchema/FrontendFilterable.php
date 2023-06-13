@@ -39,6 +39,7 @@ final class FrontendFilterable
     ];
 
     public const OPERATOR_BY_TYPE = [
+        'Binary'   => self::BASE_OPERATORS,
         'Boolean'  => self::BASE_OPERATORS,
         'Date'     => self::DATE_OPERATORS,
         'Dateonly' => self::DATE_OPERATORS,

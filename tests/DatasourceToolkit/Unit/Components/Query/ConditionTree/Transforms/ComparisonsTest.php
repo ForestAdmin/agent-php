@@ -43,18 +43,18 @@ test('Equal should be rewritten', function () {
 
 test('In should be rewritten with one element', function () {
     $comparisons = Comparisons::equalityTransforms();
-    expect($comparisons[Operators::IN][0]['replacer'](new ConditionTreeLeaf('column', Operators::IN, ['something']), 'Europe/Paris'))
-        ->toEqual(new ConditionTreeLeaf('column', Operators::EQUAL, 'something'));
+    expect($comparisons[Operators::IN][0]['replacer'](new ConditionTreeLeaf('column', Operators::IN, ['something', 'else']), 'Europe/Paris'))
+        ->toEqual(new ConditionTreeLeaf('column', Operators::MATCH, '/(something|else)/g'));
 });
 
 test('In should be rewritten with multiple elements', function () {
     $comparisons = Comparisons::equalityTransforms();
-    expect($comparisons[Operators::IN][0]['replacer'](new ConditionTreeLeaf('column', Operators::IN, ['something', 'else']), 'Europe/Paris'))
+    expect($comparisons[Operators::IN][0]['replacer'](new ConditionTreeLeaf('column', Operators::IN, [null, 'something', 'else']), 'Europe/Paris'))
         ->toEqual(new ConditionTreeBranch(
             'Or',
             [
-                new ConditionTreeLeaf('column', Operators::EQUAL, 'something'),
-                new ConditionTreeLeaf('column', Operators::EQUAL, 'else'),
+                new ConditionTreeLeaf('column', Operators::EQUAL, null),
+                new ConditionTreeLeaf('column', Operators::MATCH, '/(something|else)/g'),
             ]
         ));
 });
@@ -68,17 +68,11 @@ test('NotEqual should be rewritten', function () {
 test('NotIn should be rewritten with one element', function () {
     $comparisons = Comparisons::equalityTransforms();
     expect($comparisons[Operators::NOT_IN][0]['replacer'](new ConditionTreeLeaf('column', Operators::NOT_IN, ['something']), 'Europe/Paris'))
-        ->toEqual(new ConditionTreeLeaf('column', Operators::NOT_EQUAL, 'something'));
+        ->toEqual(new ConditionTreeLeaf('column', Operators::MATCH, '/(?!something)/g'));
 });
 
 test('NotIn should be rewritten with multiple elements', function () {
     $comparisons = Comparisons::equalityTransforms();
     expect($comparisons[Operators::NOT_IN][0]['replacer'](new ConditionTreeLeaf('column', Operators::NOT_IN, ['something', 'else']), 'Europe/Paris'))
-        ->toEqual(new ConditionTreeBranch(
-            'And',
-            [
-                new ConditionTreeLeaf('column', Operators::NOT_EQUAL, 'something'),
-                new ConditionTreeLeaf('column', Operators::NOT_EQUAL, 'else'),
-            ]
-        ));
+        ->toEqual(new ConditionTreeLeaf('column', Operators::MATCH, '/(?!something|else)/g'));
 });

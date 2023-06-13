@@ -33,8 +33,7 @@ function factoryActionContextSingle($withRecords = true)
     ] : [];
     $collectionBook = mock($collectionBook)
         ->shouldReceive('list')
-        ->andReturn($records)
-    ;
+        ->andReturn($records);
 
     $datasource->addCollection($collectionBook->getMock());
     buildAgent($datasource);

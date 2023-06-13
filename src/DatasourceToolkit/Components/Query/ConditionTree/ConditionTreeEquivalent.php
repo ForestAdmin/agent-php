@@ -37,13 +37,15 @@ class ConditionTreeEquivalent
         foreach (self::getAlternatives($operator) ?? [] as $alt) {
             $replacer = $alt['replacer'];
             $dependsOn = $alt['dependsOn'];
-            $valid = ! array_key_exists('forTypes', $alt) || in_array($alt['forTypes'], PrimitiveType::tree(), true);
+
+            $valid = ! array_key_exists('forTypes', $alt) ||
+                (isset($alt['forTypes']) && collect($alt['forTypes'])->every(fn ($type) => in_array($type, PrimitiveType::tree(), true)));
 
             if ($valid && ! in_array($alt, $visited, true)) {
                 $dependsReplacer = collect($dependsOn)
                     ->mapWithKeys(
                         function ($replacement) use ($filterOperators, $columnType, $visited, $alt) {
-                            return [$replacement => self::getReplacer($replacement, $filterOperators, $columnType, [...$visited, $alt])];
+                            return [$replacement => self::getReplacer($replacement, $filterOperators, $columnType, array_merge($visited, [$alt]))];
                         }
                     );
 

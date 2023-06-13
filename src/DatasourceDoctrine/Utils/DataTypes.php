@@ -9,6 +9,7 @@ class DataTypes
     public static function getType(string $type): string
     {
         return match ($type) {
+            'binary', 'blob'                 => PrimitiveType::BINARY,
             'integer', 'float'               => PrimitiveType::NUMBER,
             'date'                           => PrimitiveType::DATEONLY,
             'datetime_immutable', 'datetime' => PrimitiveType::DATE,

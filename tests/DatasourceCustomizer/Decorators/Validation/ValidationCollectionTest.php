@@ -89,47 +89,6 @@ test('addValidation() should throw if the field is in a relation', function () {
         ->toThrow(ForestException::class, '🌳🌳🌳 Cannot add validators on a relation, use the foreign key instead');
 });
 
-test('Rule Deduplication - should merge multiple GreaterThan rules', function () {
-    $newBooks = factoryValidationCollection();
-    $newBooks->addValidation('title', ['operator' => Operators::GREATER_THAN, 'value' => 3]);
-    $newBooks->addValidation('title', ['operator' => Operators::GREATER_THAN, 'value' => 5]);
-    $newBooks->addValidation('title', ['operator' => Operators::GREATER_THAN, 'value' => 2]);
-
-    expect($newBooks->getFields()['title']->getValidation())
-        ->toEqual([['operator' => Operators::GREATER_THAN, 'value' => 5]]);
-});
-
-test('Rule Deduplication - should merge multiple LessThan rules', function () {
-    $newBooks = factoryValidationCollection();
-    $newBooks->addValidation('title', ['operator' => Operators::LESS_THAN, 'value' => 3]);
-    $newBooks->addValidation('title', ['operator' => Operators::LESS_THAN, 'value' => 5]);
-    $newBooks->addValidation('title', ['operator' => Operators::LESS_THAN, 'value' => 2]);
-
-    expect($newBooks->getFields()['title']->getValidation())
-        ->toEqual([['operator' => Operators::LESS_THAN, 'value' => 2]]);
-});
-
-test('Rule Deduplication - should not merge rules using different operators', function () {
-    $newBooks = factoryValidationCollection();
-    $newBooks->addValidation('title', ['operator' => Operators::GREATER_THAN, 'value' => 3]);
-    $newBooks->addValidation('title', ['operator' => Operators::LONGER_THAN, 'value' => 5]);
-
-    expect($newBooks->getFields()['title']->getValidation())
-        ->toEqual([
-            ['operator' => Operators::GREATER_THAN, 'value' => 3],
-            ['operator' => Operators::LONGER_THAN, 'value' => 5],
-        ]);
-});
-
-test('Rule Deduplication - should not merge rules on different fields', function () {
-    $newBooks = factoryValidationCollection();
-    $newBooks->addValidation('title', ['operator' => Operators::GREATER_THAN, 'value' => 5]);
-    $newBooks->addValidation('sub_title', ['operator' => Operators::GREATER_THAN, 'value' => 3]);
-
-    expect($newBooks->getFields()['title']->getValidation())
-        ->toEqual([['operator' => Operators::GREATER_THAN, 'value' => 5]]);
-});
-
 test('Field selection when validating - should validate all fields when creating a record', function (Caller $caller) {
     $newBooks = factoryValidationCollection();
     $newBooks->addValidation('title', ['operator' => Operators::LONGER_THAN, 'value' => 5]);

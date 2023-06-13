@@ -93,21 +93,28 @@ class ConditionTreeLeaf extends ConditionTree
     {
         $fieldValue = RecordUtils::getFieldValue($record, $this->field);
         $columnType = CollectionUtils::getFieldSchema($collection, $this->field)->getColumnType();
+        $supported = [
+            Operators::IN, Operators::EQUAL, Operators::LESS_THAN, Operators::GREATER_THAN, Operators::MATCH, Operators::STARTS_WITH, Operators::ENDS_WITH,
+            Operators::LONGER_THAN, Operators::SHORTER_THAN, Operators::INCLUDES_ALL, Operators::NOT_IN, Operators::NOT_EQUAL, Operators::NOT_CONTAINS,
+        ];
 
         return match ($this->operator) {
+            Operators::IN           => collect(is_array($this->value) ? $this->value : explode(',', $this->value))
+                ->contains($fieldValue),
             Operators::EQUAL        => $fieldValue === $this->value,
             Operators::LESS_THAN    => $fieldValue < $this->value,
             Operators::GREATER_THAN => $fieldValue > $this->value,
-            Operators::LIKE         => $this->like($fieldValue, $this->value, true),
-            Operators::ILIKE        => $this->like($fieldValue, $this->value, false),
+            Operators::MATCH        => is_string($fieldValue) && preg_match($this->value, $fieldValue),
+            Operators::STARTS_WITH  => is_string($fieldValue) && Str::startsWith($fieldValue, $this->value),
+            Operators::ENDS_WITH    => is_string($fieldValue) && Str::endsWith($fieldValue, $this->value),
             Operators::LONGER_THAN  => is_string($fieldValue) && strlen($fieldValue) > $this->value,
             Operators::SHORTER_THAN => is_string($fieldValue) && strlen($fieldValue) < $this->value,
             Operators::INCLUDES_ALL => collect(is_array($this->value) ? $this->value : explode(',', $this->value))
                 ->every(fn ($v) => in_array($v, $fieldValue, true)),
-            Operators::NOT_EQUAL, Operators::NOT_CONTAINS => ! $this->inverse()->match($record, $collection, $timezone),
+            Operators::NOT_IN, Operators::NOT_EQUAL, Operators::NOT_CONTAINS => ! $this->inverse()->match($record, $collection, $timezone),
             default                 => ConditionTreeEquivalent::getEquivalentTree(
                 $this,
-                Operators::getUniqueOperators(),
+                $supported,
                 $columnType,
                 $timezone,
             )?->match($record, $collection, $timezone),
@@ -142,18 +149,5 @@ class ConditionTreeLeaf extends ConditionTree
     public function useIntervalOperator(): bool
     {
         return in_array($this->operator, Operators::getIntervalOperators());
-    }
-
-    private function like(?string $value, string $pattern, bool $caseSensitive): bool
-    {
-        if (! $value) {
-            return false;
-        }
-
-        $regexp = Str::of($pattern)->replaceMatches('/([\.\\\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:\-])/', '\\$1')
-            ->replaceMatches('/%/', '.*')
-            ->replaceMatches('/_/', '.');
-
-        return preg_match_all('#^'.$regexp.'\z#' . ($caseSensitive ? '' : 'i'), $value) === 1;
     }
 }
