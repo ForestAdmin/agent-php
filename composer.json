@@ -3,6 +3,7 @@
     "type": "library",
     "license": "GPL-3.0-or-later",
     "require": {
+        "doctrine/orm": "^2.7.3",
         "firebase/php-jwt": "^6.2",
         "galbar/jsonpath": "^2.0",
         "guzzlehttp/guzzle": "^6.0|^7.4",
