@@ -92,7 +92,6 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
 
       - name: Split packages
-        if: "startsWith(github.ref, 'refs/tags/')"
         uses: "symplify/monorepo-split-github-action@2.1"
         with:
           tag: ${GITHUB_REF#refs/tags/}
