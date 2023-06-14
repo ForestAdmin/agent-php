@@ -1,3 +1,10 @@
+# [1.0.0-beta.35](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.34...v1.0.0-beta.35) (2023-06-14)
+
+
+### Features
+
+* add configuration for monorepo  ([#58](https://github.com/ForestAdmin/agent-php/issues/58)) ([127cb0e](https://github.com/ForestAdmin/agent-php/commit/127cb0e40450ad4898e2b9faa06bf36826796196))
+
 # [1.0.0-beta.34](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.33...v1.0.0-beta.34) (2023-06-13)
 
 
