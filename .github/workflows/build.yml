@@ -62,6 +62,29 @@ jobs:
   deploy:
     name: Release package
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          -
+            local_path: 'Agent'
+            split_repository: 'php-agent-toolkit'
+          -
+            local_path: 'BaseDatasource'
+            split_repository: 'php-base-datasource'
+          -
+            local_path: 'DatasourceCustomizer'
+            split_repository: 'php-datasource-customizer'
+          -
+            local_path: 'DatasourceDoctrine'
+            split_repository: 'php-datasource-doctrine'
+          -
+            local_path: 'DatasourceDummy'
+            split_repository: 'php-datasource-dummy'
+          -
+            local_path: 'DatasourceToolkit'
+            split_repository: 'php-datasource-toolkit'
+
     needs: [lint]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta')
     steps:
@@ -96,10 +119,10 @@ jobs:
         with:
           tag: ${GITHUB_REF#refs/tags/}
 
-          # ↓ split "packages/easy-coding-standard" directory
+          # ↓ split "packages/{{local_path}}" directory
           package_directory: 'packages/${{ matrix.package.local_path }}'
 
-          # ↓ into https://github.com/symplify/easy-coding-standard repository
+          # ↓ into https://github.com/forestadmin/{{split_repository}} repository
           repository_organization: 'forestadmin'
           repository_name: '${{ matrix.package.split_repository }}'
 
