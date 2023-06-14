@@ -58,7 +58,6 @@ jobs:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
           coverageLocations: /tmp/clover.xml:clover
-          debug: true
 
   deploy:
     name: Release package
