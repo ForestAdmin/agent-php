@@ -57,6 +57,7 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
+          debug: true
           coverageLocations: /tmp/clover.xml:clover
 
   deploy:
