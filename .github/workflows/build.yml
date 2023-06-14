@@ -96,7 +96,7 @@ jobs:
       - name: Split packages
         uses: "symplify/monorepo-split-github-action@2.1"
         with:
-          tag: ${GITHUB_REF#refs/tags/}
+#          tag: ${GITHUB_REF#refs/tags/}
 
           # ↓ split "packages/{{local_path}}" directory
           package_directory: 'packages/${{ matrix.package.local_path }}'
