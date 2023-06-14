@@ -92,7 +92,7 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
       - name: Fix git safe.directory in container
-        run: mkdir -p /home/runner/work/_temp/_github_home && printf "[safe]\n\tdirectory = /github/workspace" > /home/runner/work/_temp/_github_home/.gitconfig
+        run: mkdir -p /home/runner/work/_temp/_github_home && printf "[safe]\n\tdirectory = /github/workspace" && printf "[safe]\n\tdirectory = /tmp/monorepo_split/build_directory" > /home/runner/work/_temp/_github_home/.gitconfig
       - name: Split packages
         uses: "symplify/monorepo-split-github-action@2.1"
         with:
