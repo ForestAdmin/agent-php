@@ -1,27 +1,4 @@
-# [1.0.0-beta.35](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.34...v1.0.0-beta.35) (2023-06-14)
 
-
-### Bug Fixes
-
-* update github action configuration ([#59](https://github.com/ForestAdmin/agent-php/issues/59)) ([5e777ab](https://github.com/ForestAdmin/agent-php/commit/5e777ab9c44a18940749685bb456a7c3c53f873f))
-* update monorepo github action config ([#60](https://github.com/ForestAdmin/agent-php/issues/60)) ([52c081d](https://github.com/ForestAdmin/agent-php/commit/52c081dd889f5c1a0d955297d642a0bf19c1e6dc))
-
-
-### Features
-
-* add configuration for monorepo  ([#58](https://github.com/ForestAdmin/agent-php/issues/58)) ([127cb0e](https://github.com/ForestAdmin/agent-php/commit/127cb0e40450ad4898e2b9faa06bf36826796196))
-
-# [1.0.0-beta.35](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.34...v1.0.0-beta.35) (2023-06-14)
-
-
-### Bug Fixes
-
-* update github action configuration ([#59](https://github.com/ForestAdmin/agent-php/issues/59)) ([5e777ab](https://github.com/ForestAdmin/agent-php/commit/5e777ab9c44a18940749685bb456a7c3c53f873f))
-
-
-### Features
-
-* add configuration for monorepo  ([#58](https://github.com/ForestAdmin/agent-php/issues/58)) ([127cb0e](https://github.com/ForestAdmin/agent-php/commit/127cb0e40450ad4898e2b9faa06bf36826796196))
 
 # [1.0.0-beta.35](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.34...v1.0.0-beta.35) (2023-06-14)
 
