@@ -91,10 +91,9 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-
+      - run: /usr/bin/git config --global --add safe.directory *
       - name: Split packages
         uses: "symplify/monorepo-split-github-action@2.1"
-        run: /usr/bin/git config --global --add safe.directory *
         with:
           tag: ${GITHUB_REF#refs/tags/}
 
