@@ -1,9 +1,10 @@
 {
     "name": "forestadmin/agent-php",
+    "version": "1.0.0-beta.34",
     "type": "library",
-    "license": "GPL-3.0-or-later",
+    "license": "",
     "require": {
-        "doctrine/orm": "^2.7.3",
+        "doctrine/orm": "^2.8",
         "firebase/php-jwt": "^6.2",
         "galbar/jsonpath": "^2.0",
         "guzzlehttp/guzzle": "^6.0|^7.4",
@@ -29,8 +30,8 @@
         "pestphp/pest": "^1.21",
         "pestphp/pest-plugin-mock": "^1.0",
         "phpspec/prophecy-phpunit": "^2.0",
-        "spatie/pest-plugin-test-time": "^1.1",
         "symfony/var-dumper": "^5.4|^6.0",
+        "spatie/pest-plugin-test-time": "^1.1",
         "symplify/monorepo-builder": "11.2.3.72"
     },
     "autoload": {
@@ -42,36 +43,23 @@
             "ForestAdmin\\AgentPHP\\BaseDatasource\\": "packages/BaseDatasource/src",
             "ForestAdmin\\AgentPHP\\DatasourceCustomizer\\": "packages/DatasourceCustomizer/src",
             "ForestAdmin\\AgentPHP\\DatasourceDoctrine\\": "packages/DatasourceDoctrine/src",
-            "ForestAdmin\\AgentPHP\\DatasourceDummy\\": "packages/DatasourceDummy/src",
-            "ForestAdmin\\AgentPHP\\DatasourceToolkit\\": "packages/DatasourceToolkit/src"
+            "ForestAdmin\\AgentPHP\\DatasourceToolkit\\": "packages/DatasourceToolkit/src",
+            "ForestAdmin\\AgentPHP\\DatasourceDummy\\": "packages/DatasourceDummy/src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "ForestAdmin\\AgentPHP\\Tests\\": [
-                "packages/Agent/tests",
-                "packages/BaseDatasource/tests",
-                "packages/DatasourceCustomizer/tests",
-                "packages/DatasourceDoctrine/tests",
-                "packages/DatasourceDummy/tests",
-                "packages/DatasourceToolkit/tests",
-                "tests"
-            ]
+            "ForestAdmin\\AgentPHP\\Tests\\": "tests/"
         }
     },
-    "replace": {
-        "forestadmin/php-agent-toolkit": "self.version",
-        "forestadmin/php-base-datasource": "self.version",
-        "forestadmin/php-datasource-customizer": "self.version",
-        "forestadmin/php-datasource-doctrine": "self.version",
-        "forestadmin/php-datasource-dummy": "self.version",
-        "forestadmin/php-datasource-toolkit": "self.version"
-    },
-    "version": "1.0.0-beta.34",
     "config": {
         "allow-plugins": {
             "pestphp/pest-plugin": true
         }
+    },
+    "replace": {
+        "your-monorepo/first-package": "self.version",
+        "your-monorepo/second-package": "self.version"
     },
     "minimum-stability": "stable",
     "prefer-stable": true

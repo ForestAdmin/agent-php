@@ -1,0 +1,36 @@
+{
+    "name": "forestadmin/php-base-datasource",
+    "description": "The official agent PHP for Forest",
+    "type": "library",
+    "license": "GPL-3.0-or-later",
+    "require": {
+        "php": "^8.0",
+        "forestadmin/php-agent-toolkit": "^1.0.0-beta",
+        "forestadmin/php-datasource-toolkit": "^1.0.0-beta",
+        "illuminate/database": "^v8.83|^9.0",
+        "illuminate/support": "^8.0|^9.0"
+    },
+    "require-dev": {
+      "friendsofphp/php-cs-fixer": "^3.0",
+      "pestphp/pest": "^1.21",
+      "pestphp/pest-plugin-mock": "^1.0",
+      "phpspec/prophecy-phpunit": "^2.0",
+      "symfony/var-dumper": "^5.4|^6.0",
+      "spatie/pest-plugin-test-time": "^1.1"
+    },
+    "autoload": {
+        "psr-4": {
+          "ForestAdmin\\AgentPHP\\BaseDatasource\\": "src"
+        }
+    },
+    "autoload-dev": {
+      "psr-4": {
+        "ForestAdmin\\AgentPHP\\Tests\\": "tests"
+      }
+    },
+    "config": {
+      "allow-plugins": {
+        "pestphp/pest-plugin": true
+      }
+    }
+}

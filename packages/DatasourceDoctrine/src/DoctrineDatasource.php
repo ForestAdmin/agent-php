@@ -3,7 +3,6 @@
 namespace ForestAdmin\AgentPHP\DatasourceDoctrine;
 
 use Doctrine\ORM\EntityManagerInterface;
-use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseDatasource;
 use Illuminate\Support\Str;
 use function ForestAdmin\config;

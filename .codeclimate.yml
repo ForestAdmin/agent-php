@@ -44,8 +44,7 @@ checks:
 
 exclude_patterns:
   - "node_modules/"
-  - "src/Agent/Serializer/"
-  - "src/Agent/Utils/ErrorMessages.php"
-  - "src/DatasourceToolkit/Exceptions/"
+  - "packages/Agent/src/Serializer/"
+  - "packages/DatasourceToolkit/src/Exceptions/"
   - "tests/"
   - "vendor/"

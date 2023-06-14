@@ -2,7 +2,12 @@
 
 $finder = Symfony\Component\Finder\Finder::create()
     ->in([
-        __DIR__ . '/src',
+        __DIR__ . '/packages/Agent/src',
+        __DIR__ . '/packages/BaseDatasource/src',
+        __DIR__ . '/packages/DatasourceCustomizer/src',
+        __DIR__ . '/packages/DatasourceToolkit/src',
+        __DIR__ . '/packages/DatasourceDummy/src',
+        __DIR__ . '/packages/DatasourceDoctrine/src',
         __DIR__ . '/tests',
     ])
     ->name('*.php')
