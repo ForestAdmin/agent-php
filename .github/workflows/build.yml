@@ -91,8 +91,8 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-      - run: git config --global --add safe.directory /github/workspace
-      - run: git config --global --add safe.directory /tmp/monorepo_split/build_directory
+      - run: git config --system --add safe.directory /github/workspace
+      - run: git config --system --add safe.directory /tmp/monorepo_split/build_directory
       - name: Split packages
         uses: "symplify/monorepo-split-github-action@2.1"
         with:
