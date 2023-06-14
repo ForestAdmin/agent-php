@@ -9,6 +9,21 @@
 
 ### Features
 
+* add checkout module to the split action ([#62](https://github.com/ForestAdmin/agent-php/issues/62)) ([d6955ab](https://github.com/ForestAdmin/agent-php/commit/d6955abb1ca4952c572982dda6b62021f879f9bf))
+* add configuration for monorepo  ([#58](https://github.com/ForestAdmin/agent-php/issues/58)) ([127cb0e](https://github.com/ForestAdmin/agent-php/commit/127cb0e40450ad4898e2b9faa06bf36826796196))
+* add split github action workflow ([#61](https://github.com/ForestAdmin/agent-php/issues/61)) ([5a5026c](https://github.com/ForestAdmin/agent-php/commit/5a5026c0eb92c72955cc69801c8056be7af4cfb5))
+
+# [1.0.0-beta.35](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.34...v1.0.0-beta.35) (2023-06-14)
+
+
+### Bug Fixes
+
+* update github action configuration ([#59](https://github.com/ForestAdmin/agent-php/issues/59)) ([5e777ab](https://github.com/ForestAdmin/agent-php/commit/5e777ab9c44a18940749685bb456a7c3c53f873f))
+* update monorepo github action config ([#60](https://github.com/ForestAdmin/agent-php/issues/60)) ([52c081d](https://github.com/ForestAdmin/agent-php/commit/52c081dd889f5c1a0d955297d642a0bf19c1e6dc))
+
+
+### Features
+
 * add configuration for monorepo  ([#58](https://github.com/ForestAdmin/agent-php/issues/58)) ([127cb0e](https://github.com/ForestAdmin/agent-php/commit/127cb0e40450ad4898e2b9faa06bf36826796196))
 * add split github action workflow ([#61](https://github.com/ForestAdmin/agent-php/issues/61)) ([5a5026c](https://github.com/ForestAdmin/agent-php/commit/5a5026c0eb92c72955cc69801c8056be7af4cfb5))
 
