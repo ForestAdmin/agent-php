@@ -50,15 +50,15 @@ jobs:
         uses: docker://oskarstark/php-cs-fixer-ga
 
 #      - name: Pest PHP tests
-#        run: vendor/bin/pest --coverage-clover build/logs/clover.xml
+#        run: vendor/bin/pest --coverage-clover /tmp/clover.xml
 
-      - name: Run tests and Send coverage
+      - name: Send coverage
         uses: paambaati/codeclimate-action@v3.2.0
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
-          coverageCommand: vendor/bin/pest --coverage-clover build/logs/clover.xml
-          coverageLocations: ${{github.workspace}}/build/logs/clover.xml:clover
+          coverageCommand: vendor/bin/pest --coverage-clover /tmp/clover.xml
+          coverageLocations: /tmp/clover.xml:clover
           debug: true
 
   deploy:
