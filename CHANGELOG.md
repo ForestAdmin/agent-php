@@ -1,3 +1,10 @@
+# [1.0.0-beta.38](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.37...v1.0.0-beta.38) (2023-06-15)
+
+
+### Bug Fixes
+
+* remove validation's monorepo on precommit ([#69](https://github.com/ForestAdmin/agent-php/issues/69)) ([6b17033](https://github.com/ForestAdmin/agent-php/commit/6b17033364d56cde7c21cb7228137a5648ae62a5))
+
 # [1.0.0-beta.37](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.36...v1.0.0-beta.37) (2023-06-15)
 
 
