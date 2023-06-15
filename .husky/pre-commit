@@ -11,3 +11,7 @@ elif [ -f "$PHP_CS_FIXER" ]; then
     $PHP_CS_FIXER fix --config=.php-cs-fixer.dist.php ${FILES}
     git add ${FILES}
 fi
+
+# check if all packages "composer.json" files use same package versions.
+vendor/bin/monorepo-builder validate
+
