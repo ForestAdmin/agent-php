@@ -1,3 +1,10 @@
+# [1.0.0-beta.36](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.35...v1.0.0-beta.36) (2023-06-15)
+
+
+### Bug Fixes
+
+* **composer:** remove invalid version ([#65](https://github.com/ForestAdmin/agent-php/issues/65)) ([9ad3231](https://github.com/ForestAdmin/agent-php/commit/9ad3231fa690a009fff7cdc91cfccdaf1a650b37))
+
 # [1.0.0-beta.35](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.34...v1.0.0-beta.35) (2023-06-14)
 
 
