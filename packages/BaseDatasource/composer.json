@@ -3,6 +3,7 @@
     "description": "The official agent PHP for Forest",
     "type": "library",
     "license": "GPL-3.0-or-later",
+    "version": "",
     "require": {
         "php": "^8.0",
         "forestadmin/php-agent-toolkit": "^1.0.0-beta",
