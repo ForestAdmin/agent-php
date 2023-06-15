@@ -1,6 +1,6 @@
 {
     "name": "forestadmin/php-datasource-customizer",
-    "description": "The official agent PHP for Forest",
+    "description": "Subtree split of the PHP Datasource Customizer component",
     "type": "library",
     "license": "GPL-3.0-or-later",
     "version": "",

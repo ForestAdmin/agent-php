@@ -1,6 +1,6 @@
 {
     "name": "forestadmin/php-base-datasource",
-    "description": "The official agent PHP for Forest",
+    "description": "Subtree split of the PHP Base Datasource component",
     "type": "library",
     "license": "GPL-3.0-or-later",
     "version": "",

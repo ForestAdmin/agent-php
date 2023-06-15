@@ -1,5 +1,6 @@
 {
     "name": "forestadmin/agent-php",
+    "description": "The official agent PHP for Forest",
     "type": "library",
     "license": "GPL-3.0-or-later",
     "require": {

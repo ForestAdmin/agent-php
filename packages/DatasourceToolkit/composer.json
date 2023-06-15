@@ -1,6 +1,6 @@
 {
     "name": "forestadmin/php-datasource-toolkit",
-    "description": "The official agent PHP for Forest",
+    "description": "Subtree split of the PHP Datasource Toolkit component",
     "type": "library",
     "license": "GPL-3.0-or-later",
     "version": "",
