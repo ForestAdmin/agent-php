@@ -18,13 +18,11 @@
         "nesbot/carbon": "^2.58",
         "php-di/php-di": "^6.4",
         "ramsey/uuid": "^3.9.7|^4.3",
-        "spatie/enum": "^3.13",
         "symfony/cache": "^5.4|^6.0",
         "symfony/dependency-injection": "^5.4|^6.0",
         "symfony/http-foundation": "^5.4|^6.0",
         "symfony/http-kernel": "^5.4|^6.0",
         "forestadmin/php-datasource-customizer": "^1.0.0-beta",
-        "forestadmin/php-agent-toolkit": "^1.0.0-beta",
         "forestadmin/php-datasource-toolkit": "^1.0.0-beta",
         "forestadmin/php-base-datasource": "^1.0.0-beta"
     },
