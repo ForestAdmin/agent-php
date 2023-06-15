@@ -1,3 +1,10 @@
+# [1.0.0-beta.39](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.38...v1.0.0-beta.39) (2023-06-15)
+
+
+### Bug Fixes
+
+* releaserc now write the version in composer of each packages ([#70](https://github.com/ForestAdmin/agent-php/issues/70)) ([b4399e5](https://github.com/ForestAdmin/agent-php/commit/b4399e5b60e8edfca578371845f9e83703b0667f))
+
 # [1.0.0-beta.38](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.37...v1.0.0-beta.38) (2023-06-15)
 
 
