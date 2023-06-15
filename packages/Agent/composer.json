@@ -1,8 +1,9 @@
 {
     "name": "forestadmin/php-agent-toolkit",
-    "description": "The official agent PHP for Forest",
+    "description": "Subtree split of the PHP Agent Toolkit component",
     "type": "library",
     "license": "GPL-3.0-or-later",
+    "version": "",
     "require": {
         "php": "^8.0",
         "firebase/php-jwt": "^6.2",
