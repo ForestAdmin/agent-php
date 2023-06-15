@@ -1,3 +1,10 @@
+# [1.0.0-beta.37](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.36...v1.0.0-beta.37) (2023-06-15)
+
+
+### Bug Fixes
+
+* add missing dependencies ([#66](https://github.com/ForestAdmin/agent-php/issues/66)) ([18b15d4](https://github.com/ForestAdmin/agent-php/commit/18b15d471a720fb7fba13657132ac78abd16e123))
+
 # [1.0.0-beta.36](https://github.com/ForestAdmin/agent-php/compare/v1.0.0-beta.35...v1.0.0-beta.36) (2023-06-15)
 
 

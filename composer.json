@@ -67,7 +67,7 @@
         "forestadmin/php-datasource-dummy": "self.version",
         "forestadmin/php-datasource-toolkit": "self.version"
     },
-    "version": "1.0.0-beta.36",
+    "version": "1.0.0-beta.37",
     "config": {
         "allow-plugins": {
             "pestphp/pest-plugin": true
