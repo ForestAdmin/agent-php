@@ -1,6 +1,5 @@
 {
     "name": "forestadmin/php-agent-toolkit",
-    "version": "x.x.x",
     "description": "The official agent PHP for Forest",
     "type": "library",
     "license": "GPL-3.0-or-later",
