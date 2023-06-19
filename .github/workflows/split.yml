@@ -1,0 +1,60 @@
+name: Split packages
+
+on:
+  release:
+    types: [published]
+
+
+jobs:
+  build:
+    name: Split packages
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          -
+            local_path: 'Agent'
+            split_repository: 'php-agent-toolkit'
+          -
+            local_path: 'BaseDatasource'
+            split_repository: 'php-base-datasource'
+          -
+            local_path: 'DatasourceCustomizer'
+            split_repository: 'php-datasource-customizer'
+          -
+            local_path: 'DatasourceDoctrine'
+            split_repository: 'php-datasource-doctrine'
+          -
+            local_path: 'DatasourceDummy'
+            split_repository: 'php-datasource-dummy'
+          -
+            local_path: 'DatasourceToolkit'
+            split_repository: 'php-datasource-toolkit'
+
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false # GITHUB_TOKEN must not be set for the semantic release
+      - name: Fix git safe.directory in container
+        run: mkdir -p /home/runner/work/_temp/_github_home && printf "[safe]\n\tdirectory = /github/workspace \n\tdirectory = /tmp/monorepo_split/build_directory" > /home/runner/work/_temp/_github_home/.gitconfig
+      - name: Split packages
+        uses: "symplify/monorepo-split-github-action@2.1"
+        with:
+          tag: ${GITHUB_REF#refs/tags/}
+
+          # ↓ split "packages/{{local_path}}" directory
+          package_directory: 'packages/${{ matrix.package.local_path }}'
+
+          # ↓ into https://github.com/forestadmin/{{split_repository}} repository
+          repository_organization: 'forestadmin'
+          repository_name: '${{ matrix.package.split_repository }}'
+
+          # ↓ the user signed under the split commit
+          user_name: ${{ secrets.GIT_AUTHOR_NAME }}
+          user_email: ${{ secrets.GIT_AUTHOR_EMAIL }}
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+

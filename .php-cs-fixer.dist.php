@@ -2,7 +2,12 @@
 
 $finder = Symfony\Component\Finder\Finder::create()
     ->in([
-        __DIR__ . '/src',
+        __DIR__ . '/packages/Agent/src',
+        __DIR__ . '/packages/BaseDatasource/src',
+        __DIR__ . '/packages/DatasourceCustomizer/src',
+        __DIR__ . '/packages/DatasourceToolkit/src',
+        __DIR__ . '/packages/DatasourceDummy/src',
+        __DIR__ . '/packages/DatasourceDoctrine/src',
         __DIR__ . '/tests',
     ])
     ->name('*.php')
@@ -19,7 +24,7 @@ return (new PhpCsFixer\Config())
         'trailing_comma_in_multiline'       => true,
         'phpdoc_scalar'                     => true,
         'unary_operator_spaces'             => true,
-        'binary_operator_spaces'            => true,
+        'binary_operator_spaces'            => ['operators' => ['=>' => 'align_single_space']],
         'blank_line_before_statement'       => [
             'statements' => ['break', 'continue', 'declare', 'return', 'throw', 'try'],
         ],

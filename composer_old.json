@@ -1,0 +1,66 @@
+{
+    "name": "forestadmin/agent-php",
+    "version": "1.0.0-beta.34",
+    "type": "library",
+    "license": "",
+    "require": {
+        "doctrine/orm": "^2.8",
+        "firebase/php-jwt": "^6.2",
+        "galbar/jsonpath": "^2.0",
+        "guzzlehttp/guzzle": "^6.0|^7.4",
+        "illuminate/collections": "^8.0|^9.0",
+        "illuminate/database": "^v8.83|^9.0",
+        "illuminate/support": "^8.0|^9.0",
+        "league/csv": "^9.8",
+        "league/fractal": "^0.20.1",
+        "league/oauth2-client": "^2.6",
+        "mlocati/ip-lib": "^1.18",
+        "nesbot/carbon": "^2.58",
+        "php": "^8.0",
+        "php-di/php-di": "^6.4",
+        "ramsey/uuid": "^3.9.7|^4.3",
+        "spatie/enum": "^3.13",
+        "symfony/cache": "^5.4|^6.0",
+        "symfony/dependency-injection": "^5.4|^6.0",
+        "symfony/http-foundation": "^5.4|^6.0",
+        "symfony/http-kernel": "^5.4|^6.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "pestphp/pest": "^1.21",
+        "pestphp/pest-plugin-mock": "^1.0",
+        "phpspec/prophecy-phpunit": "^2.0",
+        "symfony/var-dumper": "^5.4|^6.0",
+        "spatie/pest-plugin-test-time": "^1.1",
+        "symplify/monorepo-builder": "11.2.3.72"
+    },
+    "autoload": {
+        "files": [
+            "packages/Agent/src/functions.php"
+        ],
+        "psr-4": {
+            "ForestAdmin\\AgentPHP\\Agent\\": "packages/Agent/src",
+            "ForestAdmin\\AgentPHP\\BaseDatasource\\": "packages/BaseDatasource/src",
+            "ForestAdmin\\AgentPHP\\DatasourceCustomizer\\": "packages/DatasourceCustomizer/src",
+            "ForestAdmin\\AgentPHP\\DatasourceDoctrine\\": "packages/DatasourceDoctrine/src",
+            "ForestAdmin\\AgentPHP\\DatasourceToolkit\\": "packages/DatasourceToolkit/src",
+            "ForestAdmin\\AgentPHP\\DatasourceDummy\\": "packages/DatasourceDummy/src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ForestAdmin\\AgentPHP\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "replace": {
+        "your-monorepo/first-package": "self.version",
+        "your-monorepo/second-package": "self.version"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

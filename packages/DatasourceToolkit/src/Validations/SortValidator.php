@@ -1,0 +1,20 @@
+<?php
+
+namespace ForestAdmin\AgentPHP\DatasourceToolkit\Validations;
+
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+
+class SortValidator
+{
+    /**
+     * @throws ForestException
+     */
+    public static function validate(CollectionContract $collection, Sort $sort): void
+    {
+        foreach ($sort as $clause) {
+            FieldValidator::validate($collection, $clause['field']);
+        }
+    }
+}
