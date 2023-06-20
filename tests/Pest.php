@@ -1,6 +1,7 @@
 <?php
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
@@ -35,6 +36,8 @@ uses()
 
             $_GET = [];
             $_POST = [];
+
+            Cache::put('forest.has_permission', true, 10);
         }
     )->in('Agent', 'DatasourceToolkit');
 
