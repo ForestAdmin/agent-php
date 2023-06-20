@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/ForestAdmin/agent-php/compare/v1.0.0...v1.0.1) (2023-06-20)
+
+
+### Bug Fixes
+
+* **composer:** replace all beta versions with stable versions of packages ([#72](https://github.com/ForestAdmin/agent-php/issues/72)) ([844e22a](https://github.com/ForestAdmin/agent-php/commit/844e22a340a9fb118216804eb9c481ca8b88858a))
+
 # 1.0.0 (2023-06-19)
 
 
