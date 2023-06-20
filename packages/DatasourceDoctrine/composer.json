@@ -13,9 +13,9 @@
         "symfony/dependency-injection": "^5.4|^6.0",
         "symfony/http-foundation": "^5.4|^6.0",
         "symfony/http-kernel": "^5.4|^6.0",
-        "forestadmin/php-agent-toolkit": "^1.0.0-beta",
-        "forestadmin/php-datasource-toolkit": "^1.0.0-beta",
-        "forestadmin/php-base-datasource": "^1.0.0-beta",
+        "forestadmin/php-agent-toolkit": "^1.0.0",
+        "forestadmin/php-datasource-toolkit": "^1.0.0",
+        "forestadmin/php-base-datasource": "^1.0.0",
         "doctrine/orm": "^2.7.3"
 
     },

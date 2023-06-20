@@ -17,7 +17,7 @@
         "mlocati/ip-lib": "^1.18",
         "nesbot/carbon": "^2.58",
         "php": "^8.0",
-        "php-di/php-di": "^6.4",
+        "php-di/php-di": "^7.0",
         "ramsey/uuid": "^3.9.7|^4.3",
         "symfony/cache": "^5.4|^6.0",
         "symfony/dependency-injection": "^5.4|^6.0",
