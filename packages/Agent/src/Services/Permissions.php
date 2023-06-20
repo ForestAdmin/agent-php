@@ -39,6 +39,10 @@ class Permissions
 
     public function can(string $action, CollectionContract $collection, $allowFetch = false): bool
     {
+        if (! $this->hasPermissionSystem()) {
+            return true;
+        }
+
         $userData = $this->getUserData($this->caller->getId());
         $collectionsData = $this->getCollectionsPermissionsData($allowFetch);
 
