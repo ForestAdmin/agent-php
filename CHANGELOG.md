@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/ForestAdmin/agent-php/compare/v1.0.1...v1.0.2) (2023-06-20)
+
+
+### Bug Fixes
+
+* permission on CRUD actions when app is on debug mode ([#73](https://github.com/ForestAdmin/agent-php/issues/73)) ([19193aa](https://github.com/ForestAdmin/agent-php/commit/19193aad6cc453fbcc05f7c70315fcb68743125c))
+
 ## [1.0.1](https://github.com/ForestAdmin/agent-php/compare/v1.0.0...v1.0.1) (2023-06-20)
 
 
