@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\BaseDatasource\Contracts\BaseDatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceEloquent\Utils\DataTypes;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use Illuminate\Database\Eloquent\Model;
@@ -68,15 +69,24 @@ class EloquentCollection extends BaseCollection
             $relation = $this->model->$name();
             switch (get_class($relation)) {
                 case BelongsTo::class:
-                    //                    if ($name == 'user' || $name == 'post') {
-                    //                        dump($this->model, $relation);
-                    //                    }
-                    $relationSchema = new OneToOneSchema(
-                        originKey: $relation->getForeignKeyName(),
-                        originKeyTarget:$relation->getOwnerKeyName(),
-                        foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName()
-                    );
-                    $this->addField($name, $relationSchema);
+                    $inverse = $this->getInverseBelongsTo($relation);
+                    if ($inverse === HasOne::class) {
+                        $relationSchema = new OneToOneSchema(
+                            originKey: $relation->getForeignKeyName(),
+                            originKeyTarget:$relation->getOwnerKeyName(),
+                            foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName()
+                        );
+
+                        $this->addField($name, $relationSchema);
+                    } elseif ($inverse === HasMany::class) {
+                        $relationSchema = new ManyToOneSchema(
+                            foreignKey: $relation->getForeignKeyName(),
+                            foreignKeyTarget:$relation->getOwnerKeyName(),
+                            foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName()
+                        );
+
+                        $this->addField($name, $relationSchema);
+                    }
 
                     break;
                 case BelongsToMany::class:
@@ -89,7 +99,7 @@ class EloquentCollection extends BaseCollection
                     ];
 
                     if ($model = $this->datasource->findModelByTableName($relation->getTable())) {
-                        $attributes['throughCollection'] = (new ReflectionClass($relation->getRelated()))->getShortName();
+                        $attributes['throughCollection'] = (new ReflectionClass($model))->getShortName();
                     } else {
                         // TODO
                         dd('dfsf');
@@ -126,8 +136,8 @@ class EloquentCollection extends BaseCollection
                     break;
                 case HasOne::class:
                     $relationSchema = new OneToOneSchema(
-                        originKey: Str::after($relation->getForeignKeyName(), '.'),
-                        originKeyTarget:$relation->getLocalKeyName(),
+                        originKey: $relation->getLocalKeyName(),
+                        originKeyTarget: Str::after($relation->getForeignKeyName(), '.'),
                         foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName()
                     );
                     $this->addField($name, $relationSchema);
@@ -135,18 +145,6 @@ class EloquentCollection extends BaseCollection
                     break;
             }
         }
-        //        foreach ($relationships as $key => $value) {
-        //            $type = $this->getRelationType($this->entityMetadata->reflFields[$key]->getAttributes());
-        //            if ($type) {
-        //                match ($type) {
-        //                    'ManyToMany' => $this->addManyToMany($key, $value['joinTable'], $value['targetEntity'], $value['mappedBy']),
-        //                    'ManyToOne'  => $this->addManyToOne($key, $value['joinColumns'][0], $value['targetEntity']),
-        //                    'OneToMany'  => $this->addOneToMany($key, $value['targetEntity'], $value['mappedBy']),
-        //                    'OneToOne'   => $this->addOneToOne($key, $value['joinColumns'], $value['targetEntity'], $value['mappedBy']),
-        //                    default      => null
-        //                };
-        //            }
-        //        }
     }
 
     private function getRelationships($reflectionClass): array
@@ -184,5 +182,14 @@ class EloquentCollection extends BaseCollection
 
             $this->addField($value->getName(), $field);
         }
+    }
+
+    private function getInverseBelongsTo(BelongsTo $relation): ?string
+    {
+        $relations = $this->getRelationships(new ReflectionClass($relation->getRelated()));
+
+        return collect($relations)
+            ->filter(fn ($class) => in_array($class, [HasMany::class, HasOne::class], true))
+            ->first(fn ($class, $methodName) => class_basename($relation->getRelated()->$methodName()->getRelated()) === class_basename($this->model));
     }
 }
