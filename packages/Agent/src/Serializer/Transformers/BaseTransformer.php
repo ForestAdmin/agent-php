@@ -46,7 +46,7 @@ class BaseTransformer extends TransformerAbstract
             ->filter(fn ($field) => $field instanceof ManyToOneSchema || $field instanceof OneToOneSchema);
 
         foreach ($relations as $key => $value) {
-            if (isset($data[$key])) {
+            if (isset($data[$key]) && ! empty($data[$key])) {
                 $this->defaultIncludes[] = $key;
                 $this->addMethod(
                     'include' . Str::ucfirst(Str::camel($key)),
