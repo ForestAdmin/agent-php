@@ -25,7 +25,6 @@ class BaseCollection extends ForestCollection
     {
         parent::__construct($datasource, $name);
 
-        $this->tableName = $tableName;
         $fields = $this->getFieldsFromTable();
         $this->addFields($fields);
     }

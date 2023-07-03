@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
  */
 class EloquentDatasource extends BaseDatasource
 {
-    private $models = [];
+    private array $models = [];
 
     /**
      * @throws \ReflectionException
