@@ -49,7 +49,7 @@ class QueryBuilder
                 ->getCollection($relation->getForeignCollection())->getTableName();
             $this->addJoinRelation($relation, $tableName, $relationName);
 
-            return $field;
+            return Str::replace(':', '.', $field);
         }
 
         return $this->tableName . '.' . $field;

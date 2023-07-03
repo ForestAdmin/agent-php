@@ -25,11 +25,11 @@ class BaseCollection extends ForestCollection
     {
         parent::__construct($datasource, $name);
 
-        $fields = $this->getFieldsFromTable();
-        $this->addFields($fields);
+        $fields = $this->fetchFieldsFromTable();
+        $this->makeColumns($fields);
     }
 
-    protected function getFieldsFromTable(): array
+    protected function fetchFieldsFromTable(): array
     {
         /** @var Table $rawFields */
         $table = $this->datasource->getOrm()->getDatabaseManager()->getDoctrineSchemaManager()->introspectTable($this->tableName);
@@ -47,7 +47,7 @@ class BaseCollection extends ForestCollection
         ];
     }
 
-    public function addFields(array $fields): void
+    public function makeColumns(array $fields): void
     {
         /** @var Column $value */
         foreach ($fields['columns'] as $value) {

@@ -36,8 +36,6 @@ uses()
 
             $_GET = [];
             $_POST = [];
-
-            Cache::put('forest.has_permission', true, 10);
         }
     )->in('Agent', 'DatasourceToolkit');
 
@@ -95,6 +93,8 @@ function buildAgent(Datasource $datasource, array $options = [])
     $container->set('datasource', $datasource);
     invokeProperty($agent, 'container', $container);
 
+    Cache::put('forest.has_permission', true, 10);
+
     return $agent;
 }
 
@@ -120,6 +120,22 @@ function migrateAndSeed(Connection $connection): void
             $table->integer('price');
             $table->foreignId('author_id')->constrained('users')->onDelete('cascade');
             $table->dateTime('published_at')->nullable();
+            $table->timestamps();
+        }
+    );
+
+    $schema->create(
+        'reviews',
+        function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+        }
+    );
+
+    $schema->create(
+        'book_review',
+        function (Blueprint $table) {
+            $table->id();
             $table->timestamps();
         }
     );
