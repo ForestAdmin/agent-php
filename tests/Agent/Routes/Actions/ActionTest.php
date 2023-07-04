@@ -189,7 +189,7 @@ test('when a action is create, the action route should return the appropriate ro
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
     $datasource->addCollection($collectionUser);
-    buildAgent($datasource);
+    $this->buildAgent($datasource);
 
     $datasourceDecorator = new DatasourceDecorator($datasource, ActionCollection::class);
     $datasourceDecorator->build();

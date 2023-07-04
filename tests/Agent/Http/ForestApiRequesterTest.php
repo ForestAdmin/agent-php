@@ -33,7 +33,7 @@ function mockClientResponseException(): Client
 }
 
 test('getHeaders() should work', function () {
-    buildAgent(new Datasource());
+    $this->buildAgent(new Datasource());
     factoryForestApiRequester();
     $forestApi = new ForestApiRequester();
     $forestApi->setClient(mockClientResponse());

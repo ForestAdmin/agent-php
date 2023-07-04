@@ -5,6 +5,7 @@ use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
 
@@ -25,6 +26,8 @@ define("AGENT_OPTIONS", [
     'isProduction'          => false,
     'permissionExpiration'  => FOREST_PERMISSIONS_EXPIRATION_IN_SECONDS,
 ]);
+
+uses(TestCase::class)->in('Agent', 'DatasourceCustomizer');
 
 uses()
     ->beforeEach(

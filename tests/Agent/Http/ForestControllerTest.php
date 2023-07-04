@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 test('invoke() should return a Response', function () {
-    buildAgent(new Datasource());
+    $this->buildAgent(new Datasource());
     $_GET['_route'] = 'forest.test';
     $_GET['_route_params'] = [];
     $request = Request::createFromGlobals();
@@ -45,7 +45,7 @@ test('invoke() should return a Response', function () {
 });
 
 test('invoke() should call exceptionHandler', function () {
-    buildAgent(new Datasource());
+    $this->buildAgent(new Datasource());
     $_GET['_route'] = 'forest.test';
     $_GET['_route_params'] = [];
     $request = Request::createFromGlobals();
@@ -78,7 +78,7 @@ test('invoke() should call exceptionHandler', function () {
 });
 
 test('invoke() should throw exception if the exception is not handled', function () {
-    buildAgent(new Datasource());
+    $this->buildAgent(new Datasource());
     $_GET['_route'] = 'forest.test';
     $_GET['_route_params'] = [];
     $request = Request::createFromGlobals();
@@ -95,7 +95,7 @@ test('invoke() should throw exception if the exception is not handled', function
 });
 
 test('response() with the content-type "text/csv" should return a Response', function () {
-    buildAgent(new Datasource());
+    $this->buildAgent(new Datasource());
 
     $_GET['_route'] = 'forest';
     $_GET['_route_params'] = [];
@@ -113,7 +113,7 @@ test('response() with the content-type "text/csv" should return a Response', fun
 });
 
 test('response() should return a JsonResponse', function () {
-    buildAgent(new Datasource());
+    $this->buildAgent(new Datasource());
 
     $_GET['_route'] = 'forest';
     $_GET['_route_params'] = [];

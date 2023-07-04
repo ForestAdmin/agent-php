@@ -322,7 +322,7 @@ test('refineFilter() when the search is defined and the collection schema is not
     $datasource->addCollection($collectionReviews);
     $datasource->addCollection($collectionBookReview);
 
-    buildAgent($datasource);
+    $this->buildAgent($datasource);
 
     $searchCollection = new SearchCollection($collectionBookReview, $datasource);
     $filter = new Filter(search: '2d162303-78bf-599e-b197-93590ac3d315', searchExtended: true);
