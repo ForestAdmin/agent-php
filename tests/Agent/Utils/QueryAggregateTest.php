@@ -21,6 +21,13 @@ beforeEach(function () {
     migrateAndSeed($datasource->getOrm()->getConnection());
 
     $bookCollection = new BaseCollection($datasource, 'Book', 'books');
+    invokeProperty($bookCollection, 'fields', collect());
+    $bookCollection = mock($bookCollection)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('fetchFieldsFromTable')
+        ->andReturn(['columns' => [], 'primaries' => []])
+        ->getMock();
     $bookCollection->addFields(
         [
             'id'           => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
@@ -44,6 +51,13 @@ beforeEach(function () {
     );
 
     $userCollection = new BaseCollection($datasource, 'User', 'users');
+    invokeProperty($userCollection, 'fields', collect());
+    $userCollection = mock($userCollection)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('fetchFieldsFromTable')
+        ->andReturn(['columns' => [], 'primaries' => []])
+        ->getMock();
     $userCollection->addFields(
         [
             'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
@@ -58,6 +72,13 @@ beforeEach(function () {
     );
 
     $reviewCollection = new BaseCollection($datasource, 'Review', 'reviews');
+    invokeProperty($reviewCollection, 'fields', collect());
+    $reviewCollection = mock($reviewCollection)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('fetchFieldsFromTable')
+        ->andReturn(['columns' => [], 'primaries' => []])
+        ->getMock();
     $reviewCollection->addFields(
         [
             'id'     => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
@@ -67,6 +88,13 @@ beforeEach(function () {
     );
 
     $bookReviewCollection = new BaseCollection($datasource, 'BookReview', 'book_review');
+    invokeProperty($bookReviewCollection, 'fields', collect());
+    $bookReviewCollection = mock($bookReviewCollection)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('fetchFieldsFromTable')
+        ->andReturn(['columns' => [], 'primaries' => []])
+        ->getMock();
     $bookReviewCollection->addFields(
         [
             'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
