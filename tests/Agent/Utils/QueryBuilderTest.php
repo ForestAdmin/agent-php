@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 
@@ -16,14 +17,8 @@ use function Spatie\PestPluginTestTime\testTime;
 beforeEach(function () {
     testTime()->freeze(Carbon::now('Europe/Paris'));
     global $datasource, $bookCollection, $reviewCollection, $bookReviewCollection, $userCollection;
-    $datasource = new BaseDatasource(
-        [
-            'driver'   => 'sqlite',
-            'database' => ':memory:',
-        ]
-    );
-    migrateAndSeed($datasource->getOrm()->getConnection());
-
+    $this->initDatabase();
+    $datasource = new BaseDatasource(TestCase::DB_CONFIG);
     $bookCollection = new BaseCollection($datasource, 'Book', 'books');
     invokeProperty($bookCollection, 'fields', collect());
     $bookCollection = mock($bookCollection)

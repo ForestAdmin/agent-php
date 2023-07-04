@@ -8,17 +8,13 @@ use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
 use Doctrine\Persistence\Mapping\MappingException;
-use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
 use ForestAdmin\AgentPHP\BaseDatasource\Contracts\BaseDatasourceContract;
-use ForestAdmin\AgentPHP\DatasourceDoctrine\Utils\DataTypes;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
@@ -33,11 +29,10 @@ class Collection extends BaseCollection
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function __construct(protected BaseDatasourceContract $datasource, protected ClassMetadata $entityMetadata)
+    public function __construct(protected BaseDatasourceContract $datasource, public ClassMetadata $entityMetadata)
     {
         parent::__construct($datasource, $entityMetadata->reflClass->getShortName(), $entityMetadata->getTableName());
         $this->className = $entityMetadata->getName();
-        $this->addFields($this->entityMetadata->fieldMappings);
         $this->mapRelationshipsToFields();
     }
 
@@ -64,25 +59,6 @@ class Collection extends BaseCollection
                     default      => null
                 };
             }
-        }
-    }
-
-    /**
-     * @throws \Exception
-     */
-    public function addFields(array $fields): void
-    {
-        foreach ($fields as $value) {
-            $field = new ColumnSchema(
-                columnType: DataTypes::getType($value['type']),
-                filterOperators: FrontendFilterable::getRequiredOperators(DataTypes::getType($value['type'])),
-                isPrimaryKey: in_array($value['fieldName'], $this->entityMetadata->getIdentifierFieldNames(), true),
-                isReadOnly: false,
-                isSortable: true,
-                type: 'Column',
-                defaultValue: array_key_exists('options', $value) && array_key_exists('default', $value['options']) ? $value['options']['default'] : null,
-            );
-            $this->addField($value['columnName'], $field);
         }
     }
 
@@ -142,19 +118,6 @@ class Collection extends BaseCollection
             foreignCollection: (new \ReflectionClass($related))->getShortName(),
         );
 
-        $columnSchema = new ColumnSchema(
-            columnType: PrimitiveType::NUMBER,
-            filterOperators: FrontendFilterable::getRequiredOperators(PrimitiveType::NUMBER),
-            isPrimaryKey: false,
-            isReadOnly: false,
-            isSortable: true,
-            type: 'Column',
-            defaultValue: null,
-            enumValues: [],
-            validation: []
-        );
-
-        $this->addField($joinColumn['name'], $columnSchema);
         $this->addField($name, $relationField);
     }
 
@@ -170,12 +133,7 @@ class Collection extends BaseCollection
     protected function addOneToOne(string $name, array $joinColumn, string $related, ?string $mappedField = null): void
     {
         $relatedMeta = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor($related);
-        if ($mappedField) {
-            // hasOne
-            if (! array_key_exists($mappedField, $relatedMeta->associationMappings)) {
-                throw new \Exception("The relation field `$mappedField` does not exist in the entity `$related`.");
-            }
-
+        if ($mappedField && isset($relatedMeta->associationMappings[$mappedField])) {
             $joinColumn = $relatedMeta->associationMappings[$mappedField]['joinColumns'];
             $relationField = new OneToOneSchema(
                 originKey: $this->entityMetadata->fieldNames[$joinColumn[0]['referencedColumnName']],
@@ -205,11 +163,7 @@ class Collection extends BaseCollection
     protected function addManyToMany(string $name, array $joinTable, string $related, ?string $mappedField = null): void
     {
         $relatedMeta = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor($related);
-        if ($mappedField) {
-            // manyToMany inversed
-            if (! array_key_exists($mappedField, $relatedMeta->associationMappings)) {
-                throw new \Exception("The relation field `$mappedField` does not exist in the entity `$related`.");
-            }
+        if ($mappedField && isset($relatedMeta->associationMappings[$mappedField])) {
             $joinTable = $relatedMeta->associationMappings[$mappedField]['joinTable'];
             $schemaTable = $this->datasource
                 ->getEntityManager()
@@ -278,17 +232,15 @@ class Collection extends BaseCollection
     protected function addOneToMany(string $name, string $related, string $mappedField): void
     {
         $relatedMeta = $this->datasource->getEntityManager()->getMetadataFactory()->getMetadataFor($related);
-        if (! array_key_exists($mappedField, $relatedMeta->associationMappings)) {
-            throw new \Exception("The relation field `$mappedField` does not exist in the entity `$related`.");
+        if (isset($relatedMeta->associationMappings[$mappedField])) {
+            $joinColumn = $relatedMeta->associationMappings[$mappedField]['joinColumns'][0];
+            $relationField = new OneToManySchema(
+                originKey: $joinColumn['name'],
+                originKeyTarget: $this->entityMetadata->fieldNames[$joinColumn['referencedColumnName']],
+                foreignCollection: (new \ReflectionClass($related))->getShortName(),
+            );
+
+            $this->addField($name, $relationField);
         }
-
-        $joinColumn = $relatedMeta->associationMappings[$mappedField]['joinColumns'][0];
-        $relationField = new OneToManySchema(
-            originKey: $joinColumn['name'],
-            originKeyTarget: $this->entityMetadata->fieldNames[$joinColumn['referencedColumnName']],
-            foreignCollection: (new \ReflectionClass($related))->getShortName(),
-        );
-
-        $this->addField($name, $relationField);
     }
 }

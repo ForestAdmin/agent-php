@@ -30,6 +30,10 @@ class Book
     #[ORM\OneToMany(mappedBy: 'book', targetEntity: BookReview::class)]
     private Collection $bookReviews;
 
+    // fake relation for test
+    #[ORM\ManyToFake(inversedBy: 'books')]
+    private ?Author $authorFake = null;
+
     public function __construct()
     {
         $this->bookReviews = new ArrayCollection();

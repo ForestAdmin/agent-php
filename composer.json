@@ -32,7 +32,8 @@
         "spatie/pest-plugin-test-time": "^1.1",
         "symfony/var-dumper": "^5.4|^6.0",
         "symplify/monorepo-builder": "11.2.3.72",
-        "ozzie/pest-plugin-nest": "^0.1"
+        "ozzie/pest-plugin-nest": "^0.1",
+        "ext-sqlite3": "*"
     },
     "autoload": {
         "files": [

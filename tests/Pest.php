@@ -6,8 +6,6 @@ use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\Tests\TestCase;
-use Illuminate\Database\Connection;
-use Illuminate\Database\Schema\Blueprint;
 
 const BEARER = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZW1haWwiOiJqb2huLmRvZUBkb21haW4uY29tIiwiZmlyc3ROYW1lIjoiSm9obiIsImxhc3ROYW1lIjoiRG9lIiwidGVhbSI6IkRldmVsb3BlcnMiLCJyZW5kZXJpbmdJZCI6IjEwIiwidGFncyI6eyJzb21ldGhpbmciOiJ0YWdWYWx1ZSJ9LCJ0aW1lem9uZSI6IkV1cm9wZS9QYXJpcyIsInBlcm1pc3Npb25MZXZlbCI6ImFkbWluIn0.yCAGVg2Ef4a6uDbM6_VjlFobFwACJnyFtjkbo5lkEi4';
 
@@ -27,7 +25,7 @@ define("AGENT_OPTIONS", [
     'permissionExpiration'  => FOREST_PERMISSIONS_EXPIRATION_IN_SECONDS,
 ]);
 
-uses(TestCase::class)->in('Agent', 'DatasourceCustomizer');
+uses(TestCase::class)->in('Agent', 'DatasourceCustomizer', 'DatasourceDoctrine');
 
 uses()
     ->beforeEach(
@@ -99,64 +97,4 @@ function buildAgent(Datasource $datasource, array $options = [])
     Cache::put('forest.has_permission', true, 10);
 
     return $agent;
-}
-
-function migrateAndSeed(Connection $connection): void
-{
-    $schema = $connection->getSchemaBuilder();
-    $schema->dropAllTables();
-
-    $schema->create(
-        'users',
-        function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamps();
-        }
-    );
-    $schema->create(
-        'books',
-        function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->integer('price');
-            $table->foreignId('author_id')->constrained('users')->onDelete('cascade');
-            $table->dateTime('published_at')->nullable();
-            $table->timestamps();
-        }
-    );
-
-    $schema->create(
-        'reviews',
-        function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        }
-    );
-
-    $schema->create(
-        'book_review',
-        function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        }
-    );
-
-    $connection->table('users')->insert(
-        [
-            ['name' => 'user1', 'email' => 'user1@gmail.com'],
-            ['name' => 'user2', 'email' => 'user2@gmail.com'],
-            ['name' => 'user3', 'email' => 'user3@gmail.com'],
-        ]
-    );
-
-    $connection->table('books')->insert(
-        [
-            ['title' => 'book1', 'price' => '10', 'published_at' => date('c'), 'author_id' => 1],
-            ['title' => 'book2', 'price' => '10', 'published_at' => date('c'), 'author_id' => 2],
-            ['title' => 'book3', 'price' => '10', 'published_at' => date('c'), 'author_id' => 3],
-            ['title' => 'book4', 'price' => '10', 'published_at' => date('c'), 'author_id' => 1],
-        ]
-    );
 }

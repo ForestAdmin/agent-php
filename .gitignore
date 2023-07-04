@@ -17,3 +17,5 @@ coverage.xml
 .php-cs-fixer.cache
 
 composer.lock
+
+tests/Datasets/database.sqlite
