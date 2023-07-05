@@ -42,7 +42,7 @@ class ClassFinder
     /**
      * @throws \JsonException
      */
-    private function getNamespaceDirectory(string $namespace): ?string
+    private function getNamespaceDirectory(string $namespace): string
     {
         $composerNamespaces = $this->getDefinedNamespaces();
 
@@ -55,8 +55,6 @@ class ClassFinder
                 return realpath($this->appRoot . '/' . $composerNamespaces[$possibleNamespace] . implode('/', $undefinedNamespaceFragments));
             }
         }
-
-        return null;
     }
 
     private function fetchFiles(string $directory): array
