@@ -27,6 +27,9 @@ class Owner
     #[ORM\ManyToMany(targetEntity: Car::class, mappedBy: 'owners')]
     private Collection $cars;
 
+    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    private ?User $user = null;
+
     public function __construct()
     {
         $this->cars = new ArrayCollection();
@@ -96,6 +99,18 @@ class Owner
         if ($this->cars->removeElement($car)) {
             $car->removeOwner($this);
         }
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }

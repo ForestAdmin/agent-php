@@ -20,6 +20,9 @@ class User
     #[ORM\Column(length: 255)]
     private ?string $email = null;
 
+    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
+    private ?Owner $owner = null;
+
     public function __construct()
     {
         $this->books = new ArrayCollection();
@@ -50,6 +53,28 @@ class User
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    public function getOwner(): ?Owner
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(?Owner $owner): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($owner === null && $this->owner !== null) {
+            $this->owner->setUser(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($owner !== null && $owner->getUser() !== $this) {
+            $owner->setUser($this);
+        }
+
+        $this->owner = $owner;
 
         return $this;
     }
