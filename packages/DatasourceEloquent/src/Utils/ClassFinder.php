@@ -8,13 +8,13 @@ use Illuminate\Support\Arr;
 
 class ClassFinder
 {
-    //This value should be the directory that contains composer.json
-    //    public const appRoot = __DIR__ . "/../../";
-    public const appRoot = "/Users/nicolas/sites/agents/in-app/laravel-apps/laravel-10-blog/";
-
-    public static function getModelsInNamespace(string $namespace): array
+    public function __construct(protected string $appRoot)
     {
-        $files = self::fetchFiles(self::getNamespaceDirectory($namespace));
+    }
+
+    public function getModelsInNamespace(string $namespace): array
+    {
+        $files = $this->fetchFiles($this->getNamespaceDirectory($namespace));
 
         return array_filter(
             $files,
@@ -31,9 +31,9 @@ class ClassFinder
     /**
      * @throws \JsonException
      */
-    private static function getDefinedNamespaces(): array
+    private function getDefinedNamespaces(): array
     {
-        $composerJsonPath = self::appRoot . 'composer.json';
+        $composerJsonPath = $this->appRoot . 'composer.json';
         $composerConfig = json_decode(file_get_contents($composerJsonPath), false, 512, JSON_THROW_ON_ERROR);
 
         return (array) $composerConfig->autoload->{'psr-4'};
@@ -42,9 +42,9 @@ class ClassFinder
     /**
      * @throws \JsonException
      */
-    private static function getNamespaceDirectory(string $namespace): bool|string
+    private function getNamespaceDirectory(string $namespace): bool|string
     {
-        $composerNamespaces = self::getDefinedNamespaces();
+        $composerNamespaces = $this->getDefinedNamespaces();
 
         $namespaceFragments = explode('\\', $namespace);
         $undefinedNamespaceFragments = [];
@@ -52,7 +52,7 @@ class ClassFinder
         while($namespaceFragments) {
             $possibleNamespace = implode('\\', $namespaceFragments) . '\\';
             if(array_key_exists($possibleNamespace, $composerNamespaces)) {
-                return realpath(self::appRoot . $composerNamespaces[$possibleNamespace] . implode('/', $undefinedNamespaceFragments));
+                return realpath($this->appRoot . $composerNamespaces[$possibleNamespace] . implode('/', $undefinedNamespaceFragments));
             }
 
             array_unshift($undefinedNamespaceFragments, array_pop($namespaceFragments));
@@ -61,7 +61,7 @@ class ClassFinder
         return false;
     }
 
-    private static function fetchFiles(string $directory): array
+    private function fetchFiles(string $directory): array
     {
         $paths = array_diff(scandir($directory), ['.', '..']);
         $allFiles = [];

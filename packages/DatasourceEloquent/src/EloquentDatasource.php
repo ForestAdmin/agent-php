@@ -5,6 +5,9 @@ namespace ForestAdmin\AgentPHP\DatasourceEloquent;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseDatasource;
 use ForestAdmin\AgentPHP\DatasourceEloquent\Utils\ClassFinder;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
+
+use function ForestAdmin\config;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -30,7 +33,8 @@ class EloquentDatasource extends BaseDatasource
      */
     public function generate(): void
     {
-        $this->models = ClassFinder::getModelsInNamespace('App');
+        $finder = new ClassFinder(config('projectDir'));
+        $this->models = $finder->getModelsInNamespace();
         foreach ($this->models as $model) {
             $this->addCollection(new EloquentCollection($this, new $model()));
         }
