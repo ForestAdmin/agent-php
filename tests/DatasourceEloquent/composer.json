@@ -1,6 +1,6 @@
 {
-    "name": "forestadmin/agent-php",
-    "description": "The official agent PHP for Forest",
+    "name": "forestadmin/datasource-eloquent-test",
+    "description": "ONLY FOR TEST",
     "require": {},
     "require-dev": {},
     "autoload": {

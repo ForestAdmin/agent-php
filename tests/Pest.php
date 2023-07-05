@@ -25,7 +25,7 @@ define("AGENT_OPTIONS", [
     'permissionExpiration'  => FOREST_PERMISSIONS_EXPIRATION_IN_SECONDS,
 ]);
 
-uses(TestCase::class)->in('Agent', 'DatasourceCustomizer', 'DatasourceDoctrine');
+uses(TestCase::class)->in('Agent', 'DatasourceCustomizer', 'DatasourceDoctrine', 'DatasourceEloquent');
 
 uses()
     ->beforeEach(
@@ -38,7 +38,7 @@ uses()
             $_GET = [];
             $_POST = [];
         }
-    )->in('Agent', 'DatasourceToolkit');
+    )->in('Agent', 'DatasourceToolkit', 'DatasourceDoctrine', 'DatasourceEloquent');
 
 /**
  * Call protected/private property of a class.
