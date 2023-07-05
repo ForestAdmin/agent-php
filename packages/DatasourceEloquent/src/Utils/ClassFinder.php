@@ -49,11 +49,10 @@ class ClassFinder
         $namespaceFragments = explode('\\', $namespace);
         $undefinedNamespaceFragments = [];
 
-
         while($namespaceFragments) {
             $possibleNamespace = implode('\\', $namespaceFragments) . '\\';
             if(array_key_exists($possibleNamespace, $composerNamespaces)) {
-                return realpath($this->appRoot . $composerNamespaces[$possibleNamespace] . implode('/', $undefinedNamespaceFragments));
+                return realpath($this->appRoot . '/' . $composerNamespaces[$possibleNamespace] . implode('/', $undefinedNamespaceFragments));
             }
 
             array_unshift($undefinedNamespaceFragments, array_pop($namespaceFragments));
