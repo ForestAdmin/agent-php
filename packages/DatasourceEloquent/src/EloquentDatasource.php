@@ -34,7 +34,7 @@ class EloquentDatasource extends BaseDatasource
     public function generate(): void
     {
         $finder = new ClassFinder(config('projectDir'));
-        $this->models = $finder->getModelsInNamespace();
+        $this->models = $finder->getModelsInNamespace('App');
         foreach ($this->models as $model) {
             $this->addCollection(new EloquentCollection($this, new $model()));
         }
