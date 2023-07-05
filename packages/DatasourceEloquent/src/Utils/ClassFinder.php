@@ -33,7 +33,7 @@ class ClassFinder
      */
     private function getDefinedNamespaces(): array
     {
-        $composerJsonPath = $this->appRoot . 'composer.json';
+        $composerJsonPath = $this->appRoot . '/composer.json';
         $composerConfig = json_decode(file_get_contents($composerJsonPath), false, 512, JSON_THROW_ON_ERROR);
 
         return (array) $composerConfig->autoload->{'psr-4'};
@@ -48,6 +48,7 @@ class ClassFinder
 
         $namespaceFragments = explode('\\', $namespace);
         $undefinedNamespaceFragments = [];
+
 
         while($namespaceFragments) {
             $possibleNamespace = implode('\\', $namespaceFragments) . '\\';

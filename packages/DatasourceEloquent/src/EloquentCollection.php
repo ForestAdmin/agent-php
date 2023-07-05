@@ -21,7 +21,6 @@ class EloquentCollection extends BaseCollection
 {
     /**
      * @throws \ReflectionException
-     * @throws \Exception
      */
     public function __construct(protected BaseDatasourceContract $datasource, protected Model $model)
     {
