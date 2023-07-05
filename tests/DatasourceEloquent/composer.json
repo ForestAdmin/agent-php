@@ -5,7 +5,8 @@
     "require-dev": {},
     "autoload": {
         "psr-4": {
-            "App\\": "/Models"
+            "App\\": "/Models",
+            "Fake\\": "/Fake"
         }
     }
 }
