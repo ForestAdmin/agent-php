@@ -1,0 +1,11 @@
+{
+    "name": "forestadmin/agent-php",
+    "description": "The official agent PHP for Forest",
+    "require": {},
+    "require-dev": {},
+    "autoload": {
+        "psr-4": {
+            "App\\": "/Models"
+        }
+    }
+}
