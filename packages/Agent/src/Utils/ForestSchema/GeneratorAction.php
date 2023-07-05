@@ -83,7 +83,7 @@ class GeneratorAction
                 true
             )
         ) {
-            $output['type'] = '[' . Str::before($field->getType(), 'List') . ']';
+            $output['type'] = [Str::before($field->getType(), 'List')];
         } else {
             $output['type'] = $field->getType();
         }
