@@ -57,10 +57,6 @@ class Collection implements CollectionContract
     {
     }
 
-    public function show(Caller $caller, Filter $filter, $id, Projection $projection)
-    {
-    }
-
     public function list(Caller $caller, Filter $filter, Projection $projection): array
     {
     }
@@ -80,12 +76,6 @@ class Collection implements CollectionContract
     public function makeTransformer()
     {
         return new BaseTransformer($this->getName());
-    }
-
-    public function toArray($record, ?Projection $projection = null): array
-    {
-        // by default $record is an array
-        return $record;
     }
 
     public function renderChart(Caller $caller, string $name, array $recordId)

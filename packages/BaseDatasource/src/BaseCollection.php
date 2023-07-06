@@ -104,11 +104,6 @@ class BaseCollection extends ForestCollection
         return QueryAggregate::of($this, $caller->getTimezone(), $aggregation, $filter, $limit)->get();
     }
 
-    public function toArray($record, ?Projection $projection = null): array
-    {
-        return $record;
-    }
-
     /**
      * @return string
      */

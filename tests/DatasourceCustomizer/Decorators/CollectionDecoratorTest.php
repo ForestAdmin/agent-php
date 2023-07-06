@@ -166,19 +166,6 @@ test('aggregate() should call the childCollection corresponding method', functio
     expect($collectionDecorator->aggregate($caller, new Filter(), new Aggregation(operation: 'Count')))->toBeNull();
 })->with('caller');
 
-test('show() should call the childCollection corresponding method', function (Caller $caller) {
-    $collectionDecorator = factoryCollectionDecorator();
-
-    $childCollection = invokeProperty($collectionDecorator, 'childCollection');
-    $childCollection = mock($childCollection)
-        ->shouldReceive('show')
-        ->once()
-        ->getMock();
-    invokeProperty($collectionDecorator, 'childCollection', $childCollection);
-
-    expect($collectionDecorator->show($caller, new Filter(), 1, new Projection()))->toBeNull();
-})->with('caller');
-
 test('makeTransformer() should call the childCollection corresponding method', function () {
     $collectionDecorator = factoryCollectionDecorator();
 
@@ -190,17 +177,4 @@ test('makeTransformer() should call the childCollection corresponding method', f
     invokeProperty($collectionDecorator, 'childCollection', $childCollection);
 
     expect($collectionDecorator->makeTransformer())->toBeNull();
-});
-
-test('toArray() should call the childCollection corresponding method', function () {
-    $collectionDecorator = factoryCollectionDecorator();
-
-    $childCollection = invokeProperty($collectionDecorator, 'childCollection');
-    $childCollection = mock($childCollection)
-        ->shouldReceive('toArray')
-        ->once()
-        ->getMock();
-    invokeProperty($collectionDecorator, 'childCollection', $childCollection);
-
-    expect($collectionDecorator->toArray([]))->toEqual([]);
 });

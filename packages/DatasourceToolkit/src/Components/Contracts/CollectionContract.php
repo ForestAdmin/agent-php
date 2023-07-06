@@ -18,11 +18,7 @@ interface CollectionContract
 
     public function getForm(Caller $caller, string $name, ?array $formValues = null, ?Filter $filter = null): array;
 
-    public function toArray($record): array;
-
     public function create(Caller $caller, array $data);
-
-    public function show(Caller $caller, Filter $filter, $id, Projection $projection);
 
     public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array;
 
