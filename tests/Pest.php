@@ -25,7 +25,13 @@ define("AGENT_OPTIONS", [
     'permissionExpiration'  => FOREST_PERMISSIONS_EXPIRATION_IN_SECONDS,
 ]);
 
-uses(TestCase::class)->in('Agent', 'DatasourceCustomizer', 'DatasourceDoctrine', 'DatasourceEloquent');
+uses(TestCase::class)->in(
+    'Agent',
+    'DatasourceCustomizer',
+    'DatasourceDoctrine',
+    'DatasourceEloquent',
+    'BaseDatasource'
+);
 
 uses()
     ->beforeEach(

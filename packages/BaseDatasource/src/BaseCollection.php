@@ -47,7 +47,7 @@ class BaseCollection extends ForestCollection
         ];
     }
 
-    public function makeColumns(array $fields): void
+    protected function makeColumns(array $fields): void
     {
         /** @var Column $value */
         foreach ($fields['columns'] as $value) {
@@ -80,10 +80,10 @@ class BaseCollection extends ForestCollection
         $id = $query->insertGetId($data);
 
         $filter = new Filter(
-            conditionTree: ConditionTreeFactory::matchIds($this, [$id])
+            conditionTree: ConditionTreeFactory::matchIds($this, [[$id]])
         );
 
-        return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->first());
+        return Arr::dot(QueryConverter::of($this, $caller->getTimezone(), $filter)->getQuery()->first());
     }
 
     public function update(Caller $caller, Filter $filter, array $patch): void
