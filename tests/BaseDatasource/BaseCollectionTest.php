@@ -11,6 +11,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operat
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
@@ -18,7 +19,6 @@ use function Ozzie\Nest\test;
 
 beforeEach(closure: function () {
     global $baseDatasource, $baseCollection, $request;
-    $_GET = [];
     $this->buildAgent(new Datasource(), ['projectDir' => __DIR__]);
     $this->initDatabase();
     $baseDatasource = new BaseDatasource(TestCase::DB_CONFIG);
@@ -147,4 +147,15 @@ test('aggregate() should remove the record in database', function () {
     expect($aggregateResult)->toBeArray()
         ->and($aggregateResult[0])->toBeArray()
         ->and($aggregateResult[0])->toHaveKeys(['value', 'group']);
+});
+
+
+test('renderChart() should throw an exception', function () {
+    /** @var BaseCollection $baseCollection */
+    global $baseCollection;
+    $request = Request::createFromGlobals();
+    $caller = QueryStringParser::parseCaller($request);
+
+    expect(fn () => $baseCollection->renderChart($caller, 'fooChart', [1]))
+        ->toThrow(ForestException::class, "🌳🌳🌳 Chart fooChart is not implemented.");
 });

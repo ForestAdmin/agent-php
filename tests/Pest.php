@@ -44,7 +44,7 @@ uses()
             $_GET = [];
             $_POST = [];
         }
-    )->in('Agent', 'DatasourceToolkit', 'DatasourceDoctrine', 'DatasourceEloquent');
+    )->in('Agent', 'DatasourceToolkit', 'DatasourceDoctrine', 'DatasourceEloquent', 'BaseDatasource');
 
 /**
  * Call protected/private property of a class.
