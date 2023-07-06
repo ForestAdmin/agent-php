@@ -18,6 +18,7 @@ use function Ozzie\Nest\test;
 
 beforeEach(closure: function () {
     global $baseDatasource, $baseCollection, $request;
+    $_GET = [];
     $this->buildAgent(new Datasource(), ['projectDir' => __DIR__]);
     $this->initDatabase();
     $baseDatasource = new BaseDatasource(TestCase::DB_CONFIG);
