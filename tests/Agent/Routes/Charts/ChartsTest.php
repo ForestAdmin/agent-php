@@ -595,6 +595,30 @@ test('makeLine() with month year should return a LineChart', function () {
         ->and($result['content']['data']['id']);
 });
 
+test('makeLine() should return an exception when the timeRange is not defined', function () {
+    $chart = factoryChart(
+        [
+            'books'   => [
+                'results' => [
+                    [
+                        'value' => 10,
+                        'group' => ['date' => '2022-01-03 00:00:00'],
+                    ],
+                ],
+            ],
+            'payload' => [
+                'type'                 => 'Line',
+                'sourceCollectionName' => 'Book',
+                'groupByFieldName'     => 'date',
+                'aggregator'           => 'Count',
+                'timezone'             => 'Europe/Paris',
+            ],
+        ]
+    );
+
+    expect(fn () => $chart->handleRequest(['collectionName' => 'Book']))->toThrow(ForestException::class, '🌳🌳🌳 The parameter timeRange is not defined');
+});
+
 test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation', function () {
     $chart = factoryChart(
         [

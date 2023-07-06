@@ -10,6 +10,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
+
 use function ForestAdmin\config;
 
 function factoryStore($args = []): Store
@@ -18,9 +20,24 @@ function factoryStore($args = []): Store
     $collectionCar = new Collection($datasource, 'Car');
     $collectionCar->addFields(
         [
-            'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'model' => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'brand' => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'id'       => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'model'    => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'brand'    => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'owner_id' => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'owner'    => new ManyToOneSchema(
+                foreignKey: 'owner_id',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'Owner',
+            ),
+        ]
+    );
+
+    $collectionOwner = new Collection($datasource, 'Owner');
+    $collectionOwner->addFields(
+        [
+            'id'         => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'first_name' => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'last_name'  => new ColumnSchema(columnType: PrimitiveType::STRING),
         ]
     );
 
@@ -33,6 +50,7 @@ function factoryStore($args = []): Store
     }
 
     $datasource->addCollection($collectionCar);
+    $datasource->addCollection($collectionOwner);
     buildAgent($datasource);
 
     SchemaEmitter::getSerializedSchema($datasource);
@@ -106,8 +124,16 @@ test('handleRequest() should return a response 200', function () {
         'brand' => 'Lamborghini',
     ];
     $_GET['data'] = [
-        'attributes' => $data,
-        'type'       => 'Car',
+        'attributes'    => $data,
+        'type'          => 'Car',
+        'relationships' => [
+            'owner' => [
+                'data' => [
+                    'type' => 'Owner',
+                    'id'   => 1,
+                ],
+            ],
+        ],
     ];
     $store = factoryStore(['store' => $data]);
 

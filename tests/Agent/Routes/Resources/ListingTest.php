@@ -25,6 +25,7 @@ function factoryListing($args = []): Listing
 {
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
+    $collectionUser->setSearchable(true);
     $collectionUser->addFields(
         [
             'id'             => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
@@ -337,4 +338,31 @@ test('checkIp() throw when the clientIp is not into the ip-whitelist-rules', fun
 
     expect(fn () => $listing->checkIp($forestApiRequester->reveal()))
         ->toThrow(HttpException::class, 'IP address rejected (' . $_SERVER['REMOTE_ADDR'] . ')');
+});
+
+
+test('handleRequest() with search should return a response 200 with an attribute meta', function () {
+    $_GET['search'] = '1980';
+    $_GET['searchExtended'] = '0';
+    $data = [
+        [
+            'id'         => 1,
+            'first_name' => 'John',
+            'last_name'  => 'Doe',
+            'birthday'   => '1980-01-01',
+            'active'     => true,
+        ],
+        [
+            'id'         => 2,
+            'first_name' => 'Jane',
+            'last_name'  => 'Doe',
+            'birthday'   => '1984-01-01',
+            'active'     => true,
+        ],
+    ];
+
+    $listing = factoryListing(['listing' => $data]);
+
+    expect($listing->handleRequest(['collectionName' => 'User'])['content'])
+        ->toHaveKey('meta');
 });

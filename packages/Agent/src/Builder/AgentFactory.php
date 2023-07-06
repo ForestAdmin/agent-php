@@ -89,6 +89,7 @@ class AgentFactory
 
     /**
      * @throws \JsonException
+     * @codeCoverageIgnore
      */
     public static function sendSchema(bool $force = false): void
     {

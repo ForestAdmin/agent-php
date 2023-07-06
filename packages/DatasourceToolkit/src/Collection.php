@@ -12,6 +12,9 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projectio
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection as IlluminateCollection;
 
+/**
+ * @codeCoverageIgnore
+ */
 class Collection implements CollectionContract
 {
     use CollectionMethods;
