@@ -1,5 +1,6 @@
 <?php
 
+use Firebase\JWT\JWT;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Actions\Actions;
@@ -264,6 +265,49 @@ test('handleRequest should return the result of an action', function () {
 
     expect($action->handleRequest(['collectionName' => 'User']))->toEqual((new ResultBuilder())->success('BRAVO'));
 });
+
+
+test('handleRequest with signed approval request should put the decoded request to the request class', function () {
+    $type = 'SINGLE';
+    $smartAction = [
+        'my action',
+        new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')),
+    ];
+    $action = factoryAction($smartAction);
+
+    $data = [
+        'data' => [
+            'attributes' => [
+                'values'                   => [],
+                'ids'                      => [
+                    '50',
+                ],
+                'collection_name'          => 'User',
+                'parent_collection_name'   => null,
+                'parent_collection_id'     => null,
+                'parent_association_name'  => null,
+                'all_records'              => false,
+                'all_records_subset_query' => [
+                    'timezone' => 'Europe/Paris',
+                ],
+                'all_records_ids_excluded' => [],
+                'smart_action_id'          => 'User-my@@@action',
+                'signed_approval_request'  => null,
+            ],
+            'type'       => 'custom-action-requests',
+        ],
+    ];
+    $encodedRequest = JWT::encode($data, config('envSecret'), 'HS256');
+    $data['data']['attributes']['signed_approval_request'] = $encodedRequest;
+
+    $_POST = $data;
+
+    invokeProperty($action, 'request', Request::createFromGlobals());
+    invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
+
+    expect($action->handleRequest(['collectionName' => 'User']))->toEqual((new ResultBuilder())->success('BRAVO'));
+});
+
 
 test('handleHookRequest should return the result of an action', function () {
     $type = 'GLOBAL';

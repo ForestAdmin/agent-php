@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
@@ -79,4 +80,20 @@ test('replaceFieldWriting() should work on update', function (Caller $caller) {
         new Filter(new ConditionTreeLeaf('id', Operators::EQUAL, 1)),
         ['title' => 'my value']
     ))->toBeNull();
+})->with('caller');
+
+test('replaceFieldWriting() should throw when the field is unknown', function (Caller $caller) {
+    $data = [
+        'book' => [
+            'id'    => 1,
+            'title' => 'another value',
+        ],
+    ];
+    /** @var WriteReplaceCollection $newAuthor */
+    $newBook = factoryWriteSimpleCollection($data);
+    $newBook->replaceFieldWriting('title', fn ($value) => ['fakeField' => 'another value']);
+
+    expect(fn () => $newBook->create($caller, [
+        'title' => 'my value',
+    ]))->toThrow(ForestException::class, '🌳🌳🌳 Unknown field : fakeField');
 })->with('caller');

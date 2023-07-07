@@ -340,7 +340,6 @@ test('checkIp() throw when the clientIp is not into the ip-whitelist-rules', fun
         ->toThrow(HttpException::class, 'IP address rejected (' . $_SERVER['REMOTE_ADDR'] . ')');
 });
 
-
 test('handleRequest() with search should return a response 200 with an attribute meta', function () {
     $_GET['search'] = '1980';
     $_GET['searchExtended'] = '0';

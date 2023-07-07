@@ -23,13 +23,13 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\Rules;
 
-function factoryCollectionCustomizer($collectionName = 'Book')
+function factoryCollectionCustomizer($collectionName = 'Book', $operators = [Operators::EQUAL, Operators::IN])
 {
     $datasource = new Datasource();
     $collectionBook = new Collection($datasource, 'Book');
     $collectionBook->addFields(
         [
-            'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true, filterOperators: [Operators::EQUAL, Operators::IN]),
+            'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true, filterOperators: $operators),
             'title'           => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::EQUAL]),
             'reference'       => new ColumnSchema(columnType: PrimitiveType::STRING),
             'childId'         => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN]),
@@ -546,6 +546,30 @@ test('importField() should call addField', function () {
 
     expect($computedCollection->getFields())->toHaveKey('titleCopy')
         ->and($computedCollection->getFields()['titleCopy'])->toBeInstanceOf(ColumnSchema::class);
+});
+
+test('importField() should throw wnhen the operators of the pk does not have Equal or In', function () {
+    [$customizer, $datasourceCustomizer] = factoryCollectionCustomizer('Book', []);
+    $stack = $datasourceCustomizer->getStack();
+
+    $lateComputed = $stack->lateComputed;
+    $lateComputed = mock($lateComputed)
+        ->shouldReceive('getCollection')
+        ->once()
+        ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))
+        ->getMock();
+
+    invokeProperty($stack, 'lateComputed', $lateComputed);
+    invokeProperty($datasourceCustomizer, 'stack', $stack);
+    invokeProperty($customizer, 'stack', $stack);
+
+    expect(fn () => $customizer->importField(
+        'titleCopy',
+        [
+            'path' => 'title',
+        ]
+    ))->toThrow(ForestException::class, "🌳🌳🌳 Cannot override operators on collection titleCopy: the primary key columns must support 'Equal' and 'In' operators");
+    \Mockery::close();
 });
 
 test('importField() when the field is not writable should throw an exception', function () {
