@@ -28,6 +28,7 @@ define("AGENT_OPTIONS", [
 uses(TestCase::class)->in(
     'Agent',
     'DatasourceCustomizer',
+    'DatasourceToolkit',
     'DatasourceDoctrine',
     'DatasourceEloquent',
     'BaseDatasource'

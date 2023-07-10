@@ -21,6 +21,8 @@ class TestCase extends BaseTestCase
     public ?AgentFactory $agent = null;
     private Connection $connection;
 
+    public array $bucket = [];
+
     public function buildAgent(Datasource $datasource, array $options = [])
     {
         $_SERVER['HTTP_AUTHORIZATION'] = BEARER;

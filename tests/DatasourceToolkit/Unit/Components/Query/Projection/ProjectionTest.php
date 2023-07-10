@@ -7,8 +7,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
-use function ForestAdmin\cache;
-
 function projectionCollection(): Collection
 {
     $collection = new Collection(new Datasource(), 'foo');
@@ -20,50 +18,6 @@ function projectionCollection(): Collection
     );
 
     return $collection;
-}
-
-function collectionCompositePK(): Collection
-{
-    $collection = new Collection(new Datasource(), 'foo');
-    $collection->addFields(
-        [
-            'key1' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'key2' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'name' => new ColumnSchema(columnType: PrimitiveType::STRING),
-        ]
-    );
-
-    return $collection;
-}
-
-function projectionDatasource(): Datasource
-{
-    $datasource = new Datasource();
-    $collectionCars = new Collection($datasource, 'cars');
-    $collectionCars->addFields(
-        [
-            'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'name'  => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'owner' => new OneToOneSchema(
-                originKey: 'id',
-                originKeyTarget: 'owner_id',
-                foreignCollection: 'owners',
-            ),
-        ]
-    );
-    $collectionOwner = new Collection($datasource, 'owners');
-    $collectionOwner->addFields(
-        [
-            'id'   => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'name' => new ColumnSchema(columnType: PrimitiveType::STRING),
-        ]
-    );
-    $datasource->addCollection($collectionCars);
-    $datasource->addCollection($collectionOwner);
-
-    buildAgent($datasource);
-
-    return $datasource;
 }
 
 test('replaceItem() should remove duplicates', function () {
@@ -153,14 +107,44 @@ test('withPks() should do nothing when the pks are already provided and the pk i
 });
 
 test('withPks() should automatically add pks to the provided projection when the pk is a composite', function () {
-    $collection = collectionCompositePK();
+    $collection = new Collection(new Datasource(), 'foo');
+    $collection->addFields(
+        [
+            'key1' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'key2' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'name' => new ColumnSchema(columnType: PrimitiveType::STRING),
+        ]
+    );
     $projection = (new Projection(['name']))->withPks($collection);
 
     expect($projection)->toEqual(new Projection(['name', 'key1', 'key2']));
 });
 
 test('should automatically add pks for all relations when dealing with projection using relationships', function () {
-    $datasource = projectionDatasource();
+    $datasource = new Datasource();
+    $collectionCars = new Collection($datasource, 'cars');
+    $collectionCars->addFields(
+        [
+            'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'name'  => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'owner' => new OneToOneSchema(
+                originKey: 'id',
+                originKeyTarget: 'owner_id',
+                foreignCollection: 'owners',
+            ),
+        ]
+    );
+    $collectionOwner = new Collection($datasource, 'owners');
+    $collectionOwner->addFields(
+        [
+            'id'   => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'name' => new ColumnSchema(columnType: PrimitiveType::STRING),
+        ]
+    );
+    $datasource->addCollection($collectionCars);
+    $datasource->addCollection($collectionOwner);
+    $this->buildAgent($datasource);
+
     $collection = $datasource->getCollection('cars');
     $projection = (new Projection(['name', 'owner:name']))->withPks($collection);
 
