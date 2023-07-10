@@ -10,7 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-\Ozzie\Nest\describe('action context single', function () {
+\Ozzie\Nest\describe('action context single without records', function () {
     beforeEach(function () {
         $datasource = new Datasource();
         $collectionBook = new Collection($datasource, 'Book');
@@ -21,19 +21,9 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
             ]
         );
 
-        $records = [
-            [
-                'id'    => 1,
-                'title' => 'Foundation',
-            ],
-            [
-                'id'    => 2,
-                'title' => 'Beat the dealer',
-            ],
-        ];
         $collectionBook = mock($collectionBook)
             ->shouldReceive('list')
-            ->andReturn($records);
+            ->andReturn([]);
 
         $datasource->addCollection($collectionBook->getMock());
         buildAgent($datasource);
@@ -46,29 +36,26 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $this->bucket['bookCollection'] = $collectionBook;
     });
 
-    test('getRecord should return the correct value', closure: function (Caller $caller) {
+    test('getRecord should return empty field if no there is no record', closure: function (Caller $caller) {
         $actionCollection = $this->bucket['actionCollection'];
         $context = new ActionContextSingle($actionCollection, $caller, new PaginatedFilter(), ['title' => 'Foundation']);
 
-        expect($context->getRecord(['id', 'title']))->toEqual(
-            [
-                'id'    => 1,
-                'title' => 'Foundation',
-            ]
-        );
+        expect($context->getRecord(['id', 'title']))->toEqual([]);
     })->with('caller');
 
-    test('getRecordId should return the corresponding id', closure: function (Caller $caller) {
+
+    test('getRecordId should return null if there is no the corresponding id', closure: function (Caller $caller) {
         $actionCollection = $this->bucket['actionCollection'];
         $context = new ActionContextSingle($actionCollection, $caller, new PaginatedFilter(), ['title' => 'Foundation']);
 
-        expect($context->getRecordId())->toEqual(1);
+        expect($context->getRecordId())->toBeNull();
     })->with('caller');
 
-    test('getCompositeRecordId should return the ids of records', closure: function (Caller $caller) {
+    test('getCompositeRecordId should return an empty array when there is no record', closure: function (Caller $caller) {
         $actionCollection = $this->bucket['actionCollection'];
         $context = new ActionContextSingle($actionCollection, $caller, new PaginatedFilter(), ['title' => 'Foundation']);
 
-        expect($context->getCompositeRecordId())->toEqual([1]);
+        expect($context->getCompositeRecordId())->toEqual([]);
     })->with('caller');
+
 });
