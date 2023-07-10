@@ -18,73 +18,6 @@ use Illuminate\Support\Str;
 
 const TEST_TIMEZONE = 'Europe/Paris';
 
-function createDatasourceForFilterFactory(): Datasource
-{
-    $datasource = new Datasource();
-
-    $collectionBooks = new Collection($datasource, 'Book');
-    $collectionBooks->addFields(
-        [
-            'id'          => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'reviews'     => new ManyToManySchema(
-                originKey: 'book_id',
-                originKeyTarget: 'id',
-                foreignKey: 'review_id',
-                foreignKeyTarget: 'id',
-                foreignCollection: 'Review',
-                throughCollection: 'BookReview'
-            ),
-            'bookReviews' => new OneToManySchema(
-                originKey: 'book_id',
-                originKeyTarget: 'id',
-                foreignCollection: 'Review',
-            ),
-        ]
-    );
-
-    $collectionReviews = new Collection($datasource, 'Review');
-    $collectionReviews->addFields(
-        [
-            'id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-        ]
-    );
-    $mockCollectionReviews = mock($collectionReviews)
-        ->shouldReceive('list')
-        ->andReturn([['id' => 1], ['id' => 2]])
-        ->getMock();
-
-    $collectionBookReview = new Collection($datasource, 'BookReview');
-    $collectionBookReview->addFields(
-        [
-            'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'review_id' => new ColumnSchema(columnType: PrimitiveType::NUMBER),
-            'review'    => new ManyToOneSchema(
-                foreignKey: 'review_id',
-                foreignKeyTarget: 'id',
-                foreignCollection: 'Review',
-            ),
-            'book_id'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
-            'book'      => new ManyToOneSchema(
-                foreignKey: 'book_id',
-                foreignKeyTarget: 'id',
-                foreignCollection: 'Book',
-            ),
-        ]
-    );
-    $mockCollectionBookReview = mock($collectionBookReview)
-        ->shouldReceive('list')
-        ->andReturn([['id' => 123, 'review_id' => 1], ['id' => 124, 'review_id' => 2]])
-        ->getMock();
-
-    $datasource->addCollection($collectionBooks);
-    $datasource->addCollection($mockCollectionReviews);
-    $datasource->addCollection($mockCollectionBookReview);
-
-    buildAgent($datasource);
-
-    return $datasource;
-}
-
 test('getPreviousPeriodFilter() when no interval operator is present in the condition tree should not modify the condition tree', closure: function () {
     $leaf = new ConditionTreeLeaf('someField', 'Like', 'someValue');
     $filter = new Filter(conditionTree: $leaf);
@@ -174,87 +107,156 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
         );
 });
 
-test("makeThroughFilter() should nest the provided filter many to many", closure: function (Caller $caller) {
-    $datasource = createDatasourceForFilterFactory();
-    $books = $datasource->getCollection('Book');
-    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1));
-    $filter = FilterFactory::makeThroughFilter($books, [1], 'reviews', $caller, $baseFilter);
 
-    expect($filter)
-        ->toEqual(
-            new Filter(
-                conditionTree: new ConditionTreeBranch(
-                    aggregator: 'And',
-                    conditions: [
-                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
-                        new ConditionTreeLeaf(field: 'review_id', operator: Operators::PRESENT),
-                        new ConditionTreeLeaf(field: 'review:someField', operator: Operators::EQUAL, value: 1),
-                    ]
-                )
-            )
-        );
-})->with('caller');
+\Ozzie\Nest\describe('makeThroughFilter()', function () {
+    beforeEach(function () {
+        $datasource = new Datasource();
 
-test("makeThroughFilter() should make two queries many to many", closure: function (Caller $caller) {
-    $datasource = createDatasourceForFilterFactory();
-    $books = $datasource->getCollection('Book');
-    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1), segment: 'someSegment');
-    $filter = FilterFactory::makeThroughFilter($books, [1], 'reviews', $caller, $baseFilter);
-
-    expect($filter)
-        ->toEqual(
-            new Filter(
-                conditionTree: new ConditionTreeBranch(
-                    aggregator: 'And',
-                    conditions: [
-                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
-                        new ConditionTreeLeaf(field: 'review_id', operator: Operators::IN, value: [1, 2]),
-                    ]
-                )
-            )
-        );
-})->with('caller');
-
-test("makeForeignFilter() should add the fk condition one to many", closure: function (Caller $caller) {
-    $datasource = createDatasourceForFilterFactory();
-    $books = $datasource->getCollection('Book');
-    $baseFilter = new Filter(
-        conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1),
-        segment: 'some-segment'
-    );
-    $filter = FilterFactory::makeForeignFilter($books, [1], 'bookReviews', $caller, $baseFilter);
-
-    expect($filter)
-        ->toEqual(
-            new Filter(
-                conditionTree: new ConditionTreeBranch(
-                    aggregator: 'And',
-                    conditions: [
-                        new ConditionTreeLeaf(field: 'someField', operator: Operators::EQUAL, value: 1),
-                        new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
-                    ]
+        $collectionBooks = new Collection($datasource, 'Book');
+        $collectionBooks->addFields(
+            [
+                'id'          => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'reviews'     => new ManyToManySchema(
+                    originKey: 'book_id',
+                    originKeyTarget: 'id',
+                    foreignKey: 'review_id',
+                    foreignKeyTarget: 'id',
+                    foreignCollection: 'Review',
+                    throughCollection: 'BookReview'
                 ),
-                segment: 'some-segment'
-            )
-        );
-})->with('caller');
-
-test("makeForeignFilter() should query the through collection many to many", closure: function (Caller $caller) {
-    $datasource = createDatasourceForFilterFactory();
-    $books = $datasource->getCollection('Book');
-    $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1), segment: 'some-segment');
-    $filter = FilterFactory::makeForeignFilter($books, [1], 'reviews', $caller, $baseFilter);
-    expect($filter)
-        ->toEqual(
-            new Filter(
-                conditionTree: new ConditionTreeBranch(
-                    aggregator: 'And',
-                    conditions: [
-                        new ConditionTreeLeaf(field: 'someField', operator: Operators::EQUAL, value: 1),
-                        new ConditionTreeLeaf(field: 'id', operator: Operators::IN, value: [1, 2]),
-                    ]
+                'bookReviews' => new OneToManySchema(
+                    originKey: 'book_id',
+                    originKeyTarget: 'id',
+                    foreignCollection: 'Review',
                 ),
-                segment: 'some-segment'
-            )
+            ]
         );
-})->with('caller');
+
+        $collectionReviews = new Collection($datasource, 'Review');
+        $collectionReviews->addFields(
+            [
+                'id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            ]
+        );
+        $mockCollectionReviews = mock($collectionReviews)
+            ->shouldReceive('list')
+            ->andReturn([['id' => 1], ['id' => 2]])
+            ->getMock();
+
+        $collectionBookReview = new Collection($datasource, 'BookReview');
+        $collectionBookReview->addFields(
+            [
+                'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'review_id' => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+                'review'    => new ManyToOneSchema(
+                    foreignKey: 'review_id',
+                    foreignKeyTarget: 'id',
+                    foreignCollection: 'Review',
+                ),
+                'book_id'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+                'book'      => new ManyToOneSchema(
+                    foreignKey: 'book_id',
+                    foreignKeyTarget: 'id',
+                    foreignCollection: 'Book',
+                ),
+            ]
+        );
+        $mockCollectionBookReview = mock($collectionBookReview)
+            ->shouldReceive('list')
+            ->andReturn([['id' => 123, 'review_id' => 1], ['id' => 124, 'review_id' => 2]])
+            ->getMock();
+
+        $datasource->addCollection($collectionBooks);
+        $datasource->addCollection($mockCollectionReviews);
+        $datasource->addCollection($mockCollectionBookReview);
+
+        $this->buildAgent($datasource);
+
+        $this->bucket['datasource'] = $datasource;
+    });
+
+    \Ozzie\Nest\test("should nest the provided filter many to many", function (Caller $caller) {
+        $datasource = $this->bucket['datasource'];
+        $books = $datasource->getCollection('Book');
+        $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1));
+        $filter = FilterFactory::makeThroughFilter($books, [1], 'reviews', $caller, $baseFilter);
+
+        expect($filter)
+            ->toEqual(
+                new Filter(
+                    conditionTree: new ConditionTreeBranch(
+                        aggregator: 'And',
+                        conditions: [
+                            new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
+                            new ConditionTreeLeaf(field: 'review_id', operator: Operators::PRESENT),
+                            new ConditionTreeLeaf(field: 'review:someField', operator: Operators::EQUAL, value: 1),
+                        ]
+                    )
+                )
+            );
+    })->with('caller');
+
+    \Ozzie\Nest\test("should make two queries many to many", function (Caller $caller) {
+        $datasource = $this->bucket['datasource'];
+        $books = $datasource->getCollection('Book');
+        $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1), segment: 'someSegment');
+        $filter = FilterFactory::makeThroughFilter($books, [1], 'reviews', $caller, $baseFilter);
+
+        expect($filter)
+            ->toEqual(
+                new Filter(
+                    conditionTree: new ConditionTreeBranch(
+                        aggregator: 'And',
+                        conditions: [
+                            new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
+                            new ConditionTreeLeaf(field: 'review_id', operator: Operators::IN, value: [1, 2]),
+                        ]
+                    )
+                )
+            );
+    })->with('caller');
+
+    \Ozzie\Nest\test("should add the fk condition one to many", function (Caller $caller) {
+        $datasource = $this->bucket['datasource'];
+        $books = $datasource->getCollection('Book');
+        $baseFilter = new Filter(
+            conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1),
+            segment: 'some-segment'
+        );
+        $filter = FilterFactory::makeForeignFilter($books, [1], 'bookReviews', $caller, $baseFilter);
+
+        expect($filter)
+            ->toEqual(
+                new Filter(
+                    conditionTree: new ConditionTreeBranch(
+                        aggregator: 'And',
+                        conditions: [
+                            new ConditionTreeLeaf(field: 'someField', operator: Operators::EQUAL, value: 1),
+                            new ConditionTreeLeaf(field: 'book_id', operator: Operators::EQUAL, value: 1),
+                        ]
+                    ),
+                    segment: 'some-segment'
+                )
+            );
+    })->with('caller');
+
+    \Ozzie\Nest\test("should query the through collection many to many", function (Caller $caller) {
+        $datasource = $this->bucket['datasource'];
+        $books = $datasource->getCollection('Book');
+        $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1), segment: 'some-segment');
+        $filter = FilterFactory::makeForeignFilter($books, [1], 'reviews', $caller, $baseFilter);
+        expect($filter)
+            ->toEqual(
+                new Filter(
+                    conditionTree: new ConditionTreeBranch(
+                        aggregator: 'And',
+                        conditions: [
+                            new ConditionTreeLeaf(field: 'someField', operator: Operators::EQUAL, value: 1),
+                            new ConditionTreeLeaf(field: 'id', operator: Operators::IN, value: [1, 2]),
+                        ]
+                    ),
+                    segment: 'some-segment'
+                )
+            );
+    })->with('caller');
+});
