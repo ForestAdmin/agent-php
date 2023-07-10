@@ -13,6 +13,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
@@ -109,7 +110,7 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
 
 
 \Ozzie\Nest\describe('makeThroughFilter()', function () {
-    beforeEach(function () {
+    $before = static function (TestCase $testCase) {
         $datasource = new Datasource();
 
         $collectionBooks = new Collection($datasource, 'Book');
@@ -170,12 +171,13 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
         $datasource->addCollection($mockCollectionReviews);
         $datasource->addCollection($mockCollectionBookReview);
 
-        $this->buildAgent($datasource);
+        $testCase->buildAgent($datasource);
 
-        $this->bucket['datasource'] = $datasource;
-    });
+        $testCase->bucket['datasource'] = $datasource;
+    };
 
-    \Ozzie\Nest\test("should nest the provided filter many to many", function (Caller $caller) {
+    \Ozzie\Nest\test("should nest the provided filter many to many", function (Caller $caller) use ($before) {
+        $before($this);
         $datasource = $this->bucket['datasource'];
         $books = $datasource->getCollection('Book');
         $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1));
@@ -196,7 +198,8 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
             );
     })->with('caller');
 
-    \Ozzie\Nest\test("should make two queries many to many", function (Caller $caller) {
+    \Ozzie\Nest\test("should make two queries many to many", function (Caller $caller) use ($before) {
+        $before($this);
         $datasource = $this->bucket['datasource'];
         $books = $datasource->getCollection('Book');
         $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1), segment: 'someSegment');
@@ -216,7 +219,8 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
             );
     })->with('caller');
 
-    \Ozzie\Nest\test("should add the fk condition one to many", function (Caller $caller) {
+    \Ozzie\Nest\test("should add the fk condition one to many", function (Caller $caller) use ($before) {
+        $before($this);
         $datasource = $this->bucket['datasource'];
         $books = $datasource->getCollection('Book');
         $baseFilter = new Filter(
@@ -240,7 +244,8 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
             );
     })->with('caller');
 
-    \Ozzie\Nest\test("should query the through collection many to many", function (Caller $caller) {
+    \Ozzie\Nest\test("should query the through collection many to many", function (Caller $caller) use ($before) {
+        $before($this);
         $datasource = $this->bucket['datasource'];
         $books = $datasource->getCollection('Book');
         $baseFilter = new Filter(conditionTree: new ConditionTreeLeaf('someField', Operators::EQUAL, 1), segment: 'some-segment');

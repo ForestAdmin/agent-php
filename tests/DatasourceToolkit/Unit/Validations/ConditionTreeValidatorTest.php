@@ -12,9 +12,9 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ConditionTreeValidator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\Rules;
 use ForestAdmin\AgentPHP\Tests\DatasourceToolkit\Factories\ConditionTreeUnknown;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 
-function conditionTreeCollectionValidation(): Collection
-{
+$before = function (TestCase $testCase): Collection {
     $datasource = new Datasource();
     $collectionCars = new Collection($datasource, 'cars');
     $collectionCars->addFields(
@@ -45,19 +45,19 @@ function conditionTreeCollectionValidation(): Collection
     $datasource->addCollection($collectionCars);
     $datasource->addCollection($collectionOwners);
 
-    buildAgent($datasource);
+    $testCase->buildAgent($datasource);
 
     return $collectionCars;
-}
+};
 
-test('validate() should throw an error with invalid type', function () {
-    $collection = conditionTreeCollectionValidation();
+test('validate() should throw an error with invalid type', function () use ($before) {
+    $collection = $before($this);
 
     expect(ConditionTreeValidator::validate(new ConditionTreeUnknown(), $collection));
 })->throws(ForestException::class, 'Unexpected condition tree type');
 
-test('validate() should throw an error with invalid aggregator on branch', function () {
-    $collection = conditionTreeCollectionValidation();
+test('validate() should throw an error with invalid aggregator on branch', function () use ($before) {
+    $collection = $before($this);
     $conditionTree = new ConditionTreeBranch(
         'and',// should be 'And'
         [],
@@ -69,8 +69,8 @@ test('validate() should throw an error with invalid aggregator on branch', funct
     '🌳🌳🌳 The given aggregator and is not supported. The supported values are: [\'Or\', \'And\']'
 );
 
-test('validate() should throw an error when the field(s) does not exist in the schema', function () {
-    $collection = conditionTreeCollectionValidation();
+test('validate() should throw an error when the field(s) does not exist in the schema', function () use ($before) {
+    $collection = $before($this);
     $conditionTree = new ConditionTreeLeaf(
         field: 'fieldDoesNotExistInSchema',
         operator: 'Equal',
@@ -83,8 +83,8 @@ test('validate() should throw an error when the field(s) does not exist in the s
     '🌳🌳🌳 Column not found cars.fieldDoesNotExistInSchema'
 );
 
-test('validate() should not throw an error when there are relations in the datasource', function () {
-    $collection = conditionTreeCollectionValidation();
+test('validate() should not throw an error when there are relations in the datasource', function () use ($before) {
+    $collection = $before($this);
     $conditionTree = new ConditionTreeLeaf(
         field: 'owner:id',
         operator: 'Equal',
@@ -94,8 +94,8 @@ test('validate() should not throw an error when there are relations in the datas
     expect(ConditionTreeValidator::validate($conditionTree, $collection));
 })->expectNotToPerformAssertions();
 
-test('validate() should throw an error when a field does not exist when there are several fields', function () {
-    $collection = conditionTreeCollectionValidation();
+test('validate() should throw an error when a field does not exist when there are several fields', function () use ($before) {
+    $collection = $before($this);
     $conditionTree = new ConditionTreeBranch(
         aggregator: 'Or',
         conditions: [
@@ -118,8 +118,8 @@ test('validate() should throw an error when a field does not exist when there ar
     '🌳🌳🌳 Column not found cars.fieldDoesNotExistInSchema'
 );
 
-test('validate() should not throw an error when the field(s) exist', function () {
-    $collection = conditionTreeCollectionValidation();
+test('validate() should not throw an error when the field(s) exist', function () use ($before) {
+    $collection = $before($this);
     $conditionTree = new ConditionTreeLeaf(
         field: 'model',
         operator: 'Equal',
@@ -129,8 +129,8 @@ test('validate() should not throw an error when the field(s) exist', function ()
     expect(ConditionTreeValidator::validate($conditionTree, $collection));
 })->expectNotToPerformAssertions();
 
-test('validate() should throw an error when the field has an operator incompatible with the schema type', function () {
-    $collection = conditionTreeCollectionValidation();
+test('validate() should throw an error when the field has an operator incompatible with the schema type', function () use ($before) {
+    $collection = $before($this);
     $conditionTree = new ConditionTreeLeaf(
         field: 'reference',
         operator: 'Contains',
@@ -143,8 +143,8 @@ test('validate() should throw an error when the field has an operator incompatib
     '🌳🌳🌳 The given operator Contains is not allowed with the columnType schema: Number. The allowed types are: Equal,Not_Equal,Present,Blank,Missing,In,Not_In,Includes_All,Greater_Than,Less_Than'
 );
 
-test('validate() should throw an error when the operator is incompatible with the given value', function () {
-    $collection = conditionTreeCollectionValidation();
+test('validate() should throw an error when the operator is incompatible with the given value', function () use ($before) {
+    $collection = $before($this);
     $conditionTree = new ConditionTreeLeaf(
         field: 'reference',
         operator: Operators::GREATER_THAN,
