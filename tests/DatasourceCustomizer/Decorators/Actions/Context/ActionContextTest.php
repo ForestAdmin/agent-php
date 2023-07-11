@@ -10,7 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-\Ozzie\Nest\describe('aaaaaa', function () {
+\Ozzie\Nest\describe('Action context', function () {
     beforeEach(function () {
         $datasource = new Datasource();
         $collectionBook = new Collection($datasource, 'Book');
@@ -37,7 +37,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
             ->andReturn($records);
 
         $datasource->addCollection($collectionBook->getMock());
-        buildAgent($datasource);
+        $this->buildAgent($datasource);
 
         $datasourceDecorator = new DatasourceDecorator($datasource, ActionCollection::class);
         $datasourceDecorator->build();

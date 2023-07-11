@@ -12,102 +12,112 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 
-function factoryBaseAction($withGeneratedFile = false, $staticForm = false)
-{
-    $datasource = new Datasource();
-    $collection = new Collection($datasource, 'Product');
+\Ozzie\Nest\describe('Base Action', function () {
+    $before = static function (TestCase $testCase, $withGeneratedFile = false, $staticForm = false) {
+        $datasource = new Datasource();
+        $collection = new Collection($datasource, 'Product');
 
-    $datasource->addCollection($collection);
-    buildAgent($datasource);
+        $datasource->addCollection($collection);
+        buildAgent($datasource);
 
-    $datasourceDecorator = new DatasourceDecorator($datasource, ActionCollection::class);
-    $datasourceDecorator->build();
+        $datasourceDecorator = new DatasourceDecorator($datasource, ActionCollection::class);
+        $datasourceDecorator->build();
 
-    $baseAction = new BaseAction(
-        scope: ActionScope::SINGLE,
-        execute: fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO !!!!'),
-        isGenerateFile: $withGeneratedFile,
-        form: [
+        $baseAction = new BaseAction(
+            scope: ActionScope::SINGLE,
+            execute: fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO !!!!'),
+            isGenerateFile: $withGeneratedFile,
+            form: [
+                new DynamicField(type: FieldType::NUMBER, label: 'amount'),
+                new DynamicField(type: FieldType::STRING, label: 'description', isRequired: true),
+                new DynamicField(
+                    type: FieldType::STRING,
+                    label: 'amount X10',
+                    isReadOnly: true,
+                    value: $staticForm ? 'ok' : function ($context) {
+                        return $context->getFormValue('amount') * 10;
+                    }
+                ),
+            ],
+        );
+
+        $testCase->bucket = [$datasourceDecorator, $datasource, $baseAction];
+    };
+
+    test('callExecute() should work', function (Caller $caller) use ($before) {
+        $before($this);
+        [$datasourceDecorator, $datasource, $baseAction] = $this->bucket;
+
+        $context = new ActionContext(new ActionCollection($datasourceDecorator->getCollection('Product'), $datasource), $caller, new PaginatedFilter());
+
+        $resultBuilder = new ResultBuilder();
+
+        expect($baseAction->callExecute($context, $resultBuilder))->toEqual(
+            [
+                'is_action' => true,
+                'type'      => 'Success',
+                'success'   => 'BRAVO !!!!',
+                'refresh'   => [
+                    'relationships' => [],
+                ],
+                'html'      => null,
+            ]
+        );
+    })->with('caller');
+
+    test('getForm() should work', function () use ($before) {
+        $before($this);
+        [$datasourceDecorator, $datasource, $baseAction] = $this->bucket;
+
+        expect($baseAction->getForm())->toEqual([
             new DynamicField(type: FieldType::NUMBER, label: 'amount'),
             new DynamicField(type: FieldType::STRING, label: 'description', isRequired: true),
             new DynamicField(
                 type: FieldType::STRING,
                 label: 'amount X10',
                 isReadOnly: true,
-                value: $staticForm ? 'ok' : function ($context) {
+                value: function ($context) {
                     return $context->getFormValue('amount') * 10;
                 }
             ),
-        ],
-    );
+        ]);
+    });
 
-    return [$datasourceDecorator, $datasource, $baseAction];
-}
+    test('getScope() should work', function () use ($before) {
+        $before($this);
+        [$datasourceDecorator, $datasource, $baseAction] = $this->bucket;
 
-test('callExecute() should work', function (Caller $caller) {
-    [$datasourceDecorator, $datasource, $baseAction] = factoryBaseAction();
+        expect($baseAction->getScope())->toEqual(ActionScope::SINGLE);
+    });
 
-    $context = new ActionContext(new ActionCollection($datasourceDecorator->getCollection('Product'), $datasource), $caller, new PaginatedFilter());
+    test('isGenerateFile() should return false when isGenerateFile is false', function () use ($before) {
+        $before($this);
+        [$datasourceDecorator, $datasource, $baseAction] = $this->bucket;
 
-    $resultBuilder = new ResultBuilder();
+        expect($baseAction->isGenerateFile())->toBeFalse();
+    });
 
-    expect($baseAction->callExecute($context, $resultBuilder))->toEqual(
-        [
-            'is_action' => true,
-            'type'      => 'Success',
-            'success'   => 'BRAVO !!!!',
-            'refresh'   => [
-                'relationships' => [],
-            ],
-            'html'      => null,
-        ]
-    );
-})->with('caller');
+    test('isGenerateFile() should return true when isGenerateFile is true', function () use ($before) {
+        $before($this, true);
+        [$datasourceDecorator, $datasource, $baseAction] = $this->bucket;
 
-test('getForm() should work', function () {
-    [$datasourceDecorator, $datasource, $baseAction] = factoryBaseAction();
+        expect($baseAction->isGenerateFile())->toBeTrue();
+    });
 
-    expect($baseAction->getForm())->toEqual([
-        new DynamicField(type: FieldType::NUMBER, label: 'amount'),
-        new DynamicField(type: FieldType::STRING, label: 'description', isRequired: true),
-        new DynamicField(
-            type: FieldType::STRING,
-            label: 'amount X10',
-            isReadOnly: true,
-            value: function ($context) {
-                return $context->getFormValue('amount') * 10;
-            }
-        ),
-    ]);
+    test('isStaticForm() should return false when the form is not static', function () use ($before) {
+        $before($this);
+        [$datasourceDecorator, $datasource, $baseAction] = $this->bucket;
+
+        expect($baseAction->isStaticForm())->toBeFalse();
+    });
+
+    test('isStaticForm() should return true when the form is not static', function () use ($before) {
+        $before($this, false, true);
+        [$datasourceDecorator, $datasource, $baseAction] = $this->bucket;
+
+        expect($baseAction->isStaticForm())->toBeTrue();
+    })->with('caller');
+
 });
-
-test('getScope() should work', function () {
-    [$datasourceDecorator, $datasource, $baseAction] = factoryBaseAction();
-
-    expect($baseAction->getScope())->toEqual(ActionScope::SINGLE);
-});
-
-test('isGenerateFile() should return false when isGenerateFile is false', function () {
-    [$datasourceDecorator, $datasource, $baseAction] = factoryBaseAction();
-
-    expect($baseAction->isGenerateFile())->toBeFalse();
-});
-
-test('isGenerateFile() should return true when isGenerateFile is true', function () {
-    [$datasourceDecorator, $datasource, $baseAction] = factoryBaseAction(true);
-
-    expect($baseAction->isGenerateFile())->toBeTrue();
-});
-
-test('isStaticForm() should return false when the form is not static', function () {
-    [$datasourceDecorator, $datasource, $baseAction] = factoryBaseAction();
-
-    expect($baseAction->isStaticForm())->toBeFalse();
-});
-
-test('isStaticForm() should return true when the form is not static', function () {
-    [$datasourceDecorator, $datasource, $baseAction] = factoryBaseAction(false, true);
-
-    expect($baseAction->isStaticForm())->toBeTrue();
-})->with('caller');

@@ -26,7 +26,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
             ->andReturn([]);
 
         $datasource->addCollection($collectionBook->getMock());
-        buildAgent($datasource);
+        $this->buildAgent($datasource);
 
         $datasourceDecorator = new DatasourceDecorator($datasource, ActionCollection::class);
         $datasourceDecorator->build();
