@@ -3,8 +3,7 @@
 
 use ForestAdmin\AgentPHP\Agent\Utils\ContextVariables;
 
-function contextVariableFactory()
-{
+beforeEach(function () {
     $user = [
         'id'              => 1,
         'firstName'       => 'John',
@@ -22,18 +21,17 @@ function contextVariableFactory()
     ];
 
     $requestContextVariables = ['foo.id' => 100];
-
-    return compact('user', 'team', 'requestContextVariables');
-}
+    $this->bucket = compact('user', 'team', 'requestContextVariables');
+});
 
 test('getValue() should return the request context variable key when the key is not present into the user data', function () {
-    $contextVariables = new ContextVariables(...contextVariableFactory());
+    $contextVariables = new ContextVariables(...$this->bucket);
 
     expect($contextVariables->getValue('foo.id'))->toEqual(100);
 });
 
 test('getValue() should return the corresponding value from the key provided of the user data', function () {
-    $contextVariables = new ContextVariables(...contextVariableFactory());
+    $contextVariables = new ContextVariables(...$this->bucket);
 
     expect($contextVariables->getValue('currentUser.firstName'))->toEqual('John');
     expect($contextVariables->getValue('currentUser.tags.foo'))->toEqual('bar');

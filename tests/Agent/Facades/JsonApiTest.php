@@ -11,8 +11,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-function factoryJsonApi()
-{
+beforeEach(function () {
     $datasource = new Datasource();
     $collectionPerson = new Collection($datasource, 'Person');
     $collectionPerson->addFields(
@@ -23,14 +22,11 @@ function factoryJsonApi()
         ]
     );
     $datasource->addCollection($collectionPerson);
-    buildAgent($datasource);
+    $this->buildAgent($datasource);
     SchemaEmitter::getSerializedSchema($datasource);
-
-    return $collectionPerson;
-}
+});
 
 test('renderCollection() should return a JsonApiResponse render', function () {
-    factoryJsonApi();
     $content = [
         [
             'id'         => 1,
@@ -50,7 +46,6 @@ test('renderCollection() should return a JsonApiResponse render', function () {
 });
 
 test('renderItem() should return a JsonApiResponse renderItem', function () {
-    factoryJsonApi();
     $content = [
         'id'         => 1,
         'first_name' => 'John',
@@ -62,8 +57,6 @@ test('renderItem() should return a JsonApiResponse renderItem', function () {
 });
 
 test('deactivateCountResponse() should return a JsonApiResponse deactivateCountResponse', function () {
-    factoryJsonApi();
-
     expect(JsonApi::deactivateCountResponse())->toEqual((new JsonApiResponse())->deactivateCountResponse());
 });
 

@@ -9,8 +9,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-function factoryConditionTreeParser()
-{
+beforeEach(function () {
     $datasource = new Datasource();
     $collectionCategory = new Collection($datasource, 'Category');
     $collectionCategory->addFields(
@@ -22,20 +21,19 @@ function factoryConditionTreeParser()
     );
 
     $datasource->addCollection($collectionCategory);
-    buildAgent($datasource);
-
-    return $collectionCategory;
-}
+    $this->buildAgent($datasource);
+    $this->bucket['collection'] = $collectionCategory;
+});
 
 test('ConditionTreeParser() should failed if provided something else', function () {
-    $collectionCategory = factoryConditionTreeParser();
+    $collectionCategory = $this->bucket['collection'];
 
     expect(fn () => ConditionTreeParser::fromPLainObject($collectionCategory, []))
         ->toThrow(\Exception::class, 'Failed to instantiate condition tree');
 });
 
 test('ConditionTreeParser() should work with aggregator', function () {
-    $collectionCategory = factoryConditionTreeParser();
+    $collectionCategory = $this->bucket['collection'];
 
     $filters = [
         'aggregator' => 'and',
@@ -56,7 +54,7 @@ test('ConditionTreeParser() should work with aggregator', function () {
 });
 
 test('ConditionTreeParser() should work with single condition without aggregator', function () {
-    $collectionCategory = factoryConditionTreeParser();
+    $collectionCategory = $this->bucket['collection'];
 
     $filters = ['field' => 'id', 'operator' => 'Less_Than', 'value' => 'something'];
 
@@ -65,7 +63,7 @@ test('ConditionTreeParser() should work with single condition without aggregator
 });
 
 test('ConditionTreeParser() should work with "IN" on a string', function () {
-    $collectionCategory = factoryConditionTreeParser();
+    $collectionCategory = $this->bucket['collection'];
 
     $filters = ['field' => 'label', 'operator' => 'In', 'value' => ' id1,id2 , id3'];
 
@@ -74,7 +72,7 @@ test('ConditionTreeParser() should work with "IN" on a string', function () {
 });
 
 test('ConditionTreeParser() should work with "IN" on a number', function () {
-    $collectionCategory = factoryConditionTreeParser();
+    $collectionCategory = $this->bucket['collection'];
 
     $filters = ['field' => 'id', 'operator' => 'In', 'value' => '1,2,3'];
 
@@ -83,7 +81,7 @@ test('ConditionTreeParser() should work with "IN" on a number', function () {
 });
 
 test('ConditionTreeParser() should work with "IN" on a boolean', function () {
-    $collectionCategory = factoryConditionTreeParser();
+    $collectionCategory = $this->bucket['collection'];
 
     $filters = ['field' => 'active', 'operator' => 'In', 'value' => 'true,0,false,yes,no'];
 
