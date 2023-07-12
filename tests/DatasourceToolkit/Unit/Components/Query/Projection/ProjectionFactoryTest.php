@@ -49,7 +49,7 @@ test('all() should return all the collection fields and the relation fields', fu
     $datasource->addCollection($collectionAuthors);
     $datasource->addCollection($collectionFormats);
 
-    buildAgent($datasource);
+    $this->buildAgent($datasource);
     $collection = $datasource->getCollection('books');
 
     expect(ProjectionFactory::all($collection))->toEqual(
@@ -94,7 +94,7 @@ test('all() should return all the collection fields without the relations', func
     $datasource->addCollection($collectionBooks);
     $datasource->addCollection($collectionBookPersons);
 
-    buildAgent($datasource);
+    $this->buildAgent($datasource);
 
     $collection = $datasource->getCollection('books');
 

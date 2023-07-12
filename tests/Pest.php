@@ -1,10 +1,7 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
-use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 const BEARER = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZW1haWwiOiJqb2huLmRvZUBkb21haW4uY29tIiwiZmlyc3ROYW1lIjoiSm9obiIsImxhc3ROYW1lIjoiRG9lIiwidGVhbSI6IkRldmVsb3BlcnMiLCJyZW5kZXJpbmdJZCI6IjEwIiwidGFncyI6eyJzb21ldGhpbmciOiJ0YWdWYWx1ZSJ9LCJ0aW1lem9uZSI6IkV1cm9wZS9QYXJpcyIsInBlcm1pc3Npb25MZXZlbCI6ImFkbWluIn0.yCAGVg2Ef4a6uDbM6_VjlFobFwACJnyFtjkbo5lkEi4';
@@ -83,25 +80,4 @@ function invokeMethod(object &$object, string $methodName, array $parameters = [
     $method->setAccessible(true);
 
     return $method->invokeArgs($object, $parameters);
-}
-
-
-function buildAgent(Datasource $datasource, array $options = [])
-{
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
-    $_GET['timezone'] = 'Europe/Paris';
-
-    $options = array_merge(
-        AGENT_OPTIONS,
-        $options
-    );
-
-    $agent = new AgentFactory($options, []);
-    $container = AgentFactory::getContainer();
-    $container->set('datasource', $datasource);
-    invokeProperty($agent, 'container', $container);
-
-    Cache::put('forest.has_permission', true, 10);
-
-    return $agent;
 }

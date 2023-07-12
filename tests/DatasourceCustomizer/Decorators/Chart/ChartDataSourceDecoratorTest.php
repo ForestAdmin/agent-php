@@ -83,7 +83,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
     test('When adding charts on a lower layer getCharts() should throw when adding a duplicate', function () {
         $datasource = new Datasource();
-        this->buildAgent($datasource);
+        $this->buildAgent($datasource);
         $chartDatasource1 = new ChartDataSourceDecorator($datasource);
         $chartDatasource1->build();
         $chartDatasource2 = new ChartDataSourceDecorator($chartDatasource1);
