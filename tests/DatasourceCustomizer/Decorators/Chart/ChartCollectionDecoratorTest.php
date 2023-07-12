@@ -32,7 +32,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
     });
 
     test('getCharts() should not be changed', function () {
-        [$collectionBook, $decoratedBook] = ;;
+        [$collectionBook, $decoratedBook] = $this->bucket;
 
         expect($decoratedBook->getCharts())->toEqual($collectionBook->getCharts());
     });
