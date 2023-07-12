@@ -9,67 +9,68 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
-function factoryRenameCollectionDecoratorCollection()
-{
-    $datasource = new Datasource();
-    $collectionBook = new Collection($datasource, 'Book');
-    $collectionBook->addFields(
-        [
-            'id'           => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'authorId'     => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true, isSortable: true),
-            'author'       => new ManyToOneSchema(
-                foreignKey: 'authorId',
-                foreignKeyTarget: 'id',
-                foreignCollection: 'Person',
-            ),
-        ]
-    );
+\Ozzie\Nest\describe('RenameCollectionDecoratorCollection', function () {
+    beforeEach(function () {
+        $datasource = new Datasource();
+        $collectionBook = new Collection($datasource, 'Book');
+        $collectionBook->addFields(
+            [
+                'id'           => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'authorId'     => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true, isSortable: true),
+                'author'       => new ManyToOneSchema(
+                    foreignKey: 'authorId',
+                    foreignKeyTarget: 'id',
+                    foreignCollection: 'Person',
+                ),
+            ]
+        );
 
-    $collectionPerson = new Collection($datasource, 'Person');
-    $collectionPerson->addFields(
-        [
-            'id'           => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'book'         => new OneToOneSchema(
-                originKey: 'authorId',
-                originKeyTarget: 'id',
-                foreignCollection: 'Book',
-            ),
-        ]
-    );
+        $collectionPerson = new Collection($datasource, 'Person');
+        $collectionPerson->addFields(
+            [
+                'id'           => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'book'         => new OneToOneSchema(
+                    originKey: 'authorId',
+                    originKeyTarget: 'id',
+                    foreignCollection: 'Book',
+                ),
+            ]
+        );
 
-    $datasource->addCollection($collectionBook);
-    $datasource->addCollection($collectionPerson);
-    buildAgent($datasource);
+        $datasource->addCollection($collectionBook);
+        $datasource->addCollection($collectionPerson);
+        $this->buildAgent($datasource);
 
-    $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
-    $decoratedDataSource->build();
+        $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
+        $decoratedDataSource->build();
+        $this->bucket = compact('decoratedDataSource');
 
-    return $decoratedDataSource;
-}
+    });
 
-test('getName() should return the default collection name when there is no rename action', function () {
-    $decoratedDataSource = factoryRenameCollectionDecoratorCollection();
+    test('getName() should return the default collection name when there is no rename action', function () {
+        $decoratedDataSource = $this->bucket['decoratedDataSource'];
 
-    expect($decoratedDataSource->getCollection('Person')->getName())->toEqual('Person');
-});
+        expect($decoratedDataSource->getCollection('Person')->getName())->toEqual('Person');
+    });
 
-test('getName() should return the new name when there is a rename action', function () {
-    $decoratedDataSource = factoryRenameCollectionDecoratorCollection();
-    $decoratedDataSource->renameCollections(['Person' => 'User']);
+    test('getName() should return the new name when there is a rename action', function () {
+        $decoratedDataSource = $this->bucket['decoratedDataSource'];
+        $decoratedDataSource->renameCollections(['Person' => 'User']);
 
-    expect($decoratedDataSource->getCollection('User')->getName())->toEqual('User');
-});
+        expect($decoratedDataSource->getCollection('User')->getName())->toEqual('User');
+    });
 
-test('getFields() should return the fields of the collection', function () {
-    $decoratedDataSource = factoryRenameCollectionDecoratorCollection();
-    $decoratedDataSource->renameCollections(['Person' => 'User']);
+    test('getFields() should return the fields of the collection', function () {
+        $decoratedDataSource = $this->bucket['decoratedDataSource'];
+        $decoratedDataSource->renameCollections(['Person' => 'User']);
 
-    expect($decoratedDataSource->getCollection('User')->getFields())->toHaveKeys(['id', 'book']);
-});
+        expect($decoratedDataSource->getCollection('User')->getFields())->toHaveKeys(['id', 'book']);
+    });
 
-test('makeTransformer() should return ', function () {
-    $decoratedDataSource = factoryRenameCollectionDecoratorCollection();
-    $decoratedDataSource->renameCollections(['Person' => 'User']);
+    test('makeTransformer() should return ', function () {
+        $decoratedDataSource = $this->bucket['decoratedDataSource'];
+        $decoratedDataSource->renameCollections(['Person' => 'User']);
 
-    expect($decoratedDataSource->getCollection('User')->makeTransformer())->toBeInstanceOf(BaseTransformer::class);
+        expect($decoratedDataSource->getCollection('User')->makeTransformer())->toBeInstanceOf(BaseTransformer::class);
+    });
 });

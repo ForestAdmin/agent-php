@@ -12,75 +12,76 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\Tests\CollectionMocked;
 
-function factoryWriteOneToOneCollection()
-{
-    $datasource = new Datasource();
-    $collectionBook = new CollectionMocked($datasource, 'Book');
-    $collectionBook->addFields(
-        [
-            'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true, isReadOnly: true),
-            'authorId'        => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true, isSortable: true),
-            'author'          => new OneToOneSchema(
-                originKey: 'authorId',
-                originKeyTarget: 'id',
-                foreignCollection: 'Person',
-            ),
-            'title'           => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::LONGER_THAN, Operators::PRESENT]),
-            // Those fields will have rewrite handler to the corresponding author fields
-            'authorFirstName' => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'authorLastName'  => new ColumnSchema(columnType: PrimitiveType::STRING),
-        ]
-    );
+\Ozzie\Nest\describe('WriteOneToOneCollection', function () {
+    beforeEach(function () {
+        $datasource = new Datasource();
+        $collectionBook = new CollectionMocked($datasource, 'Book');
+        $collectionBook->addFields(
+            [
+                'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true, isReadOnly: true),
+                'authorId'        => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true, isSortable: true),
+                'author'          => new OneToOneSchema(
+                    originKey: 'authorId',
+                    originKeyTarget: 'id',
+                    foreignCollection: 'Person',
+                ),
+                'title'           => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::LONGER_THAN, Operators::PRESENT]),
+                // Those fields will have rewrite handler to the corresponding author fields
+                'authorFirstName' => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'authorLastName'  => new ColumnSchema(columnType: PrimitiveType::STRING),
+            ]
+        );
 
-    $collectionPerson = new CollectionMocked($datasource, 'Person');
-    $collectionPerson->addFields(
-        [
-            'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'firstName' => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'lastName'  => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'bookId'    => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true),
-        ]
-    );
+        $collectionPerson = new CollectionMocked($datasource, 'Person');
+        $collectionPerson->addFields(
+            [
+                'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'firstName' => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'lastName'  => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'bookId'    => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true),
+            ]
+        );
 
-    $datasource->addCollection($collectionBook);
-    $datasource->addCollection($collectionPerson);
-    buildAgent($datasource);
+        $datasource->addCollection($collectionBook);
+        $datasource->addCollection($collectionPerson);
+        $this->buildAgent($datasource);
 
-    $datasourceDecorator = new WriteDataSourceDecorator($datasource);
-    $datasourceDecorator->build();
+        $datasourceDecorator = new WriteDataSourceDecorator($datasource);
+        $datasourceDecorator->build();
 
-    $newBook = $datasourceDecorator->getCollection('Book');
-    $newAuthor = $datasourceDecorator->getCollection('Person');
+        $newBook = $datasourceDecorator->getCollection('Book');
+        $newAuthor = $datasourceDecorator->getCollection('Person');
 
-    return [$newBook, $newAuthor, $collectionBook, $collectionPerson];
-}
+        $this->bucket = [$newBook, $newAuthor, $collectionBook, $collectionPerson];
+    });
 
-test('replaceFieldWriting() should create the related record when the relation is not set', function (Caller $caller) {
-    /** @var WriteReplaceCollection $newBook */
-    /** @var WriteReplaceCollection $newAuthor */
-    [$newBook, $newAuthor, $collectionBook, $collectionPerson] = factoryWriteOneToOneCollection();
+    test('replaceFieldWriting() should create the related record when the relation is not set', function (Caller $caller) {
+        /** @var WriteReplaceCollection $newBook */
+        /** @var WriteReplaceCollection $newAuthor */
+        [$newBook, $newAuthor, $collectionBook, $collectionPerson] = $this->bucket;
 
-    $collectionBook->createReturn = [
-        'id'        => 1,
-        'title'     => 'Memories',
-        'authorId'  => 1,
-    ];
+        $collectionBook->createReturn = [
+            'id'        => 1,
+            'title'     => 'Memories',
+            'authorId'  => 1,
+        ];
 
-    $collectionPerson->createReturn = [
-        'id'        => 1,
-        'firstName' => 'Isaac',
-        'lastName'  => 'Asimov',
-    ];
+        $collectionPerson->createReturn = [
+            'id'        => 1,
+            'firstName' => 'Isaac',
+            'lastName'  => 'Asimov',
+        ];
 
-    $newBook->replaceFieldWriting('authorFirstName', fn ($value) => ['author' => ['firstName' => $value]]);
-    $newBook->replaceFieldWriting('authorLastName', fn ($value) => ['author' => ['lastName' => $value]]);
+        $newBook->replaceFieldWriting('authorFirstName', fn ($value) => ['author' => ['firstName' => $value]]);
+        $newBook->replaceFieldWriting('authorLastName', fn ($value) => ['author' => ['lastName' => $value]]);
 
-    $newBook->create($caller, [
-        'title'           => 'Memories',
-        'authorFirstName' => 'John',
-        'authorLastName'  => 'Doe',
-    ]);
+        $newBook->create($caller, [
+            'title'           => 'Memories',
+            'authorFirstName' => 'John',
+            'authorLastName'  => 'Doe',
+        ]);
 
-    expect($collectionPerson->createReturn)->toEqual(['id' => 1, 'firstName' => 'Isaac', 'lastName'  => 'Asimov',])
-        ->and($collectionBook->createReturn)->toEqual(['id' => 1, 'title' => 'Memories', 'authorId' => 1]);
-})->with('caller');
+        expect($collectionPerson->createReturn)->toEqual(['id' => 1, 'firstName' => 'Isaac', 'lastName'  => 'Asimov',])
+            ->and($collectionBook->createReturn)->toEqual(['id' => 1, 'title' => 'Memories', 'authorId' => 1]);
+    })->with('caller');
+});

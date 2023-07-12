@@ -20,7 +20,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $collection = new Collection($datasource, 'Product');
 
         $datasource->addCollection($collection);
-        buildAgent($datasource);
+        $testCase->buildAgent($datasource);
 
         $datasourceDecorator = new DatasourceDecorator($datasource, ActionCollection::class);
         $datasourceDecorator->build();

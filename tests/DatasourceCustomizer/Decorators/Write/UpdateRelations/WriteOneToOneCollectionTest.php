@@ -14,126 +14,127 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\Tests\CollectionMocked;
 
-function factoryOneToOneCollection()
-{
-    $datasource = new Datasource();
-    $collectionBook = new CollectionMocked($datasource, 'Book');
-    $collectionBook->addFields(
-        [
-            'id'       => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::IN, Operators::EQUAL], isPrimaryKey: true),
-            'authorId' => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true),
-            'author'   => new OneToOneSchema(
-                originKey: 'authorId',
-                originKeyTarget: 'id',
-                foreignCollection: 'Person',
-            ),
-            'title'    => new ColumnSchema(columnType: PrimitiveType::STRING),
-        ]
-    );
+\Ozzie\Nest\describe('WriteManyToOneCollection', function () {
+    beforeEach(function () {
+        $datasource = new Datasource();
+        $collectionBook = new CollectionMocked($datasource, 'Book');
+        $collectionBook->addFields(
+            [
+                'id'       => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::IN, Operators::EQUAL], isPrimaryKey: true),
+                'authorId' => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true),
+                'author'   => new OneToOneSchema(
+                    originKey: 'authorId',
+                    originKeyTarget: 'id',
+                    foreignCollection: 'Person',
+                ),
+                'title'    => new ColumnSchema(columnType: PrimitiveType::STRING),
+            ]
+        );
 
-    $collectionPerson = new CollectionMocked($datasource, 'Person');
-    $collectionPerson->addFields(
-        [
-            'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::IN, Operators::EQUAL], isPrimaryKey: true),
-            'firstName' => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'lastName'  => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'bookId'    => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true),
-        ]
-    );
+        $collectionPerson = new CollectionMocked($datasource, 'Person');
+        $collectionPerson->addFields(
+            [
+                'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::IN, Operators::EQUAL], isPrimaryKey: true),
+                'firstName' => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'lastName'  => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'bookId'    => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true),
+            ]
+        );
 
-    $datasource->addCollection($collectionBook);
-    $datasource->addCollection($collectionPerson);
-    buildAgent($datasource);
+        $datasource->addCollection($collectionBook);
+        $datasource->addCollection($collectionPerson);
+        $this->buildAgent($datasource);
 
-    $datasourceDecorator = new WriteDataSourceDecorator($datasource);
-    $datasourceDecorator->build();
+        $datasourceDecorator = new WriteDataSourceDecorator($datasource);
+        $datasourceDecorator->build();
 
-    $newBook = $datasourceDecorator->getCollection('Book');
-    $newAuthor = $datasourceDecorator->getCollection('Person');
+        $newBook = $datasourceDecorator->getCollection('Book');
+        $newAuthor = $datasourceDecorator->getCollection('Person');
 
-    return [$newBook, $collectionBook, $collectionPerson];
-}
+        $this->bucket = [$newBook, $collectionBook, $collectionPerson];
+    });
 
-test('should create the related record when it does not exists', function (Caller $caller) {
-    /** @var WriteReplaceCollection $newBook */
-    /** @var WriteReplaceCollection $newAuthor */
-    [$newBook, $collectionBook, $collectionPerson] = factoryOneToOneCollection();
+    test('should create the related record when it does not exists', function (Caller $caller) {
+        /** @var WriteReplaceCollection $newBook */
+        /** @var WriteReplaceCollection $newAuthor */
+        [$newBook, $collectionBook, $collectionPerson] = $this->bucket;
 
-    $recordsAuthor = [
-        [
+        $recordsAuthor = [
+            [
+                'id'        => 1,
+                'firstName' => 'Isaac',
+                'lastName'  => 'Asimov',
+            ],
+            [
+                'id'        => 2,
+                'firstName' => 'Roberto',
+                'lastName'  => 'Saviano',
+            ],
+        ];
+
+        $recordsBook = [
+            [
+                'id'     => 1,
+                'author' => $recordsAuthor[0],
+                'title'  => 'Foundation',
+            ],
+            [
+                'id'     => 2,
+                'author' => $recordsAuthor[1],
+                'title'  => 'Gomorrah',
+            ],
+            [
+                'id'     => 3,
+                'title'  => 'Harry Potter',
+            ],
+        ];
+
+        $collectionBook->listReturn = $recordsBook;
+        $collectionPerson->createReturn = [
             'id'        => 1,
             'firstName' => 'Isaac',
             'lastName'  => 'Asimov',
-        ],
-        [
-            'id'        => 2,
-            'firstName' => 'Roberto',
-            'lastName'  => 'Saviano',
-        ],
-    ];
+        ];
 
-    $recordsBook = [
-        [
-            'id'     => 1,
-            'author' => $recordsAuthor[0],
-            'title'  => 'Foundation',
-        ],
-        [
-            'id'     => 2,
-            'author' => $recordsAuthor[1],
-            'title'  => 'Gomorrah',
-        ],
-        [
-            'id'     => 3,
-            'title'  => 'Harry Potter',
-        ],
-    ];
+        $newBook->update(
+            $caller,
+            new Filter(new ConditionTreeLeaf('id', Operators::EQUAL, 3)),
+            ['title' => 'new title', 'author' => ['firstName' => 'John', 'lastName' => 'Doe']]
+        );
 
-    $collectionBook->listReturn = $recordsBook;
-    $collectionPerson->createReturn = [
-        'id'        => 1,
-        'firstName' => 'Isaac',
-        'lastName'  => 'Asimov',
-    ];
+        expect($collectionPerson->paramsUpdate['patch'])->toEqual(['firstName' => 'John', 'lastName' => 'Doe'])
+            ->and($collectionBook->paramsUpdate['patch'])->toEqual(['title' => 'new title']);
+    })->with('caller');
 
-    $newBook->update(
-        $caller,
-        new Filter(new ConditionTreeLeaf('id', Operators::EQUAL, 3)),
-        ['title' => 'new title', 'author' => ['firstName' => 'John', 'lastName' => 'Doe']]
-    );
+    test('should update the related record when it exists', function (Caller $caller) {
+        /** @var WriteReplaceCollection $newBook */
+        /** @var WriteReplaceCollection $newAuthor */
+        [$newBook, $collectionBook, $collectionPerson] = $this->bucket;
 
-    expect($collectionPerson->paramsUpdate['patch'])->toEqual(['firstName' => 'John', 'lastName' => 'Doe'])
-        ->and($collectionBook->paramsUpdate['patch'])->toEqual(['title' => 'new title']);
-})->with('caller');
+        $recordsAuthor = [
+            [
+                'id'        => 1,
+                'firstName' => 'Isaac',
+                'lastName'  => 'Asimov',
+            ],
+        ];
 
-test('should update the related record when it exists', function (Caller $caller) {
-    /** @var WriteReplaceCollection $newBook */
-    /** @var WriteReplaceCollection $newAuthor */
-    [$newBook, $collectionBook, $collectionPerson] = factoryManyToOneCollection();
+        $recordsBook = [
+            [
+                'id'     => 1,
+                'author' => $recordsAuthor[0],
+                'title'  => 'Foundation',
+            ],
+        ];
+        $collectionBook->listReturn = $recordsBook;
 
-    $recordsAuthor = [
-        [
-            'id'        => 1,
-            'firstName' => 'Isaac',
-            'lastName'  => 'Asimov',
-        ],
-    ];
+        $newBook->update(
+            $caller,
+            new Filter(new ConditionTreeLeaf('id', Operators::EQUAL, 1)),
+            ['title' => 'new title', 'author' => ['id' => 1, 'firstName' => 'New name']]
+        );
 
-    $recordsBook = [
-        [
-            'id'     => 1,
-            'author' => $recordsAuthor[0],
-            'title'  => 'Foundation',
-        ],
-    ];
-    $collectionBook->listReturn = $recordsBook;
-
-    $newBook->update(
-        $caller,
-        new Filter(new ConditionTreeLeaf('id', Operators::EQUAL, 1)),
-        ['title' => 'new title', 'author' => ['id' => 1, 'firstName' => 'New name']]
-    );
-
-    expect($collectionPerson->paramsUpdate['patch'])->toEqual(['firstName' => 'New name','id' => 1])
-        ->and($collectionBook->paramsUpdate['patch'])->toEqual(['title' => 'new title']);
-})->with('caller');
+        expect($collectionPerson->paramsUpdate['patch'])->toEqual(['firstName' => 'New name','id' => 1])
+            ->and($collectionBook->paramsUpdate['patch'])->toEqual(['title' => 'new title']);
+    })->with('caller');
+});
