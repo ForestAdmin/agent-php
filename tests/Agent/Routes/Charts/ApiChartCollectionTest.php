@@ -10,26 +10,25 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-function factoryChartCollectionApi($args = []): ApiChartCollection
-{
+beforeEach(function () {
     $datasource = new Datasource();
     $collectionBooks = new Collection($datasource, 'Book');
     $collectionBooks->addFields(['id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true)]);
     $datasource->addCollection($collectionBooks);
-    $agent = buildAgent(new Datasource());
-    $agent->addDatasource($datasource);
+    $this->buildAgent(new Datasource());
+    $this->agent->addDatasource($datasource);
 
     $config = AgentFactory::getContainer()->get('cache')->get('config');
     unset($config['envSecret']);
     AgentFactory::getContainer()->get('cache')->put('config', $config, 3600);
 
-    $agent->customizeCollection(
+    $this->agent->customizeCollection(
         'Book',
         fn (CollectionCustomizer $builder) => $builder
             ->addChart('myChart', fn ($context, ResultBuilder $resultBuilder) => $resultBuilder->value(34))
             ->addChart('mySmartChart', fn ($context) => [])
     );
-    $agent->build();
+    $this->agent->build();
     $_GET['record_id'] = 1;
     $request = Request::createFromGlobals();
 
@@ -41,11 +40,11 @@ function factoryChartCollectionApi($args = []): ApiChartCollection
     invokeProperty($chart, 'collection', AgentFactory::get('datasource')->getCollection('Book'));
     invokeProperty($chart, 'request', $request);
 
-    return $chart;
-}
+    $this->bucket['chart'] = $chart;
+});
 
 test('handleApiChart() should return an array', function () {
-    $chartDatasourceApi = factoryChartCollectionApi();
+    $chartDatasourceApi = $this->bucket['chart'];
     invokeProperty($chartDatasourceApi, 'chartName', 'myChart');
     $result = $chartDatasourceApi->handleApiChart();
 
@@ -64,7 +63,7 @@ test('handleApiChart() should return an array', function () {
 });
 
 test('handleSmartChart() should return an array', function () {
-    $chartDatasourceApi = factoryChartCollectionApi();
+    $chartDatasourceApi = $this->bucket['chart'];
     invokeProperty($chartDatasourceApi, 'chartName', 'mySmartChart');
     $result = $chartDatasourceApi->handleSmartChart();
 

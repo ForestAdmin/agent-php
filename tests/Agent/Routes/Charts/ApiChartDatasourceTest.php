@@ -7,20 +7,19 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Chart\ResultBuilder;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
-function factoryChartDatasourceApi($args = []): ApiChartDatasource
-{
+beforeEach(function () {
     $datasource = new Datasource();
     $collectionBooks = new Collection($datasource, 'Book');
     $datasource->addCollection($collectionBooks);
-    $agent = buildAgent($datasource);
+    $this->buildAgent($datasource);
 
     $config = AgentFactory::getContainer()->get('cache')->get('config');
     unset($config['envSecret']);
     AgentFactory::getContainer()->get('cache')->put('config', $config, 3600);
 
-    $agent->addChart('myChart', fn ($context, ResultBuilder $resultBuilder) => $resultBuilder->value(34));
-    $agent->addChart('mySmartChart', fn ($context) => []);
-    $agent->build();
+    $this->agent->addChart('myChart', fn ($context, ResultBuilder $resultBuilder) => $resultBuilder->value(34));
+    $this->agent->addChart('mySmartChart', fn ($context) => []);
+    $this->agent->build();
 
     $request = Request::createFromGlobals();
 
@@ -32,11 +31,11 @@ function factoryChartDatasourceApi($args = []): ApiChartDatasource
     invokeProperty($chart, 'request', $request);
     invokeProperty($chart, 'datasource', AgentFactory::get('datasource'));
 
-    return $chart;
-}
+    $this->bucket['chart'] = $chart;
+});
 
 test('handleApiChart() should return an array', function () {
-    $chartDatasourceApi = factoryChartDatasourceApi();
+    $chartDatasourceApi = $this->bucket['chart'];
     invokeProperty($chartDatasourceApi, 'chartName', 'myChart');
     $result = $chartDatasourceApi->handleApiChart();
 
@@ -55,7 +54,7 @@ test('handleApiChart() should return an array', function () {
 });
 
 test('handleSmartChart() should return an array', function () {
-    $chartDatasourceApi = factoryChartDatasourceApi();
+    $chartDatasourceApi = $this->bucket['chart'];
     invokeProperty($chartDatasourceApi, 'chartName', 'mySmartChart');
     $result = $chartDatasourceApi->handleSmartChart();
 

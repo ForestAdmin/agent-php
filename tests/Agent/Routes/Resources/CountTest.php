@@ -12,10 +12,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
+use ForestAdmin\AgentPHP\Tests\TestCase;
+
 use function ForestAdmin\config;
 
-function factoryCount($args = []): Count
-{
+$before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
     $collectionUser->addFields(
@@ -45,7 +46,7 @@ function factoryCount($args = []): Count
     }
 
     $datasource->addCollection($collectionUser);
-    buildAgent($datasource);
+    $testCase->buildAgent($datasource);
 
     $request = Request::createFromGlobals();
 
@@ -104,7 +105,7 @@ function factoryCount($args = []): Count
     invokeProperty($count, 'request', $request);
 
     return $count;
-}
+};
 
 test('make() should return a new instance of Count with routes', function () {
     $count = Count::make();
@@ -113,7 +114,7 @@ test('make() should return a new instance of Count with routes', function () {
         ->and($count->getRoutes())->toHaveKey('forest.count');
 });
 
-test('handleRequest() should return a response 200', function () {
+test('handleRequest() should return a response 200', function () use ($before) {
     $data = [
         [
             'value' => 2,
@@ -121,7 +122,7 @@ test('handleRequest() should return a response 200', function () {
         ],
     ];
 
-    $count = factoryCount(['count' => $data]);
+    $count = $before($this, ['count' => $data]);
 
     expect($count->handleRequest(['collectionName' => 'User']))
         ->toBeArray()
@@ -134,8 +135,8 @@ test('handleRequest() should return a response 200', function () {
         );
 });
 
-test('handleRequest() should return deactivate count when the collecion is not countable', function () {
-    $count = factoryCount(['countDisable' => true]);
+test('handleRequest() should return deactivate count when the collecion is not countable', function () use ($before) {
+    $count = $before($this, ['countDisable' => true]);
 
     expect($count->handleRequest(['collectionName' => 'User']))->toEqual([
         'content' => [

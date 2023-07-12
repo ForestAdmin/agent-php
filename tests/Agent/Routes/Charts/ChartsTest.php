@@ -23,9 +23,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 
+use ForestAdmin\AgentPHP\Tests\TestCase;
+
 use function ForestAdmin\config;
 
-function factoryChart($args = []): Charts
+function factoryChart(TestCase $testCase, $args = []): Charts
 {
     $datasource = new Datasource();
     $collectionBooks = new Collection($datasource, 'Book');
@@ -112,7 +114,7 @@ function factoryChart($args = []): Charts
     $datasource->addCollection($collectionBooks);
     $datasource->addCollection($collectionReviews);
     $datasource->addCollection($collectionBookReview);
-    buildAgent($datasource);
+    $testCase->buildAgent($datasource);
 
     $_GET = $args['payload'];
 
@@ -126,7 +128,7 @@ function factoryChart($args = []): Charts
     Cache::put(
         'forest.stats',
         [
-            0 => $_GET['type']. ':' . sha1(json_encode($attributes, JSON_THROW_ON_ERROR)),
+            0 => $_GET['type'] . ':' . sha1(json_encode($attributes, JSON_THROW_ON_ERROR)),
         ],
         config('permissionExpiration')
     );
@@ -152,10 +154,10 @@ function factoryChart($args = []): Charts
         'forest.collections',
         [
             'User' => [
-                'browse'  => [
+                'browse' => [
                     0 => 1,
                 ],
-                'export'  => [
+                'export' => [
                     0 => 1,
                 ],
             ],
@@ -209,6 +211,7 @@ test('setType() should throw a ForestException when the type does not exist in t
 
 test('injectContextVariables() should update the request', function () {
     $chart = factoryChart(
+        $this,
         [
             'books'   => [
                 'results' => [
@@ -240,6 +243,7 @@ test('injectContextVariables() should update the request', function () {
 
 test('makeValue() should return a ValueChart', function () {
     $chart = factoryChart(
+        $this,
         [
             'books'   => [
                 'results' => [
@@ -275,6 +279,7 @@ test('makeValue() should return a ValueChart', function () {
 
 test('makeValue() with previous filter should return a ValueChart', function () {
     $chart = factoryChart(
+        $this,
         [
             'books'   => [
                 'results'  => [
@@ -312,6 +317,7 @@ test('makeValue() with previous filter should return a ValueChart', function () 
 
 test('makeObjective() should return a ObjectiveChart', function () {
     $chart = factoryChart(
+        $this,
         [
             'books'   => [
                 'results' => [
@@ -348,6 +354,7 @@ test('makeObjective() should return a ObjectiveChart', function () {
 
 test('makePie() should return a PieChart', function () {
     $chart = factoryChart(
+        $this,
         [
             'books'   => [
                 'results' => [
@@ -397,6 +404,7 @@ test('makePie() should return a PieChart', function () {
 
 test('makeLine() with day filter should return a LineChart', function () {
     $chart = factoryChart(
+        $this,
         [
             'books'   => [
                 'results' => [
@@ -447,6 +455,7 @@ test('makeLine() with day filter should return a LineChart', function () {
 
 test('makeLine() with week filter should return a LineChart', function () {
     $chart = factoryChart(
+        $this,
         [
             'books'   => [
                 'results' => [
@@ -497,6 +506,7 @@ test('makeLine() with week filter should return a LineChart', function () {
 
 test('makeLine() with month filter should return a LineChart', function () {
     $chart = factoryChart(
+        $this,
         [
             'books'   => [
                 'results' => [
@@ -547,6 +557,7 @@ test('makeLine() with month filter should return a LineChart', function () {
 
 test('makeLine() with month year should return a LineChart', function () {
     $chart = factoryChart(
+        $this,
         [
             'books'   => [
                 'results' => [
@@ -597,6 +608,7 @@ test('makeLine() with month year should return a LineChart', function () {
 
 test('makeLine() should return an exception when the timeRange is not defined', function () {
     $chart = factoryChart(
+        $this,
         [
             'books'   => [
                 'results' => [
@@ -621,6 +633,7 @@ test('makeLine() should return an exception when the timeRange is not defined', 
 
 test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation', function () {
     $chart = factoryChart(
+        $this,
         [
             'type'    => 'leaderboard',
             'books'   => [
@@ -672,6 +685,7 @@ test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation
 
 test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relation', function () {
     $chart = factoryChart(
+        $this,
         [
             'type'    => 'leaderboard',
             'books'   => [
@@ -723,6 +737,7 @@ test('makeLeaderboard() should return a LeaderboardChart on a ManyToMany Relatio
 
 test('makeLeaderboard() should throw a ForestException when the request is not filled correctly', function () {
     $chart = factoryChart(
+        $this,
         [
             'books'   => [
                 'results' => [],

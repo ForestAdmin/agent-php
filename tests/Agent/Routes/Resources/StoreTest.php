@@ -12,10 +12,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 
+use ForestAdmin\AgentPHP\Tests\TestCase;
+
 use function ForestAdmin\config;
 
-function factoryStore($args = []): Store
-{
+$before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
     $collectionCar = new Collection($datasource, 'Car');
     $collectionCar->addFields(
@@ -51,7 +52,7 @@ function factoryStore($args = []): Store
 
     $datasource->addCollection($collectionCar);
     $datasource->addCollection($collectionOwner);
-    buildAgent($datasource);
+    $testCase->buildAgent($datasource);
 
     SchemaEmitter::getSerializedSchema($datasource);
 
@@ -108,7 +109,7 @@ function factoryStore($args = []): Store
     invokeProperty($store, 'request', $request);
 
     return $store;
-}
+};
 
 test('make() should return a new instance of Store with routes', function () {
     $store = Store::make();
@@ -117,7 +118,7 @@ test('make() should return a new instance of Store with routes', function () {
         ->and($store->getRoutes())->toHaveKey('forest.create');
 });
 
-test('handleRequest() should return a response 200', function () {
+test('handleRequest() should return a response 200', function () use ($before) {
     $data = [
         'id'    => 2,
         'model' => 'Aventador',
@@ -135,7 +136,7 @@ test('handleRequest() should return a response 200', function () {
             ],
         ],
     ];
-    $store = factoryStore(['store' => $data]);
+    $store = $before($this, ['store' => $data]);
 
     expect($store->handleRequest(['collectionName' => 'Car']))
         ->toBeArray()

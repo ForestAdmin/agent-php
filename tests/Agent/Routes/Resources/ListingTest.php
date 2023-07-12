@@ -14,6 +14,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
+use ForestAdmin\AgentPHP\Tests\TestCase;
+
 use function ForestAdmin\config;
 
 use GuzzleHttp\Psr7\Response;
@@ -21,8 +23,7 @@ use Prophecy\Argument;
 use Prophecy\Prophet;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-function factoryListing($args = []): Listing
-{
+$before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
     $collectionUser->setSearchable(true);
@@ -59,7 +60,7 @@ function factoryListing($args = []): Listing
 
     $datasource->addCollection($collectionUser);
     $datasource->addCollection($collectionDriverLicence);
-    buildAgent($datasource);
+    $testCase->buildAgent($datasource);
 
     SchemaEmitter::getSerializedSchema($datasource);
 
@@ -119,7 +120,7 @@ function factoryListing($args = []): Listing
     invokeProperty($listing, 'request', $request);
 
     return $listing;
-}
+};
 
 test('addRoute() should return a new route', function () {
     $listing = new Listing();
@@ -138,7 +139,7 @@ test('make() should return a new instance of Listing with routes', function () {
         ->and($listing->getRoutes())->toHaveKey('forest.list');
 });
 
-test('handleRequest() should return a response 200', function () {
+test('handleRequest() should return a response 200', function () use ($before) {
     $data = [
         [
             'id'             => 1,
@@ -164,7 +165,7 @@ test('handleRequest() should return a response 200', function () {
         ],
     ];
 
-    $listing = factoryListing(['listing' => $data]);
+    $listing = $before($this, ['listing' => $data]);
 
     expect($listing->handleRequest(['collectionName' => 'User']))
         ->toBeArray()
@@ -231,7 +232,7 @@ test('handleRequest() should return a response 200', function () {
         );
 });
 
-test('handleRequestCsv() should return a response 200', function () {
+test('handleRequestCsv() should return a response 200', function () use ($before) {
     $_GET['filename'] = 'export-users';
     $_GET['header'] = 'id,first_name,last_name,birthday,active';
     $data = [
@@ -251,7 +252,7 @@ test('handleRequestCsv() should return a response 200', function () {
         ],
     ];
 
-    $listing = factoryListing(['listing' => $data]);
+    $listing = $before($this, ['listing' => $data]);
 
     expect($listing->handleRequest(['collectionName' => 'User.csv']))
         ->toBeArray()
@@ -340,7 +341,7 @@ test('checkIp() throw when the clientIp is not into the ip-whitelist-rules', fun
         ->toThrow(HttpException::class, 'IP address rejected (' . $_SERVER['REMOTE_ADDR'] . ')');
 });
 
-test('handleRequest() with search should return a response 200 with an attribute meta', function () {
+test('handleRequest() with search should return a response 200 with an attribute meta', function () use ($before) {
     $_GET['search'] = '1980';
     $_GET['searchExtended'] = '0';
     $data = [
@@ -360,7 +361,7 @@ test('handleRequest() with search should return a response 200 with an attribute
         ],
     ];
 
-    $listing = factoryListing(['listing' => $data]);
+    $listing = $before($this, ['listing' => $data]);
 
     expect($listing->handleRequest(['collectionName' => 'User'])['content'])
         ->toHaveKey('meta');

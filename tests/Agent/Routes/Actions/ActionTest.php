@@ -21,9 +21,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 
+use ForestAdmin\AgentPHP\Tests\TestCase;
+
 use function ForestAdmin\config;
 
-function factoryAction($smartAction): Actions
+function factoryAction(TestCase $testCase, $smartAction): Actions
 {
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
@@ -55,7 +57,7 @@ function factoryAction($smartAction): Actions
 
     $datasource->addCollection($collectionCategory);
     $datasource->addCollection($collectionUser);
-    buildAgent($datasource);
+    $testCase->buildAgent($datasource);
 
     $datasourceDecorator = new DatasourceDecorator($datasource, ActionCollection::class);
     $datasourceDecorator->build();
@@ -233,7 +235,7 @@ test('handleRequest should return the result of an action', function () {
         'my action',
         new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')),
     ];
-    $action = factoryAction($smartAction);
+    $action = factoryAction($this, $smartAction);
 
     $data = [
         'data' => [
@@ -266,14 +268,13 @@ test('handleRequest should return the result of an action', function () {
     expect($action->handleRequest(['collectionName' => 'User']))->toEqual((new ResultBuilder())->success('BRAVO'));
 });
 
-
 test('handleRequest with signed approval request should put the decoded request to the request class', function () {
     $type = 'SINGLE';
     $smartAction = [
         'my action',
         new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')),
     ];
-    $action = factoryAction($smartAction);
+    $action = factoryAction($this, $smartAction);
 
     $data = [
         'data' => [
@@ -308,7 +309,6 @@ test('handleRequest with signed approval request should put the decoded request 
     expect($action->handleRequest(['collectionName' => 'User']))->toEqual((new ResultBuilder())->success('BRAVO'));
 });
 
-
 test('handleHookRequest should return the result of an action', function () {
     $type = 'GLOBAL';
     $smartAction = [
@@ -330,7 +330,7 @@ test('handleHookRequest should return the result of an action', function () {
             ]
         ),
     ];
-    $action = factoryAction($smartAction);
+    $action = factoryAction($this, $smartAction);
 
     $data = [
         'data' => [
@@ -423,7 +423,7 @@ test('handleHookRequest should return the result of an action on a association',
             ]
         ),
     ];
-    $action = factoryAction($smartAction);
+    $action = factoryAction($this, $smartAction);
 
     $data = [
         'data' => [

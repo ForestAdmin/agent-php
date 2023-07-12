@@ -15,10 +15,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 
+use ForestAdmin\AgentPHP\Tests\TestCase;
+
 use function ForestAdmin\config;
 
-function factoryAssociateRelated($args = []): AssociateRelated
-{
+$before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
     $collectionUser->addFields(
@@ -106,7 +107,7 @@ function factoryAssociateRelated($args = []): AssociateRelated
     $datasource->addCollection($collectionCar);
     $datasource->addCollection($collectionHouse);
     $datasource->addCollection($collectionHouseUser);
-    buildAgent($datasource);
+    $testCase->buildAgent($datasource);
 
     $request = Request::createFromGlobals();
 
@@ -161,7 +162,7 @@ function factoryAssociateRelated($args = []): AssociateRelated
     invokeProperty($associate, 'request', $request);
 
     return $associate;
-}
+};
 
 test('make() should return a new instance of AssociateRelated with routes', function () {
     $associate = AssociateRelated::make();
@@ -170,7 +171,7 @@ test('make() should return a new instance of AssociateRelated with routes', func
         ->and($associate->getRoutes())->toHaveKey('forest.related.associate');
 });
 
-test('handleRequest() should return a response 200', function () {
+test('handleRequest() should return a response 200', function () use ($before) {
     $_GET['data'] = [
         [
             'id'   => 1,
@@ -181,7 +182,7 @@ test('handleRequest() should return a response 200', function () {
             'type' => 'Car',
         ],
     ];
-    $associate = factoryAssociateRelated(['associate' => true]);
+    $associate = $before($this, ['associate' => true]);
 
     expect($associate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'cars']))
         ->toBeArray()
@@ -193,14 +194,14 @@ test('handleRequest() should return a response 200', function () {
         );
 });
 
-test('handleRequest() should return a response 200 with ManyToMany', function () {
+test('handleRequest() should return a response 200 with ManyToMany', function () use ($before) {
     $_GET['data'] = [
         [
             'id'   => 1,
             'type' => 'House',
         ],
     ];
-    $associate = factoryAssociateRelated(['associate' => true]);
+    $associate = $before($this, ['associate' => true]);
 
     expect($associate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'houses']))
         ->toBeArray()
