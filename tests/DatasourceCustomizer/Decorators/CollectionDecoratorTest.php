@@ -34,14 +34,14 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
     test('isSearchable() should call the childCollection corresponding method', function () {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
-        $childCollection = invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
         $childCollection = mock($childCollection)
             ->shouldReceive('isSearchable')
             ->once()
             ->andReturn(false)
             ->getMock();
 
-        invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
 
         expect($collectionDecorator->isSearchable())->toBeFalse();
     });
@@ -49,14 +49,14 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
     test('getFields() should call the childCollection corresponding method', function () {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
-        $childCollection = invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
         $childCollection = mock($childCollection)
             ->shouldReceive('getFields')
             ->once()
             ->andReturn(collect())
             ->getMock();
 
-        invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
 
         expect($collectionDecorator->getFields())->toEqual(collect());
     });
@@ -64,13 +64,13 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
     test('execute() should call the childCollection corresponding method', function (Caller $caller) {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
-        $childCollection = invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
         $childCollection = mock($childCollection)
             ->shouldReceive('execute')
             ->once()
             ->getMock();
 
-        invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
         $collectionDecorator->execute($caller, 'foo', []);
 
         expect($collectionDecorator->getFields()->toArray())->toHaveKeys(['id', 'name', 'price']);
@@ -79,13 +79,13 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
     test('getForm() should call the childCollection corresponding method', function (Caller $caller) {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
-        $childCollection = invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
         $childCollection = mock($childCollection)
             ->shouldReceive('getForm')
             ->once()
             ->getMock();
 
-        invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
         $collectionDecorator->getForm($caller, 'foo', []);
 
         expect($collectionDecorator->getFields()->toArray())->toHaveKeys(['id', 'name', 'price']);
@@ -94,13 +94,13 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
     test('create() should call the childCollection corresponding method', function (Caller $caller) {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
-        $childCollection = invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
         $childCollection = mock($childCollection)
             ->shouldReceive('create')
             ->once()
             ->andReturn(['id' => 1, 'name' => 'foo', 'price' => 1000])
             ->getMock();
-        invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
 
         expect($collectionDecorator->create($caller, []))->toEqual(['id' => 1, 'name' => 'foo', 'price' => 1000]);
     })->with('caller');
@@ -108,7 +108,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
     test('list() should call the childCollection corresponding method', function (Caller $caller) {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
-        $childCollection = invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
         $childCollection = mock($childCollection)
             ->shouldReceive('list')
             ->once()
@@ -118,7 +118,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
                 ['id' => 3, 'name' => 'foo3', 'price' => 2000],
             ])
             ->getMock();
-        invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
 
         expect($collectionDecorator->list($caller, new PaginatedFilter(), new Projection()))->toEqual([
             ['id' => 1, 'name' => 'foo', 'price' => 1000],
@@ -130,12 +130,12 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
     test('update() should call the childCollection corresponding method', function (Caller $caller) {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
-        $childCollection = invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
         $childCollection = mock($childCollection)
             ->shouldReceive('update')
             ->once()
             ->getMock();
-        invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
 
         expect($collectionDecorator->update($caller, new Filter(), ['id' => 1]))->toBeNull();
     })->with('caller');
@@ -143,12 +143,12 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
     test('delete() should call the childCollection corresponding method', function (Caller $caller) {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
-        $childCollection = invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
         $childCollection = mock($childCollection)
             ->shouldReceive('delete')
             ->once()
             ->getMock();
-        invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
 
         expect($collectionDecorator->delete($caller, new Filter()))->toBeNull();
     })->with('caller');
@@ -156,12 +156,12 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
     test('aggregate() should call the childCollection corresponding method', function (Caller $caller) {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
-        $childCollection = invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
         $childCollection = mock($childCollection)
             ->shouldReceive('aggregate')
             ->once()
             ->getMock();
-        invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
 
         expect($collectionDecorator->aggregate($caller, new Filter(), new Aggregation(operation: 'Count')))->toBeNull();
     })->with('caller');
@@ -169,12 +169,12 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
     test('makeTransformer() should call the childCollection corresponding method', function () {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
-        $childCollection = invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
         $childCollection = mock($childCollection)
             ->shouldReceive('makeTransformer')
             ->once()
             ->getMock();
-        invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
 
         expect($collectionDecorator->makeTransformer())->toBeNull();
     });

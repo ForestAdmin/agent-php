@@ -38,7 +38,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
         ];
         $searchCollection->replaceSearch($replace);
 
-        expect(invokeProperty($searchCollection, 'replacer'))->toEqual($replace);
+        expect($this->invokeProperty($searchCollection, 'replacer'))->toEqual($replace);
     });
 
     test('isSearchable() should return true', function () {

@@ -181,7 +181,7 @@ use Symfony\Component\HttpFoundation\Response;
             ],
         ];
 
-        expect(invokeMethod($forestController, 'response', [$data]))
+        expect($this->invokeMethod($forestController, 'response', [$data]))
             ->toBeInstanceOf(Response::class);
     });
 
@@ -194,7 +194,7 @@ use Symfony\Component\HttpFoundation\Response;
         $forestController = new ForestController();
         $data = ['content' => 'foo'];
 
-        expect(invokeMethod($forestController, 'response', [$data]))
+        expect($this->invokeMethod($forestController, 'response', [$data]))
             ->toBeInstanceOf(JsonResponse::class);
     });
 
@@ -213,7 +213,7 @@ use Symfony\Component\HttpFoundation\Response;
             'html'      => null,
         ];
 
-        expect(invokeMethod($forestController, 'response', [$data]))
+        expect($this->invokeMethod($forestController, 'response', [$data]))
             ->toBeInstanceOf(JsonResponse::class);
     });
 
@@ -232,7 +232,7 @@ use Symfony\Component\HttpFoundation\Response;
             'stream'    => __DIR__ . '/Files/example-file.txt',
         ];
 
-        expect(invokeMethod($forestController, 'response', [$data]))
+        expect($this->invokeMethod($forestController, 'response', [$data]))
             ->toBeInstanceOf(BinaryFileResponse::class);
     });
 });

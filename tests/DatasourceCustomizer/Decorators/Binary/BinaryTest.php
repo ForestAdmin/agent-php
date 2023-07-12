@@ -142,7 +142,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
         $decoratedBook = $datasourceDecorator->getCollection('Book');
         $datasourceDecorator->getCollection('Book')->getFields();
 
-        $childCollection = invokeProperty($decoratedBook, 'childCollection');
+        $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
         $mock = mock($childCollection)
             ->makePartial()
             ->expects('list')
@@ -155,7 +155,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
             ->andReturn([])
             ->getMock();
 
-        invokeProperty($decoratedBook, 'childCollection', $mock);
+        $this->invokeProperty($decoratedBook, 'childCollection', $mock);
         $decoratedBook->list($caller, $filter, $projection);
     })->with('caller');
 
@@ -187,14 +187,14 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
             ],
         ];
 
-        $childCollection = invokeProperty($decoratedBook, 'childCollection');
+        $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
         $mock = mock($childCollection)
             ->makePartial()
             ->shouldReceive('list')
             ->andReturn($records)
             ->getMock();
 
-        invokeProperty($decoratedBook, 'childCollection', $mock);
+        $this->invokeProperty($decoratedBook, 'childCollection', $mock);
         $decoratedBook->getFields();
 
         expect($decoratedBook->list($caller, $filter, $projection))->toEqual([
@@ -230,7 +230,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 
         $decoratedBook = $datasourceDecorator->getCollection('Book');
 
-        $childCollection = invokeProperty($decoratedBook, 'childCollection');
+        $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
         $mock = mock($childCollection)
             ->makePartial()
             ->expects('list')
@@ -250,7 +250,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
             ->andReturn([])
             ->getMock();
 
-        invokeProperty($decoratedBook, 'childCollection', $mock);
+        $this->invokeProperty($decoratedBook, 'childCollection', $mock);
         $decoratedBook->list($caller, $filter, $projection);
     })->with('caller');
 
@@ -267,14 +267,14 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
                 'book' => [],
             ],
         ];
-        $childCollection = invokeProperty($decoratedFavorite, 'childCollection');
+        $childCollection = $this->invokeProperty($decoratedFavorite, 'childCollection');
         $mock = mock($childCollection)
             ->makePartial()
             ->shouldReceive('list')
             ->andReturn($records)
             ->getMock();
 
-        invokeProperty($decoratedFavorite, 'childCollection', $mock);
+        $this->invokeProperty($decoratedFavorite, 'childCollection', $mock);
         $decoratedFavorite->getFields();
 
         expect($decoratedFavorite->list($caller, $filter, $projection))->toEqual($records);
@@ -289,7 +289,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
         $datasourceDecorator = $this->bucket[0];
         $decoratedBook = $datasourceDecorator->getCollection('Book');
 
-        $childCollection = invokeProperty($decoratedBook, 'childCollection');
+        $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
         $mock = mock($childCollection)
             ->makePartial()
             ->expects('create')
@@ -307,7 +307,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
             ->andReturn([])
             ->getMock();
 
-        invokeProperty($decoratedBook, 'childCollection', $mock);
+        $this->invokeProperty($decoratedBook, 'childCollection', $mock);
         $decoratedBook->create($caller, $record);
     })->with('caller');
 
@@ -320,7 +320,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
         $datasourceDecorator = $this->bucket[0];
         $decoratedBook = $datasourceDecorator->getCollection('Book');
 
-        $childCollection = invokeProperty($decoratedBook, 'childCollection');
+        $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
         $mock = mock($childCollection)
             ->makePartial()
             ->expects('create')
@@ -338,7 +338,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
             ->andReturn([])
             ->getMock();
 
-        invokeProperty($decoratedBook, 'childCollection', $mock);
+        $this->invokeProperty($decoratedBook, 'childCollection', $mock);
         $decoratedBook->create($caller, $record);
     })->with('caller');
 
@@ -349,7 +349,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
         $datasourceDecorator = $this->bucket[0];
         $decoratedBook = $datasourceDecorator->getCollection('Book');
 
-        $childCollection = invokeProperty($decoratedBook, 'childCollection');
+        $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
         $mock = mock($childCollection)
             ->makePartial()
             ->expects('update')
@@ -366,7 +366,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
             ->andReturn([])
             ->getMock();
 
-        invokeProperty($decoratedBook, 'childCollection', $mock);
+        $this->invokeProperty($decoratedBook, 'childCollection', $mock);
         $decoratedBook->update($caller, $filter, $patch);
     })->with('caller');
 
@@ -384,7 +384,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
                 ],
             ],
         ];
-        $childCollection = invokeProperty($decoratedBook, 'childCollection');
+        $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
         $mock = mock($childCollection)
             ->makePartial()
             ->expects('aggregate')
@@ -401,7 +401,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
             ->andReturn($result)
             ->getMock();
 
-        invokeProperty($decoratedBook, 'childCollection', $mock);
+        $this->invokeProperty($decoratedBook, 'childCollection', $mock);
         $decoratedBook->aggregate($caller, $filter, $aggregation);
     })->with('caller');
 
@@ -420,7 +420,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
             ],
         ];
 
-        $childCollection = invokeProperty($decoratedFavorite, 'childCollection');
+        $childCollection = $this->invokeProperty($decoratedFavorite, 'childCollection');
         $mock = mock($childCollection)
             ->makePartial()
             ->expects('aggregate')
@@ -437,7 +437,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
             ->andReturn($result)
             ->getMock();
 
-        invokeProperty($decoratedFavorite, 'childCollection', $mock);
+        $this->invokeProperty($decoratedFavorite, 'childCollection', $mock);
         $decoratedFavorite->aggregate($caller, $filter, $aggregation);
     })->with('caller');
 });

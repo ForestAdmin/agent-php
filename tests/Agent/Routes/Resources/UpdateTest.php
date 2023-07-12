@@ -92,7 +92,7 @@ $before = static function (TestCase $testCase, $args = []) {
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();
-    invokeProperty($update, 'request', $request);
+    $testCase->invokeProperty($update, 'request', $request);
 
     return $update;
 };

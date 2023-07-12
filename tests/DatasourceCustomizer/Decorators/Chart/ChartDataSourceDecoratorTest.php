@@ -70,7 +70,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
     test('addChart() should throw an error if a chart already exists When decorating a datasource with charts', function () {
         $datasource = new Datasource();
-        invokeProperty($datasource, 'charts', collect(['myChart']));
+        $this->invokeProperty($datasource, 'charts', collect(['myChart']));
         $collectionBook = new Collection($datasource, 'Book');
         $datasource->addCollection($collectionBook);
         $this->buildAgent($datasource);

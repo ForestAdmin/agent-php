@@ -278,7 +278,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
         $collection = $datasourceDecorator->getCollection('Product');
         $context = new ActionContext($collection, $caller, new PaginatedFilter());
 
-        expect(invokeMethod($collection, 'evaluate', [$context, 'date']))->toEqual('date');
+        expect($this->invokeMethod($collection, 'evaluate', [$context, 'date']))->toEqual('date');
     })->with('caller');
 
     test('evaluate() should evaluate the closure', function (Caller $caller) {
@@ -286,6 +286,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
         $collection = $datasourceDecorator->getCollection('Product');
         $context = new ActionContext($collection, $caller, new PaginatedFilter());
 
-        expect(invokeMethod($collection, 'evaluate', [$context, fn () => 'result']))->toEqual('result');
+        expect($this->invokeMethod($collection, 'evaluate', [$context, fn () => 'result']))->toEqual('result');
     })->with('caller');
 });

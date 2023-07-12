@@ -131,9 +131,9 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             ->andReturn($datasourceCustomizer->getStack()->earlyComputed->getCollection('Book'))
             ->getMock();
 
-        invokeProperty($stack, 'earlyComputed', $earlyComputed);
-        invokeProperty($datasourceCustomizer, 'stack', $stack);
-        invokeProperty($customizer, 'stack', $stack);
+        $this->invokeProperty($stack, 'earlyComputed', $earlyComputed);
+        $this->invokeProperty($datasourceCustomizer, 'stack', $stack);
+        $this->invokeProperty($customizer, 'stack', $stack);
 
         $fieldDefinition = new ComputedDefinition(
             PrimitiveType::STRING,
@@ -167,9 +167,9 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))
             ->getMock();
 
-        invokeProperty($stack, 'lateComputed', $lateComputed);
-        invokeProperty($datasourceCustomizer, 'stack', $stack);
-        invokeProperty($customizer, 'stack', $stack);
+        $this->invokeProperty($stack, 'lateComputed', $lateComputed);
+        $this->invokeProperty($datasourceCustomizer, 'stack', $stack);
+        $this->invokeProperty($customizer, 'stack', $stack);
 
         $fieldDefinition = new ComputedDefinition(
             PrimitiveType::STRING,
@@ -206,9 +206,9 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $collections = $stack->relation->getCollections();
         $collections->put('Book', $bookRelation);
 
-        invokeProperty($stack->relation, 'collections', $collections);
-        invokeProperty($datasourceCustomizer, 'stack', $stack);
-        invokeProperty($customizer, 'stack', $stack);
+        $this->invokeProperty($stack->relation, 'collections', $collections);
+        $this->invokeProperty($datasourceCustomizer, 'stack', $stack);
+        $this->invokeProperty($customizer, 'stack', $stack);
 
         $fieldDefinition = new ComputedDefinition(
             PrimitiveType::STRING,
@@ -240,9 +240,9 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $collections = $stack->relation->getCollections();
         $collections->put('Book', $bookRelation);
 
-        invokeProperty($stack->relation, 'collections', $collections);
-        invokeProperty($datasourceCustomizer, 'stack', $stack);
-        invokeProperty($customizer, 'stack', $stack);
+        $this->invokeProperty($stack->relation, 'collections', $collections);
+        $this->invokeProperty($datasourceCustomizer, 'stack', $stack);
+        $this->invokeProperty($customizer, 'stack', $stack);
 
         $fieldDefinition = new ComputedDefinition(
             PrimitiveType::STRING,
@@ -274,9 +274,9 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $collections = $stack->relation->getCollections();
         $collections->put('Category', $categoryRelation);
 
-        invokeProperty($stack->relation, 'collections', $collections);
-        invokeProperty($datasourceCustomizer, 'stack', $stack);
-        invokeProperty($customizer, 'stack', $stack);
+        $this->invokeProperty($stack->relation, 'collections', $collections);
+        $this->invokeProperty($datasourceCustomizer, 'stack', $stack);
+        $this->invokeProperty($customizer, 'stack', $stack);
 
         $fieldDefinition = new ComputedDefinition(
             PrimitiveType::STRING,
@@ -308,9 +308,9 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $collections = $stack->relation->getCollections();
         $collections->put('Category', $categoryRelation);
 
-        invokeProperty($stack->relation, 'collections', $collections);
-        invokeProperty($datasourceCustomizer, 'stack', $stack);
-        invokeProperty($customizer, 'stack', $stack);
+        $this->invokeProperty($stack->relation, 'collections', $collections);
+        $this->invokeProperty($datasourceCustomizer, 'stack', $stack);
+        $this->invokeProperty($customizer, 'stack', $stack);
 
         $fieldDefinition = new ComputedDefinition(
             PrimitiveType::STRING,
@@ -353,7 +353,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
         $customizer->emulateFieldSorting('title');
 
-        expect(invokeProperty($book, 'sorts'))->toHaveKey('title');
+        expect($this->invokeProperty($book, 'sorts'))->toHaveKey('title');
     });
 
     test('replaceFieldSorting() should replace sort on field', function () use ($before) {
@@ -365,7 +365,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
         $customizer->replaceFieldSorting('title', [['field' => 'title', 'ascending' => true]]);
 
-        $sort = invokeProperty($book, 'sorts');
+        $sort = $this->invokeProperty($book, 'sorts');
         expect($sort)
             ->toHaveKey('title')
             ->and($sort['title'])
@@ -384,9 +384,9 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             ->andReturn($datasourceCustomizer->getStack()->search->getCollection('Book'))
             ->getMock();
 
-        invokeProperty($stack, 'search', $search);
-        invokeProperty($datasourceCustomizer, 'stack', $stack);
-        invokeProperty($customizer, 'stack', $stack);
+        $this->invokeProperty($stack, 'search', $search);
+        $this->invokeProperty($datasourceCustomizer, 'stack', $stack);
+        $this->invokeProperty($customizer, 'stack', $stack);
 
         $condition = fn ($search) => [
             ['field' => 'title', 'operator' => Operators::EQUAL, 'value' => $search],
@@ -397,7 +397,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         /** @var $searchCollection $searchCollection */
         $searchCollection = $datasourceCustomizer->getStack()->search->getCollection('Book');
 
-        expect(invokeProperty($searchCollection, 'replacer'))->toEqual($condition);
+        expect($this->invokeProperty($searchCollection, 'replacer'))->toEqual($condition);
     });
 
     test('disableCount() should disable count on the collection', function () use ($before) {
@@ -436,9 +436,9 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             ->andReturn($datasourceCustomizer->getStack()->write->getCollection('Book'))
             ->getMock();
 
-        invokeProperty($stack, 'write', $write);
-        invokeProperty($datasourceCustomizer, 'stack', $stack);
-        invokeProperty($customizer, 'stack', $stack);
+        $this->invokeProperty($stack, 'write', $write);
+        $this->invokeProperty($datasourceCustomizer, 'stack', $stack);
+        $this->invokeProperty($customizer, 'stack', $stack);
 
         $field = 'title';
         $condition = function ($value, $context) {
@@ -456,7 +456,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         /** @var WriteReplaceCollection $writeReplaceCollection */
         $writeReplaceCollection = $datasourceCustomizer->getStack()->write->getCollection('Book');
 
-        expect(invokeProperty($writeReplaceCollection, 'handlers'))->toEqual([$field => $condition]);
+        expect($this->invokeProperty($writeReplaceCollection, 'handlers'))->toEqual([$field => $condition]);
     });
 
     test('renameField() should rename a field in collection', function () use ($before) {
@@ -495,9 +495,9 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))
             ->getMock();
 
-        invokeProperty($stack, 'lateComputed', $lateComputed);
-        invokeProperty($datasourceCustomizer, 'stack', $stack);
-        invokeProperty($customizer, 'stack', $stack);
+        $this->invokeProperty($stack, 'lateComputed', $lateComputed);
+        $this->invokeProperty($datasourceCustomizer, 'stack', $stack);
+        $this->invokeProperty($customizer, 'stack', $stack);
 
         $customizer->addExternalRelation(
             'tags',
@@ -548,9 +548,9 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))
             ->getMock();
 
-        invokeProperty($stack, 'lateComputed', $lateComputed);
-        invokeProperty($datasourceCustomizer, 'stack', $stack);
-        invokeProperty($customizer, 'stack', $stack);
+        $this->invokeProperty($stack, 'lateComputed', $lateComputed);
+        $this->invokeProperty($datasourceCustomizer, 'stack', $stack);
+        $this->invokeProperty($customizer, 'stack', $stack);
 
         $customizer->importField(
             'titleCopy',
@@ -579,9 +579,9 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))
             ->getMock();
 
-        invokeProperty($stack, 'lateComputed', $lateComputed);
-        invokeProperty($datasourceCustomizer, 'stack', $stack);
-        invokeProperty($customizer, 'stack', $stack);
+        $this->invokeProperty($stack, 'lateComputed', $lateComputed);
+        $this->invokeProperty($datasourceCustomizer, 'stack', $stack);
+        $this->invokeProperty($customizer, 'stack', $stack);
 
         expect(fn () => $customizer->importField(
             'titleCopy',
@@ -662,8 +662,8 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $customizer->addHook('before', 'List', fn () => 'before hook');
         /** @var HookCollection $computedCollection */
         $hookCollection = $datasourceCustomizer->getStack()->hook->getCollection('Book');
-        $hooks = invokeProperty($hookCollection, 'hooks')['List'];
-        $beforeHooks = invokeProperty($hooks, 'before');
+        $hooks = $this->invokeProperty($hookCollection, 'hooks')['List'];
+        $beforeHooks = $this->invokeProperty($hooks, 'before');
 
         expect($beforeHooks)
             ->toHaveCount(1)

@@ -29,7 +29,7 @@ beforeEach(closure: function () {
 test('fetchFieldsFromTable() should fetch all fields from table', function () {
     /** @var BaseCollection $baseCollection */
     global $baseCollection;
-    $fields = invokeMethod($baseCollection, 'fetchFieldsFromTable');
+    $fields = $this->invokeMethod($baseCollection, 'fetchFieldsFromTable');
 
     expect($fields)->toHaveKey('columns')
         ->and($fields['columns'])->toHaveKeys(['id','author_id','title','price','published_at','created_at','updated_at'])
@@ -40,7 +40,7 @@ test('fetchFieldsFromTable() should fetch all fields from table', function () {
 test('makeColumns() should add a columnSchema for each field fetch in the table', function () {
     /** @var BaseCollection $baseCollection */
     global $baseCollection;
-    $fields = invokeMethod($baseCollection, 'fetchFieldsFromTable');
+    $fields = $this->invokeMethod($baseCollection, 'fetchFieldsFromTable');
     //makeColumns() is call in construct()
 
     expect($baseCollection->getFields())->toHaveCount(count($fields['columns']))

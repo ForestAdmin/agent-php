@@ -36,7 +36,7 @@ class TestCase extends BaseTestCase
         $this->agent = new AgentFactory($options, []);
         $container = AgentFactory::getContainer();
         $container->set('datasource', $datasource);
-        invokeProperty($this->agent, 'container', $container);
+        $this->invokeProperty($this->agent, 'container', $container);
 
         Cache::put('forest.has_permission', true, 10);
     }

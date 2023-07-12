@@ -121,7 +121,7 @@ $before = static function (TestCase $testCase, $args = []) {
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($CountRelated, 'request', $request);
+    $testCase->invokeProperty($CountRelated, 'request', $request);
 
     return $CountRelated;
 };

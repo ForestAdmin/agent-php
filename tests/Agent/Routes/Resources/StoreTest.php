@@ -106,7 +106,7 @@ $before = static function (TestCase $testCase, $args = []) {
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($store, 'request', $request);
+    $testCase->invokeProperty($store, 'request', $request);
 
     return $store;
 };

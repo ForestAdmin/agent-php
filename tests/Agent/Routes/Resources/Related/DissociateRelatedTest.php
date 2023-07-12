@@ -168,7 +168,7 @@ $before = static function (TestCase $testCase, $args = []) {
         ->andReturn(new Filter())
         ->getMock();
 
-    invokeProperty($dissociate, 'request', $request);
+    $testCase->invokeProperty($dissociate, 'request', $request);
 
     return $dissociate;
 };

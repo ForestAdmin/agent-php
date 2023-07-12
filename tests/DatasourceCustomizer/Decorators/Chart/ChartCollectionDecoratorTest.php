@@ -15,7 +15,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $datasource = new Datasource();
         $collectionBook = new Collection($datasource, 'Book');
         $collectionBook->addFields(['id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true)]);
-        invokeProperty($collectionBook, 'charts', collect('childChart'));
+        $this->invokeProperty($collectionBook, 'charts', collect('childChart'));
         $collectionBook = mock($collectionBook)
             ->makePartial()
             ->shouldReceive('renderChart')

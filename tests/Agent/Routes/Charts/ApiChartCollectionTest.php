@@ -37,15 +37,15 @@ beforeEach(function () {
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($chart, 'collection', AgentFactory::get('datasource')->getCollection('Book'));
-    invokeProperty($chart, 'request', $request);
+    $this->invokeProperty($chart, 'collection', AgentFactory::get('datasource')->getCollection('Book'));
+    $this->invokeProperty($chart, 'request', $request);
 
     $this->bucket['chart'] = $chart;
 });
 
 test('handleApiChart() should return an array', function () {
     $chartDatasourceApi = $this->bucket['chart'];
-    invokeProperty($chartDatasourceApi, 'chartName', 'myChart');
+    $this->invokeProperty($chartDatasourceApi, 'chartName', 'myChart');
     $result = $chartDatasourceApi->handleApiChart();
 
     expect($result)
@@ -64,7 +64,7 @@ test('handleApiChart() should return an array', function () {
 
 test('handleSmartChart() should return an array', function () {
     $chartDatasourceApi = $this->bucket['chart'];
-    invokeProperty($chartDatasourceApi, 'chartName', 'mySmartChart');
+    $this->invokeProperty($chartDatasourceApi, 'chartName', 'mySmartChart');
     $result = $chartDatasourceApi->handleSmartChart();
 
     expect($result)->toBeArray()->and($result['content']);

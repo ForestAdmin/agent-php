@@ -49,7 +49,7 @@ beforeEach(function () {
         ->andReturn($auth->reveal())
         ->getMock();
 
-    invokeProperty($authentication, 'request', $request);
+    $this->invokeProperty($authentication, 'request', $request);
 
     $this->bucket['authentication'] = $authentication;
     $this->bucket['user'] = $user;
@@ -115,7 +115,7 @@ test('auth() should return an AuthManager instance', function () {
 test('handleRequest() throw when renderingId is missing', function () {
     $_GET['renderingId'] = null;
     $authentication = $this->bucket['authentication'];
-    invokeProperty($authentication, 'request', Request::createFromGlobals());
+    $this->invokeProperty($authentication, 'request', Request::createFromGlobals());
 
 
     expect(fn () => $authentication->handleAuthentication())
@@ -125,7 +125,7 @@ test('handleRequest() throw when renderingId is missing', function () {
 test('handleRequest() throw when renderingId is not a numeric value', function () {
     $_GET['renderingId'] = 'foo';
     $authentication = $this->bucket['authentication'];
-    invokeProperty($authentication, 'request', Request::createFromGlobals());
+    $this->invokeProperty($authentication, 'request', Request::createFromGlobals());
 
     expect(fn () => $authentication->handleAuthentication())
         ->toThrow(ErrorException::class, ErrorMessages::INVALID_RENDERING_ID);

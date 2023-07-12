@@ -75,7 +75,7 @@ $before = static function (TestCase $testCase) {
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($destroy, 'request', $request);
+    $testCase->invokeProperty($destroy, 'request', $request);
 
     return $destroy;
 };

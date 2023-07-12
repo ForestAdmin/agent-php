@@ -80,7 +80,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $sortCollection = new SortCollection($collection, $datasource);
         $sortCollection->emulateFieldSorting('year');
 
-        expect(invokeProperty($sortCollection, 'sorts')['year'])->toBeNull();
+        expect($this->invokeProperty($sortCollection, 'sorts')['year'])->toBeNull();
     });
 
     test('emulateFieldSorting() should throw when the field doesn\'t exist', function () use ($before) {
@@ -97,7 +97,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $sortCollection = new SortCollection($collection, $datasource);
         $sortCollection->replaceFieldSorting('year', null);
 
-        expect(invokeProperty($sortCollection, 'sorts')['year'])->toBeNull();
+        expect($this->invokeProperty($sortCollection, 'sorts')['year'])->toBeNull();
     });
 
     test('replaceFieldSorting() should work when equivalentSort is not empty', function () use ($before) {
@@ -111,7 +111,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             ]
         );
 
-        expect(invokeProperty($sortCollection, 'sorts')['id'])->toEqual(new Sort([['field' => 'title', 'ascending' => true]]));
+        expect($this->invokeProperty($sortCollection, 'sorts')['id'])->toEqual(new Sort([['field' => 'title', 'ascending' => true]]));
     });
 
     test('replaceFieldSorting() should throw if the field is a relation', function () use ($before) {

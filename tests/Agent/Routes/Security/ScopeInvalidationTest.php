@@ -17,7 +17,7 @@ function factoryScopeInvalidation(TestCase $testCase): ScopeInvalidation
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($scopeInvalidation, 'request', $request);
+    $testCase->invokeProperty($scopeInvalidation, 'request', $request);
 
     return $scopeInvalidation;
 }

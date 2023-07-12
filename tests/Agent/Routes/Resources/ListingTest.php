@@ -117,7 +117,7 @@ $before = static function (TestCase $testCase, $args = []) {
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($listing, 'request', $request);
+    $testCase->invokeProperty($listing, 'request', $request);
 
     return $listing;
 };
@@ -298,7 +298,7 @@ test('checkIp() should check the clientIp in the ip-whitelist-rules', function (
         ->makePartial()
         ->shouldAllowMockingProtectedMethods();
 
-    invokeProperty($listing, 'request', Request::createFromGlobals());
+    $this->invokeProperty($listing, 'request', Request::createFromGlobals());
 
     expect($listing->checkIp($forestApiRequester->reveal()))
         ->toBeNull();
@@ -335,7 +335,7 @@ test('checkIp() throw when the clientIp is not into the ip-whitelist-rules', fun
         ->makePartial()
         ->shouldAllowMockingProtectedMethods();
 
-    invokeProperty($listing, 'request', Request::createFromGlobals());
+    $this->invokeProperty($listing, 'request', Request::createFromGlobals());
 
     expect(fn () => $listing->checkIp($forestApiRequester->reveal()))
         ->toThrow(HttpException::class, 'IP address rejected (' . $_SERVER['REMOTE_ADDR'] . ')');

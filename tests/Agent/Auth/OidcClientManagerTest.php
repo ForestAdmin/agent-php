@@ -106,7 +106,7 @@ test('makeForestProvider() should return a new ForestProvider & the associate ca
     $forestApi = makeForestApiGetAndPost(json_encode(['client_id' => 1, 'redirect_uris' => ['http://backend.api']], JSON_THROW_ON_ERROR));
 
     $oidc = new OidcClientManager();
-    invokeProperty($oidc, 'forestApi', $forestApi);
+    $this->invokeProperty($oidc, 'forestApi', $forestApi);
 
     $clientForCallbackUrl = $oidc->makeForestProvider();
 
@@ -121,7 +121,7 @@ test('makeForestProvider() throw when the API call failed', function () {
     $forestApi = makeForestApiGetAndPost();
 
     $oidc = new OidcClientManager();
-    invokeProperty($oidc, 'forestApi', $forestApi);
+    $this->invokeProperty($oidc, 'forestApi', $forestApi);
 
     expect(fn () => $oidc->makeForestProvider())->toThrow(ErrorException::class, ErrorMessages::REGISTRATION_FAILED);
 });
@@ -144,9 +144,9 @@ test('register() should return the body response of the api', function () {
         );
 
     $oidc = new OidcClientManager();
-    invokeProperty($oidc, 'forestApi', $forestApi->reveal());
+    $this->invokeProperty($oidc, 'forestApi', $forestApi->reveal());
 
-    $register = invokeMethod($oidc, 'register', [&$data]);
+    $register = $this->invokeMethod($oidc, 'register', [&$data]);
 
     expect($register)
         ->toBeArray()
@@ -165,9 +165,9 @@ test('retrieve() should return the body response of the api', function () {
         );
 
     $oidc = new OidcClientManager();
-    invokeProperty($oidc, 'forestApi', $forestApi->reveal());
+    $this->invokeProperty($oidc, 'forestApi', $forestApi->reveal());
 
-    $retrieve = invokeMethod($oidc, 'retrieve');
+    $retrieve = $this->invokeMethod($oidc, 'retrieve');
 
     expect($retrieve)
         ->toBeArray()
@@ -185,8 +185,8 @@ test('retrieve() throw when the call api failed', function () {
         ->willThrow(new \RuntimeException());
 
     $oidc = new OidcClientManager();
-    invokeProperty($oidc, 'forestApi', $forestApi->reveal());
+    $this->invokeProperty($oidc, 'forestApi', $forestApi->reveal());
 
-    expect(fn () => invokeMethod($oidc, 'retrieve'))
+    expect(fn () => $this->invokeMethod($oidc, 'retrieve'))
         ->toThrow(ErrorException::class, ErrorMessages::OIDC_CONFIGURATION_RETRIEVAL_FAILED);
 });

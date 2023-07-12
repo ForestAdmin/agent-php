@@ -183,7 +183,7 @@ function factoryChart(TestCase $testCase, $args = []): Charts
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($chart, 'request', $request);
+    $testCase->invokeProperty($chart, 'request', $request);
 
     return $chart;
 }
@@ -233,7 +233,7 @@ test('injectContextVariables() should update the request', function () {
     );
     $chart->handleRequest(['collectionName' => 'Book']);
     /** @var Filter $filter */
-    $filter = invokeProperty($chart, 'filter');
+    $filter = $this->invokeProperty($chart, 'filter');
 
     expect($filter->getConditionTree())
         ->toBeInstanceOf(ConditionTreeLeaf::class)

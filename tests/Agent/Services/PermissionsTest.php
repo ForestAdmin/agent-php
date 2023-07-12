@@ -209,7 +209,7 @@ function permissionsFactory(TestCase $testCase, array $post = [], $scope = null,
 
     $request = Request::createFromGlobals();
     $permissions = new Permissions(QueryStringParser::parseCaller($request));
-    invokeProperty($permissions, 'forestApi', $forestApi->reveal());
+    $testCase->invokeProperty($permissions, 'forestApi', $forestApi->reveal());
 
     $testCase->bucket['permissions'] = $permissions;
     $testCase->bucket['collection'] = $collectionBooking;
@@ -307,7 +307,7 @@ test('can() should call getCollectionsPermissionsData twice', function () {
             ]
         )
         ->getMock();
-    invokeProperty($mockPermissions, 'caller', QueryStringParser::parseCaller($request));
+    $this->invokeProperty($mockPermissions, 'caller', QueryStringParser::parseCaller($request));
 
     expect($mockPermissions->can('browse', $collection))->toBeTrue();
 });
@@ -388,7 +388,7 @@ test('can() should throw HttpException when user doesn\'t have the right access'
             ]
         )
         ->getMock();
-    invokeProperty($mockPermissions, 'caller', QueryStringParser::parseCaller($request));
+    $this->invokeProperty($mockPermissions, 'caller', QueryStringParser::parseCaller($request));
 
     expect(static fn () => $mockPermissions->can('browse', $collection))
         ->toThrow(ForbiddenError::class, 'You don\'t have permission to browse this collection.');
@@ -448,8 +448,8 @@ test('canChart() should call twice and return true on allowed chart', function (
         ->getMock();
 
     $caller = QueryStringParser::parseCaller($request);
-    invokeProperty($caller, 'permissionLevel', 'foo');
-    invokeProperty($mockPermissions, 'caller', $caller);
+    $this->invokeProperty($caller, 'permissionLevel', 'foo');
+    $this->invokeProperty($mockPermissions, 'caller', $caller);
 
     expect($mockPermissions->canChart($request))->toBeTrue();
 });
@@ -473,8 +473,8 @@ test('canChart() should throw on forbidden chart', function () {
         ->getMock();
 
     $caller = QueryStringParser::parseCaller($request);
-    invokeProperty($caller, 'permissionLevel', 'foo');
-    invokeProperty($mockPermissions, 'caller', $caller);
+    $this->invokeProperty($caller, 'permissionLevel', 'foo');
+    $this->invokeProperty($mockPermissions, 'caller', $caller);
 
     expect(static fn () => $mockPermissions->canChart($request))
         ->toThrow(ForbiddenError::class, 'You don\'t have permission to access this collection.');

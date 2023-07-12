@@ -159,7 +159,7 @@ $before = static function (TestCase $testCase, $args = []) {
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($associate, 'request', $request);
+    $testCase->invokeProperty($associate, 'request', $request);
 
     return $associate;
 };

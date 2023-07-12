@@ -32,7 +32,7 @@ beforeEach(function () {
     $datasource = new BaseDatasource(TestCase::DB_CONFIG);
 
     $bookCollection = new BaseCollection($datasource, 'Book', 'books');
-    invokeProperty($bookCollection, 'fields', collect());
+    $this->invokeProperty($bookCollection, 'fields', collect());
     $bookCollection = mock($bookCollection)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
@@ -62,7 +62,7 @@ beforeEach(function () {
     );
 
     $userCollection = new BaseCollection($datasource, 'User', 'users');
-    invokeProperty($userCollection, 'fields', collect());
+    $this->invokeProperty($userCollection, 'fields', collect());
     $userCollection = mock($userCollection)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
@@ -83,7 +83,7 @@ beforeEach(function () {
     );
 
     $reviewCollection = new BaseCollection($datasource, 'Review', 'reviews');
-    invokeProperty($reviewCollection, 'fields', collect());
+    $this->invokeProperty($reviewCollection, 'fields', collect());
     $reviewCollection = mock($reviewCollection)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
@@ -99,7 +99,7 @@ beforeEach(function () {
     );
 
     $bookReviewCollection = new BaseCollection($datasource, 'BookReview', 'book_review');
-    invokeProperty($bookReviewCollection, 'fields', collect());
+    $this->invokeProperty($bookReviewCollection, 'fields', collect());
     $bookReviewCollection = mock($bookReviewCollection)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()

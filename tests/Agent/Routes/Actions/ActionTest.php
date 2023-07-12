@@ -178,12 +178,12 @@ function factoryAction(TestCase $testCase, $smartAction): Actions
         ->getMock();
 
     $request = Request::createFromGlobals();
-    invokeProperty($permissions, 'caller', QueryStringParser::parseCaller($request));
+    $testCase->invokeProperty($permissions, 'caller', QueryStringParser::parseCaller($request));
 
-    invokeProperty($action, 'caller', QueryStringParser::parseCaller($request));
-    invokeProperty($action, 'actionName', 'my action');
-    invokeProperty($action, 'permissions', $permissions);
-    invokeProperty($action, 'collection', $collection);
+    $testCase->invokeProperty($action, 'caller', QueryStringParser::parseCaller($request));
+    $testCase->invokeProperty($action, 'actionName', 'my action');
+    $testCase->invokeProperty($action, 'permissions', $permissions);
+    $testCase->invokeProperty($action, 'collection', $collection);
 
     return $action;
 }
@@ -262,8 +262,8 @@ test('handleRequest should return the result of an action', function () {
 
     $_POST = $data;
 
-    invokeProperty($action, 'request', Request::createFromGlobals());
-    invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
+    $this->invokeProperty($action, 'request', Request::createFromGlobals());
+    $this->invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
 
     expect($action->handleRequest(['collectionName' => 'User']))->toEqual((new ResultBuilder())->success('BRAVO'));
 });
@@ -303,8 +303,8 @@ test('handleRequest with signed approval request should put the decoded request 
 
     $_POST = $data;
 
-    invokeProperty($action, 'request', Request::createFromGlobals());
-    invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
+    $this->invokeProperty($action, 'request', Request::createFromGlobals());
+    $this->invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
 
     expect($action->handleRequest(['collectionName' => 'User']))->toEqual((new ResultBuilder())->success('BRAVO'));
 });
@@ -371,8 +371,8 @@ test('handleHookRequest should return the result of an action', function () {
     ];
 
     $_POST = $data;
-    invokeProperty($action, 'request', Request::createFromGlobals());
-    invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
+    $this->invokeProperty($action, 'request', Request::createFromGlobals());
+    $this->invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
 
 
     expect($action->handleHookRequest(['collectionName' => 'User']))->toBeArray()
@@ -464,8 +464,8 @@ test('handleHookRequest should return the result of an action on a association',
     ];
 
     $_POST = $data;
-    invokeProperty($action, 'request', Request::createFromGlobals());
-    invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
+    $this->invokeProperty($action, 'request', Request::createFromGlobals());
+    $this->invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
 
     expect($action->handleHookRequest(['collectionName' => 'User']))->toBeArray()
         ->and($action->handleHookRequest(['collectionName' => 'User']))->toHaveKey('content')

@@ -89,7 +89,7 @@ test('getRenderingIdFromState() should return the renderingId', function () {
     $auth = new AuthManager($oidc->reveal());
 
     $data = ['state' => '{"renderingId":1}'];
-    $renderingId = invokeMethod($auth, 'getRenderingIdFromState', $data);
+    $renderingId = $this->invokeMethod($auth, 'getRenderingIdFromState', $data);
 
     expect($renderingId)->toEqual(1);
 });
@@ -100,7 +100,7 @@ test('getRenderingIdFromState() throw when the renderingId is not valid', functi
     $auth = new AuthManager($oidc->reveal());
     $data = ['state' => '{"renderingId":"AA"}'];
 
-    expect(fn () => invokeMethod($auth, 'getRenderingIdFromState', $data))
+    expect(fn () => $this->invokeMethod($auth, 'getRenderingIdFromState', $data))
         ->toThrow(ErrorException::class, ErrorMessages::INVALID_STATE_FORMAT);
 });
 
@@ -110,7 +110,7 @@ test('stateIsValid() should return true when the state is valid', function () {
     $auth = new AuthManager($oidc->reveal());
 
     $data = ['code' => 'test', 'state' => '{"renderingId":1}'];
-    $state = invokeMethod($auth, 'stateIsValid', [&$data]);
+    $state = $this->invokeMethod($auth, 'stateIsValid', [&$data]);
 
     expect($state)->toBeTrue();
 });
@@ -122,7 +122,7 @@ test('stateIsValid() throw when the state parameter is missing', function () {
 
     $data = ['code' => 'test'];
 
-    expect(fn () => invokeMethod($auth, 'stateIsValid', [&$data]))
+    expect(fn () => $this->invokeMethod($auth, 'stateIsValid', [&$data]))
         ->toThrow(ErrorException::class, ErrorMessages::INVALID_STATE_MISSING);
 });
 
@@ -133,7 +133,6 @@ test('stateIsValid() throw when the state is not valid', function () {
 
     $data = ['code' => 'test', 'state' => '{}'];
 
-    expect(fn () => invokeMethod($auth, 'stateIsValid', [&$data]))
+    expect(fn () => $this->invokeMethod($auth, 'stateIsValid', [&$data]))
         ->toThrow(ErrorException::class, ErrorMessages::INVALID_STATE_RENDERING_ID);
 });
-
