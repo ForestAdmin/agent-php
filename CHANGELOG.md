@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/ForestAdmin/agent-php/compare/v1.1.0...v1.1.1) (2023-07-17)
+
+
+### Bug Fixes
+
+* configure github workflow for eloquent datasource ([#75](https://github.com/ForestAdmin/agent-php/issues/75)) ([d799ec8](https://github.com/ForestAdmin/agent-php/commit/d799ec86ceb87b810ac4c68cae2b5a617c9fd28b))
+
 # [1.1.0](https://github.com/ForestAdmin/agent-php/compare/v1.0.2...v1.1.0) (2023-07-17)
 
 
