@@ -106,19 +106,9 @@ class CollectionDecorator implements CollectionContract
         return $this->childCollection->makeTransformer();
     }
 
-    public function toArray($record): array
-    {
-        return $this->childCollection->toArray($record);
-    }
-
     public function getDataSource(): DatasourceContract
     {
         return $this->dataSource;
-    }
-
-    public function show(Caller $caller, Filter $filter, $id, Projection $projection)
-    {
-        return $this->childCollection->show($caller, $filter, $id, $projection);
     }
 
     public function getSegments()

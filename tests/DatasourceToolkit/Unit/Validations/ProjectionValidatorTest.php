@@ -8,8 +8,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ProjectionValidator;
 
-dataset('projectionValidatorCollection', function () {
-    yield $collection = new Collection(new Datasource(), 'books');
+beforeEach(function () {
+    $collection = new Collection(new Datasource(), 'books');
     $collection->addFields(
         [
             'id'     => new ColumnSchema(
@@ -23,13 +23,16 @@ dataset('projectionValidatorCollection', function () {
             ),
         ]
     );
+
+    $this->bucket['collection'] = $collection;
 });
 
-it('should not throw if the field exist on the collection', function ($collection) {
+it('should not throw if the field exist on the collection', function () {
+    $collection = $this->bucket['collection'];
     ProjectionValidator::validate($collection, new Projection(['id']));
-})->expectNotToPerformAssertions()->with('projectionValidatorCollection');
+})->expectNotToPerformAssertions();
 
-it('should throw if the field is not of column type', function ($collection) {
+it('should throw if the field is not of column type', function () {
+    $collection = $this->bucket['collection'];
     ProjectionValidator::validate($collection, new Projection(['author']));
-})->throws(Exception::class, 'Unexpected field type: books.author (found ManyToOne expected \'Column\')')
-    ->with('projectionValidatorCollection');
+})->throws(Exception::class, 'Unexpected field type: books.author (found ManyToOne expected \'Column\')');

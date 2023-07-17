@@ -38,18 +38,12 @@ class OperatorsEmulateCollection extends CollectionDecorator
             $operators = $schema->getFilterOperators();
 
             if (! in_array('Equal', $operators, true) || ! in_array('In', $operators, true)) {
-                throw new ForestException("Cannot override operators on collection $this->name: the primary key columns must support 'Equal' and 'In' operators");
+                throw new ForestException("Cannot override operators on collection $name: the primary key columns must support 'Equal' and 'In' operators");
             }
         }
 
         // Check that targeted field is valid
-        /** @var ColumnSchema $schema */
-        $field = $this->childCollection->getFields()[$name];
-        if (! $field) {
-            throw new ForestException('Cannot replace operator for relation');
-        }
         FieldValidator::validate($this, $name);
-
 
         // Mark the field operator as replaced.
         if (! in_array($name, $this->emulateOperators, true)) {

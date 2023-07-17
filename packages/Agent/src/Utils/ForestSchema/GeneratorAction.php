@@ -38,7 +38,7 @@ class GeneratorAction
         $index = $collection->getActions()->keys()->search($name);
         $slug = Str::slug($name);
 
-        $fields = self::buildFields($collection, $name, $action);
+        $fields = self::buildFields($action);
 
         return [
             'id'         => "$collectionName-$index-$slug",
@@ -83,7 +83,7 @@ class GeneratorAction
                 true
             )
         ) {
-            $output['type'] = '[' . Str::before($field->getType(), 'List') . ']';
+            $output['type'] = [Str::before($field->getType(), 'List')];
         } else {
             $output['type'] = $field->getType();
         }
@@ -95,7 +95,7 @@ class GeneratorAction
         return $output;
     }
 
-    private static function buildFields(CollectionContract $collection, string $name, BaseAction $action): array
+    private static function buildFields(BaseAction $action): array
     {
         // We want the schema to be generated on usage => send dummy schema
         if (! $action->isStaticForm()) {

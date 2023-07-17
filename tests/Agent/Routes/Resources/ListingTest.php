@@ -14,6 +14,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
+use ForestAdmin\AgentPHP\Tests\TestCase;
+
 use function ForestAdmin\config;
 
 use GuzzleHttp\Psr7\Response;
@@ -21,10 +23,10 @@ use Prophecy\Argument;
 use Prophecy\Prophet;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-function factoryListing($args = []): Listing
-{
+$before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
+    $collectionUser->setSearchable(true);
     $collectionUser->addFields(
         [
             'id'             => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
@@ -58,7 +60,7 @@ function factoryListing($args = []): Listing
 
     $datasource->addCollection($collectionUser);
     $datasource->addCollection($collectionDriverLicence);
-    buildAgent($datasource);
+    $testCase->buildAgent($datasource);
 
     SchemaEmitter::getSerializedSchema($datasource);
 
@@ -115,10 +117,10 @@ function factoryListing($args = []): Listing
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($listing, 'request', $request);
+    $testCase->invokeProperty($listing, 'request', $request);
 
     return $listing;
-}
+};
 
 test('addRoute() should return a new route', function () {
     $listing = new Listing();
@@ -137,7 +139,7 @@ test('make() should return a new instance of Listing with routes', function () {
         ->and($listing->getRoutes())->toHaveKey('forest.list');
 });
 
-test('handleRequest() should return a response 200', function () {
+test('handleRequest() should return a response 200', function () use ($before) {
     $data = [
         [
             'id'             => 1,
@@ -163,7 +165,7 @@ test('handleRequest() should return a response 200', function () {
         ],
     ];
 
-    $listing = factoryListing(['listing' => $data]);
+    $listing = $before($this, ['listing' => $data]);
 
     expect($listing->handleRequest(['collectionName' => 'User']))
         ->toBeArray()
@@ -230,7 +232,7 @@ test('handleRequest() should return a response 200', function () {
         );
 });
 
-test('handleRequestCsv() should return a response 200', function () {
+test('handleRequestCsv() should return a response 200', function () use ($before) {
     $_GET['filename'] = 'export-users';
     $_GET['header'] = 'id,first_name,last_name,birthday,active';
     $data = [
@@ -250,7 +252,7 @@ test('handleRequestCsv() should return a response 200', function () {
         ],
     ];
 
-    $listing = factoryListing(['listing' => $data]);
+    $listing = $before($this, ['listing' => $data]);
 
     expect($listing->handleRequest(['collectionName' => 'User.csv']))
         ->toBeArray()
@@ -296,7 +298,7 @@ test('checkIp() should check the clientIp in the ip-whitelist-rules', function (
         ->makePartial()
         ->shouldAllowMockingProtectedMethods();
 
-    invokeProperty($listing, 'request', Request::createFromGlobals());
+    $this->invokeProperty($listing, 'request', Request::createFromGlobals());
 
     expect($listing->checkIp($forestApiRequester->reveal()))
         ->toBeNull();
@@ -333,8 +335,34 @@ test('checkIp() throw when the clientIp is not into the ip-whitelist-rules', fun
         ->makePartial()
         ->shouldAllowMockingProtectedMethods();
 
-    invokeProperty($listing, 'request', Request::createFromGlobals());
+    $this->invokeProperty($listing, 'request', Request::createFromGlobals());
 
     expect(fn () => $listing->checkIp($forestApiRequester->reveal()))
         ->toThrow(HttpException::class, 'IP address rejected (' . $_SERVER['REMOTE_ADDR'] . ')');
+});
+
+test('handleRequest() with search should return a response 200 with an attribute meta', function () use ($before) {
+    $_GET['search'] = '1980';
+    $_GET['searchExtended'] = '0';
+    $data = [
+        [
+            'id'         => 1,
+            'first_name' => 'John',
+            'last_name'  => 'Doe',
+            'birthday'   => '1980-01-01',
+            'active'     => true,
+        ],
+        [
+            'id'         => 2,
+            'first_name' => 'Jane',
+            'last_name'  => 'Doe',
+            'birthday'   => '1984-01-01',
+            'active'     => true,
+        ],
+    ];
+
+    $listing = $before($this, ['listing' => $data]);
+
+    expect($listing->handleRequest(['collectionName' => 'User'])['content'])
+        ->toHaveKey('meta');
 });

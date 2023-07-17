@@ -10,9 +10,10 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use Prophecy\Argument;
 use Prophecy\Prophet;
 
-function user()
-{
-    return [
+beforeEach(function () {
+    $this->buildAgent(new Datasource());
+    $_GET['renderingId'] = 1;
+    $user = [
         'id'               => 1,
         'email'            => 'john.doe@example.com',
         'first_name'       => 'John',
@@ -28,13 +29,6 @@ function user()
         'exp'              => (new \DateTime())->modify('+ 1 hour')->format('U'),
         'permission_level' => 'admin',
     ];
-}
-
-function factoryAuthentication(): Authentication
-{
-    $datasource = new Datasource();
-    buildAgent($datasource);
-
     $request = Request::createFromGlobals();
 
     $prophet = new Prophet();
@@ -46,7 +40,7 @@ function factoryAuthentication(): Authentication
 
     $auth->verifyCodeAndGenerateToken(Argument::any())
         ->shouldBeCalled()
-        ->willReturn(JWT::encode(user(), AUTH_SECRET, 'HS256'));
+        ->willReturn(JWT::encode($user, AUTH_SECRET, 'HS256'));
 
     $authentication = mock(Authentication::class)
         ->makePartial()
@@ -55,10 +49,11 @@ function factoryAuthentication(): Authentication
         ->andReturn($auth->reveal())
         ->getMock();
 
-    invokeProperty($authentication, 'request', $request);
+    $this->invokeProperty($authentication, 'request', $request);
 
-    return $authentication;
-}
+    $this->bucket['authentication'] = $authentication;
+    $this->bucket['user'] = $user;
+});
 
 test('make() should return a new instance of Authentication with routes', function () {
     $authentication = Authentication::make();
@@ -69,9 +64,7 @@ test('make() should return a new instance of Authentication with routes', functi
 });
 
 test('handleAuthentication() should return a response 200', function () {
-    $_GET['renderingId'] = 1;
-
-    $authentication = factoryAuthentication();
+    $authentication = $this->bucket['authentication'];
 
     expect($authentication->handleAuthentication())
         ->toBeArray()
@@ -85,9 +78,8 @@ test('handleAuthentication() should return a response 200', function () {
 });
 
 test('handleAuthenticationCallback() should return a response 200', function () {
-    $_GET['renderingId'] = 1;
-    $authentication = factoryAuthentication();
-    $token = JWT::encode(user(), AUTH_SECRET, 'HS256');
+    $authentication = $this->bucket['authentication'];
+    $token = JWT::encode($this->bucket['user'], AUTH_SECRET, 'HS256');
 
     expect($authentication->handleAuthenticationCallback())
         ->toBeArray()
@@ -102,8 +94,7 @@ test('handleAuthenticationCallback() should return a response 200', function () 
 });
 
 test('handleAuthenticationLogout() should return a 204 response', function () {
-    $_GET['renderingId'] = 1;
-    $authentication = factoryAuthentication();
+    $authentication = $this->bucket['authentication'];
 
     expect($authentication->handleAuthenticationLogout())
         ->toBeArray()
@@ -116,16 +107,16 @@ test('handleAuthenticationLogout() should return a 204 response', function () {
 });
 
 test('auth() should return an AuthManager instance', function () {
-    $_GET['renderingId'] = 1;
-    $authentication = factoryAuthentication();
+    $authentication = $this->bucket['authentication'];
 
     expect($authentication->auth())->toBeInstanceOf(AuthManager::class);
 });
 
 test('handleRequest() throw when renderingId is missing', function () {
     $_GET['renderingId'] = null;
+    $authentication = $this->bucket['authentication'];
+    $this->invokeProperty($authentication, 'request', Request::createFromGlobals());
 
-    $authentication = factoryAuthentication();
 
     expect(fn () => $authentication->handleAuthentication())
         ->toThrow(ErrorException::class, ErrorMessages::MISSING_RENDERING_ID);
@@ -133,8 +124,8 @@ test('handleRequest() throw when renderingId is missing', function () {
 
 test('handleRequest() throw when renderingId is not a numeric value', function () {
     $_GET['renderingId'] = 'foo';
-
-    $authentication = factoryAuthentication();
+    $authentication = $this->bucket['authentication'];
+    $this->invokeProperty($authentication, 'request', Request::createFromGlobals());
 
     expect(fn () => $authentication->handleAuthentication())
         ->toThrow(ErrorException::class, ErrorMessages::INVALID_RENDERING_ID);

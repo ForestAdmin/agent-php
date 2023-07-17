@@ -22,7 +22,7 @@ test('addDatasource() should add datasource to the datasourceCustomizer', functi
     $agentFactory = new AgentFactory(AGENT_OPTIONS);
     $agentFactory->addDatasource($datasource);
     /** @var DatasourceCustomizer $customizer */
-    $customizer = invokeProperty($agentFactory, 'customizer');
+    $customizer = $this->invokeProperty($agentFactory, 'customizer');
 
     expect($customizer->getStack()->dataSource->getCollections()->first()->getName())
         ->toEqual('User');
@@ -84,9 +84,9 @@ test('customizeCollection() should work', function () {
     $datasource->addCollection($collectionUser);
     $agent = new AgentFactory(AGENT_OPTIONS);
     $spy = Mockery::spy(DatasourceCustomizer::class);
-    invokeProperty($agent, 'customizer', $spy);
+    $this->invokeProperty($agent, 'customizer', $spy);
     $agent->customizeCollection('name', fn () => true);
-    $spy = invokeProperty($agent, 'customizer');
+    $spy = $this->invokeProperty($agent, 'customizer');
 
     $spy->shouldHaveReceived('customizeCollection');
 });
@@ -104,9 +104,9 @@ test('addChart() should work', function () {
     $datasource->addCollection($collectionUser);
     $agent = new AgentFactory(AGENT_OPTIONS);
     $spy = Mockery::spy(DatasourceCustomizer::class);
-    invokeProperty($agent, 'customizer', $spy);
+    $this->invokeProperty($agent, 'customizer', $spy);
     $agent->addChart('myChart', fn () => true);
-    $spy = invokeProperty($agent, 'customizer');
+    $spy = $this->invokeProperty($agent, 'customizer');
 
     $spy->shouldHaveReceived('addChart');
 });
@@ -118,9 +118,9 @@ test('use() should work', function () {
 
     $agent = new AgentFactory(AGENT_OPTIONS);
     $spy = Mockery::spy(DatasourceCustomizer::class);
-    invokeProperty($agent, 'customizer', $spy);
+    $this->invokeProperty($agent, 'customizer', $spy);
     $agent->use('MyFakePlugin');
-    $spy = invokeProperty($agent, 'customizer');
+    $spy = $this->invokeProperty($agent, 'customizer');
 
     $spy->shouldHaveReceived('use');
 });

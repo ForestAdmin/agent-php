@@ -16,7 +16,7 @@ test('executeBefore() should call all of them when multiple before hooks are def
     $firstHook = Mockery::spy(fn () => true);
     $secondHook = Mockery::spy(fn () => true);
     $hooks = new Hooks();
-    invokeProperty($hooks, 'before', [$firstHook, $secondHook]);
+    $this->invokeProperty($hooks, 'before', [$firstHook, $secondHook]);
 
     $hooks->executeBefore(new HookContext($collection, $caller));
 
@@ -29,7 +29,7 @@ test('executeBefore() it should prevent the second hook to run when the first ho
     $firstHook = Mockery::spy(fn () => throw new Exception());
     $secondHook = Mockery::spy(fn () => true);
     $hooks = new Hooks();
-    invokeProperty($hooks, 'before', [$firstHook, $secondHook]);
+    $this->invokeProperty($hooks, 'before', [$firstHook, $secondHook]);
 
     expect(fn () => $hooks->executeBefore(new HookContext($collection, $caller)))->toThrow(Exception::class);
     $secondHook->shouldNotHaveBeenCalled();
@@ -39,7 +39,7 @@ test('executeBefore() it should not call the hook when after hook is defined', f
     global $collection;
     $firstHook = Mockery::spy(fn () => throw new Exception());
     $hooks = new Hooks();
-    invokeProperty($hooks, 'after', [$firstHook]);
+    $this->invokeProperty($hooks, 'after', [$firstHook]);
 
     $hooks->executeBefore(new HookContext($collection, $caller));
 
@@ -51,7 +51,7 @@ test('executeAfter() should call all of them when multiple after hooks are defin
     $firstHook = Mockery::spy(fn () => true);
     $secondHook = Mockery::spy(fn () => true);
     $hooks = new Hooks();
-    invokeProperty($hooks, 'after', [$firstHook, $secondHook]);
+    $this->invokeProperty($hooks, 'after', [$firstHook, $secondHook]);
 
     $hooks->executeAfter(new HookContext($collection, $caller));
 
@@ -64,7 +64,7 @@ test('executeAfter() it should prevent the second hook to run when the first hoo
     $firstHook = Mockery::spy(fn () => throw new Exception());
     $secondHook = Mockery::spy(fn () => true);
     $hooks = new Hooks();
-    invokeProperty($hooks, 'after', [$firstHook, $secondHook]);
+    $this->invokeProperty($hooks, 'after', [$firstHook, $secondHook]);
 
     expect(fn () => $hooks->executeAfter(new HookContext($collection, $caller)))->toThrow(Exception::class);
     $secondHook->shouldNotHaveBeenCalled();
@@ -74,7 +74,7 @@ test('executeAfter() it should not call the hook when before hook is defined', f
     global $collection;
     $firstHook = Mockery::spy(fn () => throw new Exception());
     $hooks = new Hooks();
-    invokeProperty($hooks, 'before', [$firstHook]);
+    $this->invokeProperty($hooks, 'before', [$firstHook]);
 
     $hooks->executeAfter(new HookContext($collection, $caller));
 

@@ -6,15 +6,9 @@ use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\ForestSchema;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Serializer\JsonApiSerializer;
-
 use ForestAdmin\AgentPHP\Agent\Serializer\Transformers\BasicArrayTransformer;
-
 use ForestAdmin\AgentPHP\Agent\Utils\Id as IdUtils;
-
-
-
 use Illuminate\Support\Str;
-
 use League\Fractal\Manager;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\Item;

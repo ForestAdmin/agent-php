@@ -17,6 +17,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Carbon;
 
@@ -27,14 +28,17 @@ const TIMEZONE = 'Europe/Paris';
 beforeEach(function () {
     testTime()->freeze(Carbon::now(TIMEZONE));
     global $datasource, $bookCollection, $reviewCollection, $bookReviewCollection, $userCollection;
-    $datasource = new BaseDatasource(
-        [
-            'driver'   => 'sqlite',
-            'database' => ':memory:',
-        ]
-    );
+    $this->initDatabase();
+    $datasource = new BaseDatasource(TestCase::DB_CONFIG);
 
     $bookCollection = new BaseCollection($datasource, 'Book', 'books');
+    $this->invokeProperty($bookCollection, 'fields', collect());
+    $bookCollection = mock($bookCollection)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('fetchFieldsFromTable')
+        ->andReturn(['columns' => [], 'primaries' => []])
+        ->getMock();
     $bookCollection->addFields(
         [
             'id'           => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
@@ -58,6 +62,13 @@ beforeEach(function () {
     );
 
     $userCollection = new BaseCollection($datasource, 'User', 'users');
+    $this->invokeProperty($userCollection, 'fields', collect());
+    $userCollection = mock($userCollection)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('fetchFieldsFromTable')
+        ->andReturn(['columns' => [], 'primaries' => []])
+        ->getMock();
     $userCollection->addFields(
         [
             'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
@@ -72,6 +83,13 @@ beforeEach(function () {
     );
 
     $reviewCollection = new BaseCollection($datasource, 'Review', 'reviews');
+    $this->invokeProperty($reviewCollection, 'fields', collect());
+    $reviewCollection = mock($reviewCollection)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('fetchFieldsFromTable')
+        ->andReturn(['columns' => [], 'primaries' => []])
+        ->getMock();
     $reviewCollection->addFields(
         [
             'id'     => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
@@ -81,6 +99,13 @@ beforeEach(function () {
     );
 
     $bookReviewCollection = new BaseCollection($datasource, 'BookReview', 'book_review');
+    $this->invokeProperty($bookReviewCollection, 'fields', collect());
+    $bookReviewCollection = mock($bookReviewCollection)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('fetchFieldsFromTable')
+        ->andReturn(['columns' => [], 'primaries' => []])
+        ->getMock();
     $bookReviewCollection->addFields(
         [
             'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
@@ -183,14 +208,14 @@ test('QueryConverter should add the join with ManyToOne relation', function () {
         ->getQuery();
 
     expect($query->joins)->toHaveCount(1)
-        ->and($query->joins[0]->table)->toEqual('reviews as reviews')
+        ->and($query->joins[0]->table)->toEqual('reviews as review')
         ->and($query->joins[0]->wheres)->toHaveCount(1)
         ->and($query->joins[0]->wheres[0])->toEqual(
             [
                 "type"     => "Column",
                 "first"    => "book_review.review_id",
                 "operator" => "=",
-                "second"   => "reviews.id",
+                "second"   => "review.id",
                 "boolean"  => "and",
             ]
         );
@@ -261,7 +286,7 @@ test('QueryConverter apply conditionTree should add join with nested field', fun
         ->and($query->joins[0])
         ->toBeInstanceOf(JoinClause::class)
         ->and($query->joins[0]->table)
-        ->toEqual('users as users')
+        ->toEqual('users as author')
         ->and($query->joins[0]->type)
         ->toEqual('left')
         ->and($query->joins[0]->wheres)
@@ -271,7 +296,7 @@ test('QueryConverter apply conditionTree should add join with nested field', fun
             'type'     => 'Column',
             'first'    => 'books.author_id',
             'operator' => '=',
-            'second'   => 'users.id',
+            'second'   => 'author.id',
             'boolean'  => 'and',
         ]);
 });

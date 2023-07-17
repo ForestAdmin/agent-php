@@ -35,24 +35,22 @@ class DecoratorsStack
     public DatasourceDecorator $segment;
     public DatasourceDecorator $sort;
     public DatasourceDecorator $relation;
+    public ChartDataSourceDecorator $chart;
     public DatasourceDecorator $action;
     public DatasourceDecorator $schema;
     public DatasourceDecorator $write;
-    public DatasourceContract $validation;
-    public ChartDataSourceDecorator $chart;
-    public DatasourceDecorator $renameField;
-    public DatasourceDecorator $publication;
     public DatasourceDecorator $hook;
+    public DatasourceContract $validation;
     public DatasourceDecorator $binary;
+    public DatasourceDecorator $publication;
+    public DatasourceDecorator $renameField;
 
     public function __construct(DatasourceContract $dataSource)
     {
         $last = &$dataSource;
 
-        $last = $this->empty = new DatasourceDecorator($last, EmptyCollection::class);
-
         // Step 0: Do not query datasource when we know the result with yield an empty set.
-        // last = this.empty = new DataSourceDecorator(last, EmptyCollectionDecorator);
+        $last = $this->empty = new DatasourceDecorator($last, EmptyCollection::class);
 
         // Step 1: Computed-Relation-Computed sandwich (needed because some emulated relations depend
         // on computed fields, and some computed fields depend on relation...)

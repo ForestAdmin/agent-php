@@ -2,24 +2,11 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceDoctrine\Utils;
 
+use ForestAdmin\AgentPHP\BaseDatasource\Utils\DataTypes as BaseDataTypes;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-class DataTypes
+class DataTypes extends BaseDataTypes
 {
-    public static function getType(string $type): string
-    {
-        return match ($type) {
-            'binary', 'blob'                 => PrimitiveType::BINARY,
-            'integer', 'float'               => PrimitiveType::NUMBER,
-            'date'                           => PrimitiveType::DATEONLY,
-            'datetime_immutable', 'datetime' => PrimitiveType::DATE,
-            'boolean'                        => PrimitiveType::BOOLEAN,
-            'time'                           => PrimitiveType::TIMEONLY,
-            'json'                           => PrimitiveType::JSON,
-            default                          => PrimitiveType::STRING,
-        };
-    }
-
     public static function renderValue(string $originalType, $content)
     {
         $type = self::getType($originalType);

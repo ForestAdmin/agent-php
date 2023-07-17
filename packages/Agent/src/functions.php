@@ -4,6 +4,8 @@ namespace ForestAdmin;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 
+// @codeCoverageIgnoreStart
+
 if (! function_exists(__NAMESPACE__ . '\cache')) {
     function cache(string $key, $value = null, ?int $ttl = 60)
     {
@@ -53,3 +55,5 @@ if (! function_exists(__NAMESPACE__ . '\config')) {
         return null;
     }
 }
+
+// @codeCoverageIgnoreEnd

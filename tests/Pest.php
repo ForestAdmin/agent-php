@@ -1,12 +1,8 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
-use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use Illuminate\Database\Connection;
-use Illuminate\Database\Schema\Blueprint;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 
 const BEARER = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZW1haWwiOiJqb2huLmRvZUBkb21haW4uY29tIiwiZmlyc3ROYW1lIjoiSm9obiIsImxhc3ROYW1lIjoiRG9lIiwidGVhbSI6IkRldmVsb3BlcnMiLCJyZW5kZXJpbmdJZCI6IjEwIiwidGFncyI6eyJzb21ldGhpbmciOiJ0YWdWYWx1ZSJ9LCJ0aW1lem9uZSI6IkV1cm9wZS9QYXJpcyIsInBlcm1pc3Npb25MZXZlbCI6ImFkbWluIn0.yCAGVg2Ef4a6uDbM6_VjlFobFwACJnyFtjkbo5lkEi4';
 
@@ -26,6 +22,15 @@ define("AGENT_OPTIONS", [
     'permissionExpiration'  => FOREST_PERMISSIONS_EXPIRATION_IN_SECONDS,
 ]);
 
+uses(TestCase::class)->in(
+    'Agent',
+    'DatasourceCustomizer',
+    'DatasourceToolkit',
+    'DatasourceDoctrine',
+    'DatasourceEloquent',
+    'BaseDatasource'
+);
+
 uses()
     ->beforeEach(
         function () {
@@ -36,108 +41,5 @@ uses()
 
             $_GET = [];
             $_POST = [];
-
-            Cache::put('forest.has_permission', true, 10);
         }
-    )->in('Agent', 'DatasourceToolkit');
-
-/**
- * Call protected/private property of a class.
- * @param object $object
- * @param string $propertyName
- * @param null   $setData
- * @return mixed
- * @throws \ReflectionException
- */
-function invokeProperty(object &$object, string $propertyName, $setData = null)
-{
-    $reflection = new \ReflectionClass(get_class($object));
-    $property = $reflection->getProperty($propertyName);
-    $property->setAccessible(true);
-
-    if (! is_null($setData)) {
-        $property->setValue($object, $setData);
-    }
-
-    return $property->getValue($object);
-}
-
-/**
- * Call protected/private method of a class.
- * @param object $object
- * @param string $methodName
- * @param array  $parameters
- * @return mixed
- * @throws \ReflectionException
- */
-function invokeMethod(object &$object, string $methodName, array $parameters = [])
-{
-    $reflection = new \ReflectionClass(get_class($object));
-    $method = $reflection->getMethod($methodName);
-    $method->setAccessible(true);
-
-    return $method->invokeArgs($object, $parameters);
-}
-
-
-function buildAgent(Datasource $datasource, array $options = [])
-{
-    $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
-    $_GET['timezone'] = 'Europe/Paris';
-
-    $options = array_merge(
-        AGENT_OPTIONS,
-        $options
-    );
-
-    $agent = new AgentFactory($options, []);
-    $container = AgentFactory::getContainer();
-    $container->set('datasource', $datasource);
-    invokeProperty($agent, 'container', $container);
-
-    return $agent;
-}
-
-function migrateAndSeed(Connection $connection): void
-{
-    $schema = $connection->getSchemaBuilder();
-    $schema->dropAllTables();
-
-    $schema->create(
-        'users',
-        function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamps();
-        }
-    );
-    $schema->create(
-        'books',
-        function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->integer('price');
-            $table->foreignId('author_id')->constrained('users')->onDelete('cascade');
-            $table->dateTime('published_at')->nullable();
-            $table->timestamps();
-        }
-    );
-
-    $connection->table('users')->insert(
-        [
-            ['name' => 'user1', 'email' => 'user1@gmail.com'],
-            ['name' => 'user2', 'email' => 'user2@gmail.com'],
-            ['name' => 'user3', 'email' => 'user3@gmail.com'],
-        ]
-    );
-
-    $connection->table('books')->insert(
-        [
-            ['title' => 'book1', 'price' => '10', 'published_at' => date('c'), 'author_id' => 1],
-            ['title' => 'book2', 'price' => '10', 'published_at' => date('c'), 'author_id' => 2],
-            ['title' => 'book3', 'price' => '10', 'published_at' => date('c'), 'author_id' => 3],
-            ['title' => 'book4', 'price' => '10', 'published_at' => date('c'), 'author_id' => 1],
-        ]
-    );
-}
+    )->in('Agent', 'DatasourceToolkit', 'DatasourceDoctrine', 'DatasourceEloquent', 'BaseDatasource', 'DatasourceCustomizer');

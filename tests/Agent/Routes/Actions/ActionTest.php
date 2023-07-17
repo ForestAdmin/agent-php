@@ -1,5 +1,6 @@
 <?php
 
+use Firebase\JWT\JWT;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Actions\Actions;
@@ -20,9 +21,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 
+use ForestAdmin\AgentPHP\Tests\TestCase;
+
 use function ForestAdmin\config;
 
-function factoryAction($smartAction): Actions
+function factoryAction(TestCase $testCase, $smartAction): Actions
 {
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
@@ -54,7 +57,7 @@ function factoryAction($smartAction): Actions
 
     $datasource->addCollection($collectionCategory);
     $datasource->addCollection($collectionUser);
-    buildAgent($datasource);
+    $testCase->buildAgent($datasource);
 
     $datasourceDecorator = new DatasourceDecorator($datasource, ActionCollection::class);
     $datasourceDecorator->build();
@@ -175,12 +178,12 @@ function factoryAction($smartAction): Actions
         ->getMock();
 
     $request = Request::createFromGlobals();
-    invokeProperty($permissions, 'caller', QueryStringParser::parseCaller($request));
+    $testCase->invokeProperty($permissions, 'caller', QueryStringParser::parseCaller($request));
 
-    invokeProperty($action, 'caller', QueryStringParser::parseCaller($request));
-    invokeProperty($action, 'actionName', 'my action');
-    invokeProperty($action, 'permissions', $permissions);
-    invokeProperty($action, 'collection', $collection);
+    $testCase->invokeProperty($action, 'caller', QueryStringParser::parseCaller($request));
+    $testCase->invokeProperty($action, 'actionName', 'my action');
+    $testCase->invokeProperty($action, 'permissions', $permissions);
+    $testCase->invokeProperty($action, 'collection', $collection);
 
     return $action;
 }
@@ -189,7 +192,7 @@ test('when a action is create, the action route should return the appropriate ro
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
     $datasource->addCollection($collectionUser);
-    buildAgent($datasource);
+    $this->buildAgent($datasource);
 
     $datasourceDecorator = new DatasourceDecorator($datasource, ActionCollection::class);
     $datasourceDecorator->build();
@@ -232,7 +235,7 @@ test('handleRequest should return the result of an action', function () {
         'my action',
         new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')),
     ];
-    $action = factoryAction($smartAction);
+    $action = factoryAction($this, $smartAction);
 
     $data = [
         'data' => [
@@ -259,8 +262,49 @@ test('handleRequest should return the result of an action', function () {
 
     $_POST = $data;
 
-    invokeProperty($action, 'request', Request::createFromGlobals());
-    invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
+    $this->invokeProperty($action, 'request', Request::createFromGlobals());
+    $this->invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
+
+    expect($action->handleRequest(['collectionName' => 'User']))->toEqual((new ResultBuilder())->success('BRAVO'));
+});
+
+test('handleRequest with signed approval request should put the decoded request to the request class', function () {
+    $type = 'SINGLE';
+    $smartAction = [
+        'my action',
+        new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')),
+    ];
+    $action = factoryAction($this, $smartAction);
+
+    $data = [
+        'data' => [
+            'attributes' => [
+                'values'                   => [],
+                'ids'                      => [
+                    '50',
+                ],
+                'collection_name'          => 'User',
+                'parent_collection_name'   => null,
+                'parent_collection_id'     => null,
+                'parent_association_name'  => null,
+                'all_records'              => false,
+                'all_records_subset_query' => [
+                    'timezone' => 'Europe/Paris',
+                ],
+                'all_records_ids_excluded' => [],
+                'smart_action_id'          => 'User-my@@@action',
+                'signed_approval_request'  => null,
+            ],
+            'type'       => 'custom-action-requests',
+        ],
+    ];
+    $encodedRequest = JWT::encode($data, config('envSecret'), 'HS256');
+    $data['data']['attributes']['signed_approval_request'] = $encodedRequest;
+
+    $_POST = $data;
+
+    $this->invokeProperty($action, 'request', Request::createFromGlobals());
+    $this->invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
 
     expect($action->handleRequest(['collectionName' => 'User']))->toEqual((new ResultBuilder())->success('BRAVO'));
 });
@@ -286,7 +330,7 @@ test('handleHookRequest should return the result of an action', function () {
             ]
         ),
     ];
-    $action = factoryAction($smartAction);
+    $action = factoryAction($this, $smartAction);
 
     $data = [
         'data' => [
@@ -327,8 +371,8 @@ test('handleHookRequest should return the result of an action', function () {
     ];
 
     $_POST = $data;
-    invokeProperty($action, 'request', Request::createFromGlobals());
-    invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
+    $this->invokeProperty($action, 'request', Request::createFromGlobals());
+    $this->invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
 
 
     expect($action->handleHookRequest(['collectionName' => 'User']))->toBeArray()
@@ -379,7 +423,7 @@ test('handleHookRequest should return the result of an action on a association',
             ]
         ),
     ];
-    $action = factoryAction($smartAction);
+    $action = factoryAction($this, $smartAction);
 
     $data = [
         'data' => [
@@ -420,8 +464,8 @@ test('handleHookRequest should return the result of an action on a association',
     ];
 
     $_POST = $data;
-    invokeProperty($action, 'request', Request::createFromGlobals());
-    invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
+    $this->invokeProperty($action, 'request', Request::createFromGlobals());
+    $this->invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
 
     expect($action->handleHookRequest(['collectionName' => 'User']))->toBeArray()
         ->and($action->handleHookRequest(['collectionName' => 'User']))->toHaveKey('content')

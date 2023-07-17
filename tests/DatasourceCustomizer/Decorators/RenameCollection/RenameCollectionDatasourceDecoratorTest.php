@@ -9,43 +9,44 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
-function factoryRenameCollectionDatasourceDecoratorCollection()
-{
-    $datasource = new Datasource();
-    $collectionBook = new Collection($datasource, 'Book');
-    $collectionBook->addFields(
-        [
-            'id'           => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'authorId'     => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true, isSortable: true),
-            'author'       => new ManyToOneSchema(
-                foreignKey: 'authorId',
-                foreignKeyTarget: 'id',
-                foreignCollection: 'Person',
-            ),
-        ]
-    );
+\Ozzie\Nest\describe('RenameCollectionDatasourceDecorator', function () {
+    beforeEach(function () {
+        $datasource = new Datasource();
+        $collectionBook = new Collection($datasource, 'Book');
+        $collectionBook->addFields(
+            [
+                'id'           => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'authorId'     => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true, isSortable: true),
+                'author'       => new ManyToOneSchema(
+                    foreignKey: 'authorId',
+                    foreignKeyTarget: 'id',
+                    foreignCollection: 'Person',
+                ),
+            ]
+        );
 
-    $collectionPerson = new Collection($datasource, 'Person');
-    $collectionPerson->addFields(
-        [
-            'id'           => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'book'         => new OneToOneSchema(
-                originKey: 'authorId',
-                originKeyTarget: 'id',
-                foreignCollection: 'Book',
-            ),
-        ]
-    );
+        $collectionPerson = new Collection($datasource, 'Person');
+        $collectionPerson->addFields(
+            [
+                'id'           => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'book'         => new OneToOneSchema(
+                    originKey: 'authorId',
+                    originKeyTarget: 'id',
+                    foreignCollection: 'Book',
+                ),
+            ]
+        );
 
-    $datasource->addCollection($collectionBook);
-    $datasource->addCollection($collectionPerson);
-    buildAgent($datasource);
+        $datasource->addCollection($collectionBook);
+        $datasource->addCollection($collectionPerson);
+        $this->buildAgent($datasource);
 
-    return $datasource;
-}
+        $this->bucket = compact('datasource');
+    });
+});
 
 test('replaceSearch() should return the real name when it is not renamed', function () {
-    $datasource = factoryRenameCollectionDatasourceDecoratorCollection();
+    $datasource = $this->bucket['datasource'];
     $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
     $decoratedDataSource->build();
 
@@ -53,7 +54,7 @@ test('replaceSearch() should return the real name when it is not renamed', funct
 });
 
 test('renameCollections() should rename a collection when the rename option is given', function () {
-    $datasource = factoryRenameCollectionDatasourceDecoratorCollection();
+    $datasource = $this->bucket['datasource'];
     $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
     $decoratedDataSource->build();
     $decoratedDataSource->renameCollections(['Person' => 'User']);
@@ -65,7 +66,7 @@ test('renameCollections() should rename a collection when the rename option is g
 });
 
 test('renameCollections() should throw an error if the given new name is already used', function () {
-    $datasource = factoryRenameCollectionDatasourceDecoratorCollection();
+    $datasource = $this->bucket['datasource'];
     $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
     $decoratedDataSource->build();
 
@@ -74,7 +75,7 @@ test('renameCollections() should throw an error if the given new name is already
 });
 
 test('renameCollections() should throw an error if the given old name does not exist', function () {
-    $datasource = factoryRenameCollectionDatasourceDecoratorCollection();
+    $datasource = $this->bucket['datasource'];
     $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
     $decoratedDataSource->build();
 

@@ -10,73 +10,95 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 
-function factoryWriteSimpleCollection($data = [])
-{
-    $datasource = new Datasource();
-    $collectionBook = new Collection($datasource, 'Book');
-    $collectionBook->addFields(
-        [
-            'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true, isReadOnly: true),
-            'title' => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::LONGER_THAN, Operators::PRESENT]),
-        ]
-    );
+\Ozzie\Nest\describe('WriteSimpleCollection', function () {
+    $before = static function (TestCase $testCase, $data = []) {
+        $datasource = new Datasource();
+        $collectionBook = new Collection($datasource, 'Book');
+        $collectionBook->addFields(
+            [
+                'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true, isReadOnly: true),
+                'title' => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::LONGER_THAN, Operators::PRESENT]),
+            ]
+        );
 
-    if (isset($data['book'])) {
-        $collectionBook = mock($collectionBook)
-            ->makePartial()
-            ->shouldReceive('create')
-            ->andReturn($data['book'])
-            ->getMock();
-    }
+        if (isset($data['book'])) {
+            $collectionBook = mock($collectionBook)
+                ->makePartial()
+                ->shouldReceive('create')
+                ->andReturn($data['book'])
+                ->getMock();
+        }
 
-    $datasource->addCollection($collectionBook);
-    buildAgent($datasource);
+        $datasource->addCollection($collectionBook);
+        $testCase->buildAgent($datasource);
 
-    $datasourceDecorator = new WriteDataSourceDecorator($datasource);
-    $datasourceDecorator->build();
+        $datasourceDecorator = new WriteDataSourceDecorator($datasource);
+        $datasourceDecorator->build();
 
-    $newBook = $datasourceDecorator->getCollection('Book');
+        $newBook = $datasourceDecorator->getCollection('Book');
 
-    return $newBook;
-}
+        $testCase->bucket['newBook'] = $newBook;
+    };
 
-test('replaceFieldWriting() should work on create', function (Caller $caller) {
-    $data = [
-        'book' => [
+    test('replaceFieldWriting() should work on create', function (Caller $caller) use ($before) {
+        $data = [
+            'book' => [
+                'id'    => 1,
+                'title' => 'another value',
+            ],
+        ];
+        $before($this, $data);
+        /** @var WriteReplaceCollection $newAuthor */
+        $newBook = $this->bucket['newBook'];
+
+        $newBook->replaceFieldWriting('title', fn ($value) => ['title' => 'another value']);
+
+        expect($newBook->create($caller, [
+            'title' => 'my value',
+        ]))->toEqual([
             'id'    => 1,
             'title' => 'another value',
-        ],
-    ];
-    /** @var WriteReplaceCollection $newAuthor */
-    $newBook = factoryWriteSimpleCollection($data);
+        ]);
+    })->with('caller');
 
-    $newBook->replaceFieldWriting('title', fn ($value) => ['title' => 'another value']);
+    test('replaceFieldWriting() should work on update', function (Caller $caller) use ($before) {
+        $data = [
+            'book' => [
+                'id'    => 1,
+                'title' => 'another value',
+            ],
+        ];
+        $before($this, $data);
+        /** @var WriteReplaceCollection $newAuthor */
+        $newBook = $this->bucket['newBook'];
+        $newBook->replaceFieldWriting('title', fn ($value) => ['title' => 'another value']);
 
-    expect($newBook->create($caller, [
-        'title' => 'my value',
-    ]))->toEqual([
-        'id'    => 1,
-        'title' => 'another value',
-    ]);
-})->with('caller');
+        expect($newBook->update(
+            $caller,
+            new Filter(new ConditionTreeLeaf('id', Operators::EQUAL, 1)),
+            ['title' => 'my value']
+        ))->toBeNull();
+    })->with('caller');
 
-test('replaceFieldWriting() should work on update', function (Caller $caller) {
-    $data = [
-        'book' => [
-            'id'    => 1,
-            'title' => 'another value',
-        ],
-    ];
-    /** @var WriteReplaceCollection $newAuthor */
-    $newBook = factoryWriteSimpleCollection($data);
-    $newBook->replaceFieldWriting('title', fn ($value) => ['title' => 'another value']);
+    test('replaceFieldWriting() should throw when the field is unknown', function (Caller $caller) use ($before) {
+        $data = [
+            'book' => [
+                'id'    => 1,
+                'title' => 'another value',
+            ],
+        ];
+        $before($this, $data);
+        /** @var WriteReplaceCollection $newAuthor */
+        $newBook = $this->bucket['newBook'];
+        $newBook->replaceFieldWriting('title', fn ($value) => ['fakeField' => 'another value']);
 
-    expect($newBook->update(
-        $caller,
-        new Filter(new ConditionTreeLeaf('id', Operators::EQUAL, 1)),
-        ['title' => 'my value']
-    ))->toBeNull();
-})->with('caller');
+        expect(fn () => $newBook->create($caller, [
+            'title' => 'my value',
+        ]))->toThrow(ForestException::class, '🌳🌳🌳 Unknown field : fakeField');
+    })->with('caller');
+});

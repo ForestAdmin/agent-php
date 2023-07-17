@@ -9,10 +9,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
+use ForestAdmin\AgentPHP\Tests\TestCase;
+
 use function ForestAdmin\config;
 
-function factoryDestroy(): Destroy
-{
+$before = static function (TestCase $testCase) {
     $datasource = new Datasource();
     $collectionCar = new Collection($datasource, 'Car');
     $collectionCar->addFields(
@@ -24,7 +25,7 @@ function factoryDestroy(): Destroy
     );
 
     $datasource->addCollection($collectionCar);
-    buildAgent($datasource);
+    $testCase->buildAgent($datasource);
 
     $request = Request::createFromGlobals();
     Cache::put(
@@ -74,10 +75,10 @@ function factoryDestroy(): Destroy
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($destroy, 'request', $request);
+    $testCase->invokeProperty($destroy, 'request', $request);
 
     return $destroy;
-}
+};
 
 test('make() should return a new instance of Destroy with routes', function () {
     $destroy = Destroy::make();
@@ -86,8 +87,8 @@ test('make() should return a new instance of Destroy with routes', function () {
         ->and($destroy->getRoutes())->toHaveKey('forest.destroy');
 });
 
-test('handleRequest() should return a response 200', function () {
-    $destroy = factoryDestroy();
+test('handleRequest() should return a response 200', function () use ($before) {
+    $destroy = $before($this);
 
     expect($destroy->handleRequest(['collectionName' => 'Car', 'id' => 1]))
         ->toBeArray()
@@ -99,7 +100,7 @@ test('handleRequest() should return a response 200', function () {
         );
 });
 
-test('handleRequestBulk() should return a response 200', function () {
+test('handleRequestBulk() should return a response 200', function () use ($before) {
     $_GET['data'] = [
         'attributes' => [
             'ids'                      => ['1', '2', '3'],
@@ -119,7 +120,7 @@ test('handleRequestBulk() should return a response 200', function () {
         'type'       => 'action-requests',
     ];
 
-    $destroy = factoryDestroy();
+    $destroy = $before($this);
 
     expect($destroy->handleRequestBulk(['collectionName' => 'Car']))
         ->toBeArray()

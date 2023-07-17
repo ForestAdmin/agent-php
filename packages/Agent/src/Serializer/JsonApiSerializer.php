@@ -51,10 +51,6 @@ class JsonApiSerializer extends FractalJsonApiSerializer
      */
     public function injectAvailableIncludeData(array $data, array $availableIncludes): array
     {
-        if (! $this->shouldIncludeLinks()) {
-            return $data;
-        }
-
         if ($this->isCollection($data)) {
             $data['data'] = array_map(function ($resource) use ($availableIncludes) {
                 foreach ($availableIncludes as $relationshipKey) {

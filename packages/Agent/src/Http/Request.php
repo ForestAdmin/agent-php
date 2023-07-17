@@ -15,7 +15,7 @@ class Request extends SymfonyRequest
     public static function createFromGlobals(): static
     {
         $input = file_get_contents('php://input');
-        $json = $input ? json_decode($input, true, 512, JSON_THROW_ON_ERROR) : [];
+        $json = json_decode($input, true, 512) ?? [];
 
         // fill $_POST with the body json content
         $_POST = array_merge($_POST, $json);

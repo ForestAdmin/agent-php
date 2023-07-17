@@ -15,6 +15,7 @@
             <directory suffix=".php">./packages/BaseDatasource/src</directory>
             <directory suffix=".php">./packages/DatasourceCustomizer/src</directory>
             <directory suffix=".php">./packages/DatasourceDoctrine/src</directory>
+            <directory suffix=".php">./packages/DatasourceEloquent/src</directory>
             <directory suffix=".php">./packages/DatasourceToolkit/src</directory>
         </include>
     </coverage>

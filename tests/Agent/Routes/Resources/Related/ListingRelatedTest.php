@@ -14,10 +14,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 
+use ForestAdmin\AgentPHP\Tests\TestCase;
+
 use function ForestAdmin\config;
 
-function factoryListingRelated($args = []): ListingRelated
-{
+$before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
     $collectionUser->addFields(
@@ -59,7 +60,7 @@ function factoryListingRelated($args = []): ListingRelated
 
     $datasource->addCollection($collectionUser);
     $datasource->addCollection($collectionCar);
-    buildAgent($datasource);
+    $testCase->buildAgent($datasource);
 
     SchemaEmitter::getSerializedSchema($datasource);
 
@@ -116,10 +117,10 @@ function factoryListingRelated($args = []): ListingRelated
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($listing, 'request', $request);
+    $testCase->invokeProperty($listing, 'request', $request);
 
     return $listing;
-}
+};
 
 test('make() should return a new instance of ListingRelated with routes', function () {
     $listing = ListingRelated::make();
@@ -128,7 +129,7 @@ test('make() should return a new instance of ListingRelated with routes', functi
         ->and($listing->getRoutes())->toHaveKey('forest.related.list');
 });
 
-test('handleRequest() should return a response 200', function () {
+test('handleRequest() should return a response 200', function () use ($before) {
     $data = [
         [
             'id'      => 1,
@@ -143,7 +144,7 @@ test('handleRequest() should return a response 200', function () {
             'user_id' => 1,
         ],
     ];
-    $listing = factoryListingRelated(['listing' => $data]);
+    $listing = $before($this, ['listing' => $data]);
 
     expect($listing->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'cars']))
         ->toBeArray()
@@ -175,7 +176,7 @@ test('handleRequest() should return a response 200', function () {
         );
 });
 
-test('handleRequestCsv() should return a response 200', function () {
+test('handleRequestCsv() should return a response 200', function () use ($before) {
     $_GET['filename'] = 'export-cars';
     $_GET['header'] = 'id,model,brand,user_id';
     $data = [
@@ -193,7 +194,7 @@ test('handleRequestCsv() should return a response 200', function () {
         ],
     ];
 
-    $listing = factoryListingRelated(['listing' => $data]);
+    $listing = $before($this, ['listing' => $data]);
 
     expect($listing->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'cars.csv']))
         ->toBeArray()

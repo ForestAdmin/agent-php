@@ -13,10 +13,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
+use ForestAdmin\AgentPHP\Tests\TestCase;
+
 use function ForestAdmin\config;
 
-function factoryUpdate($args = []): Update
-{
+$before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
     $collectionCar = new Collection($datasource, 'Car');
     $collectionCar->addFields(
@@ -39,7 +40,7 @@ function factoryUpdate($args = []): Update
     }
 
     $datasource->addCollection($collectionCar);
-    buildAgent($datasource);
+    $testCase->buildAgent($datasource);
 
     SchemaEmitter::getSerializedSchema($datasource);
     $request = Request::createFromGlobals();
@@ -91,10 +92,10 @@ function factoryUpdate($args = []): Update
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();
-    invokeProperty($update, 'request', $request);
+    $testCase->invokeProperty($update, 'request', $request);
 
     return $update;
-}
+};
 
 test('make() should return a new instance of Update with routes', function () {
     $update = Update::make();
@@ -103,7 +104,7 @@ test('make() should return a new instance of Update with routes', function () {
         ->and($update->getRoutes())->toHaveKey('forest.update');
 });
 
-test('handleRequest() should return a response 200', function () {
+test('handleRequest() should return a response 200', function () use ($before) {
     $data = [
         'id'    => 2,
         'model' => 'Murcielago',
@@ -115,7 +116,7 @@ test('handleRequest() should return a response 200', function () {
         'type'       => 'Car',
     ];
 
-    $update = factoryUpdate(['update' => $data]);
+    $update = $before($this, ['update' => $data]);
 
     expect($update->handleRequest(['collectionName' => 'Car', 'id' => 2]))
         ->toBeArray()

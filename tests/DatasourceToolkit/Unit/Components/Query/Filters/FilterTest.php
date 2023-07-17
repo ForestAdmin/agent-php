@@ -5,26 +5,24 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operat
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
-dataset('simpleFilter', function () {
+test('override() should work', function () {
     $leaf = new ConditionTreeLeaf('column', Operators::GREATER_THAN, 0);
-    yield $filter = new Filter(conditionTree: $leaf);
-});
-
-test('override() should work', function (Filter $filter) {
+    $filter = new Filter(conditionTree: $leaf);
     $newLeaf = new ConditionTreeLeaf('column', Operators::LESS_THAN, 0);
 
     expect($filter->override(conditionTree: $newLeaf))
         ->toEqual(new Filter(conditionTree: $newLeaf));
-})->with('simpleFilter');
+});
 
-test('nest() should work', function (Filter $filter) {
+test('nest() should work', function () {
+    $leaf = new ConditionTreeLeaf('column', Operators::GREATER_THAN, 0);
+    $filter = new Filter(conditionTree: $leaf);
     $nestedFilter = $filter->nest('prefix');
 
     expect($nestedFilter)->toEqual(
         new Filter(conditionTree: new ConditionTreeLeaf('prefix:column', Operators::GREATER_THAN, 0))
     );
-})->with('simpleFilter');
-
+});
 
 test('nest() should crash with a segment', function () {
     $segmentFilter = new Filter(segment: 'someSegment');

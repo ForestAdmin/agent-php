@@ -75,7 +75,7 @@ class ForestController
             ];
 
             return new JsonResponse($data, 400);
-        } elseif ($exception instanceof HttpException) {
+        } elseif (is_subclass_of($exception, HttpException::class)) {
             $data = [
                 'errors' => [
                     [
@@ -96,6 +96,11 @@ class ForestController
         throw $exception;
     }
 
+    /**
+     * @param string $routeName
+     * @return \Closure
+     * @codeCoverageIgnore
+     */
     protected function getClosure(string $routeName): \Closure
     {
         $routes = Router::getRoutes();

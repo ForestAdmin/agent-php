@@ -4,11 +4,12 @@ use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Security\ScopeInvalidation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 
-function factoryScopeInvalidation(): ScopeInvalidation
+function factoryScopeInvalidation(TestCase $testCase): ScopeInvalidation
 {
     $datasource = new Datasource();
-    buildAgent($datasource);
+    $testCase->buildAgent($datasource);
 
     $request = Request::createFromGlobals();
     $scopeInvalidation = mock(ScopeInvalidation::class)
@@ -16,7 +17,7 @@ function factoryScopeInvalidation(): ScopeInvalidation
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($scopeInvalidation, 'request', $request);
+    $testCase->invokeProperty($scopeInvalidation, 'request', $request);
 
     return $scopeInvalidation;
 }
@@ -30,7 +31,7 @@ test('make() should return a new instance of ScopeInvalidation with routes', fun
 
 test('handleRequest() should return a response 200', function () {
     $_GET['renderingId'] = 1;
-    $scopeInvalidation = factoryScopeInvalidation();
+    $scopeInvalidation = factoryScopeInvalidation($this);
 
     expect($scopeInvalidation->handleRequest())
         ->toBeArray()
@@ -44,7 +45,7 @@ test('handleRequest() should return a response 200', function () {
 
 test('handleRequest() throw when renderingId is not a numeric value', function () {
     $_GET['renderingId'] = 'foo';
-    $scopeInvalidation = factoryScopeInvalidation();
+    $scopeInvalidation = factoryScopeInvalidation($this);
 
     expect(fn () => $scopeInvalidation->handleRequest())
         ->toThrow(ForestException::class, '🌳🌳🌳 Malformed body');

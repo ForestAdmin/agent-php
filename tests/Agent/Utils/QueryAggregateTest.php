@@ -9,18 +9,21 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 
 beforeEach(function () {
     global $datasource, $bookCollection, $reviewCollection, $bookReviewCollection, $userCollection;
-    $datasource = new BaseDatasource(
-        [
-            'driver'   => 'sqlite',
-            'database' => ':memory:',
-        ]
-    );
-    migrateAndSeed($datasource->getOrm()->getConnection());
+    $this->initDatabase();
+    $datasource = new BaseDatasource(TestCase::DB_CONFIG);
 
     $bookCollection = new BaseCollection($datasource, 'Book', 'books');
+    $this->invokeProperty($bookCollection, 'fields', collect());
+    $bookCollection = mock($bookCollection)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('fetchFieldsFromTable')
+        ->andReturn(['columns' => [], 'primaries' => []])
+        ->getMock();
     $bookCollection->addFields(
         [
             'id'           => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
@@ -44,6 +47,13 @@ beforeEach(function () {
     );
 
     $userCollection = new BaseCollection($datasource, 'User', 'users');
+    $this->invokeProperty($userCollection, 'fields', collect());
+    $userCollection = mock($userCollection)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('fetchFieldsFromTable')
+        ->andReturn(['columns' => [], 'primaries' => []])
+        ->getMock();
     $userCollection->addFields(
         [
             'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
@@ -58,6 +68,13 @@ beforeEach(function () {
     );
 
     $reviewCollection = new BaseCollection($datasource, 'Review', 'reviews');
+    $this->invokeProperty($reviewCollection, 'fields', collect());
+    $reviewCollection = mock($reviewCollection)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('fetchFieldsFromTable')
+        ->andReturn(['columns' => [], 'primaries' => []])
+        ->getMock();
     $reviewCollection->addFields(
         [
             'id'     => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
@@ -67,6 +84,13 @@ beforeEach(function () {
     );
 
     $bookReviewCollection = new BaseCollection($datasource, 'BookReview', 'book_review');
+    $this->invokeProperty($bookReviewCollection, 'fields', collect());
+    $bookReviewCollection = mock($bookReviewCollection)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('fetchFieldsFromTable')
+        ->andReturn(['columns' => [], 'primaries' => []])
+        ->getMock();
     $bookReviewCollection->addFields(
         [
             'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
