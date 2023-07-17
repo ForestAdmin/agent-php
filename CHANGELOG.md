@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/ForestAdmin/agent-php/compare/v1.0.2...v1.1.0) (2023-07-17)
+
+
+### Features
+
+* **datasource:** add eloquent datasource ([#74](https://github.com/ForestAdmin/agent-php/issues/74)) ([db9320b](https://github.com/ForestAdmin/agent-php/commit/db9320bcc3b0b99b1ea55cb13a6a7019cf9c9a64))
+
 ## [1.0.2](https://github.com/ForestAdmin/agent-php/compare/v1.0.1...v1.0.2) (2023-06-20)
 
 
