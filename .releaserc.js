@@ -25,6 +25,7 @@ module.exports = {
           'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/DatasourceDoctrine/composer.json; ' +
           'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/DatasourceDummy/composer.json; ' +
           'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/DatasourceToolkit/composer.json; ' +
+          'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/DatasourceEloquent/composer.json; ' +
           'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' package.json;',
       },
     ],
@@ -39,6 +40,7 @@ module.exports = {
           "packages/BaseDatasource/composer.json",
           "packages/DatasourceCustomizer/composer.json",
           "packages/DatasourceDoctrine/composer.json",
+          "packages/DatasourceEloquent/composer.json",
           "packages/DatasourceDummy/composer.json",
           "packages/DatasourceToolkit/composer.json",
           "src/Agent/Utils/ForestSchema/SchemaEmitter.php",
