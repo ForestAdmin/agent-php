@@ -82,11 +82,10 @@ class Actions extends AbstractAuthenticatedRoute
     public function handleHookRequest(array $args = []): array
     {
         $this->build($args);
-
         $forestFields = $this->request->input('data.attributes.fields');
         $data = $forestFields !== null ? ForestActionValueConverter::makeFormDataFromFields(AgentFactory::get('datasource'), $forestFields) : null;
         $filter = $this->getRecordSelection();
-        $fields = $this->collection->getForm($this->caller, $this->actionName, $data, $filter);
+        $fields = $this->collection->getForm($this->caller, $this->actionName, $data, $filter, $this->request->input('data.attributes.changed_field'));
 
         return ['content' => ['fields' => collect($fields)->map(fn ($field) => GeneratorAction::buildFieldSchema(AgentFactory::get('datasource'), $field))]];
     }

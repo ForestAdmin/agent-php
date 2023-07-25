@@ -16,7 +16,7 @@ interface CollectionContract
 
     public function execute(Caller $caller, string $name, array $formValues, ?Filter $filter = null);
 
-    public function getForm(Caller $caller, string $name, ?array $formValues = null, ?Filter $filter = null): array;
+    public function getForm(Caller $caller, string $name, ?array $formValues = null, ?Filter $filter = null, ?string $changeField = null): array;
 
     public function create(Caller $caller, array $data);
 

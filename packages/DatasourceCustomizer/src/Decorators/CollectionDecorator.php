@@ -46,11 +46,11 @@ class CollectionDecorator implements CollectionContract
         return $this->childCollection->execute($caller, $name, $data, $refinedFilter);
     }
 
-    public function getForm(Caller $caller, string $name, ?array $data = null, ?Filter $filter = null): array
+    public function getForm(Caller $caller, string $name, ?array $data = null, ?Filter $filter = null, ?string $changeField = null): array
     {
         $refinedFilter = $this->refineFilter($caller, $filter);
 
-        return $this->childCollection->getForm($caller, $name, $data, $refinedFilter);
+        return $this->childCollection->getForm($caller, $name, $data, $refinedFilter, $changeField);
     }
 
     public function create(Caller $caller, array $data)
