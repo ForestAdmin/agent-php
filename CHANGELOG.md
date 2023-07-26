@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/ForestAdmin/agent-php/compare/v1.1.2...v1.2.0) (2023-07-26)
+
+
+### Features
+
+* add changed field to action context ([#77](https://github.com/ForestAdmin/agent-php/issues/77)) ([75cc17c](https://github.com/ForestAdmin/agent-php/commit/75cc17c8c481306cfd25ce96e34e27b54056ce58))
+
 ## [1.1.2](https://github.com/ForestAdmin/agent-php/compare/v1.1.1...v1.1.2) (2023-07-17)
 
 ## [1.1.1](https://github.com/ForestAdmin/agent-php/compare/v1.1.0...v1.1.1) (2023-07-17)
