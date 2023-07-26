@@ -152,6 +152,20 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
         ]);
     })->with('caller');
 
+    test('getForm() should work with changeField param', function (Caller $caller) {
+        [$datasourceDecorator, $baseAction] = $this->bucket;
+
+        $collection = $datasourceDecorator->getCollection('Product');
+        $collection->addAction('action-test', $baseAction);
+
+        expect($collection->getForm($caller, 'action-test', ['label' => 'Foo'], new Filter(), 'myChangeField'))->toEqual([
+            new ActionField(
+                type: 'Number',
+                label: 'amount',
+            ),
+        ]);
+    })->with('caller');
+
     test('getForm() should compute dynamic default value no data on load hook', function (Caller $caller) {
         $datasourceDecorator = $this->bucket[0];
 
