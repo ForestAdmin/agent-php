@@ -25,7 +25,7 @@ class OperatorsEmulateCollection extends CollectionDecorator
 
     public function emulateFieldOperator(string $name, string $operator): void
     {
-        self::replaceFieldOperator($name, $operator, null);
+        $this->replaceFieldOperator($name, $operator);
     }
 
     public function replaceFieldOperator(string $name, string $operator, ?\Closure $replaceBy = null): void
@@ -46,12 +46,11 @@ class OperatorsEmulateCollection extends CollectionDecorator
         FieldValidator::validate($this, $name);
 
         // Mark the field operator as replaced.
-        if (! in_array($name, $this->emulateOperators, true)) {
+        if (! isset($this->emulateOperators[$name])) {
             $this->emulateOperators[$name] = [];
         }
 
         $this->emulateOperators[$name][$operator] = $replaceBy;
-        $this->markSchemaAsDirty();
     }
 
     public function getFields(): IlluminateCollection
