@@ -48,7 +48,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
     test('getFormValue should return the correct value when a key is defined', closure: function (Caller $caller) {
         $actionCollection = $this->bucket['actionCollection'];
-        ;
         $context = new ActionContext($actionCollection, $caller, new PaginatedFilter(), ['title' => 'Foundation']);
 
         expect($context->getFormValue('title'))->toEqual('Foundation');
@@ -56,7 +55,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
     test('getFormValue should return null value when a key doesn\'t exist', closure: function (Caller $caller) {
         $actionCollection = $this->bucket['actionCollection'];
-        ;
         $context = new ActionContext($actionCollection, $caller, new PaginatedFilter(), ['title' => 'Foundation']);
 
         expect($context->getFormValue('foo'))->toBeNull();
@@ -64,7 +62,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
     test('getRecords should return the correct values of the list collection', closure: function (Caller $caller) {
         $actionCollection = $this->bucket['actionCollection'];
-        ;
         $context = new ActionContext($actionCollection, $caller, new PaginatedFilter(), ['title' => 'Foundation']);
 
         expect($context->getRecords(['id', 'title']))->toEqual(
@@ -83,7 +80,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
     test('getRecordIds should return the pk list', closure: function (Caller $caller) {
         $actionCollection = $this->bucket['actionCollection'];
-        ;
         $context = new ActionContext($actionCollection, $caller, new PaginatedFilter(), ['title' => 'Foundation']);
 
         expect($context->getRecordIds())->toEqual([1, 2]);
@@ -91,7 +87,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
     test('getFormValues should return all form values', closure: function (Caller $caller) {
         $actionCollection = $this->bucket['actionCollection'];
-        ;
         $context = new ActionContext($actionCollection, $caller, new PaginatedFilter(), ['title' => 'Foundation']);
 
         expect($context->getFormValues())->toEqual(['title' => 'Foundation']);
@@ -99,9 +94,22 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
     test('getFilter should return the context filter', closure: function (Caller $caller) {
         $actionCollection = $this->bucket['actionCollection'];
-        ;
         $context = new ActionContext($actionCollection, $caller, new PaginatedFilter(), ['title' => 'Foundation']);
 
         expect($context->getFilter())->toEqual(new PaginatedFilter());
+    })->with('caller');
+
+    test('getChangeField should return the changeField attribute when it set', closure: function (Caller $caller) {
+        $actionCollection = $this->bucket['actionCollection'];
+        $context = new ActionContext($actionCollection, $caller, new PaginatedFilter(), ['title' => 'Foundation'], [], 'MyChangeField');
+
+        expect($context->getChangeField())->toEqual('MyChangeField');
+    })->with('caller');
+
+    test('getChangeField should return null when changeField is not set', closure: function (Caller $caller) {
+        $actionCollection = $this->bucket['actionCollection'];
+        $context = new ActionContext($actionCollection, $caller, new PaginatedFilter(), ['title' => 'Foundation']);
+
+        expect($context->getChangeField())->toBeNull();
     })->with('caller');
 });

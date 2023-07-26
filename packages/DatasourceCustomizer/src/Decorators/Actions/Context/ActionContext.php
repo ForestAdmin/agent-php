@@ -17,7 +17,8 @@ class ActionContext extends CollectionCustomizationContext
         Caller $caller,
         protected PaginatedFilter $filter,
         protected array $formValues = [],
-        protected array $used = []
+        protected array $used = [],
+        protected ?string $changeField = null
     ) {
         parent::__construct($collection, $caller);
     }
@@ -71,19 +72,27 @@ class ActionContext extends CollectionCustomizationContext
         return collect($compositeIds)->map(fn ($id) => $id[0])->toArray();
     }
 
-  /**
-   * Get all the records ids (when the collection uses composite keys)
-   */
-  public function getCompositeRecordIds(): array
-  {
-      $projection = (new Projection())->withPks($this->realCollection);
-      $records = $this->getRecords($projection);
+    /**
+     * Get all the records ids (when the collection uses composite keys)
+     */
+    public function getCompositeRecordIds(): array
+    {
+        $projection = (new Projection())->withPks($this->realCollection);
+        $records = $this->getRecords($projection);
 
-      return collect($records)->map(fn ($record) => Record::getPrimaryKeys($this->realCollection, $record))->toArray();
-  }
+        return collect($records)->map(fn ($record) => Record::getPrimaryKeys($this->realCollection, $record))->toArray();
+    }
 
     public function getUsed(): array
     {
         return $this->used;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getChangeField(): ?string
+    {
+        return $this->changeField;
     }
 }

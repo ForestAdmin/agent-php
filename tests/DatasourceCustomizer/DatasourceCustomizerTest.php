@@ -125,8 +125,3 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $datasourceCustomizer->use('MyFakePlugin');
     });
 });
-
-function factoryDatasourceCustomizer()
-{
-    //
-}

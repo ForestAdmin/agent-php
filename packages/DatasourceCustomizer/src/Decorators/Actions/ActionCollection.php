@@ -39,13 +39,13 @@ class ActionCollection extends CollectionDecorator
         return $result ?? $resultBuilder->success();
     }
 
-    public function getForm(Caller $caller, string $name, ?array $data = null, ?Filter $filter = null): array
+    public function getForm(Caller $caller, string $name, ?array $data = null, ?Filter $filter = null, ?string $changeField = null): array
     {
         /** @var BaseAction $action */
         $action = $this->actions[$name] ?? null;
 
         if (! $action) {
-            return $this->childCollection->getForm($caller, $name, $data, $filter);
+            return $this->childCollection->getForm($caller, $name, $data, $filter, $changeField);
         }
 
         if ($action->getForm() === []) {
@@ -54,7 +54,7 @@ class ActionCollection extends CollectionDecorator
 
         $formValues = $data ?: [];
         $used = [];
-        $context = $this->getContext($caller, $action, $formValues, $filter, $used);
+        $context = $this->getContext($caller, $action, $formValues, $filter, $used, $changeField);
 
         $dynamicFields = $action->getForm();
         $dynamicFields = $this->dropDefaults($context, $dynamicFields, empty($data), $formValues);
@@ -76,13 +76,13 @@ class ActionCollection extends CollectionDecorator
         return $fields;
     }
 
-    private function getContext(Caller $caller, BaseAction $action, array $formValues = [], ?Filter $filter = null, array &$used = []): ActionContext
+    private function getContext(Caller $caller, BaseAction $action, array $formValues = [], ?Filter $filter = null, array &$used = [], ?string $changeField = null): ActionContext
     {
         $filter = $filter ? new PaginatedFilter($filter->getConditionTree(), $filter->getSearch(), $filter->getSearchExtended(), $filter->getSegment()) : new PaginatedFilter();
         if ($action->getScope() === ActionScope::SINGLE) {
-            return new ActionContextSingle($this, $caller, $filter, $formValues, $used);
+            return new ActionContextSingle($this, $caller, $filter, $formValues, $used, $changeField);
         } else {
-            return new ActionContext($this, $caller, $filter, $formValues, $used);
+            return new ActionContext($this, $caller, $filter, $formValues, $used, $changeField);
         }
     }
 
