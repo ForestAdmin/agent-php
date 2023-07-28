@@ -43,7 +43,7 @@ module.exports = {
           "packages/DatasourceEloquent/composer.json",
           "packages/DatasourceDummy/composer.json",
           "packages/DatasourceToolkit/composer.json",
-          "src/Agent/Utils/ForestSchema/SchemaEmitter.php",
+          "packages/Agent/src/Utils/ForestSchema/SchemaEmitter.php",
         ],
       },
     ],
