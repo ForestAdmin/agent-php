@@ -2,9 +2,12 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Builder;
 
+use Closure;
 use DI\Container;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
+use ForestAdmin\AgentPHP\Agent\Facades\Logger;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
+use ForestAdmin\AgentPHP\Agent\Services\LoggerServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
@@ -12,8 +15,6 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 use function ForestAdmin\config;
-
-use Psr\Log\LoggerInterface;
 
 class AgentFactory
 {
@@ -27,15 +28,13 @@ class AgentFactory
 
     protected static Container $container;
 
-    public static ?LoggerInterface $logger;
-
     public function __construct(array $config)
     {
         $this->hasEnvSecret = isset($config['envSecret']);
         $this->customizer = new DatasourceCustomizer();
         $this->buildContainer();
         $this->buildCache($config);
-        self::$logger = null;
+        $this->buildLogger($config);
     }
 
     public function addDatasource(Datasource $datasource, array $options = []): self
@@ -45,7 +44,7 @@ class AgentFactory
         return $this;
     }
 
-    public function addChart(string $name, \Closure $definition): self
+    public function addChart(string $name, Closure $definition): self
     {
         $this->customizer->addChart($name, $definition);
 
@@ -71,11 +70,11 @@ class AgentFactory
      * @example
      * ->customizeCollection('books', books => books.renameField('xx', 'yy'))
      * @param string   $name the name of the collection to manipulate
-     * @param \Closure $handle a function that provide a
+     * @param Closure $handle a function that provide a
      *   collection builder on the given collection name
      * @return $this
      */
-    public function customizeCollection(string $name, \Closure $handle): self
+    public function customizeCollection(string $name, Closure $handle): self
     {
         $this->customizer->customizeCollection($name, $handle);
 
@@ -107,20 +106,13 @@ class AgentFactory
             }
 
             if (! $schemaIsKnown || $force) {
-                self::$logger?->info('schema was updated, sending new version');
+                Logger::log('Info', 'schema was updated, sending new version');
                 ForestHttpApi::uploadSchema($schema);
                 Cache::put('schemaFileHash', $schema['meta']['schemaFileHash'], self::TTL_SCHEMA);
             } else {
-                self::$logger?->info('Schema was not updated since last run');
+                Logger::log('Info', 'Schema was not updated since last run');
             }
         }
-    }
-
-    public function setLogger(LoggerInterface $logger): self
-    {
-        self::$logger = $logger;
-
-        return $this;
     }
 
     private function buildContainer(): void
@@ -137,5 +129,15 @@ class AgentFactory
         if ($this->hasEnvSecret) {
             self::$container->get('cache')->add('config', $config, self::TTL_CONFIG);
         }
+    }
+
+    private function buildLogger(array $config): void
+    {
+        $logger = new LoggerServices(
+            loggerLevel: $config['loggerLevel'] ?? 'Info',
+            logger: $config['logger'] ?? null
+        );
+
+        self::$container->set('logger', $logger);
     }
 }
