@@ -15,7 +15,7 @@ use Illuminate\Support\Collection as IlluminateCollection;
 
 class PublicationCollectionDecorator extends CollectionDecorator
 {
-    protected array $unpublished = [];
+    protected array $blackList = [];
 
     public function changeFieldVisibility(string $name, bool $visible): void
     {
@@ -25,9 +25,9 @@ class PublicationCollectionDecorator extends CollectionDecorator
         }
 
         if (! $visible) {
-            $this->unpublished[$name] = $name;
+            $this->blackList[$name] = $name;
         } else {
-            unset($this->unpublished[$name]);
+            unset($this->blackList[$name]);
         }
 
         $this->markSchemaAsDirty();
@@ -36,7 +36,7 @@ class PublicationCollectionDecorator extends CollectionDecorator
     public function create(Caller $caller, array $data)
     {
         $record = parent::create($caller, $data);
-        foreach ($this->unpublished as $value) {
+        foreach ($this->blackList as $value) {
             unset($record[$value]);
         }
 
@@ -58,32 +58,72 @@ class PublicationCollectionDecorator extends CollectionDecorator
 
     private function isPublished(string $name): bool
     {
-        if ($field = $this->childCollection->getFields()[$name] ?? null) {
-            if ($field instanceof ColumnSchema) {
-                return ! isset($this->unpublished[$name]);
-            } else {
-                return $this->isPublishedRelation($name, $field);
-            }
+        // Explicitly hidden
+        if (isset($this->blackList[$name])) {
+            return false;
         }
 
-        return false;
+        // Implicitly hidden
+        $field = $this->childCollection->getFields()[$name] ?? null;
+
+        if ($field instanceof ManyToOneSchema) {
+            return (
+                $this->dataSource->isPublished($field->getForeignCollection()) &&
+                $this->isPublished($field->getForeignKey()) &&
+                $this->dataSource->getCollection($field->getForeignCollection())->isPublished($field->getForeignKeyTarget())
+            );
+        }
+
+        if ($field instanceof OneToOneSchema || $field instanceof OneToManySchema) {
+            return (
+                $this->dataSource->isPublished($field->getForeignCollection()) &&
+                $this->dataSource->getCollection($field->getForeignCollection())->isPublished($field->getOriginKey()) &&
+                $this->isPublished($field->getOriginKeyTarget())
+            );
+        }
+
+        if ($field instanceof ManyToManySchema) {
+            return (
+                $this->dataSource->isPublished($field->getThroughCollection()) &&
+                $this->dataSource->isPublished($field->getForeignCollection()) &&
+                $this->dataSource->getCollection($field->getThroughCollection())->isPublished($field->getForeignKey()) &&
+                $this->dataSource->getCollection($field->getThroughCollection())->isPublished($field->getOriginKey()) &&
+                $this->isPublished($field->getOriginKeyTarget()) &&
+                $this->dataSource->getCollection($field->getForeignCollection())->isPublished($field->getForeignKeyTarget())
+            );
+        }
+
+        return true;
     }
 
-    private function isPublishedRelation(string $name, RelationSchema $field): bool
-    {
-        return ! isset($this->unpublished[$name])
-            && (
-                ($field instanceof ManyToOneSchema && $this->isPublished($field->getForeignKey()))
-                || (
-                    ($field instanceof OneToOneSchema || $field instanceof  OneToManySchema) &&
-                    $this->dataSource->getCollection($field->getForeignCollection())->isPublished($field->getOriginKey())
-                )
-                || (
-                    $field instanceof ManyToManySchema && (
-                        $this->dataSource->getCollection($field->getThroughCollection())->isPublished($field->getForeignKey())
-                        || $this->dataSource->getCollection($field->getThroughCollection())->isPublished($field->getOriginKey())
-                    )
-                )
-            );
-    }
+    //    private function isPublished(string $name): bool
+    //    {
+    //        if ($field = $this->childCollection->getFields()[$name] ?? null) {
+    //            if ($field instanceof ColumnSchema) {
+    //                return ! isset($this->unpublished[$name]);
+    //            } else {
+    //                return $this->isPublishedRelation($name, $field);
+    //            }
+    //        }
+    //
+    //        return false;
+    //    }
+    //
+    //    private function isPublishedRelation(string $name, RelationSchema $field): bool
+    //    {
+    //        return ! isset($this->unpublished[$name])
+    //            && (
+    //                ($field instanceof ManyToOneSchema && $this->isPublished($field->getForeignKey()))
+    //                || (
+    //                    ($field instanceof OneToOneSchema || $field instanceof  OneToManySchema) &&
+    //                    $this->dataSource->getCollection($field->getForeignCollection())->isPublished($field->getOriginKey())
+    //                )
+    //                || (
+    //                    $field instanceof ManyToManySchema && (
+    //                        $this->dataSource->getCollection($field->getThroughCollection())->isPublished($field->getForeignKey())
+    //                        || $this->dataSource->getCollection($field->getThroughCollection())->isPublished($field->getOriginKey())
+    //                    )
+    //                )
+    //            );
+    //    }
 }
