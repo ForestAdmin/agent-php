@@ -28,13 +28,24 @@ class AgentFactory
 
     protected static Container $container;
 
-    public function __construct(array $config)
+    public function __construct(protected array $config)
     {
         $this->hasEnvSecret = isset($config['envSecret']);
         $this->customizer = new DatasourceCustomizer();
         $this->buildContainer();
-        $this->buildCache($config);
-        $this->buildLogger($config);
+        $this->buildCache();
+        $this->buildLogger();
+    }
+
+    public function createAgent(array $config): self
+    {
+        $this->config = array_merge($this->config, $config);
+        $this->buildLogger();
+        if ($this->hasEnvSecret) {
+            Cache::put('config', $this->config, self::TTL_CONFIG);
+        }
+
+        return $this;
     }
 
     public function addDatasource(Datasource $datasource, array $options = []): self
@@ -120,22 +131,22 @@ class AgentFactory
         self::$container = new Container();
     }
 
-    private function buildCache(array $config): void
+    private function buildCache(): void
     {
         $filesystem = new Filesystem();
-        $directory = $config['cacheDir'];
+        $directory = $this->config['cacheDir'];
         self::$container->set('cache', new CacheServices($filesystem, $directory));
 
         if ($this->hasEnvSecret) {
-            self::$container->get('cache')->add('config', $config, self::TTL_CONFIG);
+            self::$container->get('cache')->add('config', $this->config, self::TTL_CONFIG);
         }
     }
 
-    private function buildLogger(array $config): void
+    private function buildLogger(): void
     {
         $logger = new LoggerServices(
-            loggerLevel: $config['loggerLevel'] ?? 'Info',
-            logger: $config['logger'] ?? null
+            loggerLevel: $this->config['loggerLevel'] ?? 'Info',
+            logger: $this->config['logger'] ?? null
         );
 
         self::$container->set('logger', $logger);
