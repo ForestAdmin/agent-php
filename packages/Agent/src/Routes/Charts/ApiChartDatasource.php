@@ -4,10 +4,14 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Charts;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
+use ForestAdmin\AgentPHP\Agent\Facades\Logger;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractAuthenticatedRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
+
+use function ForestAdmin\config;
+
 use Illuminate\Support\Str;
 
 class ApiChartDatasource extends AbstractAuthenticatedRoute
@@ -38,6 +42,11 @@ class ApiChartDatasource extends AbstractAuthenticatedRoute
             "/_charts/$slug",
             fn () => $this->handleApiChart()
         );
+
+        if (! config('isProduction')) {
+            $url = "/forest/_charts/$slug";
+            //            Logger::log('Info', "Chart '$this->chartName' was mounted at '$url");
+        }
 
         return $this;
     }

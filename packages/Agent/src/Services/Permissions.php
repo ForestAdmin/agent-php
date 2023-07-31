@@ -4,6 +4,7 @@ namespace ForestAdmin\AgentPHP\Agent\Services;
 
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Facades\ForestSchema;
+use ForestAdmin\AgentPHP\Agent\Facades\Logger;
 use ForestAdmin\AgentPHP\Agent\Http\Exceptions\ForbiddenError;
 use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
@@ -35,6 +36,8 @@ class Permissions
     public function invalidateCache(string $idCache): void
     {
         Cache::forget($idCache);
+
+        Logger::log('Debug', "Invalidating $idCache cache..");
     }
 
     public function can(string $action, CollectionContract $collection, $allowFetch = false): bool
@@ -77,8 +80,12 @@ class Permissions
 
         // still not allowed - throw forbidden message
         if (! $isAllowed) {
+            Logger::log('Debug', 'User ' . $this->caller->getId() .' cannot retrieve chart on rendering ' . $this->caller->getRenderingId());
+
             throw new ForbiddenError('You don\'t have permission to access this collection.');
         }
+
+        Logger::log('Debug', 'User ' . $this->caller->getId() .' can retrieve chart on rendering ' . $this->caller->getRenderingId());
 
         return $isAllowed;
     }
@@ -106,7 +113,10 @@ class Permissions
             $filter
         );
 
-        return $smartActionApproval->canExecute();
+        $isAllowed = $smartActionApproval->canExecute();
+        Logger::log('Debug', 'User ' . $userData['roleId'] . ' is ' . $isAllowed ? '' : 'not' . ' allowed to perform ' . $action['name']);
+
+        return $isAllowed;
     }
 
     public function getScope(CollectionContract $collection): ?ConditionTree
@@ -136,6 +146,8 @@ class Permissions
                 foreach ($response as $user) {
                     $users[$user['id']] = $user;
                 }
+
+                Logger::log('Debug', 'Refreshing user permissions cache');
 
                 return $users;
             },
@@ -167,6 +179,8 @@ class Permissions
                     $collections[$name] = array_merge($this->decodeCrudPermissions($collection), $this->decodeActionPermissions($collection));
                 }
 
+                Logger::log('Debug', 'Fetching environment permissions');
+
                 return $collections;
             },
             config('permissionExpiration')
@@ -188,6 +202,8 @@ class Permissions
                     $stat = array_filter($stat, static fn ($value) => ! is_null($value) && $value !== '');
                     $statHash[] = $stat['type'] . ':' . $this->arrayHash($stat);
                 }
+
+                Logger::log('Debug', "Loading rendering permissions for rendering $renderingId");
 
                 return $statHash;
             },
