@@ -2,7 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit;
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\Chart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
@@ -44,11 +43,11 @@ class Datasource implements DatasourceContract
      */
     public function addCollection(CollectionContract $collection): void
     {
-        if (! $this->collections->has($collection->getName())) {
-            $this->collections->put($collection->getName(), $collection);
-        } else {
-            AgentFactory::$logger?->info('Collection ' . $collection->getName() . ' already defined in datasource');
+        if ($this->collections->has($collection->getName())) {
+            throw new ForestException('Collection ' . $collection->getName() . ' already defined in datasource');
         }
+
+        $this->collections->put($collection->getName(), $collection);
     }
 
     public function renderChart(Caller $caller, string $name): Chart|array
