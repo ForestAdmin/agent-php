@@ -98,9 +98,9 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
 
         expect(fn () => $decoratedDataSource->keepCollectionsMatching(['unknown']))
-            ->toThrow(ForestException::class, '🌳🌳🌳 Unknown collection name: unknown')
+            ->toThrow(ForestException::class, '🌳🌳🌳 Collection unknown not found')
             ->and(fn () => $decoratedDataSource->keepCollectionsMatching([], ['unknown']))
-            ->toThrow(ForestException::class, '🌳🌳🌳 Unknown collection name: unknown');
+            ->toThrow(ForestException::class, '🌳🌳🌳 Collection unknown not found');
     });
 
     test('keepCollectionsMatching() should be able to remove "BookPerson" collection', function () {
@@ -112,7 +112,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
 
         expect(fn () => $decoratedDataSource->getCollection('BookPerson'))
-            ->toThrow(ForestException::class, '🌳🌳🌳 Collection BookPerson not found')
+            ->toThrow(ForestException::class, '🌳🌳🌳 Collection BookPerson was removed')
             ->and($decoratedDataSource->getCollection('Book')->getFields())->not()->toHaveKey('persons')
             ->and($decoratedDataSource->getCollection('Person')->getFields())->not()->toHaveKey('books');
     });
@@ -125,7 +125,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
 
         expect(fn () => $decoratedDataSource->getCollection('Book'))
-            ->toThrow(ForestException::class, '🌳🌳🌳 Collection Book not found')
+            ->toThrow(ForestException::class, '🌳🌳🌳 Collection Book was removed')
             ->and($decoratedDataSource->getCollection('BookPerson')->getFields())->not()->toHaveKey('book')
             ->and($decoratedDataSource->getCollection('Person')->getFields())->not()->toHaveKey('book');
     });

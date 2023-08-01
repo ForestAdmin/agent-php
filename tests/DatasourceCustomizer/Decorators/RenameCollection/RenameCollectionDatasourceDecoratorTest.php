@@ -60,7 +60,7 @@ test('renameCollections() should rename a collection when the rename option is g
     $decoratedDataSource->renameCollections(['Person' => 'User']);
 
     $collectionsKeys = array_keys($decoratedDataSource->getCollections()->toArray());
-
+    //dd($collectionsKeys);
     expect(in_array('Person', $collectionsKeys, true))->toBeFalse()
         ->and(in_array('User', $collectionsKeys, true))->toBeTrue();
 });
