@@ -44,7 +44,7 @@ class ApiChartCollection extends AbstractAuthenticatedRoute
 
         if (! config('isProduction')) {
             $url = "/forest/_charts/{collectionName}/$slug";
-            //            Logger::log('Info', "Chart '$this->chartName' was mounted at '$url");
+            Logger::log('Info', "Chart '$this->chartName' was mounted at '$url");
         }
 
         return $this;
