@@ -18,11 +18,6 @@ class RenameCollectionDecorator extends CollectionDecorator
     public function rename(string $name): void
     {
         $this->substitutedName = $name;
-
-        /** @var RenameCollectionDecorator $collection */
-        foreach ($this->dataSource->getCollections() as $collection) {
-            $collection->markSchemaAsDirty();
-        }
     }
 
     public function getFields(): IlluminateCollection

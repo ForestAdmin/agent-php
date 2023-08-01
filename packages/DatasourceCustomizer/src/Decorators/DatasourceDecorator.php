@@ -31,6 +31,11 @@ class DatasourceDecorator extends Datasource
         }
     }
 
+    public function getCollections(): IlluminateCollection
+    {
+        return $this->childDataSource->getCollections();
+    }
+
     public function renderChart(Caller $caller, string $name): Chart|array
     {
         return $this->childDataSource->renderChart($caller, $name);

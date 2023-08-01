@@ -77,6 +77,12 @@ class DatasourceCustomizer
     {
         $this->stack->publication->keepCollectionsMatching([], is_string($names) ? [$names] : $names);
 
+        $this->compositeDatasource = new Datasource();
+        $this->stack->publication->getCollections()->each(
+            fn ($collection) => $this->compositeDatasource->addCollection($collection)
+        );
+        $this->stack->build();
+
         return $this;
     }
 

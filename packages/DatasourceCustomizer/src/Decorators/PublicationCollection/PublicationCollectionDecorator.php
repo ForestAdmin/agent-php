@@ -10,7 +10,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class PublicationCollectionDecorator extends CollectionDecorator
@@ -95,35 +94,4 @@ class PublicationCollectionDecorator extends CollectionDecorator
 
         return true;
     }
-
-    //    private function isPublished(string $name): bool
-    //    {
-    //        if ($field = $this->childCollection->getFields()[$name] ?? null) {
-    //            if ($field instanceof ColumnSchema) {
-    //                return ! isset($this->unpublished[$name]);
-    //            } else {
-    //                return $this->isPublishedRelation($name, $field);
-    //            }
-    //        }
-    //
-    //        return false;
-    //    }
-    //
-    //    private function isPublishedRelation(string $name, RelationSchema $field): bool
-    //    {
-    //        return ! isset($this->unpublished[$name])
-    //            && (
-    //                ($field instanceof ManyToOneSchema && $this->isPublished($field->getForeignKey()))
-    //                || (
-    //                    ($field instanceof OneToOneSchema || $field instanceof  OneToManySchema) &&
-    //                    $this->dataSource->getCollection($field->getForeignCollection())->isPublished($field->getOriginKey())
-    //                )
-    //                || (
-    //                    $field instanceof ManyToManySchema && (
-    //                        $this->dataSource->getCollection($field->getThroughCollection())->isPublished($field->getForeignKey())
-    //                        || $this->dataSource->getCollection($field->getThroughCollection())->isPublished($field->getOriginKey())
-    //                    )
-    //                )
-    //            );
-    //    }
 }
