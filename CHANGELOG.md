@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/ForestAdmin/agent-php/compare/v1.2.0...v1.3.0) (2023-08-01)
+
+
+### Features
+
+* **logger:** add a default logger and allow user to define a custom logger ([#78](https://github.com/ForestAdmin/agent-php/issues/78)) ([2581d31](https://github.com/ForestAdmin/agent-php/commit/2581d31d78712f0e259e46607386c4953c19a012))
+
 # [1.2.0](https://github.com/ForestAdmin/agent-php/compare/v1.1.2...v1.2.0) (2023-07-26)
 
 
