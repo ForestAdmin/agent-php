@@ -73,6 +73,13 @@ class DatasourceCustomizer
         return $this;
     }
 
+    public function removeCollection(string|array $names): self
+    {
+        $this->stack->publication->keepCollectionsMatching([], is_string($names) ? [$names] : $names);
+
+        return $this;
+    }
+
     public function getCollection(string $name): CollectionCustomizer
     {
         return new CollectionCustomizer($this, $this->stack, $name);
@@ -80,7 +87,7 @@ class DatasourceCustomizer
 
     public function getCollections(): IlluminateCollection
     {
-        return $this->stack->validation->getCollections()->map(fn ($c) => $this->getCollection($c));
+        return $this->stack->validation->getCollections()->map(fn ($c) => $this->getCollection($c->getName()));
     }
 
     /**

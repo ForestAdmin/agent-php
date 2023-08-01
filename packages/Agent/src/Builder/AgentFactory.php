@@ -101,6 +101,13 @@ class AgentFactory
         return $this;
     }
 
+    public function removeCollection(string|array $names): self
+    {
+        $this->customizer->removeCollection($names);
+
+        return $this;
+    }
+
     public static function getContainer(): ?Container
     {
         return self::$container ?? null;
