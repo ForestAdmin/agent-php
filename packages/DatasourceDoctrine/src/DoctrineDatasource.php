@@ -4,8 +4,10 @@ namespace ForestAdmin\AgentPHP\DatasourceDoctrine;
 
 use Doctrine\ORM\EntityManagerInterface;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseDatasource;
-use Illuminate\Support\Str;
+
 use function ForestAdmin\config;
+
+use Illuminate\Support\Str;
 
 /**
  * @codeCoverageIgnore

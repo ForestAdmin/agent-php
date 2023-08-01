@@ -1,6 +1,7 @@
 <?php
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Services\LoggerServices;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DecoratorsStack;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
@@ -55,20 +56,23 @@ test('build() should add datasource to the container', function () {
         ->toEqual($expected->dataSource->getCollections()->first());
 });
 
-test('create agent with services should add services to the container', function () {
-    $datasource = new Datasource();
-    $collectionUser = new Collection($datasource, 'User');
-    $collectionUser->addFields(
+test('buildLogger() should call in construct and add logger to the agent container', function () {
+    new AgentFactory(AGENT_OPTIONS);
+
+    expect(AgentFactory::get('logger'))->toBeInstanceOf(LoggerServices::class);
+});
+
+test('createAgent() should add a new logger instance to the agent container', function () {
+    $agent = new AgentFactory(AGENT_OPTIONS);
+    $oldLogger = AgentFactory::get('logger');
+    $agent->createAgent(
         [
-            'id'         => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'first_name' => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'last_name'  => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'loggerLevel' => 'Warning',
+            'logger'      => fn () => null,
         ]
     );
-    $datasource->addCollection($collectionUser);
-    new AgentFactory(AGENT_OPTIONS, ['my_service' => 'foo']);
 
-    expect(AgentFactory::get('my_service'))->toEqual('foo');
+    expect(AgentFactory::get('logger'))->not->toEqual($oldLogger);
 });
 
 test('customizeCollection() should work', function () {
