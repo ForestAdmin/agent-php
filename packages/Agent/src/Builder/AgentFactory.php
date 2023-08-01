@@ -42,7 +42,9 @@ class AgentFactory
         $this->config = array_merge($this->config, $config);
         $this->buildLogger();
         if ($this->hasEnvSecret) {
-            Cache::put('config', $this->config, self::TTL_CONFIG);
+            $serializableConfig = $this->config;
+            unset($serializableConfig['logger'], $serializableConfig['customizeErrorMessage']);
+            Cache::put('config', $serializableConfig, self::TTL_CONFIG);
         }
 
         return $this;
@@ -94,7 +96,7 @@ class AgentFactory
 
     public static function getContainer(): ?Container
     {
-        return static::$container ?? null;
+        return self::$container ?? null;
     }
 
     public static function get(string $key)

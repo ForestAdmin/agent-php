@@ -1,13 +1,13 @@
 <?php
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Services\LoggerServices;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DecoratorsStack;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
-use Psr\Log\LoggerInterface;
 
 test('addDatasource() should add datasource to the datasourceCustomizer', function () {
     $datasource = new Datasource();
@@ -56,12 +56,23 @@ test('build() should add datasource to the container', function () {
         ->toEqual($expected->dataSource->getCollections()->first());
 });
 
-test('setLogger should add logger to the agent instance', function () {
-    $agent = new AgentFactory(AGENT_OPTIONS);
-    $mockLogger = $this->createMock(LoggerInterface::class);
-    $agent->setLogger($mockLogger);
+test('buildLogger() should call in construct and add logger to the agent container', function () {
+    new AgentFactory(AGENT_OPTIONS);
 
-    expect(AgentFactory::$logger)->toEqual($mockLogger);
+    expect(AgentFactory::get('logger'))->toBeInstanceOf(LoggerServices::class);
+});
+
+test('createAgent() should add a new logger instance to the agent container', function () {
+    $agent = new AgentFactory(AGENT_OPTIONS);
+    $oldLogger = AgentFactory::get('logger');
+    $agent->createAgent(
+        [
+            'loggerLevel' => 'Warning',
+            'logger'      => fn () => null,
+        ]
+    );
+
+    expect(AgentFactory::get('logger'))->not->toEqual($oldLogger);
 });
 
 test('customizeCollection() should work', function () {
