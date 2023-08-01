@@ -5,12 +5,18 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\RenameCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use Illuminate\Support\Collection as IlluminateCollection;
 
 class RenameCollectionDatasourceDecorator extends DatasourceDecorator
 {
     public function __construct(DatasourceContract|DatasourceDecorator $childDataSource)
     {
         parent::__construct($childDataSource, RenameCollectionDecorator::class);
+    }
+
+    public function getCollections(): IlluminateCollection
+    {
+        return $this->collections;
     }
 
     public function renameCollections(array $renames): void
