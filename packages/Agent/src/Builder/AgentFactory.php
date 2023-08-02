@@ -108,7 +108,11 @@ class AgentFactory
 
     public static function get(string $key)
     {
-        return self::$container->get($key);
+        if (self::$container->has($key)) {
+            return self::$container->get($key);
+        }
+
+        return null;
     }
 
     /**

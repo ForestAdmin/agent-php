@@ -2,7 +2,11 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Http;
 
+use ForestAdmin\AgentPHP\Agent\Facades\Logger;
 use ForestAdmin\AgentPHP\Agent\Http\Traits\ErrorHandling;
+
+use function ForestAdmin\config;
+
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -75,6 +79,10 @@ class ForestController
 
         if (method_exists($exception, 'getData')) {
             $data['errors'][0]['data'] = $exception->getData();
+        }
+
+        if (! config('isProduction')) {
+            Logger::log('Debug', $exception->getTraceAsString());
         }
 
         return new JsonResponse($data, $this->getErrorStatus($exception),  $this->getErrorHeaders($exception));
