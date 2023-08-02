@@ -124,4 +124,14 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
         $datasourceCustomizer->use('MyFakePlugin');
     });
+
+    test('removeCollection() should work', function () {
+        $datasource = $this->bucket['datasource'];
+        $datasourceCustomizer = new DatasourceCustomizer();
+        $datasourceCustomizer->addDatasource($datasource);
+
+        $datasourceCustomizer->removeCollection('Category');
+
+        expect($datasourceCustomizer->getStack()->publication->getCollections()->keys())->not()->toHaveKey('Category');
+    });
 });

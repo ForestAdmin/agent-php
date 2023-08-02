@@ -81,3 +81,14 @@ test('renameCollections() should throw an error if the given old name does not e
     expect(fn () => $decoratedDataSource->renameCollections(['Foo' => 'Bar']))
         ->toThrow(ForestException::class, '🌳🌳🌳 Collection Foo not found.');
 });
+
+test('renameCollections() should thrown when renameCollections is called twice on the same collection', function () {
+    $datasource = $this->bucket['datasource'];
+    $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
+    $decoratedDataSource->build();
+
+    $decoratedDataSource->renameCollections(['Person' => 'User']);
+
+    expect(fn () => $decoratedDataSource->renameCollections(['User' => 'User2']))
+        ->toThrow(ForestException::class, "🌳🌳🌳 Cannot rename a collection twice: Person->User->User2");
+});

@@ -14,11 +14,6 @@ class RenameCollectionDecorator extends CollectionDecorator
         return $this->dataSource->getCollectionName(parent::getName());
     }
 
-    public function rename(string $name): void
-    {
-        $this->substitutedName = $name;
-    }
-
     public function getFields(): IlluminateCollection
     {
         $fields = collect();

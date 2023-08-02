@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
@@ -22,8 +23,35 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
                     foreignKeyTarget: 'id',
                     foreignCollection: 'Person',
                 ),
+                'persons'   => new ManyToManySchema(
+                    originKey: 'bookId',
+                    originKeyTarget: 'id',
+                    foreignKey: 'personId',
+                    foreignKeyTarget: 'id',
+                    foreignCollection: 'Person',
+                    throughCollection: 'BookPerson',
+                ),
             ]
         );
+
+        $collectionBookPerson = new Collection($datasource, 'BookPerson');
+        $collectionBookPerson->addFields(
+            [
+                'personId' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'bookId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'person'   => new ManyToOneSchema(
+                    foreignKey: 'personId',
+                    foreignKeyTarget: 'id',
+                    foreignCollection: 'Person',
+                ),
+                'book'   => new ManyToOneSchema(
+                    foreignKey: 'bookId',
+                    foreignKeyTarget: 'id',
+                    foreignCollection: 'Book',
+                ),
+            ]
+        );
+
 
         $collectionPerson = new Collection($datasource, 'Person');
         $collectionPerson->addFields(
@@ -34,10 +62,19 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
                     originKeyTarget: 'id',
                     foreignCollection: 'Book',
                 ),
+                'books' => new ManyToManySchema(
+                    originKey: 'personId',
+                    originKeyTarget: 'id',
+                    foreignKey: 'bookId',
+                    foreignKeyTarget: 'id',
+                    foreignCollection: 'Book',
+                    throughCollection: 'BookPerson',
+                ),
             ]
         );
 
         $datasource->addCollection($collectionBook);
+        $datasource->addCollection($collectionBookPerson);
         $datasource->addCollection($collectionPerson);
         $this->buildAgent($datasource);
 
