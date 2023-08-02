@@ -57,7 +57,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $datasource = $this->bucket['datasource'];
         $datasourceCustomizer = new DatasourceCustomizer();
 
-        expect(fn () => $datasourceCustomizer->addDatasource($datasource, ['exclude' => ['Foo']]))->toThrow(ForestException::class, '🌳🌳🌳 Unknown collection name: Foo');
+        expect(fn () => $datasourceCustomizer->addDatasource($datasource, ['exclude' => ['Foo']]))->toThrow(ForestException::class, '🌳🌳🌳 Collection Foo not found');
     });
 
     test('addDatasource() should add only a specific collections', function () {
@@ -72,7 +72,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $datasource = $this->bucket['datasource'];
         $datasourceCustomizer = new DatasourceCustomizer();
 
-        expect(fn () => $datasourceCustomizer->addDatasource($datasource, ['include' => ['Foo']]))->toThrow(ForestException::class, '🌳🌳🌳 Unknown collection name: Foo');
+        expect(fn () => $datasourceCustomizer->addDatasource($datasource, ['include' => ['Foo']]))->toThrow(ForestException::class, '🌳🌳🌳 Collection Foo not found.');
     });
 
     test('addDatasource() should rename a collection without errors', function () {
@@ -88,7 +88,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $datasourceCustomizer = new DatasourceCustomizer();
 
         expect(fn () => $datasourceCustomizer->addDatasource($datasource, ['rename' => ['Foo' => 'Bar']]))
-            ->toThrow(ForestException::class, '🌳🌳🌳 The given collection name Foo does not exist');
+            ->toThrow(ForestException::class, '🌳🌳🌳 Collection Foo not found');
     });
 
     test('customizeCollection() should throw an error when designed collection is unknown', function () {

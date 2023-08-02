@@ -1,6 +1,7 @@
 <?php
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\RenameCollection\RenameCollectionDatasourceDecorator;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\RenameCollection\RenameCollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
@@ -59,10 +60,8 @@ test('renameCollections() should rename a collection when the rename option is g
     $decoratedDataSource->build();
     $decoratedDataSource->renameCollections(['Person' => 'User']);
 
-    $collectionsKeys = array_keys($decoratedDataSource->getCollections()->toArray());
-    //dd($collectionsKeys);
-    expect(in_array('Person', $collectionsKeys, true))->toBeFalse()
-        ->and(in_array('User', $collectionsKeys, true))->toBeTrue();
+    expect(fn () => $decoratedDataSource->getCollection('Person'))->toThrow(ForestException::class, "🌳🌳🌳 Collection 'Person' has been renamed to 'User'")
+        ->and($decoratedDataSource->getCollection('User'))->toBeInstanceOf(RenameCollectionDecorator::class);
 });
 
 test('renameCollections() should throw an error if the given new name is already used', function () {
@@ -80,5 +79,5 @@ test('renameCollections() should throw an error if the given old name does not e
     $decoratedDataSource->build();
 
     expect(fn () => $decoratedDataSource->renameCollections(['Foo' => 'Bar']))
-        ->toThrow(ForestException::class, '🌳🌳🌳 The given collection name Foo does not exist');
+        ->toThrow(ForestException::class, '🌳🌳🌳 Collection Foo not found.');
 });

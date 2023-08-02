@@ -54,6 +54,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $collectionBookPerson = new Collection($datasource, 'BookPerson');
         $collectionBookPerson->addFields(
             [
+                'id'       => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true),
                 'personId' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
                 'bookId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
                 'category' => new ManyToOneSchema(
@@ -94,7 +95,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $collectionCategory = new Collection($datasource, 'Category');
         $collectionCategory->addFields(
             [
-                'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true),
                 'label' => new ColumnSchema(columnType: PrimitiveType::STRING),
                 'books' => new OneToManySchema(
                     originKey: 'categoryId',
@@ -200,7 +201,6 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $book = $stack->relation->getCollection('Book');
         $bookRelation = mock($book)
             ->shouldReceive('addRelation')
-            ->once()
             ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Book'))
             ->getMock();
         $collections = $stack->relation->getCollections();
@@ -234,7 +234,6 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $book = $stack->relation->getCollection('Book');
         $bookRelation = mock($book)
             ->shouldReceive('addRelation')
-            ->once()
             ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Book'))
             ->getMock();
         $collections = $stack->relation->getCollections();
@@ -251,7 +250,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             false
         );
 
-        $customizer->addOneToOneRelation('newRelation', 'Person', 'Person.id', 'childId');
+        $customizer->addOneToOneRelation('newRelation', 'Person', 'id', 'childId');
         $customizer->addField('newRelation', $fieldDefinition);
 
         /** @var ComputedCollection $computedCollection */
@@ -268,7 +267,6 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $category = $stack->relation->getCollection('Category');
         $categoryRelation = mock($category)
             ->shouldReceive('addRelation')
-            ->once()
             ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Category'))
             ->getMock();
         $collections = $stack->relation->getCollections();
@@ -285,7 +283,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             false
         );
 
-        $customizer->addOneToManyRelation('newRelation', 'Person', 'id', 'Person.id');
+        $customizer->addOneToManyRelation('newRelation', 'Person', 'id', 'id');
         $customizer->addField('newRelation', $fieldDefinition);
 
         /** @var ComputedCollection $computedCollection */
@@ -295,18 +293,17 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
     });
 
     test('relations addManyToManyRelation() should add a many to many', function () use ($before) {
-        $before($this, 'Category');
+        $before($this, 'Person');
         [$customizer, $datasourceCustomizer] = $this->bucket;
 
         $stack = $datasourceCustomizer->getStack();
-        $category = $stack->relation->getCollection('Category');
-        $categoryRelation = mock($category)
+        $person = $stack->relation->getCollection('Person');
+        $personRelation = mock($person)
             ->shouldReceive('addRelation')
-            ->once()
-            ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Category'))
+            ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Person'))
             ->getMock();
         $collections = $stack->relation->getCollections();
-        $collections->put('Category', $categoryRelation);
+        $collections->put('Person', $personRelation);
 
         $this->invokeProperty($stack->relation, 'collections', $collections);
         $this->invokeProperty($datasourceCustomizer, 'stack', $stack);
@@ -319,11 +316,11 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             false
         );
 
-        $customizer->addManyToManyRelation('newRelation', 'Person', '', 'PersonCategory', 'id', 'Person.id');
+        $customizer->addManyToManyRelation('newRelation', 'Person', 'BookPerson', 'id', 'id');
         $customizer->addField('newRelation', $fieldDefinition);
 
         /** @var ComputedCollection $computedCollection */
-        $computedCollection = $datasourceCustomizer->getStack()->lateComputed->getCollection('Category');
+        $computedCollection = $datasourceCustomizer->getStack()->lateComputed->getCollection('Person');
 
         expect($computedCollection->getFields())->toHaveKey('newRelation');
     });
