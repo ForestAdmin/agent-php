@@ -16,7 +16,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 use function ForestAdmin\config;
 
-use Opis\Closure\SerializableClosure;
+use Laravel\SerializableClosure\SerializableClosure;
 
 class AgentFactory
 {
