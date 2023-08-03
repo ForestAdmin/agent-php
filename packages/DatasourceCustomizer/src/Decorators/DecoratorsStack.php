@@ -77,7 +77,6 @@ class DecoratorsStack
         $last = $this->validation = new DatasourceDecorator($last, ValidationCollection::class);
         $last = $this->binary = new DatasourceDecorator($last, BinaryCollection::class);
 
-
         // Step 4: Renaming must be either the very first or very last so that naming in customer code is consistent.
         $last = $this->publication = new PublicationCollectionDatasourceDecorator($last);
         $last = $this->renameField = new DatasourceDecorator($last, RenameFieldCollection::class);

@@ -36,7 +36,7 @@ class DatasourceDecorator extends Datasource
 
     public function getCollections(): IlluminateCollection
     {
-        return $this->childDataSource->getCollections();
+        return $this->childDataSource->getCollections()->map(fn ($collection) => $this->getCollection($collection->getName()));
     }
 
     public function getCollection(string $name): CollectionContract
