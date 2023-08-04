@@ -20,6 +20,8 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Sort\SortCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Validation\ValidationCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Write\WriteDataSourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
+use Illuminate\Support\Collection;
+use Spatie\Async\Pool;
 
 class DecoratorsStack
 {
@@ -45,8 +47,12 @@ class DecoratorsStack
     public DatasourceDecorator $publication;
     public DatasourceDecorator $renameField;
 
+    private Collection $customizations;
+
     public function __construct(DatasourceContract $dataSource)
     {
+        $this->customizations = collect();
+
         $last = &$dataSource;
 
         // Step 0: Do not query datasource when we know the result with yield an empty set.
@@ -82,6 +88,27 @@ class DecoratorsStack
         $last = $this->renameField = new DatasourceDecorator($last, RenameFieldCollection::class);
 
         $this->dataSource = &$last;
+    }
+
+    public function queueCustomization(\Closure $customization): void
+    {
+        $this->customizations->push($customization);
+    }
+
+    public function applyQueuedCustomizations(): void
+    {
+        //        $pool = Pool::create();
+
+        $queuedCustomizations = $this->customizations->slice(0);
+        $this->customizations = collect();
+
+        while ($queuedCustomizations->isNotEmpty()) {
+            call_user_func($queuedCustomizations->shift());
+            //            $pool->add(fn () => call_user_func($queuedCustomizations->shift()));
+            $this->applyQueuedCustomizations();
+        }
+
+        //        $pool->wait();
     }
 
     public function build(): void

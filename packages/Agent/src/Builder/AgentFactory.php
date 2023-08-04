@@ -80,7 +80,7 @@ class AgentFactory
 
     public function build(): void
     {
-        self::$container->set('datasource', $this->customizer->getStack()->dataSource);
+        self::$container->set('datasource', $this->customizer->getDatasource());
 
         self::sendSchema();
     }
