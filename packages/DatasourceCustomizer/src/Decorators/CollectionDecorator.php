@@ -135,4 +135,9 @@ class CollectionDecorator implements CollectionContract
     {
         return $this->childCollection->getActions();
     }
+
+    public function getNativeDriver()
+    {
+        return $this->childCollection->getNativeDriver();
+    }
 }
