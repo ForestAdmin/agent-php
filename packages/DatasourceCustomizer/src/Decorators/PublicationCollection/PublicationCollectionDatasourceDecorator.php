@@ -50,6 +50,12 @@ class PublicationCollectionDatasourceDecorator extends DatasourceDecorator
 
         // Delete the collection
         $this->blackList[] = $collectionName;
+
+        // Tell all collections that their schema is dirty: if we removed a collection, all
+        // relations to this collection are now invalid and should be unpublished.
+        foreach ($this->collections as $collection) {
+            $collection->markSchemaAsDirty();
+        }
     }
 
     public function isPublished(string $collectionName): bool

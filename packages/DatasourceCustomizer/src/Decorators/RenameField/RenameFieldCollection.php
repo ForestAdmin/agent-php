@@ -36,20 +36,22 @@ class RenameFieldCollection extends CollectionDecorator
             $childName = $this->toChildCollection[$currentName];
             unset($this->toChildCollection[$currentName], $this->fromChildCollection[$childName]);
             $initialName = $childName;
+            $this->markAllSchemaAsDirty();
         }
 
         // Do not update arrays if renaming is a no-op (ie: customer is cancelling a previous rename).
         if ($initialName !== $newName) {
             $this->fromChildCollection[$initialName] = $newName;
             $this->toChildCollection[$newName] = $initialName;
+            $this->markAllSchemaAsDirty();
         }
     }
 
-    public function getFields(): IlluminateCollection
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
     {
         $fields = collect();
 
-        foreach ($this->childCollection->getFields() as $oldName => $schema) {
+        foreach ($childSchema as $oldName => $schema) {
             if ($schema instanceof ManyToOneSchema) {
                 $schema->setForeignKey($this->fromChildCollection[$schema->getForeignKey()] ?? $schema->getForeignKey());
             } elseif ($schema instanceof OneToManySchema || $schema instanceof OneToOneSchema) {
@@ -197,5 +199,12 @@ class RenameFieldCollection extends CollectionDecorator
         }
 
         return $thisRecord;
+    }
+
+    private function markAllSchemaAsDirty()
+    {
+        foreach ($this->dataSource->getCollections() as $collection) {
+            $collection->markSchemaAsDirty();
+        }
     }
 }

@@ -21,6 +21,8 @@ class Collection implements CollectionContract
 
     protected string $transformer;
 
+    protected IlluminateCollection $schema;
+
     public function __construct(
         protected DatasourceContract $dataSource,
         protected string $name,
@@ -30,11 +32,17 @@ class Collection implements CollectionContract
         $this->actions = new IlluminateCollection();
         $this->segments = new IlluminateCollection();
         $this->charts = new IlluminateCollection();
+        $this->schema = new IlluminateCollection();
     }
 
     public function getDataSource(): DatasourceContract
     {
         return $this->dataSource;
+    }
+
+    public function getSchema(): IlluminateCollection
+    {
+        return $this->schema;
     }
 
     public function getName(): string

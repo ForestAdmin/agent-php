@@ -42,11 +42,11 @@ class PublicationCollectionDecorator extends CollectionDecorator
         return $record;
     }
 
-    public function getFields(): IlluminateCollection
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
     {
         $fields = collect();
 
-        foreach ($this->childCollection->getFields() as $name => $field) {
+        foreach ($childSchema as $name => $field) {
             if ($this->isPublished($name)) {
                 $fields->put($name, $field);
             }

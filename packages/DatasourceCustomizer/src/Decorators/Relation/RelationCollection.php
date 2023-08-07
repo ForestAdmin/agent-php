@@ -40,14 +40,13 @@ class RelationCollection extends CollectionDecorator
         $this->markSchemaAsDirty();
     }
 
-    public function getFields(): IlluminateCollection
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
     {
-        $fields = $this->childCollection->getFields();
         foreach ($this->relations as $name => $relation) {
-            $fields->put($name, $relation);
+            $childSchema->put($name, $relation);
         }
 
-        return $fields;
+        return $childSchema;
     }
 
     public function list(Caller $caller, PaginatedFilter $filter, Projection $projection): array

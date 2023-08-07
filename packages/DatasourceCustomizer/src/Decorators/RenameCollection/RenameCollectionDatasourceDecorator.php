@@ -69,6 +69,10 @@ class RenameCollectionDatasourceDecorator extends DatasourceDecorator
 
             $this->fromChildName[$currentName] = $newName;
             $this->toChildName[$newName] = $currentName;
+
+            foreach ($this->collections as $collection) {
+                $collection->markSchemaAsDirty();
+            }
         }
     }
 }

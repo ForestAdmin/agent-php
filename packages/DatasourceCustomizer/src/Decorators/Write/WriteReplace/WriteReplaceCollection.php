@@ -23,15 +23,13 @@ class WriteReplaceCollection extends CollectionDecorator
         $this->markSchemaAsDirty();
     }
 
-    public function getFields(): IlluminateCollection
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
     {
-        $fields = $this->childCollection->getFields();
-
         foreach ($this->handlers as $fieldName => $handler) {
-            $fields[$fieldName]->setIsReadOnly($handler === null);
+            $childSchema[$fieldName]->setIsReadOnly($handler === null);
         }
 
-        return $fields;
+        return $childSchema;
     }
 
     public function create(Caller $caller, array $data)

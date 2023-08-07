@@ -17,9 +17,7 @@ class CollectionDecorator implements CollectionContract
 {
     use CollectionMethods;
 
-    private ?array $lastSchema;
-
-    private array $lastSubSchema;
+    private ?IlluminateCollection $lastSchema = null;
 
     public function __construct(protected CollectionContract|CollectionDecorator $childCollection, protected Datasource $dataSource)
     {
@@ -27,6 +25,39 @@ class CollectionDecorator implements CollectionContract
         $this->actions = new IlluminateCollection();
         $this->segments = new IlluminateCollection();
         $this->charts = new IlluminateCollection();
+
+
+        // When the child collection invalidates its schema, we also invalidate ours.
+        // This is done like this, and not in the markSchemaAsDirty method, because we don't have
+        // a reference to parent collections from children.
+        //        if ($this->childCollection instanceof __CLASS__) {
+        //            $this->childCollection->markSchemaAsDirty();
+        //            $this->markSchemaAsDirty();
+        //        }
+    }
+
+    public function getSchema(): IlluminateCollection
+    {
+        if (! $this->lastSchema) {
+            if (! $this->childCollection instanceof CollectionDecorator) {
+                $childSchema = $this->childCollection->getFields();
+            } else {
+                $childSchema = $this->childCollection->getSchema();
+            }
+            $this->lastSchema = $this->refineSchema($childSchema);
+        }
+
+        return $this->lastSchema;
+    }
+
+    public function markSchemaAsDirty(): void
+    {
+        $this->lastSchema = null;
+    }
+
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
+    {
+        return $childSchema;
     }
 
     public function isSearchable(): bool
@@ -36,7 +67,7 @@ class CollectionDecorator implements CollectionContract
 
     public function getFields(): IlluminateCollection
     {
-        return $this->childCollection->getFields();
+        return $this->getSchema();
     }
 
     public function execute(Caller $caller, string $name, array $data, ?Filter $filter = null)
@@ -84,11 +115,6 @@ class CollectionDecorator implements CollectionContract
         $refinedFilter = $this->refineFilter($caller, $filter);
 
         return $this->childCollection->aggregate($caller, $refinedFilter, $aggregation, $limit);
-    }
-
-    protected function markSchemaAsDirty(): void
-    {
-        $this->lastSchema = null;
     }
 
     protected function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null

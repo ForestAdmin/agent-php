@@ -14,11 +14,11 @@ class RenameCollectionDecorator extends CollectionDecorator
         return $this->dataSource->getCollectionName(parent::getName());
     }
 
-    public function getFields(): IlluminateCollection
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
     {
         $fields = collect();
 
-        foreach ($this->childCollection->getFields() as $fieldName => $schema) {
+        foreach ($childSchema as $fieldName => $schema) {
             if ($schema instanceof RelationSchema) {
                 $schema->setForeignCollection($this->dataSource->getCollectionName($schema->getForeignCollection()));
                 if ($schema instanceof ManyToManySchema) {

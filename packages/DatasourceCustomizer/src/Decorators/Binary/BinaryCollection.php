@@ -40,25 +40,23 @@ class BinaryCollection extends CollectionDecorator
 
     private array $useHexConversion = [];
 
-    public function getFields(): IlluminateCollection
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
     {
-        $fields = collect();
-
         /**
          * @var string $fieldName
          * @var ColumnSchema|RelationSchema $schema
          */
-        foreach ($this->childCollection->getFields() as $fieldName => $schema) {
+        foreach ($childSchema as $fieldName => $schema) {
             if ($schema instanceof ColumnSchema && $schema->getColumnType() === PrimitiveType::BINARY) {
                 $this->binaryFields[] = $fieldName;
                 $schema->setColumnType(PrimitiveType::STRING);
                 $schema->setValidation($this->replaceValidation($fieldName, $schema));
             }
 
-            $fields->put($fieldName, $schema);
+            $childSchema->put($fieldName, $schema);
         }
 
-        return $fields;
+        return $childSchema;
     }
 
     public function setBinaryMode(string $name, string $type): void

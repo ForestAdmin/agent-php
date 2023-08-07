@@ -17,6 +17,7 @@ class ActionCollection extends CollectionDecorator
     public function addAction(string $name, BaseAction $action)
     {
         $this->actions[$name] = $action;
+        $this->markSchemaAsDirty();
     }
 
     public function getActions(): IlluminateCollection
