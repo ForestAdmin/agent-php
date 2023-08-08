@@ -582,7 +582,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             ->and($computedCollection->getFields()['titleCopy'])->toBeInstanceOf(ColumnSchema::class);
     });
 
-    test('importField() should throw wnhen the operators of the pk does not have Equal or In', function () use ($before) {
+    test('importField() should throw when the operators of the pk does not have Equal or In', function () use ($before) {
         $before($this, 'Book', []);
         [$customizer, $datasourceCustomizer] = $this->bucket;
         $stack = $datasourceCustomizer->getStack();

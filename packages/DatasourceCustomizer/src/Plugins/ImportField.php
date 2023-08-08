@@ -24,12 +24,11 @@ class ImportField implements Plugin
         $name = $options['name'];
         $result = collect(explode(':', $options['path']))->reduce(function ($memo, $field) use ($datasourceCustomizer) {
             $collection = $datasourceCustomizer->getCollection($memo['collection']);
-
-            if (! $collection->getSchema()->getFields()->get($field)) {
+            if (! $collection->getSchema()->has($field)) {
                 throw new ForestException('Field ' . $field . ' not found in collection ' . $collection->getName());
             }
 
-            $fieldSchema = $collection->getSchema()->getFields()[$field];
+            $fieldSchema = $collection->getSchema()[$field];
             if ($fieldSchema->getType() === 'Column') {
                 return ['schema' => $fieldSchema];
             }

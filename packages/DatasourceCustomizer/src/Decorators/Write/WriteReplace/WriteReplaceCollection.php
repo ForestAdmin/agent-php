@@ -15,7 +15,7 @@ class WriteReplaceCollection extends CollectionDecorator
 
     public function replaceFieldWriting(string $fieldName, ?\Closure $definition): void
     {
-        if (! $this->getFields()->keys()->contains($fieldName)) {
+        if (! $this->getSchema()->keys()->contains($fieldName)) {
             throw new ForestException('The given field "' . $fieldName . '" does not exist on the ' . $this->getName() . ' collection.');
         }
 

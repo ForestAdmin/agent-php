@@ -18,6 +18,7 @@ class CollectionDecorator implements CollectionContract
     use CollectionMethods;
 
     private ?IlluminateCollection $lastSchema = null;
+    private ?CollectionDecorator $parent = null;
 
     public function __construct(protected CollectionContract|CollectionDecorator $childCollection, protected Datasource $dataSource)
     {
@@ -26,14 +27,16 @@ class CollectionDecorator implements CollectionContract
         $this->segments = new IlluminateCollection();
         $this->charts = new IlluminateCollection();
 
+        if ($this->childCollection instanceof self) {
+            $this->childCollection->setParent($this);
+        }
+    }
 
-        // When the child collection invalidates its schema, we also invalidate ours.
-        // This is done like this, and not in the markSchemaAsDirty method, because we don't have
-        // a reference to parent collections from children.
-        //        if ($this->childCollection instanceof __CLASS__) {
-        //            $this->childCollection->markSchemaAsDirty();
-        //            $this->markSchemaAsDirty();
-        //        }
+    public function setParent(CollectionDecorator $parent): self
+    {
+        $this->parent = $parent;
+
+        return $this;
     }
 
     public function getSchema(): IlluminateCollection
@@ -53,6 +56,7 @@ class CollectionDecorator implements CollectionContract
     public function markSchemaAsDirty(): void
     {
         $this->lastSchema = null;
+        $this->parent?->markSchemaAsDirty();
     }
 
     public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection

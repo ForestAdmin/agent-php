@@ -12,6 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Plugins\ImportField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\Rules;
+use Illuminate\Support\Collection as IlluminateCollection;
 
 class CollectionCustomizer
 {
@@ -24,7 +25,12 @@ class CollectionCustomizer
         return $this->name;
     }
 
-    public function getSchema(): CollectionContract
+    public function getSchema(): IlluminateCollection
+    {
+        return $this->stack->validation->getCollection($this->name)->getSchema();
+    }
+
+    public function getCollection(): CollectionContract
     {
         return $this->stack->validation->getCollection($this->name);
     }
