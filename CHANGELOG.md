@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/ForestAdmin/agent-php/compare/v1.3.0...v1.4.0) (2023-08-08)
+
+
+### Features
+
+* **agent:** allow user to customize error messages ([#80](https://github.com/ForestAdmin/agent-php/issues/80)) ([5ae67e3](https://github.com/ForestAdmin/agent-php/commit/5ae67e341455df26c486b423f4de5d58ee1f6208))
+
 # [1.3.0](https://github.com/ForestAdmin/agent-php/compare/v1.2.0...v1.3.0) (2023-08-01)
 
 
