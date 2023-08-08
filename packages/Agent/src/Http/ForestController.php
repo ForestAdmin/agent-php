@@ -2,17 +2,21 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Http;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestValidationException;
+use ForestAdmin\AgentPHP\Agent\Facades\Logger;
+use ForestAdmin\AgentPHP\Agent\Http\Traits\ErrorHandling;
+
+use function ForestAdmin\config;
+
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
 class ForestController
 {
+    use ErrorHandling;
     public const ROUTE_CHARTS_PREFIX = '/forest/_charts';
 
     /**
@@ -63,37 +67,25 @@ class ForestController
      */
     protected function exceptionHandler(Throwable $exception): JsonResponse
     {
-        if ($exception instanceof ForestValidationException) {
-            $data = [
-                'errors' => [
-                    [
-                        'name'   => 'ForestValidationException',
-                        'detail' => $exception->getMessage(),
-                        'status' => 400,
-                    ],
+        $data = [
+            'errors' => [
+                [
+                    'name'   => $this->getErrorName($exception),
+                    'detail' => $this->getErrorMessage($exception),
+                    'status' => $this->getErrorStatus($exception),
                 ],
-            ];
+            ],
+        ];
 
-            return new JsonResponse($data, 400);
-        } elseif (is_subclass_of($exception, HttpException::class)) {
-            $data = [
-                'errors' => [
-                    [
-                        'name'   => $exception->getName(),
-                        'detail' => $exception->getMessage(),
-                        'status' => $exception->getStatusCode(),
-                    ],
-                ],
-            ];
-
-            if (method_exists($exception, 'getData')) {
-                $data['errors'][0]['data'] = $exception->getData();
-            }
-
-            return new JsonResponse($data, $exception->getStatusCode(), $exception->getHeaders());
+        if (method_exists($exception, 'getData')) {
+            $data['errors'][0]['data'] = $exception->getData();
         }
 
-        throw $exception;
+        if (! config('isProduction')) {
+            Logger::log('Debug', $exception->getTraceAsString());
+        }
+
+        return new JsonResponse($data, $this->getErrorStatus($exception),  $this->getErrorHeaders($exception));
     }
 
     /**

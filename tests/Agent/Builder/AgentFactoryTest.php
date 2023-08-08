@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use Laravel\SerializableClosure\SerializableClosure;
 
 test('addDatasource() should add datasource to the datasourceCustomizer', function () {
     $datasource = new Datasource();
@@ -73,6 +74,15 @@ test('createAgent() should add a new logger instance to the agent container', fu
     );
 
     expect(AgentFactory::get('logger'))->not->toEqual($oldLogger);
+});
+
+test('createAgent() should add a serialized closure customizeErrorMessage to the agent container', function () {
+    $agent = new AgentFactory(AGENT_OPTIONS);
+    $agent->createAgent(['customizeErrorMessage' => fn () => 'customizeErrorMessage']);
+
+    $closure = AgentFactory::get('customizeErrorMessage');
+    expect($closure)->toBeInstanceOf(SerializableClosure::class)
+        ->and($closure())->toEqual('customizeErrorMessage');
 });
 
 test('customizeCollection() should work', function () {

@@ -6,7 +6,6 @@ use ForestAdmin\AgentPHP\Agent\Http\ForestController;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -59,22 +58,22 @@ use Symfony\Component\HttpFoundation\Response;
             ->getMock();
         $forestControllerMock->expects($this->once())
             ->method('getClosure')
-            ->willReturn(fn () => throw new ForestValidationException());
+            ->willReturn(fn () => throw new ForestException());
 
         $result = $forestControllerMock->__invoke($request);
 
         expect($result)
             ->toBeInstanceOf(JsonResponse::class)
             ->and($result->getStatusCode())
-            ->toEqual(400)
+            ->toEqual(500)
             ->and(json_decode($result->getContent(), true, 512, JSON_THROW_ON_ERROR))
             ->toEqual(
                 [
                     'errors' => [
                         [
-                            'name'   => 'ForestValidationException',
-                            'detail' => '',
-                            'status' => 400,
+                            'name'   => 'ForestException',
+                            'detail' => 'Unexpected error',
+                            'status' => 500,
                         ],
                     ],
                 ]
@@ -146,23 +145,6 @@ use Symfony\Component\HttpFoundation\Response;
                     ],
                 ]
             );
-    });
-
-    \Ozzie\Nest\test('should throw exception if the exception is not handled', function () {
-        $this->buildAgent(new Datasource());
-        $_GET['_route'] = 'forest.test';
-        $_GET['_route_params'] = [];
-        $request = Request::createFromGlobals();
-
-        $forestControllerMock = $this->getMockBuilder(ForestController::class)
-            ->onlyMethods(['getClosure'])
-            ->getMock();
-        $forestControllerMock->expects($this->once())
-            ->method('getClosure')
-            ->willReturn(fn () => throw new ForestException());
-
-        expect(static fn () => $forestControllerMock->__invoke($request))
-            ->toThrow(ForestException::class);
     });
 });
 

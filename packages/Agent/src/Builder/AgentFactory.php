@@ -16,6 +16,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 use function ForestAdmin\config;
 
+use Laravel\SerializableClosure\SerializableClosure;
+
 class AgentFactory
 {
     protected const TTL_CONFIG = 3600;
@@ -43,6 +45,11 @@ class AgentFactory
         $this->buildLogger();
         if ($this->hasEnvSecret) {
             $serializableConfig = $this->config;
+
+            if (isset($this->config['customizeErrorMessage']) && is_callable($this->config['customizeErrorMessage']) && ! is_string($this->config['customizeErrorMessage'])) {
+                self::$container->set('customizeErrorMessage', new SerializableClosure($this->config['customizeErrorMessage']));
+            }
+
             unset($serializableConfig['logger'], $serializableConfig['customizeErrorMessage']);
             Cache::put('config', $serializableConfig, self::TTL_CONFIG);
         }
@@ -101,7 +108,11 @@ class AgentFactory
 
     public static function get(string $key)
     {
-        return self::$container->get($key);
+        if (self::$container->has($key)) {
+            return self::$container->get($key);
+        }
+
+        return null;
     }
 
     /**
