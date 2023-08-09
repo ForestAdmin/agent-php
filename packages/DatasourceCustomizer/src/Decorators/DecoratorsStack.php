@@ -21,7 +21,6 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Validation\ValidationCo
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Write\WriteDataSourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use Illuminate\Support\Collection;
-use Spatie\Async\Pool;
 
 class DecoratorsStack
 {
@@ -97,18 +96,13 @@ class DecoratorsStack
 
     public function applyQueuedCustomizations(): void
     {
-        //        $pool = Pool::create();
-
         $queuedCustomizations = $this->customizations->slice(0);
         $this->customizations = collect();
 
         while ($queuedCustomizations->isNotEmpty()) {
             call_user_func($queuedCustomizations->shift());
-            //            $pool->add(fn () => call_user_func($queuedCustomizations->shift()));
             $this->applyQueuedCustomizations();
         }
-
-        //        $pool->wait();
     }
 
     public function build(): void
