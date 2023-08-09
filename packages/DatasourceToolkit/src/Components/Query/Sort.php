@@ -38,7 +38,7 @@ class Sort extends IlluminateCollection
                 function ($memo, $closureResult) {
                     return new Sort([...$memo, ...$closureResult]);
                 },
-                collect()
+                new Sort()
             );
     }
 

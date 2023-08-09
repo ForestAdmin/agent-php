@@ -9,9 +9,9 @@ use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 /**
  * Class Cache
  *
- * @method static array get($key)
- * @method static array put($key, $value, $seconds)
- * @method static array remember($key, Closure $callback, $seconds)
+ * @method static get($key)
+ * @method static put($key, $value, $seconds)
+ * @method static remember($key, Closure $callback, $seconds)
  * @method static bool forget($key)
  *
  * @see CacheServices

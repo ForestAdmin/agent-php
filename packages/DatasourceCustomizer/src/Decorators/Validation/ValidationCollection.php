@@ -51,15 +51,14 @@ class ValidationCollection extends CollectionDecorator
         parent::update($caller, $filter, $patch);
     }
 
-    public function getFields(): IlluminateCollection
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
     {
-        $fields = $this->childCollection->getFields();
         foreach ($this->validation as $name => $rules) {
-            $validation = array_merge($fields[$name]->getValidation(), $rules);
-            $fields[$name]->setValidation($validation);
+            $validation = array_merge($childSchema[$name]->getValidation(), $rules);
+            $childSchema[$name]->setValidation($validation);
         }
 
-        return $fields;
+        return $childSchema;
     }
 
     private function validate(array $record, string $timezone, bool $allFields): void

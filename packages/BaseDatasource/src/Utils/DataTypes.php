@@ -11,6 +11,7 @@ class DataTypes
     {
         return match ($type) {
             Types::BIGINT, Types::DECIMAL, Types::FLOAT, Types::INTEGER, Types::SMALLINT => PrimitiveType::NUMBER,
+            Types::BINARY, Types::BLOB                                                   => PrimitiveType::BINARY,
             Types::BOOLEAN                                                               => PrimitiveType::BOOLEAN,
             Types::DATE_MUTABLE, Types::DATE_IMMUTABLE                                   => PrimitiveType::DATEONLY,
             Types::GUID                                                                  => 'Uuid',

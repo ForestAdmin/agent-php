@@ -10,7 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Empty\EmptyCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Hook\HookCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsEmulate\OperatorsEmulateCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsReplace\OperatorsReplaceCollection;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\PublicationCollectionDecorator;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\PublicationCollectionDatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Relation\RelationCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\RenameField\RenameFieldCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\SchemaCollection;
@@ -20,6 +20,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Sort\SortCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Validation\ValidationCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Write\WriteDataSourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
+use Illuminate\Support\Collection;
 
 class DecoratorsStack
 {
@@ -45,8 +46,12 @@ class DecoratorsStack
     public DatasourceDecorator $publication;
     public DatasourceDecorator $renameField;
 
+    private Collection $customizations;
+
     public function __construct(DatasourceContract $dataSource)
     {
+        $this->customizations = collect();
+
         $last = &$dataSource;
 
         // Step 0: Do not query datasource when we know the result with yield an empty set.
@@ -77,12 +82,27 @@ class DecoratorsStack
         $last = $this->validation = new DatasourceDecorator($last, ValidationCollection::class);
         $last = $this->binary = new DatasourceDecorator($last, BinaryCollection::class);
 
-
         // Step 4: Renaming must be either the very first or very last so that naming in customer code is consistent.
-        $last = $this->publication = new DatasourceDecorator($last, PublicationCollectionDecorator::class);
+        $last = $this->publication = new PublicationCollectionDatasourceDecorator($last);
         $last = $this->renameField = new DatasourceDecorator($last, RenameFieldCollection::class);
 
         $this->dataSource = &$last;
+    }
+
+    public function queueCustomization(\Closure $customization): void
+    {
+        $this->customizations->push($customization);
+    }
+
+    public function applyQueuedCustomizations(): void
+    {
+        $queuedCustomizations = $this->customizations->slice(0);
+        $this->customizations = collect();
+
+        while ($queuedCustomizations->isNotEmpty()) {
+            call_user_func($queuedCustomizations->shift());
+            $this->applyQueuedCustomizations();
+        }
     }
 
     public function build(): void

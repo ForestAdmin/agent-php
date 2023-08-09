@@ -46,14 +46,18 @@ class DatasourceCustomizer
 
     public function addChart(string $name, \Closure $definition): self
     {
-        $this->stack->chart->addChart($name, $definition);
+        $this->stack->queueCustomization(
+            fn () => $this->stack->chart->addChart($name, $definition)
+        );
 
         return $this;
     }
 
     public function use(string $plugin, array $options = []): self
     {
-        (new $plugin())->run($this, null, $options);
+        $this->stack->queueCustomization(
+            fn () => (new $plugin())->run($this, null, $options)
+        );
 
         return $this;
     }
@@ -66,9 +70,16 @@ class DatasourceCustomizer
      */
     public function customizeCollection(string $name, \Closure $handle): self
     {
-        if ($this->stack->dataSource->getCollection($name)) {
-            $handle(new CollectionCustomizer($this, $this->stack, $name));
-        }
+        $handle($this->getCollection($name));
+
+        return $this;
+    }
+
+    public function removeCollection(string|array $names): self
+    {
+        $this->stack->queueCustomization(
+            fn () => $this->stack->publication->keepCollectionsMatching([], is_string($names) ? [$names] : $names)
+        );
 
         return $this;
     }
@@ -80,7 +91,7 @@ class DatasourceCustomizer
 
     public function getCollections(): IlluminateCollection
     {
-        return $this->stack->validation->getCollections()->map(fn ($c) => $this->getCollection($c));
+        return $this->stack->validation->getCollections()->map(fn ($c) => $this->getCollection($c->getName()));
     }
 
     /**
@@ -89,5 +100,12 @@ class DatasourceCustomizer
     public function getStack(): DecoratorsStack
     {
         return $this->stack;
+    }
+
+    public function getDatasource(): DatasourceContract
+    {
+        $this->stack->applyQueuedCustomizations();
+
+        return $this->stack->dataSource;
     }
 }

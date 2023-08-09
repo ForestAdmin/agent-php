@@ -80,7 +80,7 @@ class AgentFactory
 
     public function build(): void
     {
-        self::$container->set('datasource', $this->customizer->getStack()->dataSource);
+        self::$container->set('datasource', $this->customizer->getDatasource());
 
         self::sendSchema();
     }
@@ -97,6 +97,13 @@ class AgentFactory
     public function customizeCollection(string $name, Closure $handle): self
     {
         $this->customizer->customizeCollection($name, $handle);
+
+        return $this;
+    }
+
+    public function removeCollection(string|array $names): self
+    {
+        $this->customizer->removeCollection($names);
 
         return $this;
     }

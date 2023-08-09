@@ -15,7 +15,7 @@ class WriteReplaceCollection extends CollectionDecorator
 
     public function replaceFieldWriting(string $fieldName, ?\Closure $definition): void
     {
-        if (! $this->getFields()->keys()->contains($fieldName)) {
+        if (! $this->getSchema()->keys()->contains($fieldName)) {
             throw new ForestException('The given field "' . $fieldName . '" does not exist on the ' . $this->getName() . ' collection.');
         }
 
@@ -23,15 +23,13 @@ class WriteReplaceCollection extends CollectionDecorator
         $this->markSchemaAsDirty();
     }
 
-    public function getFields(): IlluminateCollection
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
     {
-        $fields = $this->childCollection->getFields();
-
         foreach ($this->handlers as $fieldName => $handler) {
-            $fields[$fieldName]->setIsReadOnly($handler === null);
+            $childSchema[$fieldName]->setIsReadOnly($handler === null);
         }
 
-        return $fields;
+        return $childSchema;
     }
 
     public function create(Caller $caller, array $data)

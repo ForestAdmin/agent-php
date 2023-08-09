@@ -33,12 +33,11 @@ class ComputedCollection extends CollectionDecorator
         }
     }
 
-    public function getFields(): IlluminateCollection
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
     {
-        $fields = $this->childCollection->getFields();
-        /** @var ComputedDefinition $computed */
+        $schema = $childSchema;
         foreach ($this->computeds as $fieldName => $computed) {
-            $fields->put(
+            $schema->put(
                 $fieldName,
                 new ColumnSchema(
                     columnType: $computed->getColumnType(),
@@ -49,7 +48,7 @@ class ComputedCollection extends CollectionDecorator
             );
         }
 
-        return $fields;
+        return $schema;
     }
 
     public function registerComputed(string $name, ComputedDefinition $computed): void

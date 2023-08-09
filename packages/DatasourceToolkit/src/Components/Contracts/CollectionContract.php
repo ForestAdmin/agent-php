@@ -7,10 +7,13 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
+use Illuminate\Support\Collection as IlluminateCollection;
 
 interface CollectionContract
 {
     public function getDataSource(): DatasourceContract;
+
+    public function getSchema(): IlluminateCollection;
 
     public function getName(): string;
 

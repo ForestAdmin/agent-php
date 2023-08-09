@@ -51,17 +51,16 @@ class OperatorsEmulateCollection extends CollectionDecorator
         }
 
         $this->emulateOperators[$name][$operator] = $replaceBy;
+        $this->markSchemaAsDirty();
     }
 
-    public function getFields(): IlluminateCollection
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
     {
-        $fields = $this->childCollection->getFields();
-
         /**
          * @var string $fieldName
          * @var ColumnSchema $schema
          */
-        foreach ($fields as $fieldName => $schema) {
+        foreach ($childSchema as $fieldName => $schema) {
             if (array_key_exists($fieldName, $this->emulateOperators)) {
                 $schema->setFilterOperators(
                     array_unique(
@@ -71,7 +70,7 @@ class OperatorsEmulateCollection extends CollectionDecorator
             }
         }
 
-        return $fields;
+        return $childSchema;
     }
 
     protected function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null

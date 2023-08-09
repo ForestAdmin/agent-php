@@ -14,20 +14,18 @@ use Illuminate\Support\Collection as IlluminateCollection;
 
 class OperatorsReplaceCollection extends CollectionDecorator
 {
-    public function getFields(): IlluminateCollection
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
     {
-        $fields = $this->childCollection->getFields();
-
-        foreach ($fields as $schema) {
-            if ($schema instanceof ColumnSchema) {
-                $newOperators = collect(FrontendFilterable::getRequiredOperators($schema->getColumnType()))
-                    ->filter(fn ($operator) => ConditionTreeEquivalent::hasEquivalentTree($operator, $schema->getFilterOperators(), $schema->getColumnType()))
+        foreach ($childSchema as $field) {
+            if ($field instanceof ColumnSchema) {
+                $newOperators = collect(FrontendFilterable::getRequiredOperators($field->getColumnType()))
+                    ->filter(fn ($operator) => ConditionTreeEquivalent::hasEquivalentTree($operator, $field->getFilterOperators(), $field->getColumnType()))
                     ->toArray();
 
-                $schema->setFilterOperators(
+                $field->setFilterOperators(
                     array_unique(
                         [
-                            ...$schema->getFilterOperators(),
+                            ...$field->getFilterOperators(),
                             ...$newOperators,
                         ]
                     )
@@ -35,7 +33,7 @@ class OperatorsReplaceCollection extends CollectionDecorator
             }
         }
 
-        return $fields;
+        return $childSchema;
     }
 
     protected function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null

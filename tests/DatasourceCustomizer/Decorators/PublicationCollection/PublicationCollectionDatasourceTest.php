@@ -1,6 +1,7 @@
 <?php
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DatasourceDecorator;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\PublicationCollectionDatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\PublicationCollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
@@ -91,7 +92,9 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $datasource->addCollection($collectionPerson);
         $testCase->buildAgent($datasource);
 
-        $decoratedDataSource = new DatasourceDecorator($datasource, PublicationCollectionDecorator::class);
+        //        $decoratedDataSource = new DatasourceDecorator($datasource, PublicationCollectionDecorator::class);
+        $decoratedDataSource = new PublicationCollectionDatasourceDecorator($datasource);
+
         $decoratedDataSource->build();
 
         $newBook = $decoratedDataSource->getCollection('Book');

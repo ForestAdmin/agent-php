@@ -54,6 +54,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $collectionBookPerson = new Collection($datasource, 'BookPerson');
         $collectionBookPerson->addFields(
             [
+                'id'       => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true),
                 'personId' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
                 'bookId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
                 'category' => new ManyToOneSchema(
@@ -94,7 +95,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $collectionCategory = new Collection($datasource, 'Category');
         $collectionCategory->addFields(
             [
-                'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true),
                 'label' => new ColumnSchema(columnType: PrimitiveType::STRING),
                 'books' => new OneToManySchema(
                     originKey: 'categoryId',
@@ -127,7 +128,6 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $earlyComputed = $stack->earlyComputed;
         $earlyComputed = mock($earlyComputed)
             ->shouldReceive('getCollection')
-            ->once()
             ->andReturn($datasourceCustomizer->getStack()->earlyComputed->getCollection('Book'))
             ->getMock();
 
@@ -143,6 +143,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         );
 
         $customizer->addField('test', $fieldDefinition);
+        $datasourceCustomizer->getDatasource();
         \Mockery::close();
 
         /** @var ComputedCollection $computedCollection */
@@ -180,7 +181,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
         $customizer->addManyToOneRelation('mySelf', 'Book', 'id', 'childId');
         $customizer->addField('mySelf', $fieldDefinition);
-
+        $datasourceCustomizer->getDatasource();
         \Mockery::close();
 
         /** @var ComputedCollection $computedCollection */
@@ -200,7 +201,6 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $book = $stack->relation->getCollection('Book');
         $bookRelation = mock($book)
             ->shouldReceive('addRelation')
-            ->once()
             ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Book'))
             ->getMock();
         $collections = $stack->relation->getCollections();
@@ -219,6 +219,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
         $customizer->addManyToOneRelation('mySelf', 'Book', 'id', 'childId');
         $customizer->addField('mySelf', $fieldDefinition);
+        $datasourceCustomizer->getDatasource();
 
         /** @var ComputedCollection $computedCollection */
         $computedCollection = $datasourceCustomizer->getStack()->lateComputed->getCollection('Book');
@@ -234,7 +235,6 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $book = $stack->relation->getCollection('Book');
         $bookRelation = mock($book)
             ->shouldReceive('addRelation')
-            ->once()
             ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Book'))
             ->getMock();
         $collections = $stack->relation->getCollections();
@@ -251,8 +251,9 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             false
         );
 
-        $customizer->addOneToOneRelation('newRelation', 'Person', 'Person.id', 'childId');
+        $customizer->addOneToOneRelation('newRelation', 'Person', 'id', 'childId');
         $customizer->addField('newRelation', $fieldDefinition);
+        $datasourceCustomizer->getDatasource();
 
         /** @var ComputedCollection $computedCollection */
         $computedCollection = $datasourceCustomizer->getStack()->lateComputed->getCollection('Book');
@@ -268,7 +269,6 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $category = $stack->relation->getCollection('Category');
         $categoryRelation = mock($category)
             ->shouldReceive('addRelation')
-            ->once()
             ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Category'))
             ->getMock();
         $collections = $stack->relation->getCollections();
@@ -285,8 +285,9 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             false
         );
 
-        $customizer->addOneToManyRelation('newRelation', 'Person', 'id', 'Person.id');
+        $customizer->addOneToManyRelation('newRelation', 'Person', 'id', 'id');
         $customizer->addField('newRelation', $fieldDefinition);
+        $datasourceCustomizer->getDatasource();
 
         /** @var ComputedCollection $computedCollection */
         $computedCollection = $datasourceCustomizer->getStack()->lateComputed->getCollection('Category');
@@ -295,18 +296,17 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
     });
 
     test('relations addManyToManyRelation() should add a many to many', function () use ($before) {
-        $before($this, 'Category');
+        $before($this, 'Person');
         [$customizer, $datasourceCustomizer] = $this->bucket;
 
         $stack = $datasourceCustomizer->getStack();
-        $category = $stack->relation->getCollection('Category');
-        $categoryRelation = mock($category)
+        $person = $stack->relation->getCollection('Person');
+        $personRelation = mock($person)
             ->shouldReceive('addRelation')
-            ->once()
-            ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Category'))
+            ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Person'))
             ->getMock();
         $collections = $stack->relation->getCollections();
-        $collections->put('Category', $categoryRelation);
+        $collections->put('Person', $personRelation);
 
         $this->invokeProperty($stack->relation, 'collections', $collections);
         $this->invokeProperty($datasourceCustomizer, 'stack', $stack);
@@ -319,11 +319,12 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             false
         );
 
-        $customizer->addManyToManyRelation('newRelation', 'Person', '', 'PersonCategory', 'id', 'Person.id');
+        $customizer->addManyToManyRelation('newRelation', 'Person', 'BookPerson', 'id', 'id');
         $customizer->addField('newRelation', $fieldDefinition);
+        $datasourceCustomizer->getDatasource();
 
         /** @var ComputedCollection $computedCollection */
-        $computedCollection = $datasourceCustomizer->getStack()->lateComputed->getCollection('Category');
+        $computedCollection = $datasourceCustomizer->getStack()->lateComputed->getCollection('Person');
 
         expect($computedCollection->getFields())->toHaveKey('newRelation');
     });
@@ -340,6 +341,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             'operator' => Operators::GREATER_THAN,
             'value'    => 1,
         ]);
+        $datasourceCustomizer->getDatasource();
 
         expect($book->getSegments()->toArray())->toEqual(['newSegment']);
     });
@@ -352,6 +354,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $book = $stack->sort->getCollection('Book');
 
         $customizer->emulateFieldSorting('title');
+        $datasourceCustomizer->getDatasource();
 
         expect($this->invokeProperty($book, 'sorts'))->toHaveKey('title');
     });
@@ -364,6 +367,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $book = $stack->sort->getCollection('Book');
 
         $customizer->replaceFieldSorting('title', [['field' => 'title', 'ascending' => true]]);
+        $datasourceCustomizer->getDatasource();
 
         $sort = $this->invokeProperty($book, 'sorts');
         expect($sort)
@@ -392,6 +396,8 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             ['field' => 'title', 'operator' => Operators::EQUAL, 'value' => $search],
         ];
         $customizer->replaceSearch($condition);
+        $datasourceCustomizer->getDatasource();
+
         \Mockery::close();
 
         /** @var $searchCollection $searchCollection */
@@ -408,10 +414,10 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $book = $stack->schema->getCollection('Book');
 
         $customizer->disableCount();
+        $datasourceCustomizer->getDatasource();
 
         expect($book->isCountable())->toBeFalse();
     });
-
 
     test('addChart() should add a chart', function () use ($before) {
         $before($this);
@@ -420,6 +426,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $stack = $datasourceCustomizer->getStack();
         $book = $stack->chart->getCollection('Book');
         $customizer->addChart('newChart', fn ($context, $resultBuilder) => $resultBuilder->value(34));
+        $datasourceCustomizer->getDatasource();
 
         expect($book->getCharts()->toArray())->toEqual(['newChart']);
     });
@@ -451,6 +458,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             );
         };
         $customizer->replaceFieldWriting($field, $condition);
+        $datasourceCustomizer->getDatasource();
         \Mockery::close();
 
         /** @var WriteReplaceCollection $writeReplaceCollection */
@@ -463,6 +471,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $before($this);
         [$customizer, $datasourceCustomizer] = $this->bucket;
         $customizer->renameField('title', 'newTitle');
+        $datasourceCustomizer->getDatasource();
         /** @var ComputedCollection $computedCollection */
         $computedCollection = $datasourceCustomizer->getStack()->renameField->getCollection('Book');
 
@@ -475,6 +484,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $before($this);
         [$customizer, $datasourceCustomizer] = $this->bucket;
         $customizer->removeField('title');
+        $datasourceCustomizer->getDatasource();
         /** @var PublicationCollectionDecorator $computedCollection */
         $computedCollection = $datasourceCustomizer->getStack()->publication->getCollection('Book');
 
@@ -509,6 +519,8 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
                 ],
             ]
         );
+        $datasourceCustomizer->getDatasource();
+
         \Mockery::close();
 
         /** @var ComputedCollection $computedCollection */
@@ -532,8 +544,9 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
     test('addExternalRelation() should thrown an exception when the plugin have options keys missing', function () use ($before) {
         $before($this);
         [$customizer, $datasourceCustomizer] = $this->bucket;
+        $customizer->addExternalRelation('tags', []);
 
-        expect(fn () => $customizer->addExternalRelation('tags', []))->toThrow(ForestException::class, '🌳🌳🌳 The options parameter must contains the following keys: `name, schema, listRecords`');
+        expect(fn () => $datasourceCustomizer->getDatasource())->toThrow(ForestException::class, '🌳🌳🌳 The options parameter must contains the following keys: `name, schema, listRecords`');
     });
 
     test('importField() should call addField', function () use ($before) {
@@ -558,6 +571,8 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
                 'path' => 'title',
             ]
         );
+        $datasourceCustomizer->getDatasource();
+
         \Mockery::close();
 
         /** @var ComputedCollection $computedCollection */
@@ -567,7 +582,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             ->and($computedCollection->getFields()['titleCopy'])->toBeInstanceOf(ColumnSchema::class);
     });
 
-    test('importField() should throw wnhen the operators of the pk does not have Equal or In', function () use ($before) {
+    test('importField() should throw when the operators of the pk does not have Equal or In', function () use ($before) {
         $before($this, 'Book', []);
         [$customizer, $datasourceCustomizer] = $this->bucket;
         $stack = $datasourceCustomizer->getStack();
@@ -582,58 +597,48 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $this->invokeProperty($stack, 'lateComputed', $lateComputed);
         $this->invokeProperty($datasourceCustomizer, 'stack', $stack);
         $this->invokeProperty($customizer, 'stack', $stack);
+        $customizer->importField('titleCopy', ['path' => 'title']);
 
-        expect(fn () => $customizer->importField(
-            'titleCopy',
-            [
-                'path' => 'title',
-            ]
-        ))->toThrow(ForestException::class, "🌳🌳🌳 Cannot override operators on collection titleCopy: the primary key columns must support 'Equal' and 'In' operators");
+        expect(fn () => $datasourceCustomizer->getDatasource())->toThrow(ForestException::class, "🌳🌳🌳 Cannot override operators on collection titleCopy: the primary key columns must support 'Equal' and 'In' operators");
         \Mockery::close();
     });
 
     test('importField() when the field is not writable should throw an exception', function () use ($before) {
         $before($this);
         [$customizer, $datasourceCustomizer] = $this->bucket;
+        $customizer->importField('authorName', ['path' => 'author:nameInReadOnly']);
 
-        expect(fn () => $customizer->importField(
-            'authorName',
-            [
-                'path' => 'author:nameInReadOnly',
-            ]
-        ))->toThrow(ForestException::class, '🌳🌳🌳 Readonly option should not be false because the field author:nameInReadOnly is not writable');
+        expect(fn () => $datasourceCustomizer->getDatasource())->toThrow(ForestException::class, '🌳🌳🌳 Readonly option should not be false because the field author:nameInReadOnly is not writable');
     });
 
     test('importField() when the "readOnly" option is false should throw an exception', function () use ($before) {
         $before($this);
         [$customizer, $datasourceCustomizer] = $this->bucket;
-
-        expect(fn () => $customizer->importField(
+        $customizer->importField(
             'authorName',
             [
                 'path'     => 'author:nameInReadOnly',
                 'readonly' => false,
             ]
-        ))->toThrow(ForestException::class, '🌳🌳🌳 Readonly option should not be false because the field author:nameInReadOnly is not writable');
+        );
+
+        expect(fn () => $datasourceCustomizer->getDatasource())->toThrow(ForestException::class, '🌳🌳🌳 Readonly option should not be false because the field author:nameInReadOnly is not writable');
     });
 
     test('importField() when the given field does not exist should throw an exception', function () use ($before) {
         $before($this);
         [$customizer, $datasourceCustomizer] = $this->bucket;
+        $customizer->importField('authorName', ['path'     => 'author:doesNotExistPath']);
 
-        expect(fn () => $customizer->importField(
-            'authorName',
-            [
-                'path'     => 'author:doesNotExistPath',
-            ]
-        ))->toThrow(ForestException::class, '🌳🌳🌳 Field doesNotExistPath not found in collection Person');
+        expect(fn () => $datasourceCustomizer->getDatasource())->toThrow(ForestException::class, '🌳🌳🌳 Field doesNotExistPath not found in collection Person');
     });
 
     test('importField() should thrown an exception when the plugin have options keys missing', function () use ($before) {
         $before($this);
         [$customizer, $datasourceCustomizer] = $this->bucket;
+        $customizer->importField('titleCopy', []);
 
-        expect(fn () => $customizer->importField('titleCopy', []))->toThrow(ForestException::class, '🌳🌳🌳 The options parameter must contains the following keys: `name, path`');
+        expect(fn () => $datasourceCustomizer->getDatasource())->toThrow(ForestException::class, '🌳🌳🌳 The options parameter must contains the following keys: `name, path`');
     });
 
     test('emulateFieldFiltering() should emulate operator on field', function () use ($before) {
@@ -644,6 +649,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
          */
         [$customizer, $datasourceCustomizer] = $this->bucket;
         $customizer->emulateFieldFiltering('reference');
+        $datasourceCustomizer->getDatasource();
         /** @var ColumnSchema $field */
         $field = $datasourceCustomizer->getStack()->dataSource->getCollection('Book')->getFields()->get('reference');
 
@@ -660,6 +666,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
          */
         [$customizer, $datasourceCustomizer] = $this->bucket;
         $customizer->addHook('before', 'List', fn () => 'before hook');
+        $datasourceCustomizer->getDatasource();
         /** @var HookCollection $computedCollection */
         $hookCollection = $datasourceCustomizer->getStack()->hook->getCollection('Book');
         $hooks = $this->invokeProperty($hookCollection, 'hooks')['List'];
