@@ -24,6 +24,7 @@ class Collection implements CollectionContract
     public function __construct(
         protected DatasourceContract $dataSource,
         protected string $name,
+        protected $nativeDriver = null
     ) {
         $this->fields = new IlluminateCollection();
         $this->actions = new IlluminateCollection();
@@ -80,5 +81,10 @@ class Collection implements CollectionContract
 
     public function renderChart(Caller $caller, string $name, array $recordId)
     {
+    }
+
+    public function getNativeDriver()
+    {
+        return $this->nativeDriver;
     }
 }

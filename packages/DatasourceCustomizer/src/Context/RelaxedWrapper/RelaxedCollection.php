@@ -49,4 +49,9 @@ class RelaxedCollection
     {
         return $this->collection->aggregate($this->caller, $filter, $aggregation, $limit);
     }
+
+    public function getNativeDriver()
+    {
+        return $this->collection->getNativeDriver();
+    }
 }

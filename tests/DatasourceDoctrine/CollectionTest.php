@@ -43,6 +43,16 @@ test('getRelationType() should return a null type on unknown relation', function
     expect($result)->toBeNull();
 });
 
+test('getNativeDriver() should return a EntityManager instance', function () {
+    /** @var DoctrineDatasource $doctrineDatasource */
+    global $doctrineDatasource;
+    $collection = $doctrineDatasource->getCollection('Book');
+
+    $result = $collection->getNativeDriver();
+
+    expect($result)->toBeInstanceOf(EntityManager::class);
+});
+
 //test('addOneToOne() should throw when the mapped field doesn\'t exist into the related entity', function () {
 //    /** @var DoctrineDatasource $doctrineDatasource */
 //    global $doctrineDatasource;

@@ -41,6 +41,11 @@ class Collection extends BaseCollection
         return $this->className;
     }
 
+    public function getNativeDriver()
+    {
+        return $this->datasource->getEntityManager();
+    }
+
     /**
      * @throws \ReflectionException
      * @throws \Exception
