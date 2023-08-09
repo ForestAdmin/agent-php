@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/ForestAdmin/agent-php/compare/v1.4.0...v1.5.0) (2023-08-09)
+
+
+### Features
+
+* **datasource-customizer:** expose native driver to customers ([#81](https://github.com/ForestAdmin/agent-php/issues/81)) ([cd726bc](https://github.com/ForestAdmin/agent-php/commit/cd726bc69fba18161c530e0f664b6a849fad8c3b))
+
 # [1.4.0](https://github.com/ForestAdmin/agent-php/compare/v1.3.0...v1.4.0) (2023-08-08)
 
 
