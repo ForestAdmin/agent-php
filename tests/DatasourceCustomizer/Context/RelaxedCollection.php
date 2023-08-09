@@ -34,7 +34,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $this->bucket['bookCollection'] = $datasourceDecorator->getCollection('Book');
     });
 
-    test('aaa', function (Caller $caller) {
+    test('getNativeDriver should work', function (Caller $caller) {
         $collectionBook = $this->bucket['bookCollection'];
         $relaxedCollection = new RelaxedCollection($collectionBook, $caller);
 
