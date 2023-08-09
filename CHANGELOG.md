@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/ForestAdmin/agent-php/compare/v1.5.0...v1.6.0) (2023-08-09)
+
+
+### Features
+
+* **datasource-customizer:** allow removing collections during customization ([#79](https://github.com/ForestAdmin/agent-php/issues/79)) ([e048e51](https://github.com/ForestAdmin/agent-php/commit/e048e5145f30f7be95ff92744e4023570a1fda33))
+
 # [1.5.0](https://github.com/ForestAdmin/agent-php/compare/v1.4.0...v1.5.0) (2023-08-09)
 
 
