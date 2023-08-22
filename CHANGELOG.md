@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/ForestAdmin/agent-php/compare/v1.6.0...v1.6.1) (2023-08-22)
+
+
+### Bug Fixes
+
+* cache name to be forget on scope invalidation ([#82](https://github.com/ForestAdmin/agent-php/issues/82)) ([09cac4a](https://github.com/ForestAdmin/agent-php/commit/09cac4a64bbe91cc21a9968c9c6145b24ecf7b4c))
+
 # [1.6.0](https://github.com/ForestAdmin/agent-php/compare/v1.5.0...v1.6.0) (2023-08-09)
 
 
