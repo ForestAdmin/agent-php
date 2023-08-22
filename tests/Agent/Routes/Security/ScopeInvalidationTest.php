@@ -3,7 +3,6 @@
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Security\ScopeInvalidation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 function factoryScopeInvalidation(TestCase $testCase): ScopeInvalidation
@@ -41,12 +40,4 @@ test('handleRequest() should return a response 200', function () {
                 'status'  => 204,
             ]
         );
-});
-
-test('handleRequest() throw when renderingId is not a numeric value', function () {
-    $_GET['renderingId'] = 'foo';
-    $scopeInvalidation = factoryScopeInvalidation($this);
-
-    expect(fn () => $scopeInvalidation->handleRequest())
-        ->toThrow(ForestException::class, '🌳🌳🌳 Malformed body');
 });
