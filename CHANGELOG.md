@@ -1,3 +1,10 @@
+## [1.6.3](https://github.com/ForestAdmin/agent-php/compare/v1.6.2...v1.6.3) (2023-08-30)
+
+
+### Bug Fixes
+
+* dependency version of monolog ([#84](https://github.com/ForestAdmin/agent-php/issues/84)) ([c73282c](https://github.com/ForestAdmin/agent-php/commit/c73282c63f11158e11e3c75e4b64d24d8c77b887))
+
 ## [1.6.2](https://github.com/ForestAdmin/agent-php/compare/v1.6.1...v1.6.2) (2023-08-30)
 
 
