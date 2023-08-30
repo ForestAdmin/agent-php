@@ -1,3 +1,10 @@
+## [1.6.2](https://github.com/ForestAdmin/agent-php/compare/v1.6.1...v1.6.2) (2023-08-30)
+
+
+### Bug Fixes
+
+* **permissions:** allow users to request approval ([#83](https://github.com/ForestAdmin/agent-php/issues/83)) ([44e451d](https://github.com/ForestAdmin/agent-php/commit/44e451d3e4981c86b4e5533573fdfd90a364c867))
+
 ## [1.6.1](https://github.com/ForestAdmin/agent-php/compare/v1.6.0...v1.6.1) (2023-08-22)
 
 
