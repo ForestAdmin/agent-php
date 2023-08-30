@@ -42,6 +42,7 @@ function permissionsFactory(TestCase $testCase, array $post = [], $scope = null,
             'title' => new ColumnSchema(columnType: PrimitiveType::STRING),
         ]
     );
+
     $datasource->addCollection($collectionBooking);
     $testCase->buildAgent($datasource);
 
@@ -145,10 +146,7 @@ function permissionsFactory(TestCase $testCase, array $post = [], $scope = null,
                                     ],
                                 ],
                                 'approvalRequired'           => [
-                                    'roles' => [
-                                        0 => 13,
-                                        1 => $roleId,
-                                    ],
+                                    'roles' => [],
                                 ],
                                 'approvalRequiredConditions' => [],
                                 'userApprovalEnabled'        => [
@@ -567,7 +565,10 @@ test('canSmartAction() should return true when user can execute the action', fun
     ];
     permissionsFactory($this, $post);
     $permissions = $this->bucket['permissions'];
-    $collection = $this->bucket['collection'];
+    $collection = mock($this->bucket['collection'])
+        ->shouldReceive('aggregate')
+        ->andReturn([['value' => 1]])
+        ->getMock();
 
     $request = Request::createFromGlobals();
     $mockRequest = mock($request)
