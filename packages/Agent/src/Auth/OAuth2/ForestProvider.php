@@ -2,6 +2,8 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Auth\OAuth2;
 
+use ErrorException;
+use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
 use ForestAdmin\AgentPHP\Agent\Utils\Traits\FormatGuzzle;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
@@ -94,7 +96,7 @@ class ForestProvider extends AbstractProvider
     protected function checkResponse(ResponseInterface $response, $data)
     {
         if (404 === $response->getStatusCode()) {
-            throw new \ErrorException(ErrorMessages::SECRET_NOT_FOUND);
+            throw new ErrorException(ErrorMessages::SECRET_NOT_FOUND);
         } elseif (422 === $response->getStatusCode()) {
             throw new ErrorException(ErrorMessages::SECRET_AND_RENDERINGID_INCONSISTENT);
         } elseif (200 !== $response->getStatusCode()) {

@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Context;
 
+use ForestAdmin\AgentPHP\Agent\Facades\Logger;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ActionCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
@@ -90,9 +91,22 @@ class ActionContext extends CollectionCustomizationContext
 
     /**
      * @return string|null
+     * @deprecated use `hasFieldChange` instead.
      */
     public function getChangeField(): ?string
     {
+        Logger::log(
+            'warn',
+            'Usage of `getChangeField` is deprecated, please use `hasFieldChanged` instead.'
+        );
+
         return $this->changeField;
+    }
+
+    public function hasFieldChanged(string $fieldName): bool
+    {
+        $this->used[$fieldName] = $fieldName;
+
+        return $this->changeField === $fieldName;
     }
 }

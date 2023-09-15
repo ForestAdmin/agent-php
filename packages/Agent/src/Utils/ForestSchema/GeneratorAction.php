@@ -66,8 +66,11 @@ class GeneratorAction
             'isReadOnly'  => $field->isReadOnly(),
             'field'       => $field->getLabel(),
             'value'       => ForestActionValueConverter::valueToForest($field), // to check
-            'hook'        => 'changeHook',
         ];
+
+        if ($field->isWatchChanges()) {
+            $output['hook'] = 'changeHook';
+        }
 
         if ($field->getType() === FieldType::COLLECTION) {
             $collection = $datasource->getCollection($field->getCollectionName());
