@@ -58,7 +58,7 @@ class ActionCollection extends CollectionDecorator
         $context = $this->getContext($caller, $action, $formValues, $filter, $used, $changeField);
 
         $dynamicFields = $action->getForm();
-        $dynamicFields = $this->dropDefaults($context, $dynamicFields, empty($data), $formValues);
+        $dynamicFields = $this->dropDefaults($context, $dynamicFields, $formValues);
         $dynamicFields = $this->dropIfs($context, $dynamicFields);
         $fields = $this->dropDeferred($context, $dynamicFields);
         $used = $context->getUsed();
@@ -87,14 +87,17 @@ class ActionCollection extends CollectionDecorator
         }
     }
 
-    private function dropDefaults(ActionContext $context, array $fields, bool $isFirstCall, array &$data): array
+    private function dropDefaults(ActionContext $context, array $fields, array &$data): array
     {
-        if ($isFirstCall) {
-            $defaults = collect($fields)->map(fn ($field) => $this->evaluate($context, $field->getDefaultValue()));
+        $unvaluedFields = collect($fields)->filter(fn ($field) => ! array_key_exists($field->getLabel(), $data));
+        $defaults = $unvaluedFields->map(fn ($field) => $this->evaluate($context, $field->getDefaultValue()));
 
-            foreach ($fields as $index => $field) {
-                $data[$field->getLabel()] = $defaults[$index];
-            }
+        foreach ($unvaluedFields as $index => $field) {
+            $data[$field->getLabel()] = $defaults[$index];
+        }
+
+        foreach ($fields as &$field) {
+            $field->setDefaultValue(null);
         }
 
         return $fields;

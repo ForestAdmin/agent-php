@@ -196,6 +196,37 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
         ]);
     })->with('caller');
 
+    test('getForm() should compute dynamic default value on added field', function (Caller $caller) {
+        $datasourceDecorator = $this->bucket[0];
+
+        $baseAction = new BaseAction(
+            scope: ActionScope::SINGLE,
+            execute: fn ($context, $responseBuilder) => $responseBuilder->error('meeh'),
+            form: [
+                new DynamicField(type: FieldType::STRING, label: 'firstname', defaultValue: fn () => 'DynamicDefault'),
+                new DynamicField(type: FieldType::STRING, label: 'lastname', isReadOnly: fn ($context) => $context->getFormValue('firstname') !== null),
+            ],
+        );
+
+        $collection = $datasourceDecorator->getCollection('Product');
+        $collection->addAction('action-test', $baseAction);
+
+        expect($collection->getForm($caller, 'action-test', ['lastname' => 'value'], new Filter()))->toEqual([
+            new ActionField(
+                type: 'String',
+                label: 'firstname',
+                watchChanges: true,
+                value: 'DynamicDefault'
+            ),
+            new ActionField(
+                type: 'String',
+                label: 'lastname',
+                watchChanges: false,
+                value: 'value'
+            ),
+        ]);
+    })->with('caller');
+
     test('getForm() should compute readonly (false) and keep null firstname', function (Caller $caller) {
         $datasourceDecorator = $this->bucket[0];
 
