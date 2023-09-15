@@ -1,7 +1,12 @@
 <?php
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ActionCollection;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseAction;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Context\ActionContext;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ResultBuilder;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\ActionScope;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
@@ -111,5 +116,51 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $context = new ActionContext($actionCollection, $caller, new PaginatedFilter(), ['title' => 'Foundation']);
 
         expect($context->getChangeField())->toBeNull();
+    })->with('caller');
+
+    test('getChangeField should log warning on changedField usage', closure: function (Caller $caller) {
+        $fp = fopen("php://memory", 'a+');
+        $this->agent->createAgent(
+            [
+                'logger'       => fn ($level, $message) => fwrite($fp, $message),
+            ]
+        );
+
+        $actionCollection = $this->bucket['actionCollection'];
+        $context = new ActionContext($actionCollection, $caller, new PaginatedFilter(), ['title' => 'Foundation'], [], 'MyChangeField');
+        $context->getChangeField();
+
+        rewind($fp);
+        expect(stream_get_contents($fp))->toEqual('Usage of `getChangeField` is deprecated, please use `hasFieldChanged` instead.');
+        fclose($fp);
+    })->with('caller');
+
+    test('hasFieldChanged should add watchChange property to fields that need to trigger a recompute on change', closure: function (Caller $caller) {
+        /** @var ActionCollection $actionCollection */
+        $actionCollection = $this->bucket['actionCollection'];
+        $actionCollection->addAction(
+            'make photocopy',
+            new BaseAction(
+                scope: ActionScope::SINGLE,
+                execute: fn ($context, ResultBuilder $resultBuilder) => $resultBuilder->error('meeh'),
+                form: [
+                    new DynamicField(type: FieldType::STRING, label: 'change'),
+                    new DynamicField(
+                        type: FieldType::STRING,
+                        label: 'to change',
+                        isReadOnly: true,
+                        value: function ($context) {
+                            if ($context->hasFieldChanged('change')) {
+                                return $context->getFormValue('change');
+                            }
+                        }
+                    ),
+                ]
+            )
+        );
+        $fields = $actionCollection->getForm($caller, 'make photocopy');
+
+        expect($fields[0]->isWatchChanges())->toBeTrue()
+            ->and($fields[1]->isWatchChanges())->toBeFalse();
     })->with('caller');
 });

@@ -389,7 +389,6 @@ test('handleHookRequest should return the result of an action', function () {
                         'isReadOnly'  => false,
                         'field'       => 'amount',
                         'value'       => null,
-                        'hook'        => 'changeHook',
                         'type'        => 'Number',
                     ],
                     [
@@ -398,17 +397,16 @@ test('handleHookRequest should return the result of an action', function () {
                         'isReadOnly'  => false,
                         'field'       => 'description',
                         'value'       => null,
-                        'hook'        => 'changeHook',
                         'type'        => 'String',
-                    ], [
-                    'description' => null,
-                    'isRequired'  => false,
-                    'isReadOnly'  => true,
-                    'field'       => 'amount X10',
-                    'value'       => '0',
-                    'hook'        => 'changeHook',
-                    'type'        => 'String',
-                ],
+                    ],
+                    [
+                        'description' => null,
+                        'isRequired'  => false,
+                        'isReadOnly'  => true,
+                        'field'       => 'amount X10',
+                        'value'       => '0',
+                        'type'        => 'String',
+                    ],
                 ]
             )
         );
@@ -482,7 +480,6 @@ test('handleHookRequest should return the result of an action on a association',
                         'isReadOnly'  => false,
                         'field'       => 'rate',
                         'value'       => 10,
-                        'hook'        => 'changeHook',
                         'type'        => 'Number',
                     ],
                 ]
