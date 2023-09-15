@@ -2,8 +2,8 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
+use ForestAdmin\AgentPHP\Agent\Facades\Logger;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 use function ForestAdmin\config;
 
@@ -19,7 +19,7 @@ class SchemaEmitter
             if (config('schemaPath') && file_exists(config('schemaPath'))) {
                 $schema = json_decode(file_get_contents(config('schemaPath')), true, 512, JSON_THROW_ON_ERROR);
             } else {
-                throw new ForestException('The .forestadmin-schema.json file doesn\'t exist');
+                Logger::log('Warn', 'The .forestadmin-schema.json file doesn\'t exist');
             }
         } else {
             $schema = self::generate($datasource);
