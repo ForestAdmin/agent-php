@@ -1,3 +1,10 @@
+## [1.7.3](https://github.com/ForestAdmin/agent-php/compare/v1.7.2...v1.7.3) (2023-09-15)
+
+
+### Bug Fixes
+
+* **datasource-customizer:** fix smart action default value behavior ([#88](https://github.com/ForestAdmin/agent-php/issues/88)) ([40eee42](https://github.com/ForestAdmin/agent-php/commit/40eee42e2f8cc9967bda6efe20e25cbb8cd59ef8))
+
 ## [1.7.2](https://github.com/ForestAdmin/agent-php/compare/v1.7.1...v1.7.2) (2023-09-15)
 
 
