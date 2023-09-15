@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/ForestAdmin/agent-php/compare/v1.6.3...v1.7.0) (2023-09-15)
+
+
+### Features
+
+* **log:** add log when the forestadmin-schema doesn't exist in production ([#85](https://github.com/ForestAdmin/agent-php/issues/85)) ([556953c](https://github.com/ForestAdmin/agent-php/commit/556953cbf53f08430ce3f0af8e57bbdec32b3ea0))
+
 ## [1.6.3](https://github.com/ForestAdmin/agent-php/compare/v1.6.2...v1.6.3) (2023-08-30)
 
 
