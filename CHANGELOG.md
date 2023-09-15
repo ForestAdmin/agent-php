@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/ForestAdmin/agent-php/compare/v1.7.0...v1.7.1) (2023-09-15)
+
+
+### Bug Fixes
+
+* user with permission on the relationship can export it ([#86](https://github.com/ForestAdmin/agent-php/issues/86)) ([c6ffa7f](https://github.com/ForestAdmin/agent-php/commit/c6ffa7fe664741c9c3f9266e64b8c17d05d0a818))
+
 # [1.7.0](https://github.com/ForestAdmin/agent-php/compare/v1.6.3...v1.7.0) (2023-09-15)
 
 
