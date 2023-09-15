@@ -75,7 +75,7 @@
         "forestadmin/php-datasource-eloquent": "self.version",
         "forestadmin/php-datasource-toolkit": "self.version"
     },
-    "version": "1.7.1",
+    "version": "1.7.2",
     "config": {
         "allow-plugins": {
             "pestphp/pest-plugin": true

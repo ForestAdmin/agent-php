@@ -1,3 +1,10 @@
+## [1.7.2](https://github.com/ForestAdmin/agent-php/compare/v1.7.1...v1.7.2) (2023-09-15)
+
+
+### Bug Fixes
+
+* **datasource-customizer:** add hasFieldChanged function to handle change hook on this field ([#87](https://github.com/ForestAdmin/agent-php/issues/87)) ([be14602](https://github.com/ForestAdmin/agent-php/commit/be14602f81e7e16d617ad1d93a016e1f590d6fb8))
+
 ## [1.7.1](https://github.com/ForestAdmin/agent-php/compare/v1.7.0...v1.7.1) (2023-09-15)
 
 
