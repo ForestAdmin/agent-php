@@ -86,7 +86,7 @@ $before = static function (TestCase $testCase, $args = []) {
     Cache::put(
         'forest.collections',
         [
-            'User' => [
+            'Car' => [
                 'browse'  => [
                     0 => 1,
                 ],
