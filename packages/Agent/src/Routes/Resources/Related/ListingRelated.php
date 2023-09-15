@@ -35,7 +35,7 @@ class ListingRelated extends AbstractRelationRoute
         }
 
         $this->build($args);
-        $this->permissions->can('browse', $this->collection);
+        $this->permissions->can('browse', $this->childCollection);
         $scope = $this->permissions->getScope($this->childCollection);
         $filter = ContextFilterFactory::buildPaginated($this->childCollection, $this->request, $scope);
 
@@ -51,19 +51,19 @@ class ListingRelated extends AbstractRelationRoute
         );
 
         return [
-            'name'              => $this->childCollection->getName(),
-            'content'           => JsonApi::renderCollection($results, $this->childCollection->makeTransformer(), $this->childCollection->getName(), $this->request),
+            'name'      => $this->childCollection->getName(),
+            'content'   => JsonApi::renderCollection($results, $this->childCollection->makeTransformer(), $this->childCollection->getName(), $this->request),
         ];
     }
 
     public function handleRequestCsv(array $args = []): array
     {
         $this->build($args);
-        $this->permissions->can('browse', $this->collection);
-        $this->permissions->can('export', $this->collection);
+        $this->permissions->can('browse', $this->childCollection);
+        $this->permissions->can('export', $this->childCollection);
 
         $scope = $this->permissions->getScope($this->childCollection);
-        $filter = ContextFilterFactory::buildPaginated($this->collection, $this->request, $scope);
+        $filter = ContextFilterFactory::buildPaginated($this->childCollection, $this->request, $scope);
 
         $id = Id::unpackId($this->collection, $args['id']);
 
@@ -82,8 +82,8 @@ class ListingRelated extends AbstractRelationRoute
         return [
             'content' => Csv::make($rows, $header),
             'headers' => [
-                'Content-type'        => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Content-type'          => 'text/csv',
+                'Content-Disposition'   => 'attachment; filename="' . $filename . '"',
             ],
         ];
     }
