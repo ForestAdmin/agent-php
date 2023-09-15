@@ -20,6 +20,10 @@ class SchemaEmitter
                 $schema = json_decode(file_get_contents(config('schemaPath')), true, 512, JSON_THROW_ON_ERROR);
             } else {
                 Logger::log('Warn', 'The .forestadmin-schema.json file doesn\'t exist');
+                $schema = [
+                    'meta'        => self::meta(sha1(json_encode([], JSON_THROW_ON_ERROR))),
+                    'collections' => [],
+                ];
             }
         } else {
             $schema = self::generate($datasource);
