@@ -14,6 +14,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Condit
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 
 class SmartActionChecker
 {
@@ -75,10 +76,11 @@ class SmartActionChecker
     private function matchConditions(string $conditionName): bool
     {
         try {
+            $pk = SchemaUtils::getPrimaryKeys($this->collection)[0];
             if ($this->request->input('data.attributes.all_records')) {
-                $conditionRecordFilter = new ConditionTreeLeaf('id', Operators::NOT_EQUAL, $this->request->input('data.attributes.all_records_ids_excluded'));
+                $conditionRecordFilter = new ConditionTreeLeaf($pk, Operators::NOT_EQUAL, $this->request->input('data.attributes.all_records_ids_excluded'));
             } else {
-                $conditionRecordFilter = new ConditionTreeLeaf('id', Operators::IN, $this->request->input('data.attributes.ids'));
+                $conditionRecordFilter = new ConditionTreeLeaf($pk, Operators::IN, $this->request->input('data.attributes.ids'));
             }
 
             $condition = $this->smartAction[$conditionName][0]['filter'];
