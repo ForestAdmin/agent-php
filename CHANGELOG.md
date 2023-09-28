@@ -1,3 +1,10 @@
+## [1.7.4](https://github.com/ForestAdmin/agent-php/compare/v1.7.3...v1.7.4) (2023-09-28)
+
+
+### Bug Fixes
+
+* allow to use primary key not named id into association and smart-action ([#89](https://github.com/ForestAdmin/agent-php/issues/89)) ([467d286](https://github.com/ForestAdmin/agent-php/commit/467d28675fa2e1af8b0f0b7e84acc30c0e3dd8a3))
+
 ## [1.7.3](https://github.com/ForestAdmin/agent-php/compare/v1.7.2...v1.7.3) (2023-09-15)
 
 

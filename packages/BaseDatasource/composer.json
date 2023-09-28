@@ -3,7 +3,7 @@
     "description": "Subtree split of the PHP Base Datasource component",
     "type": "library",
     "license": "GPL-3.0-or-later",
-    "version": "1.7.3",
+    "version": "1.7.4",
     "require": {
         "php": "^8.0",
         "forestadmin/php-agent-toolkit": "^1.0.0",
