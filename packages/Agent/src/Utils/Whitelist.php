@@ -7,13 +7,13 @@ use ForestAdmin\AgentPHP\Agent\Services\IpWhitelist;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class Whitelist
+trait Whitelist
 {
-    public static function checkIp(string $ip): void
+    public function checkIp(ForestApiRequester $forestApiRequester): void
     {
-        $forestApiRequester = new ForestApiRequester();
         $ipWhitelist = new IpWhitelist($forestApiRequester);
         if ($ipWhitelist->isEnabled()) {
+            $ip = $this->request->getClientIp();
             if (! $ipWhitelist->isIpMatchesAnyRule($ip)) {
                 throw new HttpException(Response::HTTP_FORBIDDEN, "IP address rejected ($ip)");
             }
