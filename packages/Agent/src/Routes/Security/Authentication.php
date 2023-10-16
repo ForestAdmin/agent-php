@@ -7,8 +7,11 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use ForestAdmin\AgentPHP\Agent\Auth\AuthManager;
 use ForestAdmin\AgentPHP\Agent\Auth\OidcClientManager;
+use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
+
+use ForestAdmin\AgentPHP\Agent\Utils\Whitelist;
 
 use function ForestAdmin\config;
 
@@ -19,6 +22,8 @@ use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 
 class Authentication extends AbstractRoute
 {
+    use Whitelist;
+
     public function __construct()
     {
         parent::__construct();
@@ -58,6 +63,7 @@ class Authentication extends AbstractRoute
      */
     public function handleAuthentication(): array
     {
+        $this->checkIp(new ForestApiRequester());
         $renderingId = $this->getAndCheckRenderingId();
 
         return [
@@ -76,6 +82,7 @@ class Authentication extends AbstractRoute
      */
     public function handleAuthenticationCallback(): array
     {
+        $this->checkIp(new ForestApiRequester());
         $token = $this->auth()->verifyCodeAndGenerateToken($this->request->all());
         $tokenData = JWT::decode($token, new Key(config('authSecret'), 'HS256'));
 

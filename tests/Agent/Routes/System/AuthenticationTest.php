@@ -47,6 +47,7 @@ beforeEach(function () {
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('auth')
         ->andReturn($auth->reveal())
+        ->shouldReceive('checkIp')
         ->getMock();
 
     $this->invokeProperty($authentication, 'request', $request);
