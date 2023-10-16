@@ -1,3 +1,10 @@
+## [1.7.5](https://github.com/ForestAdmin/agent-php/compare/v1.7.4...v1.7.5) (2023-10-16)
+
+
+### Bug Fixes
+
+* ipwhitelist to authenticate routes ([#90](https://github.com/ForestAdmin/agent-php/issues/90)) ([cab94aa](https://github.com/ForestAdmin/agent-php/commit/cab94aa357a9f0013d2a00555e9f3d58eac01fa7))
+
 ## [1.7.4](https://github.com/ForestAdmin/agent-php/compare/v1.7.3...v1.7.4) (2023-09-28)
 
 
