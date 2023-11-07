@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Http;
 
 use ForestAdmin\AgentPHP\Agent\Facades\Logger;
+use ForestAdmin\AgentPHP\Agent\Http\Exceptions\AuthenticationOpenIdClient;
 use ForestAdmin\AgentPHP\Agent\Http\Traits\ErrorHandling;
 
 use function ForestAdmin\config;
@@ -67,25 +68,35 @@ class ForestController
      */
     protected function exceptionHandler(Throwable $exception): JsonResponse
     {
-        $data = [
-            'errors' => [
-                [
-                    'name'   => $this->getErrorName($exception),
-                    'detail' => $this->getErrorMessage($exception),
-                    'status' => $this->getErrorStatus($exception),
+        if ($exception instanceof AuthenticationOpenIdClient) {
+            $data = [
+                'error'             => $exception->getError(),
+                'error_description' => $exception->getErrorDescription(),
+                'state'             => $exception->getState(),
+            ];
+
+            return new JsonResponse($data, $exception->getStatusCode(), $exception->getHeaders());
+        } else {
+            $data = [
+                'errors' => [
+                    [
+                        'name'   => $this->getErrorName($exception),
+                        'detail' => $this->getErrorMessage($exception),
+                        'status' => $this->getErrorStatus($exception),
+                    ],
                 ],
-            ],
-        ];
+            ];
 
-        if (method_exists($exception, 'getData')) {
-            $data['errors'][0]['data'] = $exception->getData();
+            if (method_exists($exception, 'getData')) {
+                $data['errors'][0]['data'] = $exception->getData();
+            }
+
+            if (! config('isProduction')) {
+                Logger::log('Debug', $exception->getTraceAsString());
+            }
+
+            return new JsonResponse($data, $this->getErrorStatus($exception), $this->getErrorHeaders($exception));
         }
-
-        if (! config('isProduction')) {
-            Logger::log('Debug', $exception->getTraceAsString());
-        }
-
-        return new JsonResponse($data, $this->getErrorStatus($exception),  $this->getErrorHeaders($exception));
     }
 
     /**
