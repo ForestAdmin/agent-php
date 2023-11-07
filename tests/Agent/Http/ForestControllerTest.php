@@ -1,5 +1,6 @@
 <?php
 
+use ForestAdmin\AgentPHP\Agent\Http\Exceptions\AuthenticationOpenIdClient;
 use ForestAdmin\AgentPHP\Agent\Http\Exceptions\RequireApproval;
 use ForestAdmin\AgentPHP\Agent\Http\Exceptions\UnprocessableError;
 use ForestAdmin\AgentPHP\Agent\Http\ForestController;
@@ -143,6 +144,35 @@ use Symfony\Component\HttpFoundation\Response;
                             'data'   => ['foo' => 'bar'],
                         ],
                     ],
+                ]
+            );
+    });
+
+    \Ozzie\Nest\test('should call exceptionHandler on custom AuthenticationOpenIdClient -> HttpException error', function () {
+        $this->buildAgent(new Datasource());
+        $_GET['_route'] = 'forest.test';
+        $_GET['_route_params'] = [];
+        $request = Request::createFromGlobals();
+
+        $forestControllerMock = $this->getMockBuilder(ForestController::class)
+            ->onlyMethods(['getClosure'])
+            ->getMock();
+        $forestControllerMock->expects($this->once())
+            ->method('getClosure')
+            ->willReturn(fn () => throw new AuthenticationOpenIdClient('TrialBlockedError', 'Your free trial has ended. We hope you enjoyed your experience with Forest Admin.', '{"renderingId":1}'));
+
+        $result = $forestControllerMock->__invoke($request);
+
+        expect($result)
+            ->toBeInstanceOf(JsonResponse::class)
+            ->and($result->getStatusCode())
+            ->toEqual(401)
+            ->and(json_decode($result->getContent(), true, 512, JSON_THROW_ON_ERROR))
+            ->toEqual(
+                [
+                    'error'             => 'TrialBlockedError',
+                    'error_description' => 'Your free trial has ended. We hope you enjoyed your experience with Forest Admin.',
+                    'state'             => '{"renderingId":1}',
                 ]
             );
     });
