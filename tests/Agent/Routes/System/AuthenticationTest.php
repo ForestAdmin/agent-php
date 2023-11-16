@@ -3,6 +3,7 @@
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use ForestAdmin\AgentPHP\Agent\Auth\AuthManager;
+use ForestAdmin\AgentPHP\Agent\Http\Exceptions\AuthenticationOpenIdClient;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Security\Authentication;
 use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
@@ -92,6 +93,18 @@ test('handleAuthenticationCallback() should return a response 200', function () 
                 ],
             ]
         );
+});
+
+test('handleAuthenticationCallback() should throw an exception when the query contains error argument', function () {
+    $_GET = [
+        'error'             => 'TrialBlockedError',
+        'error_description' => 'Your free trial has ended. We hope you enjoyed your experience with Forest Admin.',
+        'state'             => '{"renderingId":1}',
+    ];
+
+    $authentication = new Authentication();
+    expect(fn () => $authentication->handleAuthenticationCallback())
+        ->toThrow(AuthenticationOpenIdClient::class, 'Your free trial has ended. We hope you enjoyed your experience with Forest Admin.');
 });
 
 test('handleAuthenticationLogout() should return a 204 response', function () {
