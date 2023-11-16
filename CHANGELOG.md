@@ -1,3 +1,10 @@
+## [1.7.6](https://github.com/ForestAdmin/agent-php/compare/v1.7.5...v1.7.6) (2023-11-16)
+
+
+### Bug Fixes
+
+* **authentication:** return errors detail instead of generic error 500 ([#91](https://github.com/ForestAdmin/agent-php/issues/91)) ([b94a5da](https://github.com/ForestAdmin/agent-php/commit/b94a5da8fab071dc15e9d8bf84bb42e039e72c1e))
+
 ## [1.7.5](https://github.com/ForestAdmin/agent-php/compare/v1.7.4...v1.7.5) (2023-10-16)
 
 
