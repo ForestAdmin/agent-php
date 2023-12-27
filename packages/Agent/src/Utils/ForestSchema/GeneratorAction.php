@@ -68,7 +68,7 @@ class GeneratorAction
             'value'       => ForestActionValueConverter::valueToForest($field), // to check
         ];
 
-        if ($field->isWatchChanges()) {
+        if (method_exists($field, 'isWatchChanges') && $field->isWatchChanges()) {
             $output['hook'] = 'changeHook';
         }
 
