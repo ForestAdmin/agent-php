@@ -1,3 +1,10 @@
+## [1.7.7](https://github.com/ForestAdmin/agent-php/compare/v1.7.6...v1.7.7) (2024-01-15)
+
+
+### Bug Fixes
+
+* **action:** generate schema when action has static form ([#92](https://github.com/ForestAdmin/agent-php/issues/92)) ([086532b](https://github.com/ForestAdmin/agent-php/commit/086532bdb4fc87dc924ccbaaf95288695b8c1bd5))
+
 ## [1.7.6](https://github.com/ForestAdmin/agent-php/compare/v1.7.5...v1.7.6) (2023-11-16)
 
 
