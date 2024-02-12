@@ -3,11 +3,27 @@
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ResultBuilder;
 
+test('setHeader() should work', function () {
+    $resultBuilder = new ResultBuilder();
+    expect($resultBuilder->setHeader('headerKey', 'headerValue')->success())
+        ->toEqual(
+            [
+                'headers'   => ['headerKey' => 'headerValue'],
+                'is_action' => true,
+                'type'      => 'Success',
+                'success'   => 'Success',
+                'refresh'   => ['relationships' => []],
+                'html'      => null,
+            ]
+        );
+});
+
 test('success() should work without arguments', function () {
     $resultBuilder = new ResultBuilder();
     expect($resultBuilder->success())
         ->toEqual(
             [
+                'headers'   => [],
                 'is_action' => true,
                 'type'      => 'Success',
                 'success'   => 'Success',
@@ -22,6 +38,7 @@ test('success() should work with specific message and options', function () {
     expect($resultBuilder->success('It works !', ['html' => '<div>html content</div>']))
         ->toEqual(
             [
+                'headers'   => [],
                 'is_action' => true,
                 'type'      => 'Success',
                 'success'   => 'It works !',
@@ -36,6 +53,7 @@ test('error() should work without arguments', function () {
     expect($resultBuilder->error())
         ->toEqual(
             [
+                'headers'   => [],
                 'status'    => 400,
                 'is_action' => true,
                 'type'      => 'Error',
@@ -50,6 +68,7 @@ test('error() should work with specific message and options', function () {
     expect($resultBuilder->error('It not works !', ['html' => '<div>html content</div>']))
         ->toEqual(
             [
+                'headers'   => [],
                 'status'    => 400,
                 'is_action' => true,
                 'type'      => 'Error',
@@ -64,6 +83,7 @@ test('webhook() should work without arguments', function () {
     expect($resultBuilder->webhook('test.com'))
         ->toEqual(
             [
+                'headers'   => [],
                 'is_action' => true,
                 'type'      => 'Webhook',
                 'webhook'   => [
@@ -81,6 +101,7 @@ test('webhook() should work with specific options', function () {
     expect($resultBuilder->webhook('test.com', 'PATCH', ['content-type' => 'application/json'], ['key' => 'value']))
         ->toEqual(
             [
+                'headers'   => [],
                 'is_action' => true,
                 'type'      => 'Webhook',
                 'webhook'   => [
@@ -98,6 +119,7 @@ test('file() should work', function () {
     expect($resultBuilder->file('id,name,email', 'test.csv', 'text/csv'))
         ->toEqual(
             [
+                'headers'   => [],
                 'is_action' => true,
                 'type'      => 'File',
                 'name'      => 'test.csv',
@@ -112,6 +134,7 @@ test('redirectTo() should work', function () {
     expect($resultBuilder->redirectTo('test.com'))
         ->toEqual(
             [
+                'headers'    => [],
                 'is_action'  => true,
                 'type'       => 'Redirect',
                 'redirectTo' => 'test.com',

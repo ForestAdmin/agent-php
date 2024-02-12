@@ -56,6 +56,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
         expect($baseAction->callExecute($context, $resultBuilder))->toEqual(
             [
+                'headers'   => [],
                 'is_action' => true,
                 'type'      => 'Success',
                 'success'   => 'BRAVO !!!!',

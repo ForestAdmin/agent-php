@@ -218,6 +218,7 @@ use Symfony\Component\HttpFoundation\Response;
 
         $forestController = new ForestController();
         $data = [
+            'headers'   => [],
             'is_action' => true,
             'type'      => 'Success',
             'success'   => 'Success',
@@ -237,6 +238,7 @@ use Symfony\Component\HttpFoundation\Response;
 
         $forestController = new ForestController();
         $data = [
+            'headers'   => [],
             'is_action' => true,
             'type'      => 'File',
             'name'      => 'filedemo',
