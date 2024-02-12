@@ -45,10 +45,14 @@ class ForestController
         }
 
         if (isset($data['is_action'])) {
-            unset($data['is_action']);
+            $headers = $data['headers'];
+            unset($data['is_action'], $data['headers']);
 
             if ($data['type'] === 'File') {
-                $response = new BinaryFileResponse($data['stream'], 200, ['Content-Type' => $data['mimeType'], 'Access-Control-Expose-Headers' => 'Content-Disposition']);
+                $headers['Content-Type'] = $data['mimeType'];
+                $headers['Access-Control-Expose-Headers'] = 'Content-Disposition';
+
+                $response = new BinaryFileResponse($data['stream'], 200, $headers);
                 $response->setContentDisposition(
                     ResponseHeaderBag::DISPOSITION_ATTACHMENT,
                     $data['name']
@@ -57,7 +61,7 @@ class ForestController
                 return $response;
             }
 
-            return new JsonResponse($data, $data['status'] ?? 200);
+            return new JsonResponse($data, $data['status'] ?? 200, $headers);
         }
 
         return new JsonResponse($data['content'], $data['status'] ?? 200, $data['headers'] ?? []);
