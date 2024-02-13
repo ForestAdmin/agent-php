@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/ForestAdmin/agent-php/compare/v1.7.7...v1.8.0) (2024-02-13)
+
+
+### Features
+
+* **action:** allow user to set a custom header on a action result ([#94](https://github.com/ForestAdmin/agent-php/issues/94)) ([ba3fedb](https://github.com/ForestAdmin/agent-php/commit/ba3fedb8e9a383f4a4e2fc2c0261b4567ac16910))
+
 ## [1.7.7](https://github.com/ForestAdmin/agent-php/compare/v1.7.6...v1.7.7) (2024-01-15)
 
 
