@@ -54,6 +54,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
         expect($collection->execute($caller, 'action-test', []))->toEqual(
             [
+                'headers'   => [],
                 'is_action' => true,
                 'type'      => 'Success',
                 'success'   => 'BRAVO !!!!',
@@ -100,6 +101,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
         expect($collection->execute($caller, 'action-test', []))->toEqual(
             [
+                'headers'   => [],
                 'is_action' => true,
                 'type'      => 'Error',
                 'html'      => '<div><p class="c-clr-1-4 l-mb">you failed</p></div>',
