@@ -1,3 +1,10 @@
+## [1.8.3](https://github.com/ForestAdmin/agent-php/compare/v1.8.2...v1.8.3) (2024-02-15)
+
+
+### Bug Fixes
+
+* **security:** patch http-cache-semantics dependency vulnerabilities ([#97](https://github.com/ForestAdmin/agent-php/issues/97)) ([613e8c4](https://github.com/ForestAdmin/agent-php/commit/613e8c466f35bd15e0ec0efc6f93a33cf74a5b1b))
+
 ## [1.8.2](https://github.com/ForestAdmin/agent-php/compare/v1.8.1...v1.8.2) (2024-02-15)
 
 
