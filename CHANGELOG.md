@@ -1,3 +1,10 @@
+## [1.8.4](https://github.com/ForestAdmin/agent-php/compare/v1.8.3...v1.8.4) (2024-02-16)
+
+
+### Bug Fixes
+
+* **security:** patch semver dependency vulnerabilities ([#98](https://github.com/ForestAdmin/agent-php/issues/98)) ([6ed5f08](https://github.com/ForestAdmin/agent-php/commit/6ed5f089e3962e122d2eddd55380bd12aa519ba2))
+
 ## [1.8.3](https://github.com/ForestAdmin/agent-php/compare/v1.8.2...v1.8.3) (2024-02-15)
 
 
