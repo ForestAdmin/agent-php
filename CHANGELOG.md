@@ -1,3 +1,10 @@
+## [1.8.5](https://github.com/ForestAdmin/agent-php/compare/v1.8.4...v1.8.5) (2024-02-22)
+
+
+### Bug Fixes
+
+* **security:** patch ip dependency vulnerabilities ([#100](https://github.com/ForestAdmin/agent-php/issues/100)) ([8b005d6](https://github.com/ForestAdmin/agent-php/commit/8b005d62bdf6c7280522656876f384623324de52))
+
 ## [1.8.4](https://github.com/ForestAdmin/agent-php/compare/v1.8.3...v1.8.4) (2024-02-16)
 
 
