@@ -5,6 +5,12 @@ namespace ForestAdmin\AgentPHP\DatasourceEloquent;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
 use ForestAdmin\AgentPHP\BaseDatasource\Contracts\BaseDatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceEloquent\Utils\DataTypes;
+use ForestAdmin\AgentPHP\DatasourceEloquent\Utils\QueryAggregate;
+use ForestAdmin\AgentPHP\DatasourceEloquent\Utils\QueryConverter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
@@ -14,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use ReflectionClass;
 
@@ -22,7 +29,7 @@ class EloquentCollection extends BaseCollection
     /**
      * @throws \ReflectionException
      */
-    public function __construct(protected BaseDatasourceContract $datasource, protected Model $model)
+    public function __construct(protected BaseDatasourceContract $datasource, public Model $model)
     {
         $reflectionClass = new ReflectionClass($model);
         parent::__construct($datasource, $reflectionClass->getShortName(), $model->getTable());
@@ -161,5 +168,47 @@ class EloquentCollection extends BaseCollection
         return collect($relations)
             ->filter(fn ($class) => in_array($class, [HasMany::class, HasOne::class], true))
             ->first(fn ($class, $methodName) => class_basename($relation->getRelated()->$methodName()->getRelated()) === class_basename($this->model));
+    }
+
+    public function list(Caller $caller, Filter $filter, Projection $projection): array
+    {
+        return QueryConverter::of($this, $caller->getTimezone(), $filter, $projection)
+            ->getQuery()
+            ->get()
+            ->map(fn ($record) => Arr::undot($record->toArray()))
+            ->toArray();
+    }
+
+    public function create(Caller $caller, array $data)
+    {
+        $query = QueryConverter::of($this, $caller->getTimezone())->getQuery();
+        $this->model::unguard();
+        $record = $query->forceCreate($data)->toArray();
+        $this->model::reguard();
+
+        return $record;
+    }
+
+    public function update(Caller $caller, Filter $filter, array $patch): void
+    {
+        $this->model::unguard();
+        QueryConverter::of($this, $caller->getTimezone(), $filter)->getQuery()->first()->fill($patch)->save();
+        $this->model::reguard();
+    }
+
+    public function delete(Caller $caller, Filter $filter): void
+    {
+        QueryConverter::of($this, $caller->getTimezone(), $filter)
+            ->getQuery()
+            ->get()
+            ->each(fn ($record) => $record->delete());
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null)
+    {
+        return QueryAggregate::of($this, $caller->getTimezone(), $aggregation, $filter, $limit)->get();
     }
 }
