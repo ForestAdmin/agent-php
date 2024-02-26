@@ -183,7 +183,7 @@ class EloquentCollection extends BaseCollection
     {
         $query = QueryConverter::of($this, $caller->getTimezone())->getQuery();
         $this->model::unguard();
-        $record = $query->forceCreate($data)->toArray();
+        $record = $query->create($data)->toArray();
         $this->model::reguard();
 
         return $record;

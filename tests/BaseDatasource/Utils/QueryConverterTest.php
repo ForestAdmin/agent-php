@@ -1,9 +1,9 @@
 <?php
 
 
-use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseDatasource;
+use ForestAdmin\AgentPHP\BaseDatasource\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;

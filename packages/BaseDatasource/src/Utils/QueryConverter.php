@@ -59,9 +59,9 @@ class QueryConverter extends QueryBuilder
                 /** @var RelationSchema $relation */
                 $relationSchema = $this->collection->getFields()[$relation];
                 $relationTableName = $this->collection->getDataSource()->getCollection($relationSchema->getForeignCollection())->getTableName();
-                $this->addJoinRelation($relationSchema, $relationTableName);
-                $relationFields->map(function ($field) use (&$selectRaw, $relationTableName, $relation) {
-                    $selectRaw[] = "$relationTableName.$field as $relation.$field";
+                $this->addJoinRelation($relationSchema, $relationTableName, $relation);
+                $relationFields->map(function ($field) use (&$selectRaw, $relation) {
+                    $selectRaw[] = "$relation.$field as $relation.$field";
                 });
             }
 
@@ -211,8 +211,6 @@ class QueryConverter extends QueryBuilder
                 $query->whereBetween($field, $interval, $aggregator);
 
                 break;
-            default:
-                throw new \RuntimeException('Unknown operator');
         }
     }
 

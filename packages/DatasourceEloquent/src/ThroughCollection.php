@@ -2,9 +2,9 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceEloquent;
 
-use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
 use ForestAdmin\AgentPHP\BaseDatasource\Contracts\BaseDatasourceContract;
+use ForestAdmin\AgentPHP\BaseDatasource\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;

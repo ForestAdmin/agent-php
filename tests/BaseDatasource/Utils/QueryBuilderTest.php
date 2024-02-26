@@ -1,21 +1,24 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Utils\QueryAggregate;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseDatasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\BaseDatasource\Utils\QueryBuilder;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Carbon;
+
+use function Spatie\PestPluginTestTime\testTime;
 
 beforeEach(function () {
+    testTime()->freeze(Carbon::now('Europe/Paris'));
     global $datasource, $bookCollection, $reviewCollection, $bookReviewCollection, $userCollection;
     $this->initDatabase();
     $datasource = new BaseDatasource(TestCase::DB_CONFIG);
-
     $bookCollection = new BaseCollection($datasource, 'Book', 'books');
     $this->invokeProperty($bookCollection, 'fields', collect());
     $bookCollection = mock($bookCollection)
@@ -115,30 +118,28 @@ beforeEach(function () {
     $datasource->addCollection($bookReviewCollection);
 });
 
-test('of() should return a ForestAdmin\\AgentPHP\\Agent\\Utils\\QueryAggregate instance', function () {
+test('of() should return a \\ForestAdmin\\AgentPHP\\Agent\\Utils\\QueryBuilder instance', function () {
     global $bookCollection;
-    $query = QueryAggregate::of($bookCollection, 'Europe/Paris', new Aggregation('Count'));
-
-    expect($query)->toBeInstanceOf(QueryAggregate::class);
+    expect(QueryBuilder::of($bookCollection))->toBeInstanceOf(QueryBuilder::class);
 });
 
-test('get() should return a array of array with key value and group', function () {
+test('getQuery() should return a Illuminate\\Database\\Query\\Builder instance', function () {
     global $bookCollection;
-    $query = QueryAggregate::of($bookCollection, 'Europe/Paris', new Aggregation('Count'));
-
-    expect($query->get())->toEqual([['value' => 4, 'group' => []]]);
+    expect(QueryBuilder::of($bookCollection)->getQuery())->toBeInstanceOf(Builder::class);
 });
 
-test('get() should work with grouped aggregation', function () {
+test('formatField() with simple column field should return "tableName.field"', function () {
     global $bookCollection;
-    $aggregation = new Aggregation('Sum', 'price', [['field' => 'author_id']]);
-    $query = QueryAggregate::of($bookCollection, 'Europe/Paris', $aggregation);
+    $query = QueryBuilder::of($bookCollection);
 
-    expect($query->get())->toEqual(
-        [
-            ['value' => 20, 'group' => ['author_id' => 1]],
-            ['value' => 10, 'group' => ['author_id' => 3]],
-            ['value' => 10, 'group' => ['author_id' => 2]],
-        ]
-    );
+    expect($query->formatField('title'))
+        ->toEqual('books.title');
+});
+
+test('formatField() with relation column field should return "tableName.field"', function () {
+    global $bookCollection;
+    $query = QueryBuilder::of($bookCollection);
+
+    expect($query->formatField('author:name'))
+        ->toEqual('author.name');
 });
