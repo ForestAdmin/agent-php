@@ -121,8 +121,8 @@ test('create() should add a record in database and return it', function () {
             'title'        => 'foo',
             'price'        => 100,
             'published_at' => '2023-07-06',
-            'created_at'   => '2023-07-06',
-            'updated_at'   => '2023-07-06',
+            'created_at'   => null,
+            'updated_at'   => null,
         ]
     );
 
@@ -134,8 +134,8 @@ test('create() should add a record in database and return it', function () {
                 'title'        => 'foo',
                 'price'        => 100,
                 'published_at' => '2023-07-06',
-                'created_at'   => '2023-07-06',
-                'updated_at'   => '2023-07-06',
+                'created_at'   => null,
+                'updated_at'   => null,
             ]
         );
 });
