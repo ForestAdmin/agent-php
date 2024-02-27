@@ -1,9 +1,8 @@
 <?php
 
 
-use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
-use ForestAdmin\AgentPHP\BaseDatasource\BaseDatasource;
-use ForestAdmin\AgentPHP\BaseDatasource\Utils\QueryConverter;
+use ForestAdmin\AgentPHP\DatasourceEloquent\EloquentDatasource;
+use ForestAdmin\AgentPHP\DatasourceEloquent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
@@ -12,125 +11,29 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFil
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Carbon;
 
 use function Spatie\PestPluginTestTime\testTime;
 
-const TIMEZONE = 'Europe/Paris';
+const ELOQUENT_TIMEZONE = 'Europe/Paris';
 
 beforeEach(function () {
-    testTime()->freeze(Carbon::now(TIMEZONE));
-    global $datasource, $bookCollection, $reviewCollection, $bookReviewCollection, $userCollection;
+    testTime()->freeze(Carbon::now(ELOQUENT_TIMEZONE));
+    global $datasource, $bookCollection, $reviewCollection, $bookReviewCollection, $authorCollection;
+    $this->buildAgent(new Datasource(), ['projectDir' => str_replace('/Utils', '', __DIR__)]);
     $this->initDatabase();
-    $datasource = new BaseDatasource(TestCase::DB_CONFIG);
+    $datasource = new EloquentDatasource(TestCase::DB_CONFIG);
 
-    $bookCollection = new BaseCollection($datasource, 'Book', 'books');
-    $this->invokeProperty($bookCollection, 'fields', collect());
-    $bookCollection = mock($bookCollection)
-        ->makePartial()
-        ->shouldAllowMockingProtectedMethods()
-        ->shouldReceive('fetchFieldsFromTable')
-        ->andReturn(['columns' => [], 'primaries' => []])
-        ->getMock();
-    $bookCollection->addFields(
-        [
-            'id'           => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'title'        => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'published_at' => new ColumnSchema(columnType: PrimitiveType::DATE),
-            'author_id'    => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'author'       => new ManyToOneSchema(
-                foreignKey: 'author_id',
-                foreignKeyTarget: 'id',
-                foreignCollection: 'User',
-            ),
-            'reviews'      => new ManyToManySchema(
-                originKey: 'book_id',
-                originKeyTarget: 'id',
-                foreignKey: 'review_id',
-                foreignKeyTarget: 'id',
-                foreignCollection: 'Review',
-                throughCollection: 'BookReview'
-            ),
-        ]
-    );
-
-    $userCollection = new BaseCollection($datasource, 'User', 'users');
-    $this->invokeProperty($userCollection, 'fields', collect());
-    $userCollection = mock($userCollection)
-        ->makePartial()
-        ->shouldAllowMockingProtectedMethods()
-        ->shouldReceive('fetchFieldsFromTable')
-        ->andReturn(['columns' => [], 'primaries' => []])
-        ->getMock();
-    $userCollection->addFields(
-        [
-            'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'name'  => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'email' => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'books' => new OneToManySchema(
-                originKey: 'id',
-                originKeyTarget: 'author_id',
-                foreignCollection: 'Book',
-            ),
-        ]
-    );
-
-    $reviewCollection = new BaseCollection($datasource, 'Review', 'reviews');
-    $this->invokeProperty($reviewCollection, 'fields', collect());
-    $reviewCollection = mock($reviewCollection)
-        ->makePartial()
-        ->shouldAllowMockingProtectedMethods()
-        ->shouldReceive('fetchFieldsFromTable')
-        ->andReturn(['columns' => [], 'primaries' => []])
-        ->getMock();
-    $reviewCollection->addFields(
-        [
-            'id'     => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'author' => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'rating' => new ColumnSchema(columnType: PrimitiveType::NUMBER),
-        ]
-    );
-
-    $bookReviewCollection = new BaseCollection($datasource, 'BookReview', 'book_review');
-    $this->invokeProperty($bookReviewCollection, 'fields', collect());
-    $bookReviewCollection = mock($bookReviewCollection)
-        ->makePartial()
-        ->shouldAllowMockingProtectedMethods()
-        ->shouldReceive('fetchFieldsFromTable')
-        ->andReturn(['columns' => [], 'primaries' => []])
-        ->getMock();
-    $bookReviewCollection->addFields(
-        [
-            'id'        => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'review_id' => new ColumnSchema(columnType: PrimitiveType::NUMBER),
-            'review'    => new ManyToOneSchema(
-                foreignKey: 'review_id',
-                foreignKeyTarget: 'id',
-                foreignCollection: 'Review',
-            ),
-            'book_id'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
-            'book'      => new ManyToOneSchema(
-                foreignKey: 'book_id',
-                foreignKeyTarget: 'id',
-                foreignCollection: 'Book',
-            ),
-        ]
-    );
-
-    $datasource->addCollection($bookCollection);
-    $datasource->addCollection($userCollection);
-    $datasource->addCollection($reviewCollection);
-    $datasource->addCollection($bookReviewCollection);
+    $bookCollection = $datasource->getCollection('Book');
+    $authorCollection = $datasource->getCollection('Author');
+    $reviewCollection = $datasource->getCollection('Review');
+    $bookReviewCollection = $datasource->getCollection('BookReview');
 });
 
-test('of() should return a ForestAdmin\\AgentPHP\\BaseDatasource\\Utils\\QueryConverter instance', function () {
+test('of() should return a ForestAdmin\\AgentPHP\\DatasourceEloquent\\Utils\\QueryConverter instance', function () {
     global $bookCollection;
     expect(QueryConverter::of($bookCollection, 'Europe/Paris'))->toBeInstanceOf(QueryConverter::class);
 });
@@ -139,7 +42,7 @@ test('QueryConverter should select all when no projection is given', function ()
     global $bookCollection;
     $query = QueryConverter::of($bookCollection, 'Europe/Paris')->getQuery();
 
-    expect($query->toSql())->toEqual('select * from "books" as "books"');
+    expect($query->toSql())->toEqual('select * from "books"');
 });
 
 test('QueryConverter should select only fields from the given projection', function () {
@@ -147,7 +50,7 @@ test('QueryConverter should select only fields from the given projection', funct
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', null, new Projection(['id', 'title', 'published_at']))
         ->getQuery();
 
-    expect($query->columns)
+    expect($query->getQuery()->columns)
         ->toEqual(
             [
                 'books.id',
@@ -162,7 +65,7 @@ test('QueryConverter should select only fields from the given projection and wor
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', null, new Projection(['id', 'title', 'reviews:author']))
         ->getQuery();
 
-    expect($query->columns)
+    expect($query->getQuery()->columns)
         ->toEqual(
             [
                 'books.id',
@@ -175,7 +78,7 @@ test('QueryConverter should select only fields from the given projection and wor
 test('QueryConverter should add all the joins with ManyToMany relation', function () {
     global $bookCollection;
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', null, new Projection(['id', 'title', 'reviews:author']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->joins)->toHaveCount(2)
         ->and($query->joins[0]->table)->toEqual('book_review as book_review')
@@ -205,7 +108,7 @@ test('QueryConverter should add all the joins with ManyToMany relation', functio
 test('QueryConverter should add the join with ManyToOne relation', function () {
     global $bookReviewCollection;
     $query = QueryConverter::of($bookReviewCollection, 'Europe/Paris', null, new Projection(['id', 'review:author']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->joins)->toHaveCount(1)
         ->and($query->joins[0]->table)->toEqual('reviews as review')
@@ -222,9 +125,9 @@ test('QueryConverter should add the join with ManyToOne relation', function () {
 });
 
 test('QueryConverter should add the join with OneToMany / OneToOne relation', function () {
-    global $userCollection;
-    $query = QueryConverter::of($userCollection, 'Europe/Paris', null, new Projection(['id', 'books:title']))
-        ->getQuery();
+    global $authorCollection;
+    $query = QueryConverter::of($authorCollection, 'Europe/Paris', null, new Projection(['id', 'books:title']))
+        ->getQuery()->getQuery();
 
     expect($query->joins)->toHaveCount(1)
         ->and($query->joins[0]->table)->toEqual('books as books')
@@ -232,7 +135,7 @@ test('QueryConverter should add the join with OneToMany / OneToOne relation', fu
         ->and($query->joins[0]->wheres[0])->toEqual(
             [
                 "type"     => "Column",
-                "first"    => "users.id",
+                "first"    => "authors.id",
                 "operator" => "=",
                 "second"   => "books.author_id",
                 "boolean"  => "and",
@@ -243,7 +146,7 @@ test('QueryConverter should add the join with OneToMany / OneToOne relation', fu
 test('QueryConverter should apply sort', function () {
     global $bookCollection;
     $filter = new PaginatedFilter(sort: new Sort([['field' => 'title', 'ascending' => false]]));
-    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter)->getQuery();
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter)->getQuery()->getQuery();
 
     expect($query->orders)->toHaveCount(1)
         ->and($query->orders[0])->toEqual(
@@ -258,7 +161,7 @@ test('QueryConverter should apply sort on relation', function () {
     global $bookCollection;
     $filter = new PaginatedFilter(sort: new Sort([['field' => 'author:name', 'ascending' => false]]));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'author:name']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->orders)->toHaveCount(1)
         ->and($query->orders[0]['column'])->toEqual('author.name')
@@ -269,7 +172,7 @@ test('QueryConverter should apply pagination', function () {
     global $bookCollection;
     $filter = new PaginatedFilter(page: new Page(20, 10));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'author:name']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->limit)->toEqual(10)
         ->and($query->offset)->toEqual(20);
@@ -279,14 +182,14 @@ test('QueryConverter apply conditionTree should add join with nested field', fun
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('author:name', Operators::PRESENT));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->joins)
         ->toHaveCount(1)
         ->and($query->joins[0])
         ->toBeInstanceOf(JoinClause::class)
         ->and($query->joins[0]->table)
-        ->toEqual('users as author')
+        ->toEqual('authors as author')
         ->and($query->joins[0]->type)
         ->toEqual('left')
         ->and($query->joins[0]->wheres)
@@ -305,7 +208,7 @@ test('QueryConverter apply conditionTree should not add joins twice', function (
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('author:name', Operators::PRESENT));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'author:name']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->joins)->toHaveCount(1);
 });
@@ -322,7 +225,7 @@ test('QueryConverter apply conditionTree should with conditionTreeBranch', funct
         )
     );
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'author:name']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres)->toHaveCount(1)
         ->and($query->wheres[0]['type'])->toEqual('Nested')
@@ -335,7 +238,7 @@ test('QueryConverter should apply conditionTree with operator BLANK', function (
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::BLANK));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -349,7 +252,7 @@ test('QueryConverter should apply conditionTree with operator PRESENT', function
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::PRESENT));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -363,7 +266,7 @@ test('QueryConverter should apply conditionTree with operator EQUAL', function (
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::EQUAL, 'foo'));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -379,7 +282,7 @@ test('QueryConverter should apply conditionTree with operator NOT_EQUAL', functi
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::NOT_EQUAL, 'foo'));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -395,7 +298,7 @@ test('QueryConverter should apply conditionTree with operator GREATER_THAN', fun
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('id', Operators::GREATER_THAN, 1));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -411,7 +314,7 @@ test('QueryConverter should apply conditionTree with operator LESS_THAN', functi
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('id', Operators::LESS_THAN, 1));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -427,7 +330,7 @@ test('QueryConverter should apply conditionTree with operator ICONTAINS', functi
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::ICONTAINS, 'foo'));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -444,7 +347,7 @@ test('QueryConverter should apply conditionTree with operator CONTAINS', functio
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::CONTAINS, 'foo'));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -460,7 +363,7 @@ test('QueryConverter should apply conditionTree with operator NOT_CONTAINS', fun
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::NOT_CONTAINS, 'foo'));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -476,7 +379,7 @@ test('QueryConverter should apply conditionTree with operator IN', function () {
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::IN, 'foo, value'));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -491,7 +394,7 @@ test('QueryConverter should apply conditionTree with operator NOT_IN', function 
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::NOT_IN, 'foo, value'));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -506,7 +409,7 @@ test('QueryConverter should apply conditionTree with operator STARTS_WITH', func
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::STARTS_WITH, 'foo'));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -522,7 +425,7 @@ test('QueryConverter should apply conditionTree with operator ENDS_WITH', functi
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::ENDS_WITH, 'foo'));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -538,7 +441,7 @@ test('QueryConverter should apply conditionTree with operator ISTARTS_WITH', fun
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::ISTARTS_WITH, 'foo'));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -554,7 +457,7 @@ test('QueryConverter should apply conditionTree with operator IENDS_WITH', funct
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('title', Operators::IENDS_WITH, 'foo'));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -572,7 +475,7 @@ test('QueryConverter should apply conditionTree with operator TODAY', function (
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::TODAY));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -581,8 +484,8 @@ test('QueryConverter should apply conditionTree with operator TODAY', function (
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
-                Carbon::now(TIMEZONE)->startOfDay(),
-                Carbon::now(TIMEZONE)->endOfDay(),
+                Carbon::now(ELOQUENT_TIMEZONE)->startOfDay(),
+                Carbon::now(ELOQUENT_TIMEZONE)->endOfDay(),
             ],
         ]);
 });
@@ -592,7 +495,7 @@ test('QueryConverter should apply conditionTree with operator BEFORE', function 
     $date = '2022-01-01 12:00:00';
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::BEFORE, $date));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -609,7 +512,7 @@ test('QueryConverter should apply conditionTree with operator AFTER', function (
     $date = '2022-01-01 12:00:00';
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::AFTER, $date));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -626,7 +529,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_X_DAYS', 
     $value = 2;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_X_DAYS, $value));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -635,8 +538,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_X_DAYS', 
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
-                Carbon::now(TIMEZONE)->subDays($value)->startOfDay(),
-                Carbon::now(TIMEZONE)->subDay()->endOfDay(),
+                Carbon::now(ELOQUENT_TIMEZONE)->subDays($value)->startOfDay(),
+                Carbon::now(ELOQUENT_TIMEZONE)->subDay()->endOfDay(),
             ],
         ]);
 });
@@ -646,7 +549,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_X_DAYS_TO
     $value = 2;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_X_DAYS_TO_DATE, $value));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -655,8 +558,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_X_DAYS_TO
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
-                Carbon::now(TIMEZONE)->subDays($value)->startOfDay(),
-                Carbon::now(TIMEZONE)->endOfDay(),
+                Carbon::now(ELOQUENT_TIMEZONE)->subDays($value)->startOfDay(),
+                Carbon::now(ELOQUENT_TIMEZONE)->endOfDay(),
             ],
         ]);
 });
@@ -665,7 +568,7 @@ test('QueryConverter should apply conditionTree with operator PAST', function ()
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PAST));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -673,7 +576,7 @@ test('QueryConverter should apply conditionTree with operator PAST', function ()
             'column'   => 'books.published_at',
             'operator' => '<=',
             'boolean'  => 'and',
-            'value'    => Carbon::now(TIMEZONE),
+            'value'    => Carbon::now(ELOQUENT_TIMEZONE),
         ]);
 });
 
@@ -681,7 +584,7 @@ test('QueryConverter should apply conditionTree with operator FUTURE', function 
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::FUTURE));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -689,7 +592,7 @@ test('QueryConverter should apply conditionTree with operator FUTURE', function 
             'column'   => 'books.published_at',
             'operator' => '>=',
             'boolean'  => 'and',
-            'value'    => Carbon::now(TIMEZONE),
+            'value'    => Carbon::now(ELOQUENT_TIMEZONE),
         ]);
 });
 
@@ -698,7 +601,7 @@ test('QueryConverter should apply conditionTree with operator BEFORE_X_HOURS_AGO
     $value = 2;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::BEFORE_X_HOURS_AGO, $value));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -706,7 +609,7 @@ test('QueryConverter should apply conditionTree with operator BEFORE_X_HOURS_AGO
             'column'   => 'books.published_at',
             'operator' => '<',
             'boolean'  => 'and',
-            'value'    => Carbon::now(TIMEZONE)->subHours($value),
+            'value'    => Carbon::now(ELOQUENT_TIMEZONE)->subHours($value),
         ]);
 });
 
@@ -715,7 +618,7 @@ test('QueryConverter should apply conditionTree with operator AFTER_X_HOURS_AGO'
     $value = 2;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::AFTER_X_HOURS_AGO, $value));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -723,7 +626,7 @@ test('QueryConverter should apply conditionTree with operator AFTER_X_HOURS_AGO'
             'column'   => 'books.published_at',
             'operator' => '>',
             'boolean'  => 'and',
-            'value'    => Carbon::now(TIMEZONE)->subHours($value),
+            'value'    => Carbon::now(ELOQUENT_TIMEZONE)->subHours($value),
         ]);
 });
 
@@ -731,7 +634,7 @@ test('QueryConverter should apply conditionTree with operator YESTERDAY', functi
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::YESTERDAY));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -740,8 +643,8 @@ test('QueryConverter should apply conditionTree with operator YESTERDAY', functi
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
-                Carbon::now(TIMEZONE)->subDay()->startOfDay(),
-                Carbon::now(TIMEZONE)->subDay()->endOfDay(),
+                Carbon::now(ELOQUENT_TIMEZONE)->subDay()->startOfDay(),
+                Carbon::now(ELOQUENT_TIMEZONE)->subDay()->endOfDay(),
             ],
         ]);
 });
@@ -750,7 +653,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_WEEK', fu
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_WEEK));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -759,8 +662,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_WEEK', fu
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
-                Carbon::now(TIMEZONE)->subWeek()->startOfWeek(),
-                Carbon::now(TIMEZONE)->subWeek()->endOfWeek(),
+                Carbon::now(ELOQUENT_TIMEZONE)->subWeek()->startOfWeek(),
+                Carbon::now(ELOQUENT_TIMEZONE)->subWeek()->endOfWeek(),
             ],
         ]);
 });
@@ -769,7 +672,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_MONTH', f
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_MONTH));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -778,8 +681,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_MONTH', f
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
-                Carbon::now(TIMEZONE)->subMonth()->startOfMonth(),
-                Carbon::now(TIMEZONE)->subMonth()->endOfMonth(),
+                Carbon::now(ELOQUENT_TIMEZONE)->subMonth()->startOfMonth(),
+                Carbon::now(ELOQUENT_TIMEZONE)->subMonth()->endOfMonth(),
             ],
         ]);
 });
@@ -788,7 +691,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_QUARTER',
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_QUARTER));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -797,8 +700,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_QUARTER',
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
-                Carbon::now(TIMEZONE)->subQuarter()->startOfQuarter(),
-                Carbon::now(TIMEZONE)->subQuarter()->endOfQuarter(),
+                Carbon::now(ELOQUENT_TIMEZONE)->subQuarter()->startOfQuarter(),
+                Carbon::now(ELOQUENT_TIMEZONE)->subQuarter()->endOfQuarter(),
             ],
         ]);
 });
@@ -807,7 +710,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_YEAR', fu
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_YEAR));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -816,8 +719,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_YEAR', fu
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
-                Carbon::now(TIMEZONE)->subYear()->startOfYear(),
-                Carbon::now(TIMEZONE)->subYear()->endOfYear(),
+                Carbon::now(ELOQUENT_TIMEZONE)->subYear()->startOfYear(),
+                Carbon::now(ELOQUENT_TIMEZONE)->subYear()->endOfYear(),
             ],
         ]);
 });
@@ -826,7 +729,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_WEEK_TO_D
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_WEEK_TO_DATE));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -835,8 +738,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_WEEK_TO_D
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
-                Carbon::now(TIMEZONE)->startOfWeek(),
-                Carbon::now(TIMEZONE),
+                Carbon::now(ELOQUENT_TIMEZONE)->startOfWeek(),
+                Carbon::now(ELOQUENT_TIMEZONE),
             ],
         ]);
 });
@@ -845,7 +748,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_MONTH_TO_
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_MONTH_TO_DATE));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -854,8 +757,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_MONTH_TO_
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
-                Carbon::now(TIMEZONE)->startOfMonth(),
-                Carbon::now(TIMEZONE),
+                Carbon::now(ELOQUENT_TIMEZONE)->startOfMonth(),
+                Carbon::now(ELOQUENT_TIMEZONE),
             ],
         ]);
 });
@@ -864,7 +767,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_QUARTER_T
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_QUARTER_TO_DATE));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -873,8 +776,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_QUARTER_T
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
-                Carbon::now(TIMEZONE)->startOfQuarter(),
-                Carbon::now(TIMEZONE),
+                Carbon::now(ELOQUENT_TIMEZONE)->startOfQuarter(),
+                Carbon::now(ELOQUENT_TIMEZONE),
             ],
         ]);
 });
@@ -883,7 +786,7 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_YEAR_TO_D
     global $bookCollection;
     $filter = new Filter(new ConditionTreeLeaf('published_at', Operators::PREVIOUS_YEAR_TO_DATE));
     $query = QueryConverter::of($bookCollection, 'Europe/Paris', $filter, new Projection(['id', 'title', 'published_at']))
-        ->getQuery();
+        ->getQuery()->getQuery();
 
     expect($query->wheres[0])
         ->toEqual([
@@ -892,8 +795,8 @@ test('QueryConverter should apply conditionTree with operator PREVIOUS_YEAR_TO_D
             'boolean' => 'and',
             'not'     => false,
             'values'  => [
-                Carbon::now(TIMEZONE)->startOfYear(),
-                Carbon::now(TIMEZONE),
+                Carbon::now(ELOQUENT_TIMEZONE)->startOfYear(),
+                Carbon::now(ELOQUENT_TIMEZONE),
             ],
         ]);
 });

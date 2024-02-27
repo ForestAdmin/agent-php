@@ -26,11 +26,12 @@ class QueryBuilder extends BaseQueryBuilder
     public function formatField(string $field): string
     {
         if (Str::contains($field, ':')) {
-            $relation = $this->collection->getFields()[Str::before($field, ':')];
+            $relationName = Str::before($field, ':');
+            $relation = $this->collection->getFields()[$relationName];
             $tableName = $this->collection
                 ->getDataSource()
                 ->getCollection($relation->getForeignCollection())->getTableName();
-            $this->addJoinRelation($relation, $tableName);
+            $this->addJoinRelation($relation, $tableName, $relationName);
 
             return $tableName . '.' . Str::after($field, ':');
         }
@@ -38,49 +39,50 @@ class QueryBuilder extends BaseQueryBuilder
         return $this->tableName . '.' . $field;
     }
 
-    //    protected function addJoinRelation(RelationSchema $relation, string $relationTableName): void
-    //    {
-    //        if ($relation instanceof ManyToManySchema) {
-    //            $throughTable = $this->collection->getDataSource()->getCollection($relation->getThroughCollection())->getTableName();
-    //            $joinTable = "$relationTableName as $relationTableName";
-    //            $joinThroughTable = "$throughTable as $throughTable";
-    //            if (! $this->isJoin($joinTable) && ! $this->isJoin($joinThroughTable)) {
-    //                $this->query
-    //                    ->leftJoin(
-    //                        "$throughTable as $throughTable",
-    //                        $this->tableName . '.' . $relation->getOriginKeyTarget(),
-    //                        '=',
-    //                        $throughTable . '.' . $relation->getOriginKey()
-    //                    )
-    //                    ->leftJoin(
-    //                        "$relationTableName as $relationTableName",
-    //                        $throughTable . '.' . $relation->getForeignKey(),
-    //                        '=',
-    //                        $relationTableName . '.' . $relation->getForeignKeyTarget()
-    //                    );
-    //            }
-    //        } else {
-    //            $joinTable = "$relationTableName as $relationTableName";
-    //            if (
-    //                ($relation instanceof OneToOneSchema || $relation instanceof OneToManySchema)
-    //                && ! $this->isJoin($joinTable)
-    //            ) {
-    //                $this->query->leftJoin(
-    //                    $joinTable,
-    //                    $this->tableName . '.' . $relation->getOriginKey(),
-    //                    '=',
-    //                    $relationTableName . '.' . $relation->getOriginKeyTarget()
-    //                );
-    //            } elseif ($relation instanceof ManyToOneSchema && ! $this->isJoin($joinTable)) {
-    //                $this->query->leftJoin(
-    //                    $joinTable,
-    //                    $this->tableName . '.' . $relation->getForeignKey(),
-    //                    '=',
-    //                    $relationTableName . '.' . $relation->getForeignKeyTarget()
-    //                );
-    //            }
-    //        }
-    //    }
+    protected function addJoinRelation(RelationSchema $relation, string $relationTableName, ?string $relationTableAlias = null): void
+    {
+        $relationTableAlias = $relationTableAlias ?? $relationTableName;
+        if ($relation instanceof ManyToManySchema) {
+            $throughTable = $this->collection->getDataSource()->getCollection($relation->getThroughCollection())->getTableName();
+            $joinTable = "$relationTableName as $relationTableAlias";
+            $joinThroughTable = "$throughTable as $throughTable";
+            if (! $this->isJoin($joinTable) && ! $this->isJoin($joinThroughTable)) {
+                $this->query
+                    ->leftJoin(
+                        "$throughTable as $throughTable",
+                        $this->tableName . '.' . $relation->getOriginKeyTarget(),
+                        '=',
+                        $throughTable . '.' . $relation->getOriginKey()
+                    )
+                    ->leftJoin(
+                        "$relationTableName as $relationTableAlias",
+                        $throughTable . '.' . $relation->getForeignKey(),
+                        '=',
+                        $relationTableAlias . '.' . $relation->getForeignKeyTarget()
+                    );
+            }
+        } else {
+            $joinTable = "$relationTableName as $relationTableAlias";
+            if (
+                ($relation instanceof OneToOneSchema || $relation instanceof OneToManySchema)
+                && ! $this->isJoin($joinTable)
+            ) {
+                $this->query->leftJoin(
+                    $joinTable,
+                    $this->tableName . '.' . $relation->getOriginKeyTarget(),
+                    '=',
+                    $relationTableAlias . '.' . $relation->getOriginKey()
+                );
+            } elseif ($relation instanceof ManyToOneSchema && ! $this->isJoin($joinTable)) {
+                $this->query->leftJoin(
+                    $joinTable,
+                    $this->tableName . '.' . $relation->getForeignKey(),
+                    '=',
+                    $relationTableAlias . '.' . $relation->getForeignKeyTarget()
+                );
+            }
+        }
+    }
 
     protected function isJoin(string $joinTable): bool
     {

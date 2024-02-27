@@ -60,7 +60,8 @@ class QueryConverter extends QueryBuilder
                 /** @var RelationSchema $relation */
                 $relationSchema = $this->collection->getFields()[$relation];
                 $relationTableName = $this->collection->getDataSource()->getCollection($relationSchema->getForeignCollection())->getTableName();
-                $this->addJoinRelation($relationSchema, $relationTableName);
+
+                $this->addJoinRelation($relationSchema, $relationTableName, $relation);
                 $relationFields->map(function ($field) use (&$selectRaw, $relationTableName, $relation) {
                     $selectRaw[] = "$relationTableName.$field as $relation.$field";
                 });

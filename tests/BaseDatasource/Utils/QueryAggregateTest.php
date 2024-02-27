@@ -115,7 +115,7 @@ beforeEach(function () {
     $datasource->addCollection($bookReviewCollection);
 });
 
-test('of() should return a ForestAdmin\\AgentPHP\\Agent\\Utils\\QueryAggregate instance', function () {
+test('of() should return a ForestAdmin\\AgentPHP\\BaseDatasource\\Utils\\QueryAggregate instance', function () {
     global $bookCollection;
     $query = QueryAggregate::of($bookCollection, 'Europe/Paris', new Aggregation('Count'));
 
