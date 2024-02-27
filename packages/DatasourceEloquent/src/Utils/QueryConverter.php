@@ -213,8 +213,6 @@ class QueryConverter extends QueryBuilder
                 $query->whereBetween($field, $interval, $aggregator);
 
                 break;
-            default:
-                throw new \RuntimeException('Unknown operator');
         }
     }
 
