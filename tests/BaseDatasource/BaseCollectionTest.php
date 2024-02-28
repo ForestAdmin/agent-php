@@ -134,7 +134,7 @@ test('delete() should remove the record in database', function () {
 });
 
 
-test('aggregate() should remove the record in database', function () {
+test('aggregate() should count the records in database', function () {
     /** @var BaseCollection $baseCollection */
     global $baseCollection;
     $request = Request::createFromGlobals();

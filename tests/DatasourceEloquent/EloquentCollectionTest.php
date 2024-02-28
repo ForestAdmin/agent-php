@@ -183,7 +183,7 @@ test('delete() should remove the record in database', function () {
         ->and($records)->toBeEmpty();
 });
 
-test('aggregate() should remove the record in database', function () {
+test('aggregate() should count the records in database', function () {
     /** @var EloquentDatasource $baseCollection */
     global $eloquentDatasource;
     $collection = $eloquentDatasource->getCollection('Book');
