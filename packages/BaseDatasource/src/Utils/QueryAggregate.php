@@ -1,8 +1,8 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\Agent\Utils;
+namespace ForestAdmin\AgentPHP\BaseDatasource\Utils;
 
-use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
+use ForestAdmin\AgentPHP\BaseDatasource\Contracts\BaseCollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use Illuminate\Database\Query\Expression;
@@ -15,7 +15,7 @@ class QueryAggregate extends QueryConverter
     protected string $field;
 
     public function __construct(
-        protected BaseCollection $collection,
+        protected BaseCollectionContract $collection,
         protected string $timezone,
         protected Aggregation $aggregation,
         protected ?Filter $filter = null,

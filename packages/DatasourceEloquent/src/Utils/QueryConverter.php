@@ -1,9 +1,9 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\Agent\Utils;
+namespace ForestAdmin\AgentPHP\DatasourceEloquent\Utils;
 
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
-use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
+use ForestAdmin\AgentPHP\BaseDatasource\Contracts\BaseCollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTree;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
@@ -13,6 +13,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -27,7 +28,7 @@ class QueryConverter extends QueryBuilder
     ];
 
     public function __construct(
-        BaseCollection $collection,
+        BaseCollectionContract $collection,
         protected string         $timezone,
         protected ?Filter        $filter = null,
         protected ?Projection    $projection = null,
@@ -59,9 +60,10 @@ class QueryConverter extends QueryBuilder
                 /** @var RelationSchema $relation */
                 $relationSchema = $this->collection->getFields()[$relation];
                 $relationTableName = $this->collection->getDataSource()->getCollection($relationSchema->getForeignCollection())->getTableName();
+
                 $this->addJoinRelation($relationSchema, $relationTableName, $relation);
-                $relationFields->map(function ($field) use (&$selectRaw, $relation) {
-                    $selectRaw[] = "$relation.$field as $relation.$field";
+                $relationFields->map(function ($field) use (&$selectRaw, $relationTableName, $relation) {
+                    $selectRaw[] = "$relationTableName.$field as $relation.$field";
                 });
             }
 
@@ -104,7 +106,7 @@ class QueryConverter extends QueryBuilder
         }
     }
 
-    private function convertConditionTree(ConditionTree $conditionTree, Builder $query, ?string $aggregator = null): void
+    private function convertConditionTree(ConditionTree $conditionTree, Builder|EloquentBuilder $query, ?string $aggregator = null): void
     {
         if ($conditionTree instanceof ConditionTreeBranch) {
             $query->where(
@@ -126,7 +128,7 @@ class QueryConverter extends QueryBuilder
         }
     }
 
-    private function computeDateOperator(ConditionTreeLeaf $conditionTreeLeaf, Builder $query, string $aggregator): void
+    private function computeDateOperator(ConditionTreeLeaf $conditionTreeLeaf, Builder|EloquentBuilder $query, string $aggregator): void
     {
         $field = $this->formatField($conditionTreeLeaf->getField());
         $value = $conditionTreeLeaf->getValue();
@@ -214,7 +216,7 @@ class QueryConverter extends QueryBuilder
         }
     }
 
-    private function computeMainOperator(ConditionTreeLeaf $conditionTreeLeaf, Builder $query, string $aggregator): void
+    private function computeMainOperator(ConditionTreeLeaf $conditionTreeLeaf, Builder|EloquentBuilder $query, string $aggregator): void
     {
         $field = $this->formatField($conditionTreeLeaf->getField());
         $value = $conditionTreeLeaf->getValue();

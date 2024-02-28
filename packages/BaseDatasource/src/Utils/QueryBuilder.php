@@ -1,25 +1,26 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\Agent\Utils;
+namespace ForestAdmin\AgentPHP\BaseDatasource\Utils;
 
-use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
+use ForestAdmin\AgentPHP\BaseDatasource\Contracts\BaseCollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Str;
 
 class QueryBuilder
 {
-    protected Builder $query;
+    protected Builder|EloquentBuilder $query;
 
     protected string $tableName;
 
     public function __construct(
-        protected BaseCollection $collection,
+        protected BaseCollectionContract $collection,
     ) {
         $this->tableName = $this->collection->getTableName();
         $this->query = $this->collection
@@ -34,7 +35,7 @@ class QueryBuilder
         return (new static(...$args));
     }
 
-    public function getQuery(): Builder
+    public function getQuery(): Builder|EloquentBuilder
     {
         return $this->query;
     }

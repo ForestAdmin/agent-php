@@ -5,10 +5,11 @@ namespace ForestAdmin\AgentPHP\BaseDatasource;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\FrontendFilterable;
-use ForestAdmin\AgentPHP\Agent\Utils\QueryAggregate;
-use ForestAdmin\AgentPHP\Agent\Utils\QueryConverter;
+use ForestAdmin\AgentPHP\BaseDatasource\Contracts\BaseCollectionContract;
 use ForestAdmin\AgentPHP\BaseDatasource\Contracts\BaseDatasourceContract;
 use ForestAdmin\AgentPHP\BaseDatasource\Utils\DataTypes;
+use ForestAdmin\AgentPHP\BaseDatasource\Utils\QueryAggregate;
+use ForestAdmin\AgentPHP\BaseDatasource\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection as ForestCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
@@ -19,7 +20,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use Illuminate\Support\Arr;
 
-class BaseCollection extends ForestCollection
+class BaseCollection extends ForestCollection implements BaseCollectionContract
 {
     public function __construct(protected BaseDatasourceContract $datasource, string $name, protected string $tableName)
     {
