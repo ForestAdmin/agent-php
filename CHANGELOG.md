@@ -1,3 +1,10 @@
+## [1.8.6](https://github.com/ForestAdmin/agent-php/compare/v1.8.5...v1.8.6) (2024-02-28)
+
+
+### Bug Fixes
+
+* **introspection:** set column as read only when it has autoincrement constraint ([#93](https://github.com/ForestAdmin/agent-php/issues/93)) ([e2cc88c](https://github.com/ForestAdmin/agent-php/commit/e2cc88c0b7bdf9cd8b8851799afd1c659b4a912d))
+
 ## [1.8.5](https://github.com/ForestAdmin/agent-php/compare/v1.8.4...v1.8.5) (2024-02-22)
 
 
