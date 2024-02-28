@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/ForestAdmin/agent-php/compare/v1.8.6...v1.9.0) (2024-02-28)
+
+
+### Features
+
+* **datasource-eloquent:** allow user to trigger eloquent event ([#101](https://github.com/ForestAdmin/agent-php/issues/101)) ([d72138a](https://github.com/ForestAdmin/agent-php/commit/d72138a77c2df8ef5039e25dc1d0dcc2fe5625ed))
+
 ## [1.8.6](https://github.com/ForestAdmin/agent-php/compare/v1.8.5...v1.8.6) (2024-02-28)
 
 
