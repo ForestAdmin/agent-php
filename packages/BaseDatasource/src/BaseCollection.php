@@ -55,7 +55,7 @@ class BaseCollection extends ForestCollection
                 columnType: DataTypes::getType($value->getType()->getName()),
                 filterOperators: FrontendFilterable::getRequiredOperators(DataTypes::getType($value->getType()->getName())),
                 isPrimaryKey: in_array($value->getName(), $fields['primaries'], true),
-                isReadOnly: false,
+                isReadOnly: $value->getAutoincrement(), // if it's autoincrement the column is read only
                 isSortable: true,
                 type: 'Column',
                 defaultValue: $value->getDefault(),
