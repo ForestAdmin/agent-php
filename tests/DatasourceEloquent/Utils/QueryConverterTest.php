@@ -125,19 +125,19 @@ test('QueryConverter should add the join with ManyToOne relation', function () {
 });
 
 test('QueryConverter should add the join with OneToMany / OneToOne relation', function () {
-    global $authorCollection;
-    $query = QueryConverter::of($authorCollection, 'Europe/Paris', null, new Projection(['id', 'books:title']))
+    global $bookCollection;
+    $query = QueryConverter::of($bookCollection, 'Europe/Paris', null, new Projection(['id', 'author:email']))
         ->getQuery()->getQuery();
 
     expect($query->joins)->toHaveCount(1)
-        ->and($query->joins[0]->table)->toEqual('books as books')
+        ->and($query->joins[0]->table)->toEqual('authors as author')
         ->and($query->joins[0]->wheres)->toHaveCount(1)
         ->and($query->joins[0]->wheres[0])->toEqual(
             [
                 "type"     => "Column",
-                "first"    => "authors.id",
+                "first"    => "books.author_id",
                 "operator" => "=",
-                "second"   => "books.author_id",
+                "second"   => "author.id",
                 "boolean"  => "and",
             ]
         );
