@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/ForestAdmin/agent-php/compare/v1.9.0...v1.9.1) (2024-02-29)
+
+
+### Bug Fixes
+
+* **eloquent-datasource:** replace table name by relation name when select relation field ([#102](https://github.com/ForestAdmin/agent-php/issues/102)) ([c977220](https://github.com/ForestAdmin/agent-php/commit/c9772200795af422b451bd1f0b61de2c1b719811))
+
 # [1.9.0](https://github.com/ForestAdmin/agent-php/compare/v1.8.6...v1.9.0) (2024-02-28)
 
 
