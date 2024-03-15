@@ -3,7 +3,7 @@
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
 
-\Ozzie\Nest\describe('getInverseRelation() when inverse relations is missing', function () {
+describe('getInverseRelation() when inverse relations is missing', function () {
     beforeEach(function () {
         $this->bucket['dynamicField'] = new DynamicField(
             type: FieldType::STRING,

@@ -25,7 +25,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
-\Ozzie\Nest\describe('Computed collection', function () {
+describe('Computed collection', function () {
     $before = static function (TestCase $testCase) {
         $records = [['id' => 1, 'description' => 'new transaction', 'amount' => 100]];
         $aggregateResult = [['value' => 1, 'group' => []]];

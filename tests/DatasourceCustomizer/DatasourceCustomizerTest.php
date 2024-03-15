@@ -9,7 +9,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-\Ozzie\Nest\describe('with a datasource', function () {
+describe('with a datasource', function () {
     beforeEach(function () {
         $datasource = new Datasource();
         $collectionPerson = new Collection($datasource, 'Person');

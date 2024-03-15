@@ -19,7 +19,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 
-\Ozzie\Nest\describe('RelationCollection', function () {
+describe('RelationCollection', function () {
     beforeEach(function () {
         $passportRecords = [
             [

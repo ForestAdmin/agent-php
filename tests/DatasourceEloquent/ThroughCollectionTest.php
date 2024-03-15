@@ -8,9 +8,6 @@ use ForestAdmin\AgentPHP\Tests\DatasourceDoctrine\Entity\Car;
 use ForestAdmin\AgentPHP\Tests\DatasourceDoctrine\Entity\Owner;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
-use function Ozzie\Nest\describe;
-use function Ozzie\Nest\test;
-
 beforeEach(closure: function () {
     global $eloquentDatasource;
     $this->buildAgent(new Datasource(), ['projectDir' => __DIR__]);

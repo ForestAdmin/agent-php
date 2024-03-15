@@ -10,7 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-\Ozzie\Nest\describe('ChartCollection', function () {
+describe('ChartCollection', function () {
     beforeEach(function () {
         $datasource = new Datasource();
         $collectionBook = new Collection($datasource, 'Book');

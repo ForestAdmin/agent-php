@@ -15,7 +15,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFil
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
-\Ozzie\Nest\describe('getInverseRelation() when inverse relations is missing', function () {
+describe('getInverseRelation() when inverse relations is missing', function () {
     beforeEach(function () {
         $datasource = new Datasource();
         $collection = new Collection($datasource, 'Product');

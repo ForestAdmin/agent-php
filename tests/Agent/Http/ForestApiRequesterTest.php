@@ -21,7 +21,7 @@ beforeEach(function () {
     );
 });
 
-\Ozzie\Nest\when('Client return a success response', function () {
+when('Client return a success response', function () {
     $mockClient = static function (): Client {
         $mock = new MockHandler([new Response(200, ['forest-secret-key' => AUTH_SECRET], 'ok'),]);
         $handlerStack = HandlerStack::create($mock);
@@ -42,7 +42,7 @@ beforeEach(function () {
             );
     });
 
-    \Ozzie\Nest\test('get() should return a Response with a 200 status code', function () use ($mockClient) {
+    test('get() should return a Response with a 200 status code', function () use ($mockClient) {
         $forestApi = new ForestApiRequester();
         $forestApi->setClient($mockClient());
 
@@ -56,7 +56,7 @@ beforeEach(function () {
             ->toEqual(AUTH_SECRET);
     });
 
-    \Ozzie\Nest\test('post() should return a Response with a 200 status code', function () use ($mockClient) {
+    test('post() should return a Response with a 200 status code', function () use ($mockClient) {
         $forestApi = new ForestApiRequester();
         $forestApi->setClient($mockClient());
 
@@ -70,7 +70,7 @@ beforeEach(function () {
             ->toEqual(AUTH_SECRET);
     });
 
-    \Ozzie\Nest\test('validateUrl() should return an Exception when the url is not correctly formatted', function () use ($mockClient) {
+    test('validateUrl() should return an Exception when the url is not correctly formatted', function () use ($mockClient) {
         $config = Cache::get('config');
         $config['forestServerUrl'] = 'bad-url';
         Cache::put('config', $config, 60);
@@ -82,7 +82,7 @@ beforeEach(function () {
     });
 });
 
-\Ozzie\Nest\when('Client return a error response', function () {
+when('Client return a error response', function () {
     $mockClient = static function (): Client {
         $mock = new MockHandler([new \RuntimeException('Cannot reach Forest API at ' . config('forestServerUrl') . '/foo, it seems to be down right now'),]);
         $handlerStack = HandlerStack::create($mock);
@@ -90,7 +90,7 @@ beforeEach(function () {
         return new Client(['handler' => $handlerStack]);
     };
 
-    \Ozzie\Nest\test('get() should throw a exception when the Response can\'t reach the server', function () use ($mockClient) {
+    test('get() should throw a exception when the Response can\'t reach the server', function () use ($mockClient) {
         $forestApi = new ForestApiRequester();
         $forestApi->setClient($mockClient());
 
@@ -98,7 +98,7 @@ beforeEach(function () {
             ->toThrow(\ErrorException::class, 'Cannot reach Forest API at ' . config('forestServerUrl') . '/foo, it seems to be down right now');
     });
 
-    \Ozzie\Nest\test('post() should throw a exception when the Response can\'t reach the server', function () use ($mockClient) {
+    test('post() should throw a exception when the Response can\'t reach the server', function () use ($mockClient) {
         $forestApi = new ForestApiRequester();
         $forestApi->setClient($mockClient());
 
