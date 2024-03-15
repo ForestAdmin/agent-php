@@ -18,6 +18,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use Mockery;
 use Mockery\Mock;
 
 describe('RenameFieldCollection', function () {
@@ -85,7 +86,7 @@ describe('RenameFieldCollection', function () {
             ]
         );
 
-        $collectionBook = mock($collectionBook)->makePartial();
+        $collectionBook = Mockery::mock($collectionBook)->makePartial();
 
         $datasource->addCollection($collectionBook);
         $datasource->addCollection($collectionBookPerson);

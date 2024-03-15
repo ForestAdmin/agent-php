@@ -18,6 +18,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
+use Mockery;
 
 describe('RelationCollection', function () {
     beforeEach(function () {
@@ -71,7 +72,7 @@ describe('RelationCollection', function () {
                 'picture'   => new ManyToOneSchema(foreignKey: 'pictureId', foreignKeyTarget: 'id', foreignCollection: 'Picture'),
             ]
         );
-        $collectionPassport = mock($collectionPassport)
+        $collectionPassport = Mockery::mock($collectionPassport)
             ->shouldReceive('list')
             ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type(Projection::class))
             ->andReturnUsing(
@@ -102,7 +103,7 @@ describe('RelationCollection', function () {
                 'name'    => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::IN]),
             ]
         );
-        $collectionPerson = mock($collectionPerson)
+        $collectionPerson = Mockery::mock($collectionPerson)
             ->shouldReceive('list')
             ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type(Projection::class))
             ->andReturnUsing(

@@ -12,6 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\Tests\TestCase;
+use Mockery;
 
 function smartActionCheckerFactory(TestCase $testCase, $requesterId = false, $requestWithAllRecordsIdsExcluded = false)
 {
@@ -111,7 +112,7 @@ test('canExecute() should return true when the user can trigger the action with 
         ]
     );
 
-    $collection = mock($collection)
+    $collection = Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn([
             [
@@ -152,7 +153,7 @@ test('canExecute() should return true when the user can trigger the action with 
         ]
     );
 
-    $collection = mock($collection)
+    $collection = Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn([
             [
@@ -207,7 +208,7 @@ test('canExecute() should throw when the user try to trigger the action with app
         ],
     ]);
 
-    $collection = mock($collection)
+    $collection = Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn([
             [
@@ -246,7 +247,7 @@ test('canExecute() should return true when the user try to trigger the action wi
         ],
     ]);
 
-    $collection = mock($collection)
+    $collection = Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn([
             [
@@ -301,7 +302,7 @@ test('canExecute() should return true when the user try to trigger the action wi
         ],
     ]);
 
-    $collection = mock($collection)
+    $collection = Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn(
             [
@@ -380,7 +381,7 @@ test('canExecute() should throw when smart action doesn\'t match with triggerCon
         ],
     ]);
 
-    $collection = mock($collection)
+    $collection = Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn(
             [
@@ -452,7 +453,7 @@ test('canExecute() should return true when the user can approve and the conditio
             ],
         ],
     ]);
-    $collection = mock($collection)
+    $collection = Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn(
             [
@@ -493,7 +494,7 @@ test('canExecute() should return true when the user can approve and the conditio
         'userApprovalEnabled'    => [1],
         'selfApprovalEnabled'    => [1],
     ]);
-    $collection = mock($collection)
+    $collection = Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn(
             [
@@ -554,7 +555,7 @@ test('canExecute() should throw when the user try to approve and the condition d
             ],
         ],
     ]);
-    $collection = mock($collection)
+    $collection = Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn(
             [
@@ -593,7 +594,7 @@ test('canExecute() should throw when the user try to approve and the condition d
             ],
         ],
     ]);
-    $collection = mock($collection)
+    $collection = Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn(
             [
@@ -633,7 +634,7 @@ test('canExecute() should throw when the user try to approve and the condition d
         ],
         'selfApprovalEnabled'    => [1000],
     ]);
-    $collection = mock($collection)
+    $collection = Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn(
             [

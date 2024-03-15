@@ -15,6 +15,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
+use Mockery;
 
 describe('SortCollection', function () {
     $before = static function (TestCase $testCase) {
@@ -50,7 +51,7 @@ describe('SortCollection', function () {
                 ),
             ]
         );
-        $collectionBook = mock($collectionBook)
+        $collectionBook = Mockery::mock($collectionBook)
             ->makePartial()
             ->shouldReceive('list')
             ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type(Projection::class))
@@ -189,7 +190,7 @@ describe('SortChildCollection', function () {
             ]
         );
 
-        $collectionBook = mock($collectionBook)
+        $collectionBook = Mockery::mock($collectionBook)
             ->makePartial()
             ->shouldReceive('list')
             ->andReturn($records[0], $records[1])

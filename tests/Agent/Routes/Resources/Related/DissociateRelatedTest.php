@@ -15,10 +15,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
-
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
+
+use Mockery;
 
 $before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
@@ -97,7 +98,7 @@ $before = static function (TestCase $testCase, $args = []) {
     );
 
     if (isset($args['dissociate'])) {
-        $collectionUser = mock($collectionUser)
+        $collectionUser = Mockery::mock($collectionUser)
             ->shouldReceive('dissociate')
             ->with(
                 \Mockery::type(Caller::class),
@@ -160,7 +161,7 @@ $before = static function (TestCase $testCase, $args = []) {
         config('permissionExpiration')
     );
 
-    $dissociate = mock(DissociateRelated::class)
+    $dissociate = Mockery::mock(DissociateRelated::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('checkIp')

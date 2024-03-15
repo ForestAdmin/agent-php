@@ -22,10 +22,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
-
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
+
+use Mockery;
 
 function factoryChart(TestCase $testCase, $args = []): Charts
 {
@@ -93,7 +94,7 @@ function factoryChart(TestCase $testCase, $args = []): Charts
     );
 
     if (isset($args['books']['results'])) {
-        $collectionBooks = mock($collectionBooks)
+        $collectionBooks = Mockery::mock($collectionBooks)
             ->shouldReceive('aggregate');
 
         if (isset($args['type']) && $args['type'] === 'leaderboard') {
@@ -178,7 +179,7 @@ function factoryChart(TestCase $testCase, $args = []): Charts
         ),
         config('permissionExpiration')
     );
-    $chart = mock(Charts::class)
+    $chart = Mockery::mock(Charts::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();

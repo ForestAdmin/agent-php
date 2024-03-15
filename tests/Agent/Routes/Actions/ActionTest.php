@@ -20,10 +20,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
-
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
+
+use Mockery;
 
 function factoryAction(TestCase $testCase, $smartAction): Actions
 {
@@ -129,13 +130,13 @@ function factoryAction(TestCase $testCase, $smartAction): Actions
         config('permissionExpiration')
     );
 
-    $action = mock(Actions::class)
+    $action = Mockery::mock(Actions::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->shouldReceive('build')
         ->getMock();
 
-    $permissions = mock(Permissions::class)
+    $permissions = Mockery::mock(Permissions::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('getCollectionsPermissionsData')
