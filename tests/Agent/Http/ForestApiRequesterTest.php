@@ -21,7 +21,7 @@ beforeEach(function () {
     );
 });
 
-when('Client return a success response', function () {
+describe('Client return a success response', function () {
     $mockClient = static function (): Client {
         $mock = new MockHandler([new Response(200, ['forest-secret-key' => AUTH_SECRET], 'ok'),]);
         $handlerStack = HandlerStack::create($mock);
@@ -82,7 +82,7 @@ when('Client return a success response', function () {
     });
 });
 
-when('Client return a error response', function () {
+describe('Client return a error response', function () {
     $mockClient = static function (): Client {
         $mock = new MockHandler([new \RuntimeException('Cannot reach Forest API at ' . config('forestServerUrl') . '/foo, it seems to be down right now'),]);
         $handlerStack = HandlerStack::create($mock);
