@@ -3,7 +3,6 @@
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Routes\System\HealthCheck;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use Mockery;
 
 test('make() should return a new instance of HealthCheck with routes', function () {
     $healthCheck = HealthCheck::make();
@@ -24,7 +23,7 @@ test('handleRequest() should return a response 200', function () {
         ],
         300
     );
-    $healthCheck = Mockery::mock(HealthCheck::class)
+    $healthCheck = \Mockery::mock(HealthCheck::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('sendSchema')

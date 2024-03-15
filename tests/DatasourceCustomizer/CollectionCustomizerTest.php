@@ -23,7 +23,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\Rules;
 use ForestAdmin\AgentPHP\Tests\TestCase;
-use Mockery;
 
 describe('CollectionCustomizer', function () {
     $before = static function (TestCase $testCase, $collectionName = 'Book', $operators = [Operators::EQUAL, Operators::IN]) {
@@ -127,7 +126,7 @@ describe('CollectionCustomizer', function () {
 
         $stack = $datasourceCustomizer->getStack();
         $earlyComputed = $stack->earlyComputed;
-        $earlyComputed = Mockery::mock($earlyComputed)
+        $earlyComputed = \Mockery::mock($earlyComputed)
             ->shouldReceive('getCollection')
             ->andReturn($datasourceCustomizer->getStack()->earlyComputed->getCollection('Book'))
             ->getMock();
@@ -163,7 +162,7 @@ describe('CollectionCustomizer', function () {
 
         $stack = $datasourceCustomizer->getStack();
         $lateComputed = $stack->lateComputed;
-        $lateComputed = Mockery::mock($lateComputed)
+        $lateComputed = \Mockery::mock($lateComputed)
             ->shouldReceive('getCollection')
             ->once()
             ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))
@@ -200,7 +199,7 @@ describe('CollectionCustomizer', function () {
 
         $stack = $datasourceCustomizer->getStack();
         $book = $stack->relation->getCollection('Book');
-        $bookRelation = Mockery::mock($book)
+        $bookRelation = \Mockery::mock($book)
             ->shouldReceive('addRelation')
             ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Book'))
             ->getMock();
@@ -234,7 +233,7 @@ describe('CollectionCustomizer', function () {
 
         $stack = $datasourceCustomizer->getStack();
         $book = $stack->relation->getCollection('Book');
-        $bookRelation = Mockery::mock($book)
+        $bookRelation = \Mockery::mock($book)
             ->shouldReceive('addRelation')
             ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Book'))
             ->getMock();
@@ -268,7 +267,7 @@ describe('CollectionCustomizer', function () {
 
         $stack = $datasourceCustomizer->getStack();
         $category = $stack->relation->getCollection('Category');
-        $categoryRelation = Mockery::mock($category)
+        $categoryRelation = \Mockery::mock($category)
             ->shouldReceive('addRelation')
             ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Category'))
             ->getMock();
@@ -302,7 +301,7 @@ describe('CollectionCustomizer', function () {
 
         $stack = $datasourceCustomizer->getStack();
         $person = $stack->relation->getCollection('Person');
-        $personRelation = Mockery::mock($person)
+        $personRelation = \Mockery::mock($person)
             ->shouldReceive('addRelation')
             ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Person'))
             ->getMock();
@@ -383,7 +382,7 @@ describe('CollectionCustomizer', function () {
 
         $stack = $datasourceCustomizer->getStack();
         $search = $stack->search;
-        $search = Mockery::mock($search)
+        $search = \Mockery::mock($search)
             ->shouldReceive('getCollection')
             ->once()
             ->andReturn($datasourceCustomizer->getStack()->search->getCollection('Book'))
@@ -438,7 +437,7 @@ describe('CollectionCustomizer', function () {
 
         $stack = $datasourceCustomizer->getStack();
         $write = $stack->write;
-        $write = Mockery::mock($write)
+        $write = \Mockery::mock($write)
             ->shouldReceive('getCollection')
             ->once()
             ->andReturn($datasourceCustomizer->getStack()->write->getCollection('Book'))
@@ -500,7 +499,7 @@ describe('CollectionCustomizer', function () {
         $stack = $datasourceCustomizer->getStack();
 
         $lateComputed = $stack->lateComputed;
-        $lateComputed = Mockery::mock($lateComputed)
+        $lateComputed = \Mockery::mock($lateComputed)
             ->shouldReceive('getCollection')
             ->once()
             ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))
@@ -556,7 +555,7 @@ describe('CollectionCustomizer', function () {
         $stack = $datasourceCustomizer->getStack();
 
         $lateComputed = $stack->lateComputed;
-        $lateComputed = Mockery::mock($lateComputed)
+        $lateComputed = \Mockery::mock($lateComputed)
             ->shouldReceive('getCollection')
             ->once()
             ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))
@@ -589,7 +588,7 @@ describe('CollectionCustomizer', function () {
         $stack = $datasourceCustomizer->getStack();
 
         $lateComputed = $stack->lateComputed;
-        $lateComputed = Mockery::mock($lateComputed)
+        $lateComputed = \Mockery::mock($lateComputed)
             ->shouldReceive('getCollection')
             ->once()
             ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))

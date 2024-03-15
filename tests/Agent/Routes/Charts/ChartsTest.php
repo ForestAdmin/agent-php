@@ -26,8 +26,6 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
 
-use Mockery;
-
 function factoryChart(TestCase $testCase, $args = []): Charts
 {
     $datasource = new Datasource();
@@ -94,7 +92,7 @@ function factoryChart(TestCase $testCase, $args = []): Charts
     );
 
     if (isset($args['books']['results'])) {
-        $collectionBooks = Mockery::mock($collectionBooks)
+        $collectionBooks = \Mockery::mock($collectionBooks)
             ->shouldReceive('aggregate');
 
         if (isset($args['type']) && $args['type'] === 'leaderboard') {
@@ -179,7 +177,7 @@ function factoryChart(TestCase $testCase, $args = []): Charts
         ),
         config('permissionExpiration')
     );
-    $chart = Mockery::mock(Charts::class)
+    $chart = \Mockery::mock(Charts::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();

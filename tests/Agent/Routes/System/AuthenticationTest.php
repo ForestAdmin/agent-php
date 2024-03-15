@@ -8,7 +8,6 @@ use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Security\Authentication;
 use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use Mockery;
 use Prophecy\Argument;
 use Prophecy\Prophet;
 
@@ -44,7 +43,7 @@ beforeEach(function () {
         ->shouldBeCalled()
         ->willReturn(JWT::encode($user, AUTH_SECRET, 'HS256'));
 
-    $authentication = Mockery::mock(Authentication::class)
+    $authentication = \Mockery::mock(Authentication::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('auth')

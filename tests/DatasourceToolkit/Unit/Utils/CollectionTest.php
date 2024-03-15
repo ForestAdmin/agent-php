@@ -17,7 +17,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use ForestAdmin\AgentPHP\Tests\TestCase;
-use Mockery;
 
 describe('Datasource with Inverse relation missing', function () {
     $before = static function (TestCase $testCase) {
@@ -145,7 +144,7 @@ describe('Datasource with all relations', function () {
         );
 
         if (isset($args['Book']['list'])) {
-            $collectionBook = Mockery::mock($collectionBook)
+            $collectionBook = \Mockery::mock($collectionBook)
                 ->shouldReceive('list')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
                 ->andReturn($args['Book']['list'])
@@ -153,7 +152,7 @@ describe('Datasource with all relations', function () {
         }
 
         if (isset($args['BookPerson']['list'])) {
-            $collectionBookPerson = Mockery::mock($collectionBookPerson)
+            $collectionBookPerson = \Mockery::mock($collectionBookPerson)
                 ->shouldReceive('list')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
                 ->andReturn($args['BookPerson']['list'])
@@ -161,7 +160,7 @@ describe('Datasource with all relations', function () {
         }
 
         if (isset($args['Person']['list'])) {
-            $collectionPerson = Mockery::mock($collectionPerson)
+            $collectionPerson = \Mockery::mock($collectionPerson)
                 ->shouldReceive('list')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
                 ->andReturn($args['Person']['list'])
@@ -169,7 +168,7 @@ describe('Datasource with all relations', function () {
         }
 
         if (isset($args['BookPerson']['aggregate'])) {
-            $collectionBookPerson = Mockery::mock($collectionBookPerson)
+            $collectionBookPerson = \Mockery::mock($collectionBookPerson)
                 ->shouldReceive('aggregate')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
                 ->andReturn($args['BookPerson']['aggregate'])
@@ -177,7 +176,7 @@ describe('Datasource with all relations', function () {
         }
 
         if (isset($args['Person']['aggregate'])) {
-            $collectionPerson = Mockery::mock($collectionPerson)
+            $collectionPerson = \Mockery::mock($collectionPerson)
                 ->shouldReceive('aggregate')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
                 ->andReturn($args['Person']['aggregate'])

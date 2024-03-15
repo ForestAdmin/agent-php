@@ -9,7 +9,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operat
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
-use Mockery;
 
 describe('RelaxedCollection', function () {
     beforeEach(function () {
@@ -22,7 +21,7 @@ describe('RelaxedCollection', function () {
             ]
         );
 
-        $collectionBook = Mockery::mock($collectionBook)
+        $collectionBook = \Mockery::mock($collectionBook)
             ->shouldReceive('getNativeDriver')
             ->andReturn('a native driver');
 

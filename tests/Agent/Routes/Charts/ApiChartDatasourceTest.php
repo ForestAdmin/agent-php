@@ -6,7 +6,6 @@ use ForestAdmin\AgentPHP\Agent\Routes\Charts\ApiChartDatasource;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Chart\ResultBuilder;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use Mockery;
 
 beforeEach(function () {
     $datasource = new Datasource();
@@ -24,7 +23,7 @@ beforeEach(function () {
 
     $request = Request::createFromGlobals();
 
-    $chart = Mockery::mock(ApiChartDatasource::class)
+    $chart = \Mockery::mock(ApiChartDatasource::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();

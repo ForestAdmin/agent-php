@@ -16,7 +16,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
-use Mockery;
 
 const TEST_TIMEZONE = 'Europe/Paris';
 
@@ -140,7 +139,7 @@ describe('makeThroughFilter()', function () {
                 'id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
             ]
         );
-        $mockCollectionReviews = Mockery::mock($collectionReviews)
+        $mockCollectionReviews = \Mockery::mock($collectionReviews)
             ->shouldReceive('list')
             ->andReturn([['id' => 1], ['id' => 2]])
             ->getMock();
@@ -163,7 +162,7 @@ describe('makeThroughFilter()', function () {
                 ),
             ]
         );
-        $mockCollectionBookReview = Mockery::mock($collectionBookReview)
+        $mockCollectionBookReview = \Mockery::mock($collectionBookReview)
             ->shouldReceive('list')
             ->andReturn([['id' => 123, 'review_id' => 1], ['id' => 124, 'review_id' => 2]])
             ->getMock();

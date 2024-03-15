@@ -10,7 +10,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
-use Mockery;
 
 describe('CollectionChart', function () {
     beforeEach(function () {
@@ -29,7 +28,7 @@ describe('CollectionChart', function () {
                 'id2'    => 2,
             ],
         ];
-        $collectionBook = Mockery::mock($collectionBook)
+        $collectionBook = \Mockery::mock($collectionBook)
             ->shouldReceive('list')
             ->andReturn($records);
 

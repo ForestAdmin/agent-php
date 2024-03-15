@@ -15,8 +15,6 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
 
-use Mockery;
-
 $before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
@@ -29,7 +27,7 @@ $before = static function (TestCase $testCase, $args = []) {
     );
 
     if (isset($args['count'])) {
-        $collectionUser = Mockery::mock($collectionUser)
+        $collectionUser = \Mockery::mock($collectionUser)
             ->shouldReceive('aggregate')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class))
             ->andReturn($args['count'])
@@ -37,7 +35,7 @@ $before = static function (TestCase $testCase, $args = []) {
     }
 
     if (isset($args['countDisable'])) {
-        $collectionUser = Mockery::mock($collectionUser)
+        $collectionUser = \Mockery::mock($collectionUser)
             ->shouldReceive('isCountable')
             ->andReturnFalse()
             ->getMock();
@@ -98,7 +96,7 @@ $before = static function (TestCase $testCase, $args = []) {
     );
 
 
-    $count = Mockery::mock(Count::class)
+    $count = \Mockery::mock(Count::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();
