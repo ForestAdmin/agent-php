@@ -14,8 +14,6 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
 
-use Mockery;
-
 $before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
     $collectionCar = new Collection($datasource, 'Car');
@@ -43,7 +41,7 @@ $before = static function (TestCase $testCase, $args = []) {
     );
 
     if (isset($args['store'])) {
-        $collectionCar = Mockery::mock($collectionCar)
+        $collectionCar = \Mockery::mock($collectionCar)
             ->shouldReceive('create')
             ->with(\Mockery::type(Caller::class), \Mockery::type('array'))
             ->andReturn(($args['store']))
@@ -101,7 +99,7 @@ $before = static function (TestCase $testCase, $args = []) {
         config('permissionExpiration')
     );
 
-    $store = Mockery::mock(Store::class)
+    $store = \Mockery::mock(Store::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();

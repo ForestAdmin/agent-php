@@ -4,7 +4,6 @@ use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Security\ScopeInvalidation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\Tests\TestCase;
-use Mockery;
 
 function factoryScopeInvalidation(TestCase $testCase): ScopeInvalidation
 {
@@ -12,7 +11,7 @@ function factoryScopeInvalidation(TestCase $testCase): ScopeInvalidation
     $testCase->buildAgent($datasource);
 
     $request = Request::createFromGlobals();
-    $scopeInvalidation = Mockery::mock(ScopeInvalidation::class)
+    $scopeInvalidation = \Mockery::mock(ScopeInvalidation::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();

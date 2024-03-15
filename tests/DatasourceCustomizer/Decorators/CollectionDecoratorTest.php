@@ -11,7 +11,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projectio
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
-use Mockery;
 
 describe('CollectionDecorator', function () {
     beforeEach(function () {
@@ -36,7 +35,7 @@ describe('CollectionDecorator', function () {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = Mockery::mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('isSearchable')
             ->once()
             ->andReturn(false)
@@ -51,7 +50,7 @@ describe('CollectionDecorator', function () {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = Mockery::mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('getFields')
             ->once()
             ->andReturn(collect())
@@ -66,7 +65,7 @@ describe('CollectionDecorator', function () {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = Mockery::mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('execute')
             ->once()
             ->getMock();
@@ -81,7 +80,7 @@ describe('CollectionDecorator', function () {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = Mockery::mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('getForm')
             ->once()
             ->getMock();
@@ -96,7 +95,7 @@ describe('CollectionDecorator', function () {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = Mockery::mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('create')
             ->once()
             ->andReturn(['id' => 1, 'name' => 'foo', 'price' => 1000])
@@ -110,7 +109,7 @@ describe('CollectionDecorator', function () {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = Mockery::mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('list')
             ->once()
             ->andReturn([
@@ -132,7 +131,7 @@ describe('CollectionDecorator', function () {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = Mockery::mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('update')
             ->once()
             ->getMock();
@@ -145,7 +144,7 @@ describe('CollectionDecorator', function () {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = Mockery::mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('delete')
             ->once()
             ->getMock();
@@ -158,7 +157,7 @@ describe('CollectionDecorator', function () {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = Mockery::mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('aggregate')
             ->once()
             ->getMock();
@@ -171,7 +170,7 @@ describe('CollectionDecorator', function () {
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = Mockery::mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('makeTransformer')
             ->once()
             ->getMock();

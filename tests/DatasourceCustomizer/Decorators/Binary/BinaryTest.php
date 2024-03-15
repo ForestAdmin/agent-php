@@ -15,7 +15,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
-use Mockery;
 
 describe('BinaryCollectin', function () {
     beforeEach(function () {
@@ -67,7 +66,7 @@ describe('BinaryCollectin', function () {
         $datasourceDecorator = $this->bucket[0];
         $decoratedBook = $datasourceDecorator->getCollection('Book');
 
-        expect(fn () => $decoratedBook->setBinaryMode('invalid', 'hex'))->toThrow(\Exception::class, 'Undefined array key "invalid"');
+        expect(fn () => $decoratedBook->setBinaryMode('invalid', 'hex'))->toThrow(\Exception::class, 'Field not found');
     });
 
     test('setBinaryMode() should throw if the field is not a binary field', function () {
@@ -144,7 +143,7 @@ describe('BinaryCollectin', function () {
         $datasourceDecorator->getCollection('Book')->getFields();
 
         $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
-        $mock = Mockery::mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->expects('list')
             ->once()
@@ -189,7 +188,7 @@ describe('BinaryCollectin', function () {
         ];
 
         $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
-        $mock = Mockery::mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->shouldReceive('list')
             ->andReturn($records)
@@ -232,7 +231,7 @@ describe('BinaryCollectin', function () {
         $decoratedBook = $datasourceDecorator->getCollection('Book');
 
         $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
-        $mock = Mockery::mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->expects('list')
             ->once()
@@ -269,7 +268,7 @@ describe('BinaryCollectin', function () {
             ],
         ];
         $childCollection = $this->invokeProperty($decoratedFavorite, 'childCollection');
-        $mock = Mockery::mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->shouldReceive('list')
             ->andReturn($records)
@@ -291,7 +290,7 @@ describe('BinaryCollectin', function () {
         $decoratedBook = $datasourceDecorator->getCollection('Book');
 
         $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
-        $mock = Mockery::mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->expects('create')
             ->once()
@@ -322,7 +321,7 @@ describe('BinaryCollectin', function () {
         $decoratedBook = $datasourceDecorator->getCollection('Book');
 
         $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
-        $mock = Mockery::mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->expects('create')
             ->once()
@@ -351,7 +350,7 @@ describe('BinaryCollectin', function () {
         $decoratedBook = $datasourceDecorator->getCollection('Book');
 
         $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
-        $mock = Mockery::mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->expects('update')
             ->once()
@@ -386,7 +385,7 @@ describe('BinaryCollectin', function () {
             ],
         ];
         $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
-        $mock = Mockery::mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->expects('aggregate')
             ->once()
@@ -422,7 +421,7 @@ describe('BinaryCollectin', function () {
         ];
 
         $childCollection = $this->invokeProperty($decoratedFavorite, 'childCollection');
-        $mock = Mockery::mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->expects('aggregate')
             ->once()

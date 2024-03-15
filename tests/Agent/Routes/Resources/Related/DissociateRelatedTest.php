@@ -19,8 +19,6 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
 
-use Mockery;
-
 $before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
@@ -98,7 +96,7 @@ $before = static function (TestCase $testCase, $args = []) {
     );
 
     if (isset($args['dissociate'])) {
-        $collectionUser = Mockery::mock($collectionUser)
+        $collectionUser = \Mockery::mock($collectionUser)
             ->shouldReceive('dissociate')
             ->with(
                 \Mockery::type(Caller::class),
@@ -161,7 +159,7 @@ $before = static function (TestCase $testCase, $args = []) {
         config('permissionExpiration')
     );
 
-    $dissociate = Mockery::mock(DissociateRelated::class)
+    $dissociate = \Mockery::mock(DissociateRelated::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('checkIp')

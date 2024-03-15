@@ -9,7 +9,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
-use Mockery;
 
 describe('ChartCollection', function () {
     beforeEach(function () {
@@ -17,7 +16,7 @@ describe('ChartCollection', function () {
         $collectionBook = new Collection($datasource, 'Book');
         $collectionBook->addFields(['id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true)]);
         $this->invokeProperty($collectionBook, 'charts', collect('childChart'));
-        $collectionBook = Mockery::mock($collectionBook)
+        $collectionBook = \Mockery::mock($collectionBook)
             ->makePartial()
             ->shouldReceive('renderChart')
             ->andReturn(['countCurrent' => 1])

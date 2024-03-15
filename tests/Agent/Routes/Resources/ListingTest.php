@@ -19,7 +19,6 @@ use function ForestAdmin\config;
 
 use GuzzleHttp\Psr7\Response;
 
-use Mockery;
 use Prophecy\Argument;
 use Prophecy\Prophet;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -52,7 +51,7 @@ $before = static function (TestCase $testCase, $args = []) {
     );
 
     if (isset($args['listing'])) {
-        $collectionUser = Mockery::mock($collectionUser)
+        $collectionUser = \Mockery::mock($collectionUser)
             ->shouldReceive('list')
             ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type(Projection::class))
             ->andReturn($args['listing'])
@@ -113,7 +112,7 @@ $before = static function (TestCase $testCase, $args = []) {
         config('permissionExpiration')
     );
 
-    $listing = Mockery::mock(Listing::class)
+    $listing = \Mockery::mock(Listing::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();
@@ -295,7 +294,7 @@ test('checkIp() should check the clientIp in the ip-whitelist-rules', function (
             new Response(200, [], json_encode($data, JSON_THROW_ON_ERROR))
         );
 
-    $listing = Mockery::mock(Listing::class)
+    $listing = \Mockery::mock(Listing::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods();
 
@@ -332,7 +331,7 @@ test('checkIp() throw when the clientIp is not into the ip-whitelist-rules', fun
             new Response(200, [], json_encode($data, JSON_THROW_ON_ERROR))
         );
 
-    $listing = Mockery::mock(Listing::class)
+    $listing = \Mockery::mock(Listing::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods();
 

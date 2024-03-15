@@ -20,7 +20,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Carbon;
-use Mockery;
 
 use function Spatie\PestPluginTestTime\testTime;
 
@@ -34,7 +33,7 @@ beforeEach(function () {
 
     $bookCollection = new BaseCollection($datasource, 'Book', 'books');
     $this->invokeProperty($bookCollection, 'fields', collect());
-    $bookCollection = Mockery::mock($bookCollection)
+    $bookCollection = \Mockery::mock($bookCollection)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('fetchFieldsFromTable')
@@ -64,7 +63,7 @@ beforeEach(function () {
 
     $userCollection = new BaseCollection($datasource, 'User', 'users');
     $this->invokeProperty($userCollection, 'fields', collect());
-    $userCollection = Mockery::mock($userCollection)
+    $userCollection = \Mockery::mock($userCollection)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('fetchFieldsFromTable')
@@ -85,7 +84,7 @@ beforeEach(function () {
 
     $reviewCollection = new BaseCollection($datasource, 'Review', 'reviews');
     $this->invokeProperty($reviewCollection, 'fields', collect());
-    $reviewCollection = Mockery::mock($reviewCollection)
+    $reviewCollection = \Mockery::mock($reviewCollection)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('fetchFieldsFromTable')
@@ -101,7 +100,7 @@ beforeEach(function () {
 
     $bookReviewCollection = new BaseCollection($datasource, 'BookReview', 'book_review');
     $this->invokeProperty($bookReviewCollection, 'fields', collect());
-    $bookReviewCollection = Mockery::mock($bookReviewCollection)
+    $bookReviewCollection = \Mockery::mock($bookReviewCollection)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('fetchFieldsFromTable')

@@ -14,7 +14,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFil
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
-use Mockery;
 
 describe('Action context', function () {
     beforeEach(function () {
@@ -38,7 +37,7 @@ describe('Action context', function () {
                 'title' => 'Beat the dealer',
             ],
         ];
-        $collectionBook = Mockery::mock($collectionBook)
+        $collectionBook = \Mockery::mock($collectionBook)
             ->shouldReceive('list')
             ->andReturn($records);
 

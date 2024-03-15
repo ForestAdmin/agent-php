@@ -24,7 +24,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\Tests\TestCase;
-use Mockery;
 
 describe('Computed collection', function () {
     $before = static function (TestCase $testCase) {
@@ -40,7 +39,7 @@ describe('Computed collection', function () {
             ]
         );
 
-        $collectionTransactions = Mockery::mock($collectionTransactions)
+        $collectionTransactions = \Mockery::mock($collectionTransactions)
             ->shouldReceive('list')
             ->andReturn($records)
             ->shouldReceive('create')
@@ -72,7 +71,7 @@ describe('Computed collection', function () {
         $before($this);
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'before', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['List' => $hook]);
@@ -95,7 +94,7 @@ describe('Computed collection', function () {
         $before($this);
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'before', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['Create' => $hook]);
@@ -116,7 +115,7 @@ describe('Computed collection', function () {
         $before($this);
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'before', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['Update' => $hook]);
@@ -139,7 +138,7 @@ describe('Computed collection', function () {
         $before($this);
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'before', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['Delete' => $hook]);
@@ -160,7 +159,7 @@ describe('Computed collection', function () {
         $before($this);
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'before', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['Aggregate' => $hook]);
@@ -184,7 +183,7 @@ describe('Computed collection', function () {
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
         $records = $this->bucket['records'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'after', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['List' => $hook]);
@@ -209,7 +208,7 @@ describe('Computed collection', function () {
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
         $records = $this->bucket['records'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'after', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['Create' => $hook]);
@@ -231,7 +230,7 @@ describe('Computed collection', function () {
         $before($this);
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'after', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['Update' => $hook]);
@@ -254,7 +253,7 @@ describe('Computed collection', function () {
         $before($this);
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'after', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['Delete' => $hook]);
@@ -276,7 +275,7 @@ describe('Computed collection', function () {
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
         $aggregateResult = $this->bucket['aggregateResult'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'after', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['Aggregate' => $hook]);
