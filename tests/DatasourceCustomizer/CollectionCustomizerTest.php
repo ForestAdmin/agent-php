@@ -24,7 +24,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\Rules;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
-\Ozzie\Nest\describe('CollectionCustomizer', function () {
+describe('CollectionCustomizer', function () {
     $before = static function (TestCase $testCase, $collectionName = 'Book', $operators = [Operators::EQUAL, Operators::IN]) {
         $datasource = new Datasource();
         $collectionBook = new Collection($datasource, 'Book');

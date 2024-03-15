@@ -12,7 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-\Ozzie\Nest\describe('CollectionDecorator', function () {
+describe('CollectionDecorator', function () {
     beforeEach(function () {
         $datasource = new Datasource();
         $collectionProduct = new Collection($datasource, 'Product');

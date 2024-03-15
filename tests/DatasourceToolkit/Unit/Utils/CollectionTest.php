@@ -18,7 +18,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
-\Ozzie\Nest\describe('Datasource with Inverse relation missing', function () {
+describe('Datasource with Inverse relation missing', function () {
     $before = static function (TestCase $testCase) {
         $datasource = new Datasource();
         $collectionBook = new Collection($datasource, 'Book');
@@ -63,7 +63,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
     });
 });
 
-\Ozzie\Nest\describe('Datasource with all relations', function () {
+describe('Datasource with all relations', function () {
     $before = static function (TestCase $testCase, array $args = []) {
         $datasource = new Datasource();
         $collectionBook = new Collection($datasource, 'Book');

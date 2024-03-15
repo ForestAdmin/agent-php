@@ -13,7 +13,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-\Ozzie\Nest\describe('SegmentCollection', function () {
+describe('SegmentCollection', function () {
     beforeEach(function () {
         $datasource = new Datasource();
         $collectionProduct = new Collection($datasource, 'Product');
