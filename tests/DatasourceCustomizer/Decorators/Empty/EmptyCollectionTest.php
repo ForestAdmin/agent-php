@@ -15,6 +15,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\Tests\TestCase;
+use Mockery;
 
 describe('Computed collection', function () {
     $before = static function (TestCase $testCase, $args = []) {
@@ -29,7 +30,7 @@ describe('Computed collection', function () {
         );
 
         if (isset($args['listing'])) {
-            $collectionProduct = mock($collectionProduct)
+            $collectionProduct = Mockery::mock($collectionProduct)
                 ->shouldReceive('list')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type(Projection::class))
                 ->andReturn($args['listing'])
@@ -37,7 +38,7 @@ describe('Computed collection', function () {
         }
 
         if (isset($args['update'])) {
-            $collectionProduct = mock($collectionProduct)
+            $collectionProduct = Mockery::mock($collectionProduct)
                 ->shouldReceive('update')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type('array'))
                 ->andReturnNull()
@@ -45,7 +46,7 @@ describe('Computed collection', function () {
         }
 
         if (isset($args['delete'])) {
-            $collectionProduct = mock($collectionProduct)
+            $collectionProduct = Mockery::mock($collectionProduct)
                 ->shouldReceive('delete')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class))
                 ->andReturnNull()
@@ -53,7 +54,7 @@ describe('Computed collection', function () {
         }
 
         if (isset($args['aggregate'])) {
-            $collectionProduct = mock($collectionProduct)
+            $collectionProduct = Mockery::mock($collectionProduct)
                 ->shouldReceive('aggregate')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
                 ->andReturn($args['aggregate'])

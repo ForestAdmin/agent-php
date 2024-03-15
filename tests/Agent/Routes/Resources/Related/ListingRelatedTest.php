@@ -13,10 +13,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
-
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
+
+use Mockery;
 
 $before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
@@ -51,7 +52,7 @@ $before = static function (TestCase $testCase, $args = []) {
 
     if (isset($args['listing'])) {
         $_GET['fields']['Car'] = implode(',', array_keys($args['listing'][0]));
-        $collectionCar = mock($collectionCar)
+        $collectionCar = Mockery::mock($collectionCar)
             ->shouldReceive('list')
             ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type(Projection::class))
             ->andReturn($args['listing'])
@@ -112,7 +113,7 @@ $before = static function (TestCase $testCase, $args = []) {
         config('permissionExpiration')
     );
 
-    $listing = mock(ListingRelated::class)
+    $listing = Mockery::mock(ListingRelated::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();

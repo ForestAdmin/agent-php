@@ -19,6 +19,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
+use Mockery;
 
 describe('Computed collection', function () {
     $before = static function (TestCase $testCase, ?Aggregation $aggregation = null) {
@@ -65,7 +66,7 @@ describe('Computed collection', function () {
                 'title'    => 'Beat the dealer',
             ],
         ];
-        $collectionBook = mock($collectionBook)
+        $collectionBook = Mockery::mock($collectionBook)
             ->shouldReceive('list')
             ->andReturn($records);
 

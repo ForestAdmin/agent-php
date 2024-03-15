@@ -24,6 +24,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\Tests\TestCase;
+use Mockery;
 
 describe('Computed collection', function () {
     $before = static function (TestCase $testCase) {
@@ -39,7 +40,7 @@ describe('Computed collection', function () {
             ]
         );
 
-        $collectionTransactions = mock($collectionTransactions)
+        $collectionTransactions = Mockery::mock($collectionTransactions)
             ->shouldReceive('list')
             ->andReturn($records)
             ->shouldReceive('create')

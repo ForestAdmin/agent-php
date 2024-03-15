@@ -14,6 +14,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\Tests\TestCase;
+use Mockery;
 
 describe('WriteSimpleCollection', function () {
     $before = static function (TestCase $testCase, $data = []) {
@@ -27,7 +28,7 @@ describe('WriteSimpleCollection', function () {
         );
 
         if (isset($data['book'])) {
-            $collectionBook = mock($collectionBook)
+            $collectionBook = Mockery::mock($collectionBook)
                 ->makePartial()
                 ->shouldReceive('create')
                 ->andReturn($data['book'])

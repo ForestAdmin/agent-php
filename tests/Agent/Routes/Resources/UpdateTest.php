@@ -12,10 +12,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projectio
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
-
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
+
+use Mockery;
 
 $before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
@@ -29,7 +30,7 @@ $before = static function (TestCase $testCase, $args = []) {
     );
 
     if (isset($args['update'])) {
-        $collectionCar = mock($collectionCar)
+        $collectionCar = Mockery::mock($collectionCar)
             ->shouldReceive('update')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type('array'))
             ->andReturn($args['update'])
@@ -88,7 +89,7 @@ $before = static function (TestCase $testCase, $args = []) {
         config('permissionExpiration')
     );
 
-    $update = mock(Update::class)
+    $update = Mockery::mock(Update::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();

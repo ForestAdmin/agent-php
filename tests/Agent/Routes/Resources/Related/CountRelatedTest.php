@@ -13,10 +13,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
-
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
+
+use Mockery;
 
 $before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
@@ -50,7 +51,7 @@ $before = static function (TestCase $testCase, $args = []) {
     );
 
     if (isset($args['count'])) {
-        $collectionCar = mock($collectionCar)
+        $collectionCar = Mockery::mock($collectionCar)
             ->shouldReceive('aggregate')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
             ->andReturn($args['count'])
@@ -58,7 +59,7 @@ $before = static function (TestCase $testCase, $args = []) {
     }
 
     if (isset($args['countDisable'])) {
-        $collectionCar = mock($collectionCar)
+        $collectionCar = Mockery::mock($collectionCar)
             ->shouldReceive('isCountable')
             ->andReturnFalse()
             ->getMock();
@@ -116,7 +117,7 @@ $before = static function (TestCase $testCase, $args = []) {
         config('permissionExpiration')
     );
 
-    $CountRelated = mock(CountRelated::class)
+    $CountRelated = Mockery::mock(CountRelated::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();

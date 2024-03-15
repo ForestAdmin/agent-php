@@ -1,8 +1,6 @@
 <?php
 
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\PublicationCollectionDatasourceDecorator;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\PublicationCollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
@@ -13,6 +11,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
+use Mockery;
 
 describe('Computed collection', function () {
     $before = static function (TestCase $testCase, $data = null) {
@@ -80,7 +79,7 @@ describe('Computed collection', function () {
         if (isset($data)) {
             $create = $data['create'];
             unset($create[$data['unpublished']]);
-            $collectionBook = mock($collectionBook)
+            $collectionBook = Mockery::mock($collectionBook)
                 ->makePartial()
                 ->shouldReceive('create')
                 ->andReturn($create)

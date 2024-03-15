@@ -9,6 +9,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use Mockery;
 
 beforeEach(function () {
     $datasource = new Datasource();
@@ -32,7 +33,7 @@ beforeEach(function () {
     $_GET['record_id'] = 1;
     $request = Request::createFromGlobals();
 
-    $chart = mock(ApiChartCollection::class)
+    $chart = Mockery::mock(ApiChartCollection::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();
