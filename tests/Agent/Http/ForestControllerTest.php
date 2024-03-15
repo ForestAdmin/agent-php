@@ -11,8 +11,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
-\Ozzie\Nest\describe('invoke()', function () {
-    \Ozzie\Nest\test('should return a Response', function () {
+describe('invoke()', function () {
+    test('should return a Response', function () {
         $this->buildAgent(new Datasource());
         $_GET['_route'] = 'forest.test';
         $_GET['_route_params'] = [];
@@ -48,7 +48,7 @@ use Symfony\Component\HttpFoundation\Response;
             );
     });
 
-    \Ozzie\Nest\test('should call exceptionHandler', function () {
+    test('should call exceptionHandler', function () {
         $this->buildAgent(new Datasource());
         $_GET['_route'] = 'forest.test';
         $_GET['_route_params'] = [];
@@ -81,7 +81,7 @@ use Symfony\Component\HttpFoundation\Response;
             );
     });
 
-    \Ozzie\Nest\test('should call exceptionHandler on custom HttpException error', function () {
+    test('should call exceptionHandler on custom HttpException error', function () {
         $this->buildAgent(new Datasource());
         $_GET['_route'] = 'forest.test';
         $_GET['_route_params'] = [];
@@ -114,7 +114,7 @@ use Symfony\Component\HttpFoundation\Response;
             );
     });
 
-    \Ozzie\Nest\test('should call exceptionHandler on custom RequireApproval -> HttpException error', function () {
+    test('should call exceptionHandler on custom RequireApproval -> HttpException error', function () {
         $this->buildAgent(new Datasource());
         $_GET['_route'] = 'forest.test';
         $_GET['_route_params'] = [];
@@ -148,7 +148,7 @@ use Symfony\Component\HttpFoundation\Response;
             );
     });
 
-    \Ozzie\Nest\test('should call exceptionHandler on custom AuthenticationOpenIdClient -> HttpException error', function () {
+    test('should call exceptionHandler on custom AuthenticationOpenIdClient -> HttpException error', function () {
         $this->buildAgent(new Datasource());
         $_GET['_route'] = 'forest.test';
         $_GET['_route_params'] = [];
@@ -178,8 +178,8 @@ use Symfony\Component\HttpFoundation\Response;
     });
 });
 
-\Ozzie\Nest\describe('response()', function () {
-    \Ozzie\Nest\test('with the content-type "text/csv" should return a Response', function () {
+describe('response()', function () {
+    test('with the content-type "text/csv" should return a Response', function () {
         $this->buildAgent(new Datasource());
 
         $_GET['_route'] = 'forest';
@@ -197,7 +197,7 @@ use Symfony\Component\HttpFoundation\Response;
             ->toBeInstanceOf(Response::class);
     });
 
-    \Ozzie\Nest\test('should return a JsonResponse', function () {
+    test('should return a JsonResponse', function () {
         $this->buildAgent(new Datasource());
 
         $_GET['_route'] = 'forest';
@@ -210,7 +210,7 @@ use Symfony\Component\HttpFoundation\Response;
             ->toBeInstanceOf(JsonResponse::class);
     });
 
-    \Ozzie\Nest\test('of an action should return a JsonResponse', function () {
+    test('of an action should return a JsonResponse', function () {
         $this->buildAgent(new Datasource());
 
         $_GET['_route'] = 'forest';
@@ -230,7 +230,7 @@ use Symfony\Component\HttpFoundation\Response;
             ->toBeInstanceOf(JsonResponse::class);
     });
 
-    \Ozzie\Nest\test('of an action (file) should return a Response', function () {
+    test('of an action (file) should return a Response', function () {
         $this->buildAgent(new Datasource());
 
         $_GET['_route'] = 'forest';

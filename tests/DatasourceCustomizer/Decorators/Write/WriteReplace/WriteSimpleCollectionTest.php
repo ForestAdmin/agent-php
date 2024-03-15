@@ -15,7 +15,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
-\Ozzie\Nest\describe('WriteSimpleCollection', function () {
+describe('WriteSimpleCollection', function () {
     $before = static function (TestCase $testCase, $data = []) {
         $datasource = new Datasource();
         $collectionBook = new Collection($datasource, 'Book');
@@ -27,7 +27,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         );
 
         if (isset($data['book'])) {
-            $collectionBook = mock($collectionBook)
+            $collectionBook = \Mockery::mock($collectionBook)
                 ->makePartial()
                 ->shouldReceive('create')
                 ->andReturn($data['book'])

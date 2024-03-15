@@ -11,7 +11,7 @@ function factoryScopeInvalidation(TestCase $testCase): ScopeInvalidation
     $testCase->buildAgent($datasource);
 
     $request = Request::createFromGlobals();
-    $scopeInvalidation = mock(ScopeInvalidation::class)
+    $scopeInvalidation = \Mockery::mock(ScopeInvalidation::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();

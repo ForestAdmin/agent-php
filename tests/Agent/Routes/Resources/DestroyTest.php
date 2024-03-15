@@ -8,7 +8,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operat
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
-
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
@@ -70,7 +69,7 @@ $before = static function (TestCase $testCase) {
         ),
         config('permissionExpiration')
     );
-    $destroy = mock(Destroy::class)
+    $destroy = \Mockery::mock(Destroy::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();

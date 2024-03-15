@@ -14,12 +14,12 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
-
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
 
 use GuzzleHttp\Psr7\Response;
+
 use Prophecy\Prophet;
 
 function permissionsFactory(TestCase $testCase, array $post = [], $scope = null, $loadDataSetForestSchema = true)
@@ -233,7 +233,7 @@ test('can() should call getCollectionsPermissionsData twice', function () {
     permissionsFactory($this);
     $collection = $this->bucket['collection'];
     $request = Request::createFromGlobals();
-    $mockPermissions = mock(Permissions::class)
+    $mockPermissions = \Mockery::mock(Permissions::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('getUserData')
@@ -314,7 +314,7 @@ test('can() should throw HttpException when user doesn\'t have the right access'
     permissionsFactory($this);
     $collection = $this->bucket['collection'];
     $request = Request::createFromGlobals();
-    $mockPermissions = mock(Permissions::class)
+    $mockPermissions = \Mockery::mock(Permissions::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('getUserData')
@@ -417,7 +417,7 @@ test('canChart() should call twice and return true on allowed chart', function (
     ];
     permissionsFactory($this, $post);
     $request = Request::createFromGlobals();
-    $mockPermissions = mock(Permissions::class)
+    $mockPermissions = \Mockery::mock(Permissions::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('fetch')
@@ -461,7 +461,7 @@ test('canChart() should throw on forbidden chart', function () {
     ];
     permissionsFactory($this, $post);
     $request = Request::createFromGlobals();
-    $mockPermissions = mock(Permissions::class)
+    $mockPermissions = \Mockery::mock(Permissions::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('getChartData')
@@ -565,13 +565,13 @@ test('canSmartAction() should return true when user can execute the action', fun
     ];
     permissionsFactory($this, $post);
     $permissions = $this->bucket['permissions'];
-    $collection = mock($this->bucket['collection'])
+    $collection = \Mockery::mock($this->bucket['collection'])
         ->shouldReceive('aggregate')
         ->andReturn([['value' => 1]])
         ->getMock();
 
     $request = Request::createFromGlobals();
-    $mockRequest = mock($request)
+    $mockRequest = \Mockery::mock($request)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('getPathInfo')
@@ -614,7 +614,7 @@ test('canSmartAction() should return true when the permissions system is deactiv
     Cache::put('forest.has_permission', false, config('permissionExpiration'));
 
     $request = Request::createFromGlobals();
-    $mockRequest = mock($request)
+    $mockRequest = \Mockery::mock($request)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('getPathInfo')
@@ -656,7 +656,7 @@ test('canSmartAction() should throw when the action is unknown', function () {
     $collection = $this->bucket['collection'];
 
     $request = Request::createFromGlobals();
-    $mockRequest = mock($request)
+    $mockRequest = \Mockery::mock($request)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('getPathInfo')
@@ -698,7 +698,7 @@ test('canSmartAction() should throw when the forest schema doesn\'t have any act
     $collection = $this->bucket['collection'];
 
     $request = Request::createFromGlobals();
-    $mockRequest = mock($request)
+    $mockRequest = \Mockery::mock($request)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('getPathInfo')

@@ -9,7 +9,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-\Ozzie\Nest\describe('SchemaCollection', function () {
+describe('SchemaCollection', function () {
     beforeEach(function () {
         $datasource = new Datasource();
         $collectionProduct = new Collection($datasource, 'Product');
@@ -25,23 +25,23 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
         $this->bucket = [$collectionProduct, $datasource];
     });
-});
 
-test('should overwrite fields from the schema', function () {
-    [$collection, $datasource] = $this->bucket;
+    test('should overwrite fields from the schema', function () {
+        [$collection, $datasource] = $this->bucket;
 
-    $schemaCollection = new SchemaCollection($collection, $datasource);
-    $schemaCollection->overrideSchema('countable', false);
+        $schemaCollection = new SchemaCollection($collection, $datasource);
+        $schemaCollection->overrideSchema('countable', false);
 
-    expect($collection->isCountable())->toBeTrue()
-        ->and($schemaCollection->isCountable())->toBeFalse();
-});
+        expect($collection->isCountable())->toBeTrue()
+            ->and($schemaCollection->isCountable())->toBeFalse();
+    });
 
-test('should not overwrite fields from the schema when the overrideSchema is not called', function () {
-    [$collection, $datasource] = $this->bucket;
+    test('should not overwrite fields from the schema when the overrideSchema is not called', function () {
+        [$collection, $datasource] = $this->bucket;
 
-    $schemaCollection = new SchemaCollection($collection, $datasource);
+        $schemaCollection = new SchemaCollection($collection, $datasource);
 
-    expect($collection->isCountable())->toBeTrue()
-        ->and($schemaCollection->isCountable())->toBeTrue();
+        expect($collection->isCountable())->toBeTrue()
+            ->and($schemaCollection->isCountable())->toBeTrue();
+    });
 });

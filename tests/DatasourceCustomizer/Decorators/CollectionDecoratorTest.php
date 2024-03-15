@@ -12,7 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-\Ozzie\Nest\describe('CollectionDecorator', function () {
+describe('CollectionDecorator', function () {
     beforeEach(function () {
         $datasource = new Datasource();
         $collectionProduct = new Collection($datasource, 'Product');
@@ -35,7 +35,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('isSearchable')
             ->once()
             ->andReturn(false)
@@ -50,7 +50,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('getFields')
             ->once()
             ->andReturn(collect())
@@ -65,7 +65,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('execute')
             ->once()
             ->getMock();
@@ -80,7 +80,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('getForm')
             ->once()
             ->getMock();
@@ -95,7 +95,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('create')
             ->once()
             ->andReturn(['id' => 1, 'name' => 'foo', 'price' => 1000])
@@ -109,7 +109,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('list')
             ->once()
             ->andReturn([
@@ -131,7 +131,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('update')
             ->once()
             ->getMock();
@@ -144,7 +144,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('delete')
             ->once()
             ->getMock();
@@ -157,7 +157,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('aggregate')
             ->once()
             ->getMock();
@@ -170,7 +170,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
         $collectionDecorator = $this->bucket['collectionDecorator'];
 
         $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
-        $childCollection = mock($childCollection)
+        $childCollection = \Mockery::mock($childCollection)
             ->shouldReceive('makeTransformer')
             ->once()
             ->getMock();
