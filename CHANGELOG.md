@@ -1,3 +1,10 @@
+## [1.9.2](https://github.com/ForestAdmin/agent-php/compare/v1.9.1...v1.9.2) (2024-04-12)
+
+
+### Bug Fixes
+
+* **security:** patch tar dependency vulnerabilities ([#105](https://github.com/ForestAdmin/agent-php/issues/105)) ([43da513](https://github.com/ForestAdmin/agent-php/commit/43da513fd2830fd4fd0d3e265f7fc53fcc661766))
+
 ## [1.9.1](https://github.com/ForestAdmin/agent-php/compare/v1.9.0...v1.9.1) (2024-02-29)
 
 
