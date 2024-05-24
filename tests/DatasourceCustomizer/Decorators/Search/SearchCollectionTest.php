@@ -17,7 +17,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
-\Ozzie\Nest\describe('SearchCollection', function () {
+describe('SearchCollection', function () {
     beforeEach(function () {
         $datasource = new Datasource();
         $collectionPerson = new Collection($datasource, 'Person');

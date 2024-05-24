@@ -12,7 +12,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
-
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
@@ -49,7 +48,7 @@ $before = static function (TestCase $testCase, $args = []) {
     );
 
     if (isset($args['Car']['listing'])) {
-        $collectionCar = mock($collectionCar)
+        $collectionCar = \Mockery::mock($collectionCar)
             ->shouldReceive('list')
             ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type(Projection::class))
             ->andReturn($args['Car']['listing'])
@@ -57,7 +56,7 @@ $before = static function (TestCase $testCase, $args = []) {
     }
 
     if (isset($args['User']['listing'])) {
-        $collectionUser = mock($collectionUser)
+        $collectionUser = \Mockery::mock($collectionUser)
             ->shouldReceive('list')
             ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type(Projection::class))
             ->andReturn($args['User']['listing'])
@@ -120,7 +119,7 @@ $before = static function (TestCase $testCase, $args = []) {
         config('permissionExpiration')
     );
 
-    $update = mock(UpdateRelated::class)
+    $update = \Mockery::mock(UpdateRelated::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();

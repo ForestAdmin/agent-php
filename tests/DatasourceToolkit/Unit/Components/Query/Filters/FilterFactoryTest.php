@@ -109,7 +109,7 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
 });
 
 
-\Ozzie\Nest\describe('makeThroughFilter()', function () {
+describe('makeThroughFilter()', function () {
     $before = static function (TestCase $testCase) {
         $datasource = new Datasource();
 
@@ -139,7 +139,7 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
                 'id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
             ]
         );
-        $mockCollectionReviews = mock($collectionReviews)
+        $mockCollectionReviews = \Mockery::mock($collectionReviews)
             ->shouldReceive('list')
             ->andReturn([['id' => 1], ['id' => 2]])
             ->getMock();
@@ -162,7 +162,7 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
                 ),
             ]
         );
-        $mockCollectionBookReview = mock($collectionBookReview)
+        $mockCollectionBookReview = \Mockery::mock($collectionBookReview)
             ->shouldReceive('list')
             ->andReturn([['id' => 123, 'review_id' => 1], ['id' => 124, 'review_id' => 2]])
             ->getMock();
@@ -176,7 +176,7 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
         $testCase->bucket['datasource'] = $datasource;
     };
 
-    \Ozzie\Nest\test("should nest the provided filter many to many", function (Caller $caller) use ($before) {
+    test("should nest the provided filter many to many", function (Caller $caller) use ($before) {
         $before($this);
         $datasource = $this->bucket['datasource'];
         $books = $datasource->getCollection('Book');
@@ -198,7 +198,7 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
             );
     })->with('caller');
 
-    \Ozzie\Nest\test("should make two queries many to many", function (Caller $caller) use ($before) {
+    test("should make two queries many to many", function (Caller $caller) use ($before) {
         $before($this);
         $datasource = $this->bucket['datasource'];
         $books = $datasource->getCollection('Book');
@@ -219,7 +219,7 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
             );
     })->with('caller');
 
-    \Ozzie\Nest\test("should add the fk condition one to many", function (Caller $caller) use ($before) {
+    test("should add the fk condition one to many", function (Caller $caller) use ($before) {
         $before($this);
         $datasource = $this->bucket['datasource'];
         $books = $datasource->getCollection('Book');
@@ -244,7 +244,7 @@ test("getPreviousPeriodFilter() should replace PreviousXDaysToDate operator by a
             );
     })->with('caller');
 
-    \Ozzie\Nest\test("should query the through collection many to many", function (Caller $caller) use ($before) {
+    test("should query the through collection many to many", function (Caller $caller) use ($before) {
         $before($this);
         $datasource = $this->bucket['datasource'];
         $books = $datasource->getCollection('Book');

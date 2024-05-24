@@ -10,13 +10,13 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-\Ozzie\Nest\describe('ChartCollection', function () {
+describe('ChartCollection', function () {
     beforeEach(function () {
         $datasource = new Datasource();
         $collectionBook = new Collection($datasource, 'Book');
         $collectionBook->addFields(['id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true)]);
         $this->invokeProperty($collectionBook, 'charts', collect('childChart'));
-        $collectionBook = mock($collectionBook)
+        $collectionBook = \Mockery::mock($collectionBook)
             ->makePartial()
             ->shouldReceive('renderChart')
             ->andReturn(['countCurrent' => 1])

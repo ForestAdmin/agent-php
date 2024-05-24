@@ -14,7 +14,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\Tests\CollectionMocked;
 
-\Ozzie\Nest\describe('WriteManyToOneCollection', function () {
+describe('WriteManyToOneCollection', function () {
     beforeEach(function () {
         $datasource = new Datasource();
         $collectionBook = new CollectionMocked($datasource, 'Book');

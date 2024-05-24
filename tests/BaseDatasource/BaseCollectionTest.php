@@ -15,8 +15,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
-use function Ozzie\Nest\test;
-
 beforeEach(closure: function () {
     global $baseDatasource, $baseCollection, $request;
     $this->buildAgent(new Datasource(), ['projectDir' => __DIR__]);

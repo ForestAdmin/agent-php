@@ -23,7 +23,7 @@ test('handleRequest() should return a response 200', function () {
         ],
         300
     );
-    $healthCheck = mock(HealthCheck::class)
+    $healthCheck = \Mockery::mock(HealthCheck::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('sendSchema')
