@@ -150,6 +150,7 @@ test('convertValidationList() should handle duplication', function () {
             ],
         )
     );
+
     expect($validationList)->toBeArray()
         ->and($validationList)->toHaveLength(4)
         ->and(collect($validationList)->contains([
@@ -164,7 +165,7 @@ test('convertValidationList() should handle duplication', function () {
             'message' => 'Value must be greater than 80',
             'type'    => 'is greater than',
             'value'   => 80,
-        ], ))->toBeTrue()
+        ]))->toBeTrue()
         ->and(collect($validationList)->contains([
             'message' => 'Value must match /^(?=a)(?=b).*$/',
             'type'    => 'is like',

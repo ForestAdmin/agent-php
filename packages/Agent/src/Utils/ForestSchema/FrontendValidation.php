@@ -154,23 +154,28 @@ final class FrontendValidation
     private static function removeDuplicatesInPlace(array $rules): array
     {
         $used = [];
+        $result = [];
 
-        foreach ($rules as $key => $value) {
-            if (! isset($value['operator'])) {
+        foreach ($rules as $key => $rule) {
+            if (! is_array($rule) || ! isset($rule['operator'])) {
+                $result[$key] = $rule;
+
                 continue;
             }
-            if (isset($used[$value['operator']])) {
-                $rule = $rules[$used[$value['operator']]];
-                $newRule = $value;
-                unset($rules[$key]);
 
-                $rules[$used[$value['operator']]] = self::mergeInto($rule, $newRule);
+            if (isset($used[$rule['operator']])) {
+                $existingKey = $used[$rule['operator']];
+                $existingRule = $result[$existingKey];
+                $newRule = $rule;
+
+                $result[$existingKey] = self::mergeInto($existingRule, $newRule);
             } else {
-                $used[$value['operator']] = $key;
+                $used[$rule['operator']] = $key;
+                $result[$key] = $rule;
             }
         }
 
-        return $rules;
+        return array_values($result);
     }
 
     private static function mergeInto(array $validation, array $newRule): array
