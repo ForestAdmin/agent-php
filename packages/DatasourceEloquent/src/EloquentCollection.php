@@ -105,24 +105,13 @@ class EloquentCollection extends BaseCollection
 
     private function addBelongsToRelation(string $name, BelongsTo $relation): void
     {
-        $inverse = $this->getInverseBelongsTo($relation);
-        if ($inverse === HasOne::class) {
-            $relationSchema = new OneToOneSchema(
-                originKey: $relation->getForeignKeyName(),
-                originKeyTarget:$relation->getOwnerKeyName(),
-                foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName()
-            );
+        $relationSchema = new ManyToOneSchema(
+            foreignKey: $relation->getForeignKeyName(),
+            foreignKeyTarget:$relation->getOwnerKeyName(),
+            foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName()
+        );
 
-            $this->addField($name, $relationSchema);
-        } elseif ($inverse === HasMany::class) {
-            $relationSchema = new ManyToOneSchema(
-                foreignKey: $relation->getForeignKeyName(),
-                foreignKeyTarget:$relation->getOwnerKeyName(),
-                foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName()
-            );
-
-            $this->addField($name, $relationSchema);
-        }
+        $this->addField($name, $relationSchema);
     }
 
     private function addHasManyRelation(string $name, HasMany $relation): void
@@ -159,15 +148,6 @@ class EloquentCollection extends BaseCollection
             },
             []
         );
-    }
-
-    private function getInverseBelongsTo(BelongsTo $relation): ?string
-    {
-        $relations = $this->getRelationships(new ReflectionClass($relation->getRelated()));
-
-        return collect($relations)
-            ->filter(fn ($class) => in_array($class, [HasMany::class, HasOne::class], true))
-            ->first(fn ($class, $methodName) => class_basename($relation->getRelated()->$methodName()->getRelated()) === class_basename($this->model));
     }
 
     public function list(Caller $caller, Filter $filter, Projection $projection): array
