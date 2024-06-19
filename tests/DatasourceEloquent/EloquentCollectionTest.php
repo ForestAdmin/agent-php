@@ -54,7 +54,7 @@ describe('addRelationships()', function () {
         $collection = $eloquentDatasource->getCollection('Owner');
 
         expect($collection->getFields())->toHaveKey('user')
-            ->and($collection->getFields()['user'])->toBeInstanceOf(OneToOneSchema::class);
+            ->and($collection->getFields()['user'])->toBeInstanceOf(ManyToOneSchema::class);
     });
 
     test('should add OneToOneSchema field when relation is a HasOne', function () {
