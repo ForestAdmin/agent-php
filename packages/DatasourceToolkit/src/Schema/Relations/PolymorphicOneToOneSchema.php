@@ -13,7 +13,7 @@ class PolymorphicOneToOneSchema extends RelationSchema
         protected string $originTypeField,
         protected string $originTypeValue,
     ) {
-        parent::__construct($foreignCollection, 'PolymorphicOneToOne');
+        parent::__construct('PolymorphicOneToOne');
     }
 
     public function setOriginKey(string $originKey): void
@@ -26,9 +26,19 @@ class PolymorphicOneToOneSchema extends RelationSchema
         return $this->originKey;
     }
 
+    public function getOriginKeyTarget(): string
+    {
+        return $this->originKeyTarget;
+    }
+
     public function getForeignCollection(): string
     {
         return $this->foreignCollection;
+    }
+
+    public function setForeignCollection(string $foreignCollection): void
+    {
+        $this->foreignCollection = $foreignCollection;
     }
 
     public function getOriginTypeField(): string
