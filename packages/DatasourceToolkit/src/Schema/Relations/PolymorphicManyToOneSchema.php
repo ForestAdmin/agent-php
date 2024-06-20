@@ -9,7 +9,7 @@ class PolymorphicManyToOneSchema
     public function __construct(
         protected string $foreignKeyTypeField,
         protected string $foreignKey,
-        protected string $foreignKeyTargets,
+        protected array $foreignKeyTargets,
         protected string $foreignCollections,
     ) {
         $this->type = 'PolymorphicManyToOne';
@@ -30,7 +30,7 @@ class PolymorphicManyToOneSchema
         return $this->foreignKey;
     }
 
-    public function getForeignKeyTargets(): string
+    public function getForeignKeyTargets(): array
     {
         return $this->foreignKeyTargets;
     }
