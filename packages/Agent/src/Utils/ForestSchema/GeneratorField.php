@@ -9,11 +9,22 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 
 class GeneratorField
 {
+    public const RELATION_MAP = [
+       'ManyToMany'           => 'BelongsToMany',
+       'PolymorphicManyToOne' => 'BelongsTo',
+       'PolymorphicOneToOne'  => 'HasOne',
+       'PolymorphicOneToMany' => 'HasMany',
+       'ManyToOne'            => 'BelongsTo',
+       'OneToMany'            => 'HasMany',
+       'OneToOne'             => 'HasOne',
+    ];
+
     /**
      * @throws \Exception
      */
@@ -22,9 +33,9 @@ class GeneratorField
         $field = $collection->getFields()->get($name);
 
         $fieldSchema = match ($field->getType()) {
-            'Column'                                           => self::buildColumnSchema($collection, $name),
-            'ManyToOne', 'OneToMany', 'ManyToMany', 'OneToOne' => self::buildRelationSchema($collection, $name),
-            default                                            => throw new \Exception('Invalid field type'),
+            'Column'  => self::buildColumnSchema($collection, $name),
+            'ManyToOne', 'OneToMany', 'ManyToMany', 'OneToOne', 'PolymorphicOneToOne', 'PolymorphicOneToMany', 'PolymorphicManyToOne' => self::buildRelationSchema($collection, $name),
+            default => throw new \Exception('Invalid field type'),
         };
         ksort($fieldSchema);
 
@@ -54,11 +65,30 @@ class GeneratorField
         ];
     }
 
+    public static function buildPolymorphicManyToOneSchema(PolymorphicManyToOneSchema $relation, array $baseSchema): array
+    {
+        return array_merge(
+            $baseSchema,
+            [
+                'type'                          => 'Number',
+                'defaultValue'                  => null,
+                'isFilterable'                  => false,
+                'isPrimaryKey'                  => false,
+                'isRequired'                    => false,
+                'isReadOnly'                    => false,
+                'isSortable'                    => true,
+                'validations'                   => [],
+                'reference'                     => "$baseSchema[field].id", // to change
+                'polymorphic_referenced_models' => $relation->getForeignCollections(),
+            ],
+        );
+    }
+
     public static function buildRelationSchema(CollectionContract $collection, string $name): array
     {
         /** @var RelationSchema $relation */
         $relation = $collection->getFields()->get($name);
-        $foreignCollection = AgentFactory::get('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relation->getForeignCollection());
+        //$foreignCollection = AgentFactory::get('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relation->getForeignCollection());
 
         $relationSchema = [
             'field'        => $name,
@@ -66,15 +96,36 @@ class GeneratorField
             'integration'  => null,
             'isReadOnly'   => false,
             'isVirtual'    => false,
-            'inverseOf'    => CollectionUtils::getInverseRelation($collection, $name),
-            'relationship' => Relation::getRelation($relation->getType()),
+            //'inverseOf'    => CollectionUtils::getInverseRelation($collection, $name),
+            /* relationship: RELATION_MAP[relation.type] */
+            'relationship' => self::RELATION_MAP[$relation->getType()],
         ];
 
-        return match ($relation->getType()) {
+        if ($relation instanceof PolymorphicManyToOneSchema) {
+            $relationSchema['inverseOf'] = $collection->getName();
+            self::buildPolymorphicManyToOneSchema($relation, $relationSchema);
+        } else {
+            /*
+            relation_schema[:inverseOf] = ForestAdminDatasourceToolkit::Utils::Collection.get_inverse_relation(
+                collection,
+                name
+              )
+              foreign_collection = collection.datasource.get_collection(relation.foreign_collection)
+            */
+            $relationSchema['inverseOf'] = CollectionUtils::getInverseRelation($collection, $name);
+            $foreignCollection = AgentFactory::get('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relation->getForeignCollection());
+
+        }
+
+
+        return [];
+
+
+        /*return match ($relation->getType()) {
             'ManyToMany', 'OneToMany' => self::buildToManyRelationSchema($relation, $collection, $foreignCollection, $relationSchema),
             'OneToOne'                => self::buildOneToOneSchema($relation, $collection, $foreignCollection, $relationSchema),
             default                   => self::buildManyToOneSchema($relation, $foreignCollection, $relationSchema),
-        };
+        };*/
     }
 
     public static function convertColumnType($columnType)
