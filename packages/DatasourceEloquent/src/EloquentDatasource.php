@@ -59,4 +59,9 @@ class EloquentDatasource extends BaseDatasource
 
         return false;
     }
+
+    public function getModels(): array
+    {
+        return $this->models;
+    }
 }
