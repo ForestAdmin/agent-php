@@ -1,3 +1,10 @@
+## [1.9.3](https://github.com/ForestAdmin/agent-php/compare/v1.9.2...v1.9.3) (2024-06-20)
+
+
+### Bug Fixes
+
+* **security:** patch braces dependency vulnerabilities ([#106](https://github.com/ForestAdmin/agent-php/issues/106)) ([0eaca82](https://github.com/ForestAdmin/agent-php/commit/0eaca821f8cd14c12bb324ca084494edf3238ca4))
+
 ## [1.9.2](https://github.com/ForestAdmin/agent-php/compare/v1.9.1...v1.9.2) (2024-04-12)
 
 
