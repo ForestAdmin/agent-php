@@ -12,7 +12,7 @@ abstract class ManyRelationSchema extends RelationSchema
         protected string $foreignCollection,
         protected string $type,
     ) {
-        parent::__construct($foreignCollection, $type);
+        parent::__construct($type);
     }
 
     public function getForeignKey(): string
