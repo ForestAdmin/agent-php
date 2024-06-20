@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations;
 
-class PolymorphicManyToOneSchema
+class PolymorphicManyToOneSchema extends RelationSchema
 {
     protected string $type;
 

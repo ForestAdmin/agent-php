@@ -29,4 +29,14 @@ abstract class SingleRelationSchema extends RelationSchema
     {
         return $this->originKeyTarget;
     }
+
+    public function getForeignCollection(): string
+    {
+        return $this->foreignCollection;
+    }
+
+    public function setForeignCollection(string $foreignCollection): void
+    {
+        $this->foreignCollection = $foreignCollection;
+    }
 }
