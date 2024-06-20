@@ -4,7 +4,7 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 
-abstract class PolymorphicOneToMany extends RelationSchema
+class PolymorphicOneToOneSchema extends RelationSchema
 {
     public function __construct(
         protected string $originKey,
@@ -13,7 +13,7 @@ abstract class PolymorphicOneToMany extends RelationSchema
         protected string $originTypeField,
         protected string $originTypeValue,
     ) {
-        parent::__construct($foreignCollection, 'PolymorphicOneToMany');
+        parent::__construct($foreignCollection, 'PolymorphicOneToOne');
     }
 
     public function setOriginKey(string $originKey): void
