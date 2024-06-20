@@ -15,11 +15,17 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use ReflectionClass;
@@ -52,6 +58,9 @@ class EloquentCollection extends BaseCollection
                 BelongsToMany::class  => $this->addBelongsToManyRelation($name, $relation),
                 HasMany::class        => $this->addHasManyRelation($name, $relation),
                 HasOne::class         => $this->addHasOneRelation($name, $relation),
+                MorphMany::class      => $this->addPolymorphicOneToManyRelation($name, $relation),
+                MorphOne::class       => $this->addPolymorphicOneToOneRelation($name, $relation),
+                MorphTo::class        => $this->addPolymorphicManyToOneRelation($name, $relation),
                 default               => null
             };
         }
@@ -107,8 +116,20 @@ class EloquentCollection extends BaseCollection
     {
         $relationSchema = new ManyToOneSchema(
             foreignKey: $relation->getForeignKeyName(),
-            foreignKeyTarget:$relation->getOwnerKeyName(),
+            foreignKeyTarget: $relation->getOwnerKeyName(),
             foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName()
+        );
+
+        $this->addField($name, $relationSchema);
+    }
+
+    private function addPolymorphicManyToOneRelation(string $name, MorphTo $relation): void
+    {
+        $relationSchema = new PolymorphicManyToOneSchema(
+            foreignKey: $relation->getForeignKeyName(),
+            foreignKeyTargets: $this->getPolymorphicTypes($relation),
+            foreignKeyTypeField: $relation->getMorphType(),
+            foreignCollections: (new ReflectionClass($relation->getRelated()))->getShortName()
         );
 
         $this->addField($name, $relationSchema);
@@ -124,11 +145,36 @@ class EloquentCollection extends BaseCollection
         $this->addField($name, $relationSchema);
     }
 
+    private function addPolymorphicOneToManyRelation(string $name, MorphMany $relation): void
+    {
+        $relationSchema = new PolymorphicOneToManySchema(
+            originKey: Str::after($relation->getForeignKeyName(), '.'),
+            originKeyTarget: $relation->getLocalKeyName(),
+            originTypeField: $relation->getMorphType(),
+            originTypeValue: $relation->getMorphClass(),
+            foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName()
+        );
+
+        $this->addField($name, $relationSchema);
+    }
+
     private function addHasOneRelation(string $name, HasOne $relation): void
     {
         $relationSchema = new OneToOneSchema(
-            originKey: $relation->getLocalKeyName(),
-            originKeyTarget: Str::after($relation->getForeignKeyName(), '.'),
+            originKey: Str::after($relation->getForeignKeyName(), '.'),
+            originKeyTarget: $relation->getLocalKeyName(),
+            foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName()
+        );
+        $this->addField($name, $relationSchema);
+    }
+
+    private function addPolymorphicOneToOneRelation(string $name, MorphOne $relation): void
+    {
+        $relationSchema = new PolymorphicOneToOneSchema(
+            originKey: Str::after($relation->getForeignKeyName(), '.'),
+            originKeyTarget: $relation->getLocalKeyName(),
+            originTypeField: $relation->getMorphType(),
+            originTypeValue: $relation->getMorphClass(),
             foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName()
         );
         $this->addField($name, $relationSchema);
@@ -190,5 +236,26 @@ class EloquentCollection extends BaseCollection
     public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null)
     {
         return QueryAggregate::of($this, $caller->getTimezone(), $aggregation, $filter, $limit)->get();
+    }
+
+    private function getPolymorphicTypes(MorphTo $relation): array
+    {
+        $relations = $this->getRelationships(new ReflectionClass($relation->getRelated()));
+        $types = [];
+
+        foreach ($this->datasource->getModels() as $model) {
+            $reflectionClass = new ReflectionClass($model);
+            $model = new $model();
+
+            $hasPolymorphicType = collect($this->getRelationships($reflectionClass))
+                ->filter(fn ($class) => in_array($class, [MorphTo::class, MorphMany::class], true))
+                ->first(fn ($class, $methodName) => class_basename($model->$methodName()->getRelated()) === class_basename($this->model));
+
+            if (! empty($hasPolymorphicType)) {
+                $types[] = $reflectionClass->getName();
+            }
+        }
+
+        return $types;
     }
 }
