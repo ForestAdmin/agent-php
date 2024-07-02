@@ -125,11 +125,13 @@ class EloquentCollection extends BaseCollection
 
     private function addPolymorphicManyToOneRelation(string $name, MorphTo $relation): void
     {
+        $foreignCollections = $this->getPolymorphicTypes($relation);
+
         $relationSchema = new PolymorphicManyToOneSchema(
-            foreignKey: $relation->getForeignKeyName(),
-            foreignKeyTargets: $this->getPolymorphicTypes($relation),
             foreignKeyTypeField: $relation->getMorphType(),
-            foreignCollections: (new ReflectionClass($relation->getRelated()))->getShortName()
+            foreignKey: $relation->getForeignKeyName(),
+            foreignKeyTargets: $foreignCollections,
+            foreignCollections: array_keys($foreignCollections)
         );
 
         $this->addField($name, $relationSchema);
@@ -150,9 +152,9 @@ class EloquentCollection extends BaseCollection
         $relationSchema = new PolymorphicOneToManySchema(
             originKey: Str::after($relation->getForeignKeyName(), '.'),
             originKeyTarget: $relation->getLocalKeyName(),
+            foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName(),
             originTypeField: $relation->getMorphType(),
-            originTypeValue: $relation->getMorphClass(),
-            foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName()
+            originTypeValue: $relation->getMorphClass()
         );
 
         $this->addField($name, $relationSchema);
@@ -173,9 +175,9 @@ class EloquentCollection extends BaseCollection
         $relationSchema = new PolymorphicOneToOneSchema(
             originKey: Str::after($relation->getForeignKeyName(), '.'),
             originKeyTarget: $relation->getLocalKeyName(),
+            foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName(),
             originTypeField: $relation->getMorphType(),
-            originTypeValue: $relation->getMorphClass(),
-            foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName()
+            originTypeValue: $relation->getMorphClass()
         );
         $this->addField($name, $relationSchema);
     }
@@ -238,9 +240,11 @@ class EloquentCollection extends BaseCollection
         return QueryAggregate::of($this, $caller->getTimezone(), $aggregation, $filter, $limit)->get();
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     private function getPolymorphicTypes(MorphTo $relation): array
     {
-        $relations = $this->getRelationships(new ReflectionClass($relation->getRelated()));
         $types = [];
 
         foreach ($this->datasource->getModels() as $model) {
@@ -252,7 +256,7 @@ class EloquentCollection extends BaseCollection
                 ->first(fn ($class, $methodName) => class_basename($model->$methodName()->getRelated()) === class_basename($this->model));
 
             if (! empty($hasPolymorphicType)) {
-                $types[] = $reflectionClass->getName();
+                $types[$reflectionClass->getName()] = $model->getKeyName();
             }
         }
 
