@@ -69,6 +69,10 @@ class QueryStringParser
                     $field = trim($field);
                     $column = $collection->getFields()->get($field);
 
+                    if ($column === 'PolymorphicManyToOne') {
+                        return $field . ':*';
+                    }
+
                     return null !== $column && $column->getType() === 'Column' ?
                         $field : $field . ':' . $request->input("fields.$field");
                 }
