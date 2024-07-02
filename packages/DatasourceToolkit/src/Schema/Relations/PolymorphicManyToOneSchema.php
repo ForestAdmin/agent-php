@@ -12,14 +12,9 @@ class PolymorphicManyToOneSchema extends RelationSchema
         protected string $foreignKeyTypeField,
         protected string $foreignKey,
         protected array $foreignKeyTargets,
-        protected string $foreignCollections,
+        protected array $foreignCollections,
     ) {
-        $this->type = 'PolymorphicManyToOne';
-    }
-
-    public function getType(): string
-    {
-        return $this->type;
+        parent::__construct('PolymorphicManyToOne');
     }
 
     public function getForeignKeyTypeField(): string
@@ -37,8 +32,17 @@ class PolymorphicManyToOneSchema extends RelationSchema
         return $this->foreignKeyTargets;
     }
 
-    public function getForeignCollections(): string
+    public function getForeignCollections(): array
     {
         return $this->foreignCollections;
+    }
+
+    /**
+     * /!\ Method temporarily added to make the polymorphic relation work
+     * @return array
+     */
+    public function getForeignCollectionNames(): array
+    {
+        return collect($this->foreignCollections)->map(fn ($collection) => str_replace('App\Models\\', '', $collection))->toArray();
     }
 }
