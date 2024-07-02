@@ -3,13 +3,14 @@
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
-use ForestAdmin\AgentPHP\Agent\Concerns\Relation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 
@@ -88,7 +89,6 @@ class GeneratorField
     {
         /** @var RelationSchema $relation */
         $relation = $collection->getFields()->get($name);
-        //$foreignCollection = AgentFactory::get('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relation->getForeignCollection());
 
         $relationSchema = [
             'field'        => $name,
@@ -96,36 +96,23 @@ class GeneratorField
             'integration'  => null,
             'isReadOnly'   => false,
             'isVirtual'    => false,
-            //'inverseOf'    => CollectionUtils::getInverseRelation($collection, $name),
-            /* relationship: RELATION_MAP[relation.type] */
             'relationship' => self::RELATION_MAP[$relation->getType()],
         ];
 
         if ($relation instanceof PolymorphicManyToOneSchema) {
             $relationSchema['inverseOf'] = $collection->getName();
-            self::buildPolymorphicManyToOneSchema($relation, $relationSchema);
+
+            return self::buildPolymorphicManyToOneSchema($relation, $relationSchema);
         } else {
-            /*
-            relation_schema[:inverseOf] = ForestAdminDatasourceToolkit::Utils::Collection.get_inverse_relation(
-                collection,
-                name
-              )
-              foreign_collection = collection.datasource.get_collection(relation.foreign_collection)
-            */
             $relationSchema['inverseOf'] = CollectionUtils::getInverseRelation($collection, $name);
-            $foreignCollection = AgentFactory::get('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relation->getForeignCollection());
+            $foreignCollection = AgentFactory::get('datasource')->getCollection($relation->getForeignCollection());
 
+            return match ($relation->getType()) {
+                'ManyToMany', 'OneToMany', 'PolymorphicOneToMany'   => self::buildToManyRelationSchema($relation, $collection, $foreignCollection, $relationSchema),
+                'OneToOne', 'PolymorphicOneToOne'                   => self::buildOneToOneSchema($relation, $collection, $foreignCollection, $relationSchema),
+                default                                             => self::buildManyToOneSchema($relation, $foreignCollection, $relationSchema),
+            };
         }
-
-
-        return [];
-
-
-        /*return match ($relation->getType()) {
-            'ManyToMany', 'OneToMany' => self::buildToManyRelationSchema($relation, $collection, $foreignCollection, $relationSchema),
-            'OneToOne'                => self::buildOneToOneSchema($relation, $collection, $foreignCollection, $relationSchema),
-            default                   => self::buildManyToOneSchema($relation, $foreignCollection, $relationSchema),
-        };*/
     }
 
     public static function convertColumnType($columnType)
@@ -145,7 +132,7 @@ class GeneratorField
 
     public static function buildToManyRelationSchema(RelationSchema $relation, CollectionContract $collection, CollectionContract $foreignCollection, array $baseSchema): array
     {
-        if (is_a($relation, OneToManySchema::class)) {
+        if (is_a($relation, OneToManySchema::class) || is_a($relation, PolymorphicOneToManySchema::class)) {
             $key = $relation->getOriginKeyTarget();
             /** @var ColumnSchema $keySchema */
             $column = $collection->getFields()->get($key);
@@ -169,7 +156,7 @@ class GeneratorField
         );
     }
 
-    public static function buildOneToOneSchema(OneToOneSchema $relation, CollectionContract $collection, CollectionContract $foreignCollection, array $baseSchema): array
+    public static function buildOneToOneSchema(OneToOneSchema|PolymorphicOneToOneSchema $relation, CollectionContract $collection, CollectionContract $foreignCollection, array $baseSchema): array
     {
         $key = $relation->getOriginKeyTarget();
         /** @var ColumnSchema $column */
