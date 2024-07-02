@@ -42,12 +42,16 @@ class FieldValidator
                 throw new ForestException('Relation not found: ' . $collection->getName() . '.' . $prefix);
             }
 
-            if ($relation->getType() !== 'ManyToOne' && $relation->getType() !== 'OneToOne') {
+            if ($relation->getType() !== 'ManyToOne' && $relation->getType() !== 'OneToOne' && $relation->getType() !== 'PolymorphicManyToOne') {
                 throw new ForestException(
                     'Unexpected field type: ' .
                     $collection->getName() . '.' . $prefix .
-                    ' (found ' . $relation->getType() . ' expected \'ManyToOne\' or \'OneToOne\')'
+                    ' (found ' . $relation->getType() . ' expected \'ManyToOne\' or \'OneToOne\' or \'PolymorphicManyToOne\')'
                 );
+            }
+
+            if ($relation->getType() === 'PolymorphicManyToOne') {
+                return true;
             }
 
             $suffix = Str::after($field, ':');
