@@ -56,9 +56,13 @@ class QueryConverter extends QueryBuilder
             $selectRaw = collect($this->projection->columns())
                 ->map(fn ($field) => "$this->tableName.$field")
                 ->toArray();
+
             foreach ($this->projection->relations() as $relation => $relationFields) {
                 /** @var RelationSchema $relation */
                 $relationSchema = $this->collection->getFields()[$relation];
+                if ($relationSchema->getType() === 'PolymorphicManyToOne') {
+                    continue;
+                }
                 $relationTableName = $this->collection->getDataSource()->getCollection($relationSchema->getForeignCollection())->getTableName();
 
                 $this->addJoinRelation($relationSchema, $relationTableName, $relation);
