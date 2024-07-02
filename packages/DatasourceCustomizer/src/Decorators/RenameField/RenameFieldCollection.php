@@ -158,11 +158,13 @@ class RenameFieldCollection extends CollectionDecorator
             $thisField = Str::before($thisPath, ':');
             /** @var RelationSchema $relationSchema */
             $relationSchema = $this->getFields()[$thisField];
-            /** @var self $relation */
-            $relation = $this->getDataSource()->getCollection($relationSchema->getForeignCollection());
-            $childField = $this->toChildCollection[$thisField] ?? $thisField;
+            if ($relationSchema->getType() !== 'PolymorphicManyToOne') {
+                /** @var self $relation */
+                $relation = $this->getDataSource()->getCollection($relationSchema->getForeignCollection());
+                $childField = $this->toChildCollection[$thisField] ?? $thisField;
 
-            return "$childField:" . $relation->pathToChildCollection(Str::after($thisPath, ':'));
+                return "$childField:" . $relation->pathToChildCollection(Str::after($thisPath, ':'));
+            }
         }
 
         return $this->toChildCollection[$thisPath] ?? $thisPath;
