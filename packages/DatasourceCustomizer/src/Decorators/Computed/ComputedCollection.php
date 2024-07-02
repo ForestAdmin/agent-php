@@ -27,6 +27,10 @@ class ComputedCollection extends CollectionDecorator
             return $this->computeds[$path] ?? null;
         } else {
             $schema = $this->getFields()->get(Str::before($path, ':'));
+            if ($schema->getType() === 'PolymorphicManyToOne') {
+                return $this->computeds[$path] ?? null;
+            }
+
             $association = $this->dataSource->getCollection($schema->getForeignCollection());
 
             return $association->getComputed(Str::after($path, ':'));
@@ -95,12 +99,14 @@ class ComputedCollection extends CollectionDecorator
             $prefix = explode(':', $path);
             /** @var RelationSchema $schema */
             $schema = $collection->getFields()->get($prefix[0]);
-            $association = $collection->getDataSource()->getCollection($schema->getForeignCollection());
+            if ($schema->getType() !== 'PolymorphicManyToOne') {
+                $association = $collection->getDataSource()->getCollection($schema->getForeignCollection());
 
-            return (new Projection($path))
-                ->unnest()
-                ->replaceItem(fn ($subPath) => $this->rewriteField($association, $subPath))
-                ->nest($prefix[0]);
+                return (new Projection($path))
+                    ->unnest()
+                    ->replaceItem(fn ($subPath) => $this->rewriteField($association, $subPath))
+                    ->nest($prefix[0]);
+            }
         }
 
         $computed = $collection->getComputed($path);

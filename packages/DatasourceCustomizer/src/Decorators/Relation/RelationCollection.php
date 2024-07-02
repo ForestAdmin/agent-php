@@ -18,6 +18,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\SingleRelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Record as RecordUtils;
@@ -54,6 +55,11 @@ class RelationCollection extends CollectionDecorator
         $newFilter = $this->refineFilter($caller, $filter);
         $newProjection = $projection->replaceItem(fn ($field) => $this->rewriteField($field))->withPks($this);
         $records = $this->childCollection->list($caller, $newFilter, $newProjection);
+
+        if ($newProjection->toArray() === $projection->toArray()) {
+            return $records;
+        }
+
         $records = $this->reprojectInPlace($caller, $records, $projection);
 
         return $projection->apply($records)->all();
@@ -74,6 +80,7 @@ class RelationCollection extends CollectionDecorator
             $filter->getSearchExtended(),
             $filter->getSegment()
         );
+
         // Fallback to full emulation.
         return $aggregation->apply(
             $this->list($caller, $filter, $aggregation->getProjection()),
@@ -116,7 +123,7 @@ class RelationCollection extends CollectionDecorator
     {
         $prefix = Str::before($field, ':');
         $schema = $this->getFields()[$prefix];
-        if ($schema instanceof ColumnSchema) {
+        if ($schema instanceof ColumnSchema || $schema instanceof PolymorphicManyToOneSchema) {
             return collect($field);
         }
 
