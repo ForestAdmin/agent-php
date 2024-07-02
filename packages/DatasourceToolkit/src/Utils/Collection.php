@@ -18,6 +18,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 
 class Collection
@@ -28,9 +29,15 @@ class Collection
         $relationField = $collection->getFields()->get($relationName);
         /** @var MainCollection $foreignCollection */
         $foreignCollection = AgentFactory::get('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relationField->getForeignCollection());
+        $polyMorphicRelations = ['PolymorphicOneToOne', 'PolymorphicOneToMany'];
 
-        $inverse = $foreignCollection->getFields()
-            ->filter(fn ($field) => is_a($field, RelationSchema::class))
+        $inverse = $foreignCollection->getFields();
+
+        if (in_array($relationField->getType(), $polyMorphicRelations, true)) {
+            $inverse->filter(fn ($field) => is_a($field, PolymorphicManyToOneSchema::class) &&
+                in_array($collection->getName(), $field->getForeignCollectionNames(), true));
+        } else {
+            $inverse->filter(fn ($field) => is_a($field, RelationSchema::class))
             ->filter(
                 fn ($field, $key) =>
                    $field->getForeignCollection() === $collection->getName() &&
@@ -44,9 +51,10 @@ class Collection
                        ((is_a($field, OneToOneSchema::class) || is_a($field, OneToManySchema::class)) &&
                            is_a($relationField, ManyToOneSchema::class) && self::isOtherInverse($field, $relationField))
                    )
-            )
-            ->keys()
-            ->first();
+            );
+        }
+
+        $inverse->keys()->first();
 
         return $inverse ?: null;
     }
