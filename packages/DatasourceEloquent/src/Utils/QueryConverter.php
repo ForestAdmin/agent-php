@@ -61,14 +61,22 @@ class QueryConverter extends QueryBuilder
                 /** @var RelationSchema $relation */
                 $relationSchema = $this->collection->getFields()[$relation];
                 if ($relationSchema->getType() === 'PolymorphicManyToOne') {
-                    continue;
-                }
-                $relationTableName = $this->collection->getDataSource()->getCollection($relationSchema->getForeignCollection())->getTableName();
+                    foreach ($relationSchema->getForeignKeyTargets() as $foreignCollection => $target) {
+                        $collection = class_basename($foreignCollection);
+                        $relationTableName = $this->collection->getDataSource()->getCollection($collection)->getTableName();
+                        $tableAlias = 'polymorphic_' . $relation . '_' . $collection;
 
-                $this->addJoinRelation($relationSchema, $relationTableName, $relation);
-                $relationFields->map(function ($field) use (&$selectRaw, $relation) {
-                    $selectRaw[] = "$relation.$field as $relation.$field";
-                });
+                        $this->addJoinRelation($relationSchema, $relationTableName, $tableAlias, $target, $foreignCollection);
+                        $selectRaw[] = "$tableAlias.$target as $tableAlias.$target";
+                    }
+                } else {
+                    $relationTableName = $this->collection->getDataSource()->getCollection($relationSchema->getForeignCollection())->getTableName();
+
+                    $this->addJoinRelation($relationSchema, $relationTableName, $relation);
+                    $relationFields->map(function ($field) use (&$selectRaw, $relation) {
+                        $selectRaw[] = "$relation.$field as $relation.$field";
+                    });
+                }
             }
 
             $this->query->select($selectRaw);

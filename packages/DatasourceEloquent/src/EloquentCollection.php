@@ -203,7 +203,22 @@ class EloquentCollection extends BaseCollection
         return QueryConverter::of($this, $caller->getTimezone(), $filter, $projection)
             ->getQuery()
             ->get()
-            ->map(fn ($record) => Arr::undot($record->toArray()))
+            ->map(function ($record) {
+                $record = collect($record->getAttributes())
+                    ->reject(fn ($value, $key) => Str::startsWith($key, 'polymorphic_') && $value === null)
+                    ->mapWithKeys(function ($value, $key) {
+                        if (Str::startsWith($key, 'polymorphic_')) {
+                            $key = Str::replace('polymorphic_', '', $key);
+                            $relationName = Str::before(Str::before($key, '.'), '_');
+
+                            return [$relationName . '.' . Str::after($key, '.') => $value];
+                        }
+
+                        return [$key => $value];
+                    });
+
+                return Arr::undot($record->toArray());
+            })
             ->toArray();
     }
 
@@ -252,7 +267,7 @@ class EloquentCollection extends BaseCollection
             $model = new $model();
 
             $hasPolymorphicType = collect($this->getRelationships($reflectionClass))
-                ->filter(fn ($class) => in_array($class, [MorphTo::class, MorphMany::class], true))
+                ->filter(fn ($class) => in_array($class, [MorphOne::class, MorphMany::class], true))
                 ->first(fn ($class, $methodName) => class_basename($model->$methodName()->getRelated()) === class_basename($this->model));
 
             if (! empty($hasPolymorphicType)) {
