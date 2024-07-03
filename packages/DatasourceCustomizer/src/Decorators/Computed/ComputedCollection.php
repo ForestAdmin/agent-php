@@ -73,6 +73,10 @@ class ComputedCollection extends CollectionDecorator
     {
         $childProjection = $projection->replaceItem(fn ($path) => $this->rewriteField($this, $path));
         $records = $this->childCollection->list($caller, $filter, $childProjection);
+        if ($childProjection->toArray() === $projection->toArray()) {
+            return $records;
+        }
+
         $context = new CollectionCustomizationContext($this, $caller);
 
         return ComputeField::computeFromRecords($context, $this, $childProjection, $projection, $records);

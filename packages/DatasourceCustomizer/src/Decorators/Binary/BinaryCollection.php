@@ -167,7 +167,7 @@ class BinaryCollection extends CollectionDecorator
         $suffix = Str::contains($fieldName, ':') ? Str::after($fieldName, ':') : null;
         $schema = $this->childCollection->getFields()->get($prefix);
 
-        if ($schema instanceof PolymorphicManyToOneSchema) {
+        if ($schema instanceof PolymorphicManyToOneSchema || $schema === null) {
             return $value;
         }
 
