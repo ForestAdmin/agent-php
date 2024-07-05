@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
@@ -102,6 +103,11 @@ class QueryBuilder
                 $this->query->leftJoin($joinTable, function (JoinClause $join) use ($relation, $relationTableAlias, $foreignKeyTarget, $foreignCollection) {
                     $join->on($this->tableName . '.' . $relation->getForeignKey(), '=', $relationTableAlias . '.' . $foreignKeyTarget)
                         ->where($this->tableName . '.' . $relation->getForeignKeyTypeField(), '=', $foreignCollection);
+                });
+            } elseif ($relation instanceof PolymorphicOneToOneSchema && ! $this->isJoin($joinTable)) {
+                $this->query->leftJoin($joinTable, function (JoinClause $join) use ($relation, $relationTableAlias) {
+                    $join->on($this->tableName . '.' . $relation->getOriginKeyTarget(), '=', $relationTableAlias . '.' . $relation->getOriginKey())
+                        ->where($relationTableAlias. '.' . $relation->getOriginTypeField(), '=', get_class($this->collection->getModel()));
                 });
             }
         }

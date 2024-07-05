@@ -80,7 +80,7 @@ class GeneratorField
                 'isSortable'                    => true,
                 'validations'                   => [],
                 'reference'                     => "$baseSchema[field].id", // to change
-                'polymorphic_referenced_models' => $relation->getForeignCollections(),
+                'polymorphic_referenced_models' => $relation->getForeignCollectionNames(),
             ],
         );
     }
