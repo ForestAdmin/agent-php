@@ -34,8 +34,8 @@ class Collection
         $inverse = $foreignCollection->getFields();
 
         if (in_array($relationField->getType(), $polyMorphicRelations, true)) {
-            $inverse->filter(fn ($field) => is_a($field, PolymorphicManyToOneSchema::class) &&
-                in_array($collection->getName(), $field->getForeignCollectionNames(), true));
+            $inverse->filter(fn ($field) => (is_a($field, PolymorphicManyToOneSchema::class) &&
+                in_array($collection->getName(), $field->getForeignCollectionNames(), true)));
         } else {
             $inverse->filter(fn ($field) => is_a($field, RelationSchema::class))
             ->filter(
@@ -54,7 +54,7 @@ class Collection
             );
         }
 
-        $inverse->keys()->first();
+        $inverse = $inverse->keys()->first();
 
         return $inverse ?: null;
     }

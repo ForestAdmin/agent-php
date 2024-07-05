@@ -42,7 +42,7 @@ class FieldValidator
                 throw new ForestException('Relation not found: ' . $collection->getName() . '.' . $prefix);
             }
 
-            if ($relation->getType() !== 'ManyToOne' && $relation->getType() !== 'OneToOne' && $relation->getType() !== 'PolymorphicManyToOne') {
+            if (! in_array($relation->getType(), ['ManyToOne', 'OneToOne', 'PolymorphicManyToOne', 'PolymorphicOneToOne'], true)) {
                 throw new ForestException(
                     'Unexpected field type: ' .
                     $collection->getName() . '.' . $prefix .

@@ -277,4 +277,9 @@ class EloquentCollection extends BaseCollection
 
         return $types;
     }
+
+    public function getModel(): Model
+    {
+        return $this->model;
+    }
 }
