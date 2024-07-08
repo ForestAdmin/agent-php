@@ -88,9 +88,9 @@ class QueryBuilder
             ) {
                 $this->query->leftJoin(
                     $joinTable,
-                    $this->tableName . '.' . $relation->getOriginKey(),
+                    $this->tableName . '.' . $relation->getOriginKeyTarget(),
                     '=',
-                    $relationTableAlias . '.' . $relation->getOriginKeyTarget()
+                    $relationTableAlias . '.' . $relation->getOriginKey()
                 );
             } elseif ($relation instanceof ManyToOneSchema && ! $this->isJoin($joinTable)) {
                 $this->query->leftJoin(
