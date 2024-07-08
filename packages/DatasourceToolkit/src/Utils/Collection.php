@@ -32,29 +32,28 @@ class Collection
         $polyMorphicRelations = ['PolymorphicOneToOne', 'PolymorphicOneToMany'];
 
         $inverse = $foreignCollection->getFields();
+        $inverse = $inverse
+            ->filter(fn ($field) => is_a($field, RelationSchema::class))
+            ->filter(function ($field) use ($relationField, $polyMorphicRelations, $collection) {
 
-        if (in_array($relationField->getType(), $polyMorphicRelations, true)) {
-            $inverse->filter(fn ($field) => (is_a($field, PolymorphicManyToOneSchema::class) &&
-                in_array($collection->getName(), $field->getForeignCollectionNames(), true)));
-        } else {
-            $inverse->filter(fn ($field) => is_a($field, RelationSchema::class))
-            ->filter(
-                fn ($field, $key) =>
-                   $field->getForeignCollection() === $collection->getName() &&
-                   (
-                       (is_a($field, ManyToManySchema::class) &&
-                           is_a($relationField, ManyToManySchema::class) &&
-                           self::isManyToManyInverse($field, $relationField)) ||
-                       (is_a($field, ManyToOneSchema::class) &&
-                           (is_a($relationField, OneToOneSchema::class) || is_a($relationField, OneToManySchema::class)) &&
-                           self::isManyToOneInverse($field, $relationField)) ||
-                       ((is_a($field, OneToOneSchema::class) || is_a($field, OneToManySchema::class)) &&
-                           is_a($relationField, ManyToOneSchema::class) && self::isOtherInverse($field, $relationField))
-                   )
-            );
-        }
+                if (in_array($relationField->getType(), $polyMorphicRelations, true)) {
+                    return is_a($field, PolymorphicManyToOneSchema::class) && in_array($collection->getName(), $field->getForeignCollectionNames(), true);
+                } else {
+                    return $field->getForeignCollection() === $collection->getName() &&
+                    (
+                        (is_a($field, ManyToManySchema::class) &&
+                            is_a($relationField, ManyToManySchema::class) &&
+                            self::isManyToManyInverse($field, $relationField)) ||
+                        (is_a($field, ManyToOneSchema::class) &&
+                            (is_a($relationField, OneToOneSchema::class) || is_a($relationField, OneToManySchema::class)) &&
+                            self::isManyToOneInverse($field, $relationField)) ||
+                        ((is_a($field, OneToOneSchema::class) || is_a($field, OneToManySchema::class)) &&
+                            is_a($relationField, ManyToOneSchema::class) && self::isOtherInverse($field, $relationField))
+                    );
+                }
+            });
 
-        $inverse = $inverse->keys()->first();
+        $inverse->keys()->first();
 
         return $inverse ?: null;
     }

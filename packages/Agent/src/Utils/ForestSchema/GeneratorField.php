@@ -101,10 +101,12 @@ class GeneratorField
 
         if ($relation instanceof PolymorphicManyToOneSchema) {
             $relationSchema['inverseOf'] = $collection->getName();
-
-            return self::buildPolymorphicManyToOneSchema($relation, $relationSchema);
+            if ($relation instanceof PolymorphicManyToOneSchema) {
+                return self::buildPolymorphicManyToOneSchema($relation, $relationSchema);
+            }
         } else {
             $relationSchema['inverseOf'] = CollectionUtils::getInverseRelation($collection, $name);
+
             $foreignCollection = AgentFactory::get('datasource')->getCollection($relation->getForeignCollection());
 
             return match ($relation->getType()) {
