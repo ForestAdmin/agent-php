@@ -82,9 +82,7 @@ class WriteReplaceCollection extends CollectionDecorator
         // Handle Column fields.
         if ($field?->getType() === 'Column') {
             // We either call the customer handler or a default one that does nothing.
-            $handler = $this->handlers[$key] ?? static function ($v) use ($key) {
-                return [$key => $v];
-            };
+            $handler = $this->handlers[$key] ?? static fn ($v) => [$key => $v];
             $fieldPatch = ($handler($context->getRecord()[$key], $context) ?? []);
 
             // Isolate change to our own value (which should not recurse) and the rest which should

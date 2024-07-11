@@ -3,9 +3,11 @@
 namespace ForestAdmin\AgentPHP\Agent\Serializer\Transformers;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyRelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
 use Illuminate\Support\Str;
 use League\Fractal\TransformerAbstract;
 
@@ -45,10 +47,10 @@ class BaseTransformer extends TransformerAbstract
 
         $relations = $forestCollection
             ->getFields()
-            ->filter(fn ($field) => $field instanceof ManyToOneSchema || $field instanceof OneToOneSchema || $field instanceof PolymorphicManyToOneSchema);
+            ->filter(fn ($field) => $field instanceof ManyToOneSchema || $field instanceof OneToOneSchema || $field instanceof PolymorphicManyToOneSchema || $field instanceof PolymorphicOneToOneSchema);
 
         foreach ($relations as $key => $value) {
-            if (isset($data[$key]) && ! empty($data[$key])) {
+            if (isset($data[$key]) && ! empty($data[$key]) && ($value instanceof ManyRelationSchema && $data[$key][$value->getforeignKeyTarget()] !== null)) {
                 $this->defaultIncludes[] = $key;
 
                 if ($value instanceof PolymorphicManyToOneSchema) {
