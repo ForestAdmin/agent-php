@@ -12,6 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 
 class UpdateRelated extends AbstractRelationRoute
@@ -102,6 +103,15 @@ class UpdateRelated extends AbstractRelationRoute
         $this->createNewOneToOneRelationship($scope, $relation, $originValue, $childId);
     }
 
+    private function updatePolymorphicOnetoOne(PolymorphicOneToOneSchema $relation, $parentId, $childId): void
+    {
+        $scope = $this->permissions->getScope($this->childCollection);
+        $originValue = CollectionUtils::getValue($this->collection, $this->caller, $parentId, $relation->getOriginKeyTarget());
+
+        $this->breakOldPolymorphicOneToOneRelationship($scope, $relation, $originValue, $childId);
+        $this->createNewPolymorphicOneToOneRelationship($scope, $relation, $originValue, $childId);
+    }
+
     private function breakOldOneToOneRelationship($scope, $relation, $originValue, $childId)
     {
         $oldFkOwnerFilter = new Filter(
@@ -128,6 +138,42 @@ class UpdateRelated extends AbstractRelationRoute
         }
     }
 
+    private function breakOldPolymorphicOneToOneRelationship($scope, $relation, $originValue, $childId)
+    {
+        $oldFkOwnerFilter = new Filter(
+            conditionTree: ConditionTreeFactory::intersect(
+                [
+                    $scope,
+                    new ConditionTreeLeaf($relation->getOriginKey(), 'Equal', $originValue),
+                    new ConditionTreeLeaf($relation->getOriginTypeField(), 'Equal', $relation->getOriginTypeValue()),
+                    // Don't set the new record's field to null
+                    // if it's already initialized with the right value
+                    $childId ? ConditionTreeFactory::matchIds($this->childCollection, [$childId])->inverse() : [],
+                ]
+            )
+        );
+
+        $result = $this->childCollection->aggregate(
+            $this->caller,
+            $oldFkOwnerFilter,
+            new Aggregation(operation: 'Count'),
+            1
+        );
+
+        // add a behavior if originKey & originTypeField cannot be null
+
+        if ($result[0]['value'] > 0) {
+            $this->childCollection->update(
+                $this->caller,
+                $oldFkOwnerFilter,
+                [
+                    $relation->getOriginKey()       => null,
+                    $relation->getOriginTypeField() => null,
+                ]
+            );
+        }
+    }
+
     private function createNewOneToOneRelationship($scope, $relation, $originValue, $childId)
     {
         if ($childId) {
@@ -142,6 +188,27 @@ class UpdateRelated extends AbstractRelationRoute
                     )
                 ),
                 [$relation->getOriginKey() => $originValue]
+            );
+        }
+    }
+
+    private function createNewPolymorphicOneToOneRelationship($scope, $relation, $originValue, $childId)
+    {
+        if ($childId) {
+            $this->childCollection->update(
+                $this->caller,
+                new Filter(
+                    conditionTree: ConditionTreeFactory::intersect(
+                        [
+                            $scope,
+                            ConditionTreeFactory::matchIds($this->childCollection, [$childId]),
+                        ]
+                    )
+                ),
+                [
+                    $relation->getOriginKey()       => $originValue,
+                    $relation->getOriginTypeField() => $relation->getOriginTypeValue(),
+                ]
             );
         }
     }
