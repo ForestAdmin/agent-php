@@ -50,7 +50,13 @@ class BaseTransformer extends TransformerAbstract
             ->filter(fn ($field) => $field instanceof ManyToOneSchema || $field instanceof OneToOneSchema || $field instanceof PolymorphicManyToOneSchema || $field instanceof PolymorphicOneToOneSchema);
 
         foreach ($relations as $key => $value) {
-            if (isset($data[$key]) && ! empty($data[$key]) && ($value instanceof ManyRelationSchema && $data[$key][$value->getforeignKeyTarget()] !== null)) {
+            if (isset($data[$key]) && ! empty($data[$key]) &&
+                (
+                    ($value instanceof ManyRelationSchema && $data[$key][$value->getforeignKeyTarget()] !== null) ||
+                    ($value instanceof OneToOneSchema && $data[$key][$value->getOriginKeyTarget()] !== null) ||
+                    ($value instanceof PolymorphicOneToOneSchema && $data[$key][$value->getOriginKeyTarget()] !== null)
+                )
+            ) {
                 $this->defaultIncludes[] = $key;
 
                 if ($value instanceof PolymorphicManyToOneSchema) {
