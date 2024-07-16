@@ -56,8 +56,8 @@ class Schema
 
         $relation = $collection->getFields()[$relationName];
 
-        if ($relation->getType() !== 'OneToMany' && $relation->getType() !== 'ManyToMany') {
-            throw new ForestException("Relation $relationName has invalid type should be one of OneToMany or ManyToMany.");
+        if (! in_array($relation->getType(), ['OneToMany', 'ManyToMany', 'PolymorphicOneToMany'])) {
+            throw new ForestException("Relation $relationName has invalid type should be one of OneToMany, ManyToMany or PolymorphicOneToMany.");
         }
 
         return $relation;
