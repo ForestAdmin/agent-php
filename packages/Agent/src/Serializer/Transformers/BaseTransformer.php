@@ -54,6 +54,7 @@ class BaseTransformer extends TransformerAbstract
                 (
                     ($value instanceof ManyRelationSchema && $data[$key][$value->getforeignKeyTarget()] !== null) ||
                     ($value instanceof OneToOneSchema && $data[$key][$value->getOriginKeyTarget()] !== null) ||
+                    ($value instanceof PolymorphicManyToOneSchema) ||
                     ($value instanceof PolymorphicOneToOneSchema && $data[$key][$value->getOriginKeyTarget()] !== null)
                 )
             ) {
