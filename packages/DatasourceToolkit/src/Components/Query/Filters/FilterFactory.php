@@ -116,14 +116,18 @@ class FilterFactory
      * - match only children of the provided recordId
      * - can apply on the target collection of the relation
      */
-    // todo check this method - it's useful for our agent ?
     public static function makeForeignFilter(CollectionContract $collection, array $id, string $relationName, Caller $caller, Filter $baseForeignFilter): Filter
     {
         $relation = SchemaUtils::getToManyRelation($collection, $relationName);
         $originValue = CollectionUtils::getValue($collection, $caller, $id, $relation->getOriginKeyTarget());
 
-        if ($relation instanceof OneToManySchema || $relation instanceof PolymorphicOneToManySchema) {
+        if ($relation instanceof OneToManySchema) {
             $originTree = new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue);
+        } elseif ($relation instanceof PolymorphicOneToManySchema) {
+            $originTree = ConditionTreeFactory::intersect([
+                new ConditionTreeLeaf($relation->getOriginKey(), Operators::EQUAL, $originValue),
+                new ConditionTreeLeaf($relation->getOriginTypeField(), Operators::EQUAL, $relation->getOriginTypeValue()),
+            ]);
         } else {
             /** @var ManyToManySchema $relation */
             /** @var Collection $foreignCollection */
