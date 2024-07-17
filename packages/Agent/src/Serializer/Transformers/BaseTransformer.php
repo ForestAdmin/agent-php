@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use Illuminate\Support\Str;
 use League\Fractal\TransformerAbstract;
 
@@ -61,7 +62,7 @@ class BaseTransformer extends TransformerAbstract
                 $this->defaultIncludes[] = $key;
 
                 if ($value instanceof PolymorphicManyToOneSchema) {
-                    $foreignCollection = AgentFactory::get('datasource')->getCollection(class_basename($data[$value->getForeignKeyTypeField()]));
+                    $foreignCollection = AgentFactory::get('datasource')->getCollection(CollectionUtils::fullNameToSnakeCase($data[$value->getForeignKeyTypeField()]));
                     $this->addMethod(
                         'include' . Str::ucfirst(Str::camel($key)),
                         fn () => $this->item($data[$key], new BaseTransformer($foreignCollection->getName()), $foreignCollection->getName())

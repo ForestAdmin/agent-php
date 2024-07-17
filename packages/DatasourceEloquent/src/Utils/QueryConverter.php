@@ -13,6 +13,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
@@ -62,7 +63,7 @@ class QueryConverter extends QueryBuilder
                 $relationSchema = $this->collection->getFields()[$relation];
                 if ($relationSchema->getType() === 'PolymorphicManyToOne') {
                     foreach ($relationSchema->getForeignKeyTargets() as $foreignCollection => $target) {
-                        $collection = class_basename($foreignCollection);
+                        $collection = CollectionUtils::fullNameToSnakeCase($foreignCollection);
                         $relationTableName = $this->collection->getDataSource()->getCollection($collection)->getTableName();
                         $tableAlias = 'polymorphic_' . $relation . '_' . $collection;
 
