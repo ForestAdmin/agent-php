@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 
 class PolymorphicManyToOneSchema extends RelationSchema
 {
@@ -37,12 +38,8 @@ class PolymorphicManyToOneSchema extends RelationSchema
         return $this->foreignCollections;
     }
 
-    /**
-     * /!\ Method temporarily added to make the polymorphic relation work
-     * @return array
-     */
     public function getForeignCollectionNames(): array
     {
-        return collect($this->foreignCollections)->map(fn ($collection) => str_replace('App\Models\\', '', $collection))->toArray();
+        return collect($this->foreignCollections)->map(fn ($collection) => CollectionUtils::fullNameToSnakeCase($collection))->toArray();
     }
 }

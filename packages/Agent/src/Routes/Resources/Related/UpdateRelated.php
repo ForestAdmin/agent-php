@@ -73,7 +73,7 @@ class UpdateRelated extends AbstractRelationRoute
 
     private function updatePolymorphicManyToOne(PolymorphicManyToOneSchema $relation, $parentId, $childId): void
     {
-        $polymorphicType = array_filter($relation->getForeignCollections(), fn ($name) => str_ends_with($name, $this->childCollection->getName()))[0];
+        $polymorphicType = array_filter($relation->getForeignCollections(), fn ($name) => $name === CollectionUtils::fullNameSnakeToNamespaceFormat($this->childCollection->getName()))[0];
         $foreignValue = CollectionUtils::getValue(
             $this->childCollection,
             $this->caller,

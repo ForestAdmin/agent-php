@@ -223,4 +223,14 @@ class Collection
             $limit
         );
     }
+
+    public static function fullNameToSnakeCase(string $fullName): string
+    {
+        return str_replace('\\', '_', $fullName);
+    }
+
+    public static function fullNameSnakeToNamespaceFormat(string $fullName): string
+    {
+        return str_replace('_', '\\', $fullName);
+    }
 }

@@ -18,6 +18,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -38,7 +39,7 @@ class EloquentCollection extends BaseCollection
     public function __construct(protected BaseDatasourceContract $datasource, public Model $model)
     {
         $reflectionClass = new ReflectionClass($model);
-        parent::__construct($datasource, $reflectionClass->getShortName(), $model->getTable());
+        parent::__construct($datasource, CollectionUtils::fullNameToSnakeCase($reflectionClass->getName()), $model->getTable());
 
         $this->addRelationships($reflectionClass);
     }
@@ -73,14 +74,14 @@ class EloquentCollection extends BaseCollection
             'foreignKeyTarget'    => $relation->getRelatedKeyName(),
             'originKey'           => $relation->getForeignPivotKeyName(),
             'originKeyTarget'     => $relation->getParentKeyName(),
-            'foreignCollection'   => (new ReflectionClass($relation->getRelated()))->getShortName(),
+            'foreignCollection'   => CollectionUtils::fullNameToSnakeCase((new ReflectionClass($relation->getRelated()))->getName()),
         ];
 
         if ($model = $this->datasource->findModelByTableName($relation->getTable())) {
-            $attributes['throughCollection'] = (new ReflectionClass($model))->getShortName();
+            $attributes['throughCollection'] = CollectionUtils::fullNameToSnakeCase((new ReflectionClass($model))->getName());
         } else {
             $related = $relation->getRelated();
-            $relatedName = (new ReflectionClass($related))->getShortName();
+            $relatedName = CollectionUtils::fullNameToSnakeCase((new ReflectionClass($related))->getName());
             $throughCollection = new ThroughCollection(
                 $this->datasource,
                 [
@@ -117,7 +118,7 @@ class EloquentCollection extends BaseCollection
         $relationSchema = new ManyToOneSchema(
             foreignKey: $relation->getForeignKeyName(),
             foreignKeyTarget: $relation->getOwnerKeyName(),
-            foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName()
+            foreignCollection: CollectionUtils::fullNameToSnakeCase((new ReflectionClass($relation->getRelated()))->getName())
         );
 
         $this->addField($name, $relationSchema);
@@ -142,7 +143,7 @@ class EloquentCollection extends BaseCollection
         $relationSchema = new OneToManySchema(
             originKey: Str::after($relation->getForeignKeyName(), '.'),
             originKeyTarget: $relation->getLocalKeyName(),
-            foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName()
+            foreignCollection: CollectionUtils::fullNameToSnakeCase((new ReflectionClass($relation->getRelated()))->getName())
         );
         $this->addField($name, $relationSchema);
     }
@@ -152,7 +153,7 @@ class EloquentCollection extends BaseCollection
         $relationSchema = new PolymorphicOneToManySchema(
             originKey: Str::after($relation->getForeignKeyName(), '.'),
             originKeyTarget: $relation->getLocalKeyName(),
-            foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName(),
+            foreignCollection: CollectionUtils::fullNameToSnakeCase((new ReflectionClass($relation->getRelated()))->getName()),
             originTypeField: $relation->getMorphType(),
             originTypeValue: $relation->getMorphClass()
         );
@@ -165,7 +166,7 @@ class EloquentCollection extends BaseCollection
         $relationSchema = new OneToOneSchema(
             originKey: Str::after($relation->getForeignKeyName(), '.'),
             originKeyTarget: $relation->getLocalKeyName(),
-            foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName()
+            foreignCollection: CollectionUtils::fullNameToSnakeCase((new ReflectionClass($relation->getRelated()))->getName())
         );
         $this->addField($name, $relationSchema);
     }
@@ -175,7 +176,7 @@ class EloquentCollection extends BaseCollection
         $relationSchema = new PolymorphicOneToOneSchema(
             originKey: Str::after($relation->getForeignKeyName(), '.'),
             originKeyTarget: $relation->getLocalKeyName(),
-            foreignCollection: (new ReflectionClass($relation->getRelated()))->getShortName(),
+            foreignCollection: CollectionUtils::fullNameToSnakeCase((new ReflectionClass($relation->getRelated()))->getName()),
             originTypeField: $relation->getMorphType(),
             originTypeValue: $relation->getMorphClass()
         );
