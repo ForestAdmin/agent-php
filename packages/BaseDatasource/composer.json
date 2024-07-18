@@ -12,12 +12,13 @@
         "illuminate/support": "^8.0|^9.0|^10.0"
     },
     "require-dev": {
+      "php": "^8.0|^8.1",
       "friendsofphp/php-cs-fixer": "^3.0",
-      "pestphp/pest": "^1.21",
-      "pestphp/pest-plugin-mock": "^1.0",
+      "mockery/mockery": "^1.6",
+      "pestphp/pest": "^1.21|^2.34",
       "phpspec/prophecy-phpunit": "^2.0",
       "symfony/var-dumper": "^5.4|^6.0",
-      "spatie/pest-plugin-test-time": "^1.1"
+      "spatie/pest-plugin-test-time": "^1.1|^2.1"
     },
     "autoload": {
         "psr-4": {
