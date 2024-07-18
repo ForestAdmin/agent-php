@@ -1,3 +1,5 @@
+## [1.9.4](https://github.com/ForestAdmin/agent-php/compare/v1.9.3...v1.9.4) (2024-07-18)
+
 ## [1.9.3](https://github.com/ForestAdmin/agent-php/compare/v1.9.2...v1.9.3) (2024-06-20)
 
 
