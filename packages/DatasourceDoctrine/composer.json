@@ -17,30 +17,28 @@
         "forestadmin/php-datasource-toolkit": "^1.0.0",
         "forestadmin/php-base-datasource": "^1.0.0",
         "doctrine/orm": "^2.7.3"
-
     },
     "require-dev": {
-      "php": "^8.0|^8.1",
-      "friendsofphp/php-cs-fixer": "^3.0",
-      "mockery/mockery": "^1.6",
-      "pestphp/pest": "^1.21|^2.34",
-      "phpspec/prophecy-phpunit": "^2.0",
-      "symfony/var-dumper": "^5.4|^6.0",
-      "spatie/pest-plugin-test-time": "^1.1|^2.1"
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "mockery/mockery": "^1.6",
+        "pestphp/pest": "^1.21|^2.34",
+        "phpspec/prophecy-phpunit": "^2.0",
+        "symfony/var-dumper": "^5.4|^6.0",
+        "spatie/pest-plugin-test-time": "^1.1|^2.1"
     },
     "autoload": {
         "psr-4": {
-          "ForestAdmin\\AgentPHP\\DatasourceDoctrine\\": "src"
+            "ForestAdmin\\AgentPHP\\DatasourceDoctrine\\": "src"
         }
     },
     "autoload-dev": {
       "psr-4": {
-        "ForestAdmin\\AgentPHP\\Tests\\": "tests"
+          "ForestAdmin\\AgentPHP\\Tests\\": "tests"
       }
     },
     "config": {
-      "allow-plugins": {
-        "pestphp/pest-plugin": true
-      }
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     }
 }
