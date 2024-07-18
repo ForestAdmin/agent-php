@@ -11,7 +11,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
-
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
@@ -28,7 +27,7 @@ $before = static function (TestCase $testCase, $args = []) {
     );
 
     if (isset($args['count'])) {
-        $collectionUser = mock($collectionUser)
+        $collectionUser = \Mockery::mock($collectionUser)
             ->shouldReceive('aggregate')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class))
             ->andReturn($args['count'])
@@ -36,7 +35,7 @@ $before = static function (TestCase $testCase, $args = []) {
     }
 
     if (isset($args['countDisable'])) {
-        $collectionUser = mock($collectionUser)
+        $collectionUser = \Mockery::mock($collectionUser)
             ->shouldReceive('isCountable')
             ->andReturnFalse()
             ->getMock();
@@ -97,7 +96,7 @@ $before = static function (TestCase $testCase, $args = []) {
     );
 
 
-    $count = mock(Count::class)
+    $count = \Mockery::mock(Count::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();

@@ -25,7 +25,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
-\Ozzie\Nest\describe('Computed collection', function () {
+describe('Computed collection', function () {
     $before = static function (TestCase $testCase) {
         $records = [['id' => 1, 'description' => 'new transaction', 'amount' => 100]];
         $aggregateResult = [['value' => 1, 'group' => []]];
@@ -39,7 +39,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             ]
         );
 
-        $collectionTransactions = mock($collectionTransactions)
+        $collectionTransactions = \Mockery::mock($collectionTransactions)
             ->shouldReceive('list')
             ->andReturn($records)
             ->shouldReceive('create')
@@ -71,7 +71,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $before($this);
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'before', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['List' => $hook]);
@@ -94,7 +94,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $before($this);
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'before', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['Create' => $hook]);
@@ -115,7 +115,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $before($this);
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'before', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['Update' => $hook]);
@@ -138,7 +138,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $before($this);
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'before', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['Delete' => $hook]);
@@ -159,7 +159,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $before($this);
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'before', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['Aggregate' => $hook]);
@@ -183,7 +183,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
         $records = $this->bucket['records'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'after', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['List' => $hook]);
@@ -208,7 +208,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
         $records = $this->bucket['records'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'after', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['Create' => $hook]);
@@ -230,7 +230,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $before($this);
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'after', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['Update' => $hook]);
@@ -253,7 +253,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $before($this);
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'after', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['Delete' => $hook]);
@@ -275,7 +275,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         /** @var HookCollection $decoratedTransaction */
         $decoratedTransaction = $this->bucket['decoratedTransaction'];
         $aggregateResult = $this->bucket['aggregateResult'];
-        $mock = Mockery::mock(fn () => true);
+        $mock = \Mockery::mock(fn () => true);
         $hook = new Hooks();
         $this->invokeProperty($hook, 'after', [$mock]);
         $this->invokeProperty($decoratedTransaction, 'hooks', ['Aggregate' => $hook]);

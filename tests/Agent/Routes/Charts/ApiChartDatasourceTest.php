@@ -23,7 +23,7 @@ beforeEach(function () {
 
     $request = Request::createFromGlobals();
 
-    $chart = mock(ApiChartDatasource::class)
+    $chart = \Mockery::mock(ApiChartDatasource::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();

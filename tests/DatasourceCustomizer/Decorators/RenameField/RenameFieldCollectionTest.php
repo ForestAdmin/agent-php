@@ -20,7 +20,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use Mockery\Mock;
 
-\Ozzie\Nest\describe('RenameFieldCollection', function () {
+describe('RenameFieldCollection', function () {
     beforeEach(function () {
         $datasource = new Datasource();
         $collectionBook = new Collection($datasource, 'Book');
@@ -85,7 +85,7 @@ use Mockery\Mock;
             ]
         );
 
-        $collectionBook = mock($collectionBook)->makePartial();
+        $collectionBook = \Mockery::mock($collectionBook)->makePartial();
 
         $datasource->addCollection($collectionBook);
         $datasource->addCollection($collectionBookPerson);

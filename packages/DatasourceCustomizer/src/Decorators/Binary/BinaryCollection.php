@@ -63,6 +63,10 @@ class BinaryCollection extends CollectionDecorator
     {
         $field = $this->childCollection->getFields()[$name];
 
+        if ($field === null) {
+            throw new \Exception('Field not found');
+        }
+
         if ($type !== 'datauri' && $type !== 'hex') {
             throw new \Exception('Invalid binary mode');
         }

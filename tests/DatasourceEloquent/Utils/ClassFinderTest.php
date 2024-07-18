@@ -2,9 +2,6 @@
 
 use ForestAdmin\AgentPHP\DatasourceEloquent\Utils\ClassFinder;
 
-use function Ozzie\Nest\describe;
-use function Ozzie\Nest\test;
-
 describe('class finder', function () {
     test('should return the list of the models that extend Eloquent Moden', function () {
         $finder = new ClassFinder(__DIR__ . '/..');

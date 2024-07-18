@@ -18,7 +18,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
-\Ozzie\Nest\describe('Datasource with Inverse relation missing', function () {
+describe('Datasource with Inverse relation missing', function () {
     $before = static function (TestCase $testCase) {
         $datasource = new Datasource();
         $collectionBook = new Collection($datasource, 'Book');
@@ -63,7 +63,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
     });
 });
 
-\Ozzie\Nest\describe('Datasource with all relations', function () {
+describe('Datasource with all relations', function () {
     $before = static function (TestCase $testCase, array $args = []) {
         $datasource = new Datasource();
         $collectionBook = new Collection($datasource, 'Book');
@@ -144,7 +144,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         );
 
         if (isset($args['Book']['list'])) {
-            $collectionBook = mock($collectionBook)
+            $collectionBook = \Mockery::mock($collectionBook)
                 ->shouldReceive('list')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
                 ->andReturn($args['Book']['list'])
@@ -152,7 +152,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         }
 
         if (isset($args['BookPerson']['list'])) {
-            $collectionBookPerson = mock($collectionBookPerson)
+            $collectionBookPerson = \Mockery::mock($collectionBookPerson)
                 ->shouldReceive('list')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
                 ->andReturn($args['BookPerson']['list'])
@@ -160,7 +160,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         }
 
         if (isset($args['Person']['list'])) {
-            $collectionPerson = mock($collectionPerson)
+            $collectionPerson = \Mockery::mock($collectionPerson)
                 ->shouldReceive('list')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
                 ->andReturn($args['Person']['list'])
@@ -168,7 +168,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         }
 
         if (isset($args['BookPerson']['aggregate'])) {
-            $collectionBookPerson = mock($collectionBookPerson)
+            $collectionBookPerson = \Mockery::mock($collectionBookPerson)
                 ->shouldReceive('aggregate')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
                 ->andReturn($args['BookPerson']['aggregate'])
@@ -176,7 +176,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         }
 
         if (isset($args['Person']['aggregate'])) {
-            $collectionPerson = mock($collectionPerson)
+            $collectionPerson = \Mockery::mock($collectionPerson)
                 ->shouldReceive('aggregate')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
                 ->andReturn($args['Person']['aggregate'])

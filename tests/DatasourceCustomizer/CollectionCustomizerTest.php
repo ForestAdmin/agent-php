@@ -24,7 +24,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\Rules;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
-\Ozzie\Nest\describe('CollectionCustomizer', function () {
+describe('CollectionCustomizer', function () {
     $before = static function (TestCase $testCase, $collectionName = 'Book', $operators = [Operators::EQUAL, Operators::IN]) {
         $datasource = new Datasource();
         $collectionBook = new Collection($datasource, 'Book');
@@ -126,7 +126,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
         $stack = $datasourceCustomizer->getStack();
         $earlyComputed = $stack->earlyComputed;
-        $earlyComputed = mock($earlyComputed)
+        $earlyComputed = \Mockery::mock($earlyComputed)
             ->shouldReceive('getCollection')
             ->andReturn($datasourceCustomizer->getStack()->earlyComputed->getCollection('Book'))
             ->getMock();
@@ -162,7 +162,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
         $stack = $datasourceCustomizer->getStack();
         $lateComputed = $stack->lateComputed;
-        $lateComputed = mock($lateComputed)
+        $lateComputed = \Mockery::mock($lateComputed)
             ->shouldReceive('getCollection')
             ->once()
             ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))
@@ -199,7 +199,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
         $stack = $datasourceCustomizer->getStack();
         $book = $stack->relation->getCollection('Book');
-        $bookRelation = mock($book)
+        $bookRelation = \Mockery::mock($book)
             ->shouldReceive('addRelation')
             ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Book'))
             ->getMock();
@@ -233,7 +233,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
         $stack = $datasourceCustomizer->getStack();
         $book = $stack->relation->getCollection('Book');
-        $bookRelation = mock($book)
+        $bookRelation = \Mockery::mock($book)
             ->shouldReceive('addRelation')
             ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Book'))
             ->getMock();
@@ -267,7 +267,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
         $stack = $datasourceCustomizer->getStack();
         $category = $stack->relation->getCollection('Category');
-        $categoryRelation = mock($category)
+        $categoryRelation = \Mockery::mock($category)
             ->shouldReceive('addRelation')
             ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Category'))
             ->getMock();
@@ -301,7 +301,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
         $stack = $datasourceCustomizer->getStack();
         $person = $stack->relation->getCollection('Person');
-        $personRelation = mock($person)
+        $personRelation = \Mockery::mock($person)
             ->shouldReceive('addRelation')
             ->andReturn($datasourceCustomizer->getStack()->relation->getCollection('Person'))
             ->getMock();
@@ -382,7 +382,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
         $stack = $datasourceCustomizer->getStack();
         $search = $stack->search;
-        $search = mock($search)
+        $search = \Mockery::mock($search)
             ->shouldReceive('getCollection')
             ->once()
             ->andReturn($datasourceCustomizer->getStack()->search->getCollection('Book'))
@@ -437,7 +437,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
         $stack = $datasourceCustomizer->getStack();
         $write = $stack->write;
-        $write = mock($write)
+        $write = \Mockery::mock($write)
             ->shouldReceive('getCollection')
             ->once()
             ->andReturn($datasourceCustomizer->getStack()->write->getCollection('Book'))
@@ -499,7 +499,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $stack = $datasourceCustomizer->getStack();
 
         $lateComputed = $stack->lateComputed;
-        $lateComputed = mock($lateComputed)
+        $lateComputed = \Mockery::mock($lateComputed)
             ->shouldReceive('getCollection')
             ->once()
             ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))
@@ -555,7 +555,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $stack = $datasourceCustomizer->getStack();
 
         $lateComputed = $stack->lateComputed;
-        $lateComputed = mock($lateComputed)
+        $lateComputed = \Mockery::mock($lateComputed)
             ->shouldReceive('getCollection')
             ->once()
             ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))
@@ -588,7 +588,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         $stack = $datasourceCustomizer->getStack();
 
         $lateComputed = $stack->lateComputed;
-        $lateComputed = mock($lateComputed)
+        $lateComputed = \Mockery::mock($lateComputed)
             ->shouldReceive('getCollection')
             ->once()
             ->andReturn($datasourceCustomizer->getStack()->lateComputed->getCollection('Book'))

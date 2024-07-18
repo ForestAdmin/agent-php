@@ -16,7 +16,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
-\Ozzie\Nest\describe('Computed collection', function () {
+describe('Computed collection', function () {
     $before = static function (TestCase $testCase, $args = []) {
         $datasource = new Datasource();
         $collectionProduct = new Collection($datasource, 'Product');
@@ -29,7 +29,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         );
 
         if (isset($args['listing'])) {
-            $collectionProduct = mock($collectionProduct)
+            $collectionProduct = \Mockery::mock($collectionProduct)
                 ->shouldReceive('list')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type(Projection::class))
                 ->andReturn($args['listing'])
@@ -37,7 +37,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         }
 
         if (isset($args['update'])) {
-            $collectionProduct = mock($collectionProduct)
+            $collectionProduct = \Mockery::mock($collectionProduct)
                 ->shouldReceive('update')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type('array'))
                 ->andReturnNull()
@@ -45,7 +45,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         }
 
         if (isset($args['delete'])) {
-            $collectionProduct = mock($collectionProduct)
+            $collectionProduct = \Mockery::mock($collectionProduct)
                 ->shouldReceive('delete')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class))
                 ->andReturnNull()
@@ -53,7 +53,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
         }
 
         if (isset($args['aggregate'])) {
-            $collectionProduct = mock($collectionProduct)
+            $collectionProduct = \Mockery::mock($collectionProduct)
                 ->shouldReceive('aggregate')
                 ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
                 ->andReturn($args['aggregate'])

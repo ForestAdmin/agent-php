@@ -43,7 +43,7 @@ beforeEach(function () {
         ->shouldBeCalled()
         ->willReturn(JWT::encode($user, AUTH_SECRET, 'HS256'));
 
-    $authentication = mock(Authentication::class)
+    $authentication = \Mockery::mock(Authentication::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('auth')

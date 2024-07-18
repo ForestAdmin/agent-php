@@ -14,7 +14,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFil
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
-\Ozzie\Nest\describe('Base Action', function () {
+describe('Base Action', function () {
     $before = static function (TestCase $testCase, $withGeneratedFile = false, $staticForm = false) {
         $datasource = new Datasource();
         $collection = new Collection($datasource, 'Product');

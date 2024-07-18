@@ -32,7 +32,7 @@ beforeEach(function () {
     $_GET['record_id'] = 1;
     $request = Request::createFromGlobals();
 
-    $chart = mock(ApiChartCollection::class)
+    $chart = \Mockery::mock(ApiChartCollection::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();

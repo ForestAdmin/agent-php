@@ -97,7 +97,7 @@ test('customizeCollection() should work', function () {
     );
     $datasource->addCollection($collectionUser);
     $agent = new AgentFactory(AGENT_OPTIONS);
-    $spy = Mockery::spy(DatasourceCustomizer::class);
+    $spy = \Mockery::spy(DatasourceCustomizer::class);
     $this->invokeProperty($agent, 'customizer', $spy);
     $agent->customizeCollection('name', fn () => true);
     $spy = $this->invokeProperty($agent, 'customizer');
@@ -117,7 +117,7 @@ test('addChart() should work', function () {
     );
     $datasource->addCollection($collectionUser);
     $agent = new AgentFactory(AGENT_OPTIONS);
-    $spy = Mockery::spy(DatasourceCustomizer::class);
+    $spy = \Mockery::spy(DatasourceCustomizer::class);
     $this->invokeProperty($agent, 'customizer', $spy);
     $agent->addChart('myChart', fn () => true);
     $spy = $this->invokeProperty($agent, 'customizer');
@@ -131,7 +131,7 @@ test('use() should work', function () {
     $datasource->addCollection($collectionUser);
 
     $agent = new AgentFactory(AGENT_OPTIONS);
-    $spy = Mockery::spy(DatasourceCustomizer::class);
+    $spy = \Mockery::spy(DatasourceCustomizer::class);
     $this->invokeProperty($agent, 'customizer', $spy);
     $agent->use('MyFakePlugin');
     $spy = $this->invokeProperty($agent, 'customizer');

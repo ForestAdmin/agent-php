@@ -16,7 +16,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 
-\Ozzie\Nest\describe('BinaryCollectin', function () {
+describe('BinaryCollectin', function () {
     beforeEach(function () {
         $datasource = new Datasource();
         $collectionFavorite = new Collection($datasource, 'Favorite');
@@ -66,7 +66,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
         $datasourceDecorator = $this->bucket[0];
         $decoratedBook = $datasourceDecorator->getCollection('Book');
 
-        expect(fn () => $decoratedBook->setBinaryMode('invalid', 'hex'))->toThrow(\Exception::class, 'Undefined array key "invalid"');
+        expect(fn () => $decoratedBook->setBinaryMode('invalid', 'hex'))->toThrow(\Exception::class, 'Field not found');
     });
 
     test('setBinaryMode() should throw if the field is not a binary field', function () {
@@ -143,7 +143,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
         $datasourceDecorator->getCollection('Book')->getFields();
 
         $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
-        $mock = mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->expects('list')
             ->once()
@@ -188,7 +188,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
         ];
 
         $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
-        $mock = mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->shouldReceive('list')
             ->andReturn($records)
@@ -231,7 +231,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
         $decoratedBook = $datasourceDecorator->getCollection('Book');
 
         $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
-        $mock = mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->expects('list')
             ->once()
@@ -268,7 +268,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
             ],
         ];
         $childCollection = $this->invokeProperty($decoratedFavorite, 'childCollection');
-        $mock = mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->shouldReceive('list')
             ->andReturn($records)
@@ -290,7 +290,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
         $decoratedBook = $datasourceDecorator->getCollection('Book');
 
         $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
-        $mock = mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->expects('create')
             ->once()
@@ -321,7 +321,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
         $decoratedBook = $datasourceDecorator->getCollection('Book');
 
         $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
-        $mock = mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->expects('create')
             ->once()
@@ -350,7 +350,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
         $decoratedBook = $datasourceDecorator->getCollection('Book');
 
         $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
-        $mock = mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->expects('update')
             ->once()
@@ -385,7 +385,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
             ],
         ];
         $childCollection = $this->invokeProperty($decoratedBook, 'childCollection');
-        $mock = mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->expects('aggregate')
             ->once()
@@ -421,7 +421,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
         ];
 
         $childCollection = $this->invokeProperty($decoratedFavorite, 'childCollection');
-        $mock = mock($childCollection)
+        $mock = \Mockery::mock($childCollection)
             ->makePartial()
             ->expects('aggregate')
             ->once()

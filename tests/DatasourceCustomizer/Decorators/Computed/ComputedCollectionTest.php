@@ -20,7 +20,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
-\Ozzie\Nest\describe('Computed collection', function () {
+describe('Computed collection', function () {
     $before = static function (TestCase $testCase, ?Aggregation $aggregation = null) {
         $datasource = new Datasource();
         $collectionBook = new Collection($datasource, 'Book');
@@ -65,7 +65,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
                 'title'    => 'Beat the dealer',
             ],
         ];
-        $collectionBook = mock($collectionBook)
+        $collectionBook = \Mockery::mock($collectionBook)
             ->shouldReceive('list')
             ->andReturn($records);
 

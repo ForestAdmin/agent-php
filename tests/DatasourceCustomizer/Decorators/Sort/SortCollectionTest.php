@@ -16,7 +16,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
-\Ozzie\Nest\describe('SortCollection', function () {
+describe('SortCollection', function () {
     $before = static function (TestCase $testCase) {
         $records = [
             [
@@ -50,7 +50,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
                 ),
             ]
         );
-        $collectionBook = mock($collectionBook)
+        $collectionBook = \Mockery::mock($collectionBook)
             ->makePartial()
             ->shouldReceive('list')
             ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type(Projection::class))
@@ -172,7 +172,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
     })->with('caller');
 });
 
-\Ozzie\Nest\describe('SortChildCollection', function () {
+describe('SortChildCollection', function () {
     $before = static function (TestCase $testCase, array $records) {
         $datasource = new Datasource();
         $collectionBook = new Collection($datasource, 'Book');
@@ -189,7 +189,7 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
             ]
         );
 
-        $collectionBook = mock($collectionBook)
+        $collectionBook = \Mockery::mock($collectionBook)
             ->makePartial()
             ->shouldReceive('list')
             ->andReturn($records[0], $records[1])
