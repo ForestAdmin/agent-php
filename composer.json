@@ -79,7 +79,7 @@
         "forestadmin/php-datasource-eloquent": "self.version",
         "forestadmin/php-datasource-toolkit": "self.version"
     },
-    "version": "1.9.1",
+    "version": "1.9.3",
     "minimum-stability": "stable",
     "prefer-stable": true
 }
