@@ -15,6 +15,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 beforeEach(function () {
@@ -58,12 +59,32 @@ beforeEach(function () {
         ]
     );
 
+    $collectionComment = new Collection($datasource, 'Comment');
+    $collectionComment->addFields(
+        [
+            'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'name'            => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentable'     => new PolymorphicManyToOneSchema(
+                foreignKeyTypeField: 'commentableType',
+                foreignKey: 'commentableId',
+                foreignKeyTargets: [
+                    'Car' => 'id',
+                ],
+                foreignCollections: [
+                    'Car',
+                ],
+            ),]
+    );
+
     $datasource->addCollection($collectionCategory);
     $datasource->addCollection($collectionUser);
     $datasource->addCollection($collectionCar);
+    $datasource->addCollection($collectionComment);
     $this->buildAgent($datasource);
 
-    $this->bucket = compact('collectionCategory', 'collectionUser', 'collectionCar');
+    $this->bucket = compact('collectionCategory', 'collectionUser', 'collectionCar', 'collectionComment');
 });
 
 test('parseConditionTree() should return null when not provided', function () {
@@ -215,6 +236,18 @@ test('parseProjection() on a flat collection on a request with an unknown field 
 
     expect(fn () => QueryStringParser::parseProjection($collectionCategory, Request::createFromGlobals()))
         ->toThrow(ForestException::class, '🌳🌳🌳 Invalid projection');
+});
+
+test('parseProjectionWithPks() when the request is about a PolymorphicOneToMany association', function () {
+    $collectionComment = $this->bucket['collectionComment'];
+
+    $_GET['fields'] = [
+        'Comment' => 'commentable,commentableId,commentableType,name',
+    ];
+
+    $projection = QueryStringParser::parseProjection($collectionComment, Request::createFromGlobals());
+
+    expect($projection)->toEqual((new Projection(['commentable:*', 'commentableId', 'commentableType', 'name'])));
 });
 
 test('parseProjectionWithPks() when the request does not contain the primary keys should return the requested project with the primary keys', function () {

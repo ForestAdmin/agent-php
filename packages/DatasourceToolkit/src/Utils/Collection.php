@@ -51,9 +51,7 @@ class Collection
                             is_a($relationField, ManyToOneSchema::class) && self::isOtherInverse($field, $relationField))
                     );
                 }
-            });
-
-        $inverse->keys()->first();
+            })->keys()->first();
 
         return $inverse ?: null;
     }

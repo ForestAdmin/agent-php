@@ -69,7 +69,7 @@ class QueryStringParser
                     $field = trim($field);
                     $column = $collection->getFields()->get($field);
 
-                    if ($column->getType() === 'PolymorphicManyToOne') {
+                    if (null !== $column && $column->getType() === 'PolymorphicManyToOne') {
                         return $field . ':*';
                     }
 
