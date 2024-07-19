@@ -9,6 +9,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
 
 beforeEach(function () {
     $datasource = new Datasource();
@@ -40,6 +42,25 @@ beforeEach(function () {
         ]
     );
 
+    $collectionComment = new Collection($datasource, 'Comment');
+    $collectionComment->addFields(
+        [
+            'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'name'            => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentable'     => new PolymorphicManyToOneSchema(
+                foreignKeyTypeField: 'commentableType',
+                foreignKey: 'commentableId',
+                foreignKeyTargets: [
+                    'Book' => 'id',
+                ],
+                foreignCollections: [
+                    'Book',
+                ],
+            ),]
+    );
+
     $collectionPerson = new Collection($datasource, 'Person');
     $collectionPerson->addFields(
         [
@@ -56,6 +77,13 @@ beforeEach(function () {
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Book',
                 throughCollection: 'BookPerson',
+            ),
+            'comment' => new PolymorphicOneToManySchema(
+                originKey: 'commentableId',
+                originKeyTarget: 'id',
+                foreignCollection: 'Comment',
+                originTypeField: 'commentableType',
+                originTypeValue: 'Person',
             ),
         ]
     );
@@ -91,6 +119,7 @@ beforeEach(function () {
     );
 
     $datasource->addCollection($collectionBook);
+    $datasource->addCollection($collectionComment);
     $datasource->addCollection($collectionPerson);
     $datasource->addCollection($collectionLibrary);
     $datasource->addCollection($collectionBookPerson);
@@ -204,6 +233,61 @@ test('buildSchema() should generate inverse relation One to Many', function () {
             'relationship' => 'BelongsTo',
             'type'         => 'Number',
             'validations'  => [],
+        ]
+    );
+});
+
+test('buildSchema() should generate relation Polymorphic Many to One', function () {
+    $schema = GeneratorField::buildSchema(
+        $this->bucket['datasource']->getCollection('Comment'),
+        'commentable'
+    );
+
+    expect($schema)->toEqual(
+        [
+            'defaultValue'                  => null,
+            'enums'                         => null,
+            'field'                         => 'commentable',
+            'integration'                   => null,
+            'inverseOf'                     => 'Comment',
+            'isFilterable'                  => false,
+            'isPrimaryKey'                  => false,
+            'isReadOnly'                    => false,
+            'isRequired'                    => false,
+            'isSortable'                    => true,
+            'isVirtual'                     => false,
+            'reference'                     => 'commentable.id',
+            'relationship'                  => 'BelongsTo',
+            'type'                          => 'Number',
+            'validations'                   => [],
+            'polymorphic_referenced_models' => ['Book'],
+        ]
+    );
+});
+
+test('buildSchema() should generate Polymorphic One To Many', function () {
+    $schema = GeneratorField::buildSchema(
+        $this->bucket['datasource']->getCollection('Person'),
+        'comment'
+    );
+
+    expect($schema)->toEqual(
+        [
+            'defaultValue'                  => null,
+            'enums'                         => null,
+            'field'                         => 'comment',
+            'integration'                   => null,
+            'inverseOf'                     => null,
+            'isFilterable'                  => false,
+            'isPrimaryKey'                  => false,
+            'isReadOnly'                    => false,
+            'isRequired'                    => false,
+            'isSortable'                    => false,
+            'isVirtual'                     => false,
+            'reference'                     => 'Comment.id',
+            'relationship'                  => 'HasMany',
+            'type'                          => ['Number'],
+            'validations'                   => [],
         ]
     );
 });
