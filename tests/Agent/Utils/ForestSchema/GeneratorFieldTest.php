@@ -46,17 +46,19 @@ beforeEach(function () {
     $collectionComment->addFields(
         [
             'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'name'            => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'title'           => new ColumnSchema(columnType: PrimitiveType::STRING),
             'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
             'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
             'commentable'     => new PolymorphicManyToOneSchema(
                 foreignKeyTypeField: 'commentableType',
                 foreignKey: 'commentableId',
                 foreignKeyTargets: [
-                    'Book' => 'id',
+                    'Book'   => 'id',
+                    'Person' => 'id',
                 ],
                 foreignCollections: [
                     'Book',
+                    'Person',
                 ],
             ),]
     );
@@ -260,7 +262,7 @@ test('buildSchema() should generate relation Polymorphic Many to One', function 
             'relationship'                  => 'BelongsTo',
             'type'                          => 'Number',
             'validations'                   => [],
-            'polymorphic_referenced_models' => ['Book'],
+            'polymorphic_referenced_models' => ['Book', 'Person'],
         ]
     );
 });
@@ -277,7 +279,7 @@ test('buildSchema() should generate Polymorphic One To Many', function () {
             'enums'                         => null,
             'field'                         => 'comment',
             'integration'                   => null,
-            'inverseOf'                     => null,
+            'inverseOf'                     => 'commentable',
             'isFilterable'                  => false,
             'isPrimaryKey'                  => false,
             'isReadOnly'                    => false,
