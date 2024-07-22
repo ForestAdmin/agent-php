@@ -22,15 +22,16 @@ const ELOQUENT_TIMEZONE = 'Europe/Paris';
 
 beforeEach(function () {
     testTime()->freeze(Carbon::now(ELOQUENT_TIMEZONE));
-    global $datasource, $bookCollection, $reviewCollection, $bookReviewCollection, $authorCollection;
+    global $datasource, $bookCollection, $reviewCollection, $bookReviewCollection, $authorCollection, $commentCollection;
     $this->buildAgent(new Datasource(), ['projectDir' => str_replace('/Utils', '', __DIR__)]);
     $this->initDatabase();
     $datasource = new EloquentDatasource(TestCase::DB_CONFIG);
 
-    $bookCollection = $datasource->getCollection('Book');
-    $authorCollection = $datasource->getCollection('Author');
-    $reviewCollection = $datasource->getCollection('Review');
-    $bookReviewCollection = $datasource->getCollection('BookReview');
+    $bookCollection = $datasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book');
+    $authorCollection = $datasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Author');
+    $reviewCollection = $datasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Review');
+    $bookReviewCollection = $datasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_BookReview');
+    $commentCollection = $datasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Comment');
 });
 
 test('of() should return a ForestAdmin\\AgentPHP\\DatasourceEloquent\\Utils\\QueryConverter instance', function () {
@@ -141,6 +142,32 @@ test('QueryConverter should add the join with OneToMany / OneToOne relation', fu
                 "boolean"  => "and",
             ]
         );
+});
+
+test('QueryConverter should add the join PolymorphicManyToOne relation', function () {
+    global $commentCollection;
+    $query = QueryConverter::of($commentCollection, 'Europe/Paris', null, new Projection(['id', 'commentable:book']))
+        ->getQuery()->getQuery();
+
+    expect($query->joins)->toHaveCount(2)
+        ->and($query->joins[0]->table)->toEqual('books as polymorphic_commentable_ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book')
+        ->and($query->joins[0]->wheres)->toHaveCount(2)
+        ->and($query->joins[0]->wheres)->toEqual([
+            [
+                "type"     => "Column",
+                "first"    => "comments.commentable_id",
+                "operator" => "=",
+                "second"   => "polymorphic_commentable_ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book.id",
+                "boolean"  => "and",
+            ],
+            [
+                "type"     => "Basic",
+                "operator" => "=",
+                "boolean"  => "and",
+                "column"   => "comments.commentable_type",
+                "value"    => "ForestAdmin\AgentPHP\Tests\DatasourceEloquent\Models\Book",
+            ],
+        ]);
 });
 
 test('QueryConverter should apply sort', function () {

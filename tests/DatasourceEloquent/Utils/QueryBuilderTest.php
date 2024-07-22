@@ -15,10 +15,10 @@ beforeEach(function () {
 
 test('of() should return a \\ForestAdmin\\AgentPHP\\DatasourceEloquent\\Utils\\QueryBuilder instance', function () {
     global $datasource;
-    expect(QueryBuilder::of($datasource->getCollection('Book')))->toBeInstanceOf(QueryBuilder::class);
+    expect(QueryBuilder::of($datasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book')))->toBeInstanceOf(QueryBuilder::class);
 });
 
 test('getQuery() should return a Illuminate\\Database\\Eloquent\\Builder instance', function () {
     global $datasource;
-    expect(QueryBuilder::of($datasource->getCollection('Book'))->getQuery())->toBeInstanceOf(Builder::class);
+    expect(QueryBuilder::of($datasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book'))->getQuery())->toBeInstanceOf(Builder::class);
 });
