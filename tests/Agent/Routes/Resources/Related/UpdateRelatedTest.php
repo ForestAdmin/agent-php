@@ -12,6 +12,9 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
@@ -29,6 +32,13 @@ $before = static function (TestCase $testCase, $args = []) {
                 originKeyTarget: 'id',
                 foreignCollection: 'Car',
             ),
+            'comment' => new PolymorphicOneToOneSchema(
+                originKey: 'commentableId',
+                originKeyTarget: 'id',
+                foreignCollection: 'Comment',
+                originTypeField: 'commentableType',
+                originTypeValue: 'User',
+            ),
         ]
     );
 
@@ -44,7 +54,35 @@ $before = static function (TestCase $testCase, $args = []) {
                 foreignKeyTarget: 'id',
                 foreignCollection: 'User',
             ),
+            'comments' => new PolymorphicOneToManySchema(
+                originKey: 'commentableId',
+                originKeyTarget: 'id',
+                foreignCollection: 'Comment',
+                originTypeField: 'commentableType',
+                originTypeValue: 'Car',
+            ),
         ]
+    );
+
+    $collectionComment = new Collection($datasource, 'Comment');
+    $collectionComment->addFields(
+        [
+            'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true),
+            'title'           => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentable'     => new PolymorphicManyToOneSchema(
+                foreignKeyTypeField: 'commentableType',
+                foreignKey: 'commentableId',
+                foreignKeyTargets: [
+                    'Car'   => 'id',
+                    'User'  => 'id',
+                ],
+                foreignCollections: [
+                    'Car',
+                    'User',
+                ],
+            ),]
     );
 
     if (isset($args['Car']['listing'])) {
@@ -65,6 +103,7 @@ $before = static function (TestCase $testCase, $args = []) {
 
     $datasource->addCollection($collectionUser);
     $datasource->addCollection($collectionCar);
+    $datasource->addCollection($collectionComment);
     $testCase->buildAgent($datasource);
 
     SchemaEmitter::getSerializedSchema($datasource);
@@ -97,6 +136,11 @@ $before = static function (TestCase $testCase, $args = []) {
                 ],
             ],
             'Car'  => [
+                'edit'  => [
+                    0 => 1,
+                ],
+            ],
+            'Comment'  => [
                 'edit'  => [
                     0 => 1,
                 ],
@@ -136,7 +180,7 @@ test('make() should return a new instance of UpdateRelated with routes', functio
         ->and($update->getRoutes())->toHaveKey('forest.related.update');
 });
 
-test('handleRequest() should return a response 200 with OneToOne relation', function () use ($before) {
+test('handleRequest() should return a response 204 with OneToOne relation', function () use ($before) {
     $data = [
         'id'    => 2,
         'model' => 'Murcielago',
@@ -171,6 +215,54 @@ test('handleRequest() should return a response 200 with ManyToOne relation', fun
     $update = $before($this, ['Car' => ['listing' => $data]]);
 
     expect($update->handleRequest(['collectionName' => 'Car', 'id' => 1, 'relationName' => 'user']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'content' => null,
+                'status'  => 204,
+            ]
+        );
+});
+
+test('handleRequest() should return a response 204 with PolymorphicManyToOne relation', function () use ($before) {
+    $data = [
+        'id'              => 1,
+        'title'           => 'Comment',
+        'commentableId'   => 1,
+        'commentableType' => 'User',
+    ];
+    $_GET['data'] = [
+        'id'         => 1,
+        'attributes' => $data,
+        'type'       => 'Comment',
+    ];
+    $update = $before($this, ['Comment' => ['listing' => $data]]);
+
+    expect($update->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'comment']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'content' => null,
+                'status'  => 204,
+            ]
+        );
+});
+
+test('handleRequest() should return a response 204 with PolymorphicOneToOne relation', function () use ($before) {
+    $data = [
+        'id'              => 1,
+        'title'           => 'Comment',
+        'commentableId'   => 1,
+        'commentableType' => 'User',
+    ];
+    $_GET['data'] = [
+        'id'         => 1,
+        'attributes' => $data,
+        'type'       => 'Comment',
+    ];
+    $update = $before($this, ['Comment' => ['listing' => $data]]);
+
+    expect($update->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'comment']))
         ->toBeArray()
         ->toEqual(
             [
