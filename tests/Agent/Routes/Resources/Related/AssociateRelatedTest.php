@@ -13,6 +13,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
@@ -38,6 +40,13 @@ $before = static function (TestCase $testCase, $args = []) {
                 foreignKeyTarget: 'id',
                 foreignCollection: 'House',
                 throughCollection: 'HouseUser'
+            ),
+            'comments' => new PolymorphicOneToManySchema(
+                originKey: 'commentableId',
+                originKeyTarget: 'id',
+                foreignCollection: 'Comment',
+                originTypeField: 'commentableType',
+                originTypeValue: 'User',
             ),
         ]
     );
@@ -94,6 +103,27 @@ $before = static function (TestCase $testCase, $args = []) {
         ]
     );
 
+    $collectionComment = new Collection($datasource, 'Comment');
+    $collectionComment->addFields(
+        [
+            'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true),
+            'title'           => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentable'     => new PolymorphicManyToOneSchema(
+                foreignKeyTypeField: 'commentableType',
+                foreignKey: 'commentableId',
+                foreignKeyTargets: [
+                    'Car'   => 'id',
+                    'User'  => 'id',
+                ],
+                foreignCollections: [
+                    'Car',
+                    'User',
+                ],
+            ),]
+    );
+
     if (isset($args['associate'])) {
         $collectionUser = \Mockery::mock($collectionUser)
             ->shouldReceive('associate')
@@ -106,6 +136,7 @@ $before = static function (TestCase $testCase, $args = []) {
     $datasource->addCollection($collectionCar);
     $datasource->addCollection($collectionHouse);
     $datasource->addCollection($collectionHouseUser);
+    $datasource->addCollection($collectionComment);
     $testCase->buildAgent($datasource);
 
     $request = Request::createFromGlobals();
@@ -203,6 +234,25 @@ test('handleRequest() should return a response 200 with ManyToMany', function ()
     $associate = $before($this, ['associate' => true]);
 
     expect($associate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'houses']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'content' => null,
+                'status'  => 204,
+            ]
+        );
+});
+
+test('handleRequest() should return a response 200 with PolymorphicOneToMany', function () use ($before) {
+    $_GET['data'] = [
+        [
+            'id'   => 1,
+            'type' => 'Comment',
+        ],
+    ];
+    $associate = $before($this, ['associate' => true]);
+
+    expect($associate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'comments']))
         ->toBeArray()
         ->toEqual(
             [
