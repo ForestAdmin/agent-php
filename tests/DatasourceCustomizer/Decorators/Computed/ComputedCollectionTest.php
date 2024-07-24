@@ -18,6 +18,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 describe('Computed collection', function () {
@@ -51,6 +52,26 @@ describe('Computed collection', function () {
             ]
         );
 
+        $collectionComment = new Collection($datasource, 'Comment');
+        $collectionComment->addFields(
+            [
+                'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'title'           => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+                'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'commentable'     => new PolymorphicManyToOneSchema(
+                    foreignKeyTypeField: 'commentableType',
+                    foreignKey: 'commentableId',
+                    foreignKeyTargets: [
+                        'Book'   => 'id',
+                    ],
+                    foreignCollections: [
+                        'Book',
+                    ],
+                ),
+            ]
+        );
+
         $records = [
             [
                 'id'       => 1,
@@ -77,6 +98,7 @@ describe('Computed collection', function () {
 
         $datasource->addCollection($collectionBook->getMock());
         $datasource->addCollection($collectionPerson);
+        $datasource->addCollection($collectionComment);
         $testCase->buildAgent($datasource);
 
         $datasourceDecorator = new DatasourceDecorator($datasource, ComputedCollection::class);
@@ -146,6 +168,24 @@ describe('Computed collection', function () {
                 )
             )
         )->toThrow(ForestException::class, "🌳🌳🌳 Unexpected field type: Book.author (found ManyToOne expected 'Column')");
+    });
+
+    test('registerComputed() should throw if defining a field with invalid dependencies over polymorphic relations', closure: function () use ($before) {
+        $before($this);
+        $datasourceDecorator = $this->bucket['datasourceDecorator'];
+        /** @var ComputedCollection $computedCollection */
+        $computedCollection = $datasourceDecorator->getCollection('Comment');
+
+        expect(
+            static fn () => $computedCollection->registerComputed(
+                'newField',
+                new ComputedDefinition(
+                    columnType: 'String',
+                    dependencies: ['commentable:id'],
+                    values: fn ($records) => $records,
+                )
+            )
+        )->toThrow(ForestException::class, '🌳🌳🌳 Dependencies over a polymorphic relations(Comment.commentable) are forbidden');
     });
 
     test('getFields() should contain the computedField', closure: function () use ($before) {

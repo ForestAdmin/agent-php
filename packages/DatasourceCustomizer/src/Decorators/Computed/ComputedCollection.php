@@ -58,6 +58,14 @@ class ComputedCollection extends CollectionDecorator
     public function registerComputed(string $name, ComputedDefinition $computed): void
     {
         foreach ($computed->getDependencies() as $field) {
+            if (Str::contains($field, ':')) {
+                $prefix = explode(':', $field);
+                $schema = $this->getFields()->get($prefix[0]);
+                if ($schema->getType() === 'PolymorphicManyToOne') {
+                    throw new ForestException('Dependencies over a polymorphic relations(' . $this->getName() . '.' . $prefix[0] . ') are forbidden');
+                }
+            }
+
             FieldValidator::validate($this, $field);
         }
 
