@@ -15,6 +15,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
@@ -93,6 +95,13 @@ describe('Datasource with all relations', function () {
                     originKeyTarget: 'id',
                     foreignCollection: 'BookPerson',
                 ),
+                'comment' => new PolymorphicOneToManySchema(
+                    originKey: 'commentableId',
+                    originKeyTarget: 'id',
+                    foreignCollection: 'Comment',
+                    originTypeField: 'commentableType',
+                    originTypeValue: 'Book',
+                ),
             ]
         );
         $collectionBookPerson = new Collection($datasource, 'BookPerson');
@@ -142,6 +151,25 @@ describe('Datasource with all relations', function () {
                 ),
             ]
         );
+        $collectionComment = new Collection($datasource, 'Comment');
+        $collectionComment->addFields(
+            [
+                'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'name'            => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+                'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'commentable'     => new PolymorphicManyToOneSchema(
+                    foreignKeyTypeField: 'commentableType',
+                    foreignKey: 'commentableId',
+                    foreignKeyTargets: [
+                        'Book' => 'id',
+                    ],
+                    foreignCollections: [
+                        'Book',
+                    ],
+                ),
+            ]
+        );
 
         if (isset($args['Book']['list'])) {
             $collectionBook = \Mockery::mock($collectionBook)
@@ -183,9 +211,18 @@ describe('Datasource with all relations', function () {
                 ->getMock();
         }
 
+        if (isset($args['Comment']['aggregate'])) {
+            $collectionPerson = \Mockery::mock($collectionPerson)
+                ->shouldReceive('aggregate')
+                ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
+                ->andReturn($args['Comment']['aggregate'])
+                ->getMock();
+        }
+
         $datasource->addCollection($collectionBook);
         $datasource->addCollection($collectionBookPerson);
         $datasource->addCollection($collectionPerson);
+        $datasource->addCollection($collectionComment);
 
         $testCase->buildAgent($datasource);
 
@@ -214,6 +251,13 @@ describe('Datasource with all relations', function () {
 
         expect(CollectionUtils::getInverseRelation($datasource->getCollection('Person'), 'myBookPerson'))->toEqual('myPerson')
             ->and(CollectionUtils::getInverseRelation($datasource->getCollection('BookPerson'), 'myPerson'))->toEqual('myBookPerson');
+    });
+
+    test('getInverseRelation() should inverse a polymorphic one to many relation', function () use ($before) {
+        $before($this);
+        $datasource = $this->bucket['datasource'];
+
+        expect(CollectionUtils::getInverseRelation($datasource->getCollection('Book'), 'comment'))->toEqual('commentable');
     });
 
     test('isManyToManyInverse() should return false', function () use ($before) {
