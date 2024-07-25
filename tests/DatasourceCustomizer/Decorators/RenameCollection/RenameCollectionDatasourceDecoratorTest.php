@@ -9,6 +9,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
 
 describe('RenameCollectionDatasourceDecorator', function () {
     beforeEach(function () {
@@ -22,6 +24,13 @@ describe('RenameCollectionDatasourceDecorator', function () {
                     foreignKey: 'authorId',
                     foreignKeyTarget: 'id',
                     foreignCollection: 'Person',
+                ),
+                'comments' => new PolymorphicOneToManySchema(
+                    originKey: 'commentableId',
+                    originKeyTarget: 'id',
+                    foreignCollection: 'Comment',
+                    originTypeField: 'commentableType',
+                    originTypeValue: 'Book',
                 ),
             ]
         );
@@ -38,8 +47,29 @@ describe('RenameCollectionDatasourceDecorator', function () {
             ]
         );
 
+        $collectionComment = new Collection($datasource, 'Comment');
+        $collectionComment->addFields(
+            [
+                'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'title'           => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+                'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'commentable'     => new PolymorphicManyToOneSchema(
+                    foreignKeyTypeField: 'commentableType',
+                    foreignKey: 'commentableId',
+                    foreignKeyTargets: [
+                        'Book'   => 'id',
+                    ],
+                    foreignCollections: [
+                        'Book',
+                    ],
+                ),]
+        );
+
+
         $datasource->addCollection($collectionBook);
         $datasource->addCollection($collectionPerson);
+        $datasource->addCollection($collectionComment);
         $this->buildAgent($datasource);
 
         $this->bucket = compact('datasource');
@@ -90,5 +120,14 @@ describe('RenameCollectionDatasourceDecorator', function () {
 
         expect(fn () => $decoratedDataSource->renameCollections(['User' => 'User2']))
             ->toThrow(ForestException::class, "🌳🌳🌳 Cannot rename a collection twice: Person->User->User2");
+    });
+
+    test('renameCollections() should thrown when collection has polymorphic association', function () {
+        $datasource = $this->bucket['datasource'];
+        $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
+        $decoratedDataSource->build();
+
+        expect(fn () => $decoratedDataSource->renameCollections(['Book' => 'BookRenamed']))
+            ->toThrow(ForestException::class, "🌳🌳🌳 Cannot rename collection Book because it's a target of a polymorphic relation 'Comment.commentable'");
     });
 });
