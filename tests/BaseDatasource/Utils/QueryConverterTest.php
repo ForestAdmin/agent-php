@@ -261,9 +261,9 @@ test('QueryConverter should add the join with OneToMany / OneToOne relation', fu
         ->and($query->joins[0]->wheres[0])->toEqual(
             [
                 "type"     => "Column",
-                "first"    => "users.id",
+                "first"    => "users.author_id",
                 "operator" => "=",
-                "second"   => "books.author_id",
+                "second"   => "books.id",
                 "boolean"  => "and",
             ]
         );
