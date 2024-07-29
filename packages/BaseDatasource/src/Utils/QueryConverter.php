@@ -13,6 +13,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Page;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Sort;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -58,11 +59,22 @@ class QueryConverter extends QueryBuilder
             foreach ($this->projection->relations() as $relation => $relationFields) {
                 /** @var RelationSchema $relation */
                 $relationSchema = $this->collection->getFields()[$relation];
-                $relationTableName = $this->collection->getDataSource()->getCollection($relationSchema->getForeignCollection())->getTableName();
-                $this->addJoinRelation($relationSchema, $relationTableName, $relation);
-                $relationFields->map(function ($field) use (&$selectRaw, $relation) {
-                    $selectRaw[] = "$relation.$field as $relation.$field";
-                });
+                if ($relationSchema->getType() === 'PolymorphicManyToOne') {
+                    foreach ($relationSchema->getForeignKeyTargets() as $foreignCollection => $target) {
+                        $collection = CollectionUtils::fullNameToSnakeCase($foreignCollection);
+                        $relationTableName = $this->collection->getDataSource()->getCollection($collection)->getTableName();
+                        $tableAlias = 'polymorphic_' . $relation . '_' . $collection;
+
+                        $this->addJoinRelation($relationSchema, $relationTableName, $tableAlias, $target, $foreignCollection);
+                        $selectRaw[] = "$tableAlias.$target as $tableAlias.$target";
+                    }
+                } else {
+                    $relationTableName = $this->collection->getDataSource()->getCollection($relationSchema->getForeignCollection())->getTableName();
+                    $this->addJoinRelation($relationSchema, $relationTableName, $relation);
+                    $relationFields->map(function ($field) use (&$selectRaw, $relation) {
+                        $selectRaw[] = "$relation.$field as $relation.$field";
+                    });
+                }
             }
 
             $this->query->select($selectRaw);
