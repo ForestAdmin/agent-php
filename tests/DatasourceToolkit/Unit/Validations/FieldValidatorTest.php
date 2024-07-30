@@ -77,7 +77,7 @@ describe('validate()', function () {
         $before($this);
         $collection = $this->bucket['collection'];
         expect(FieldValidator::validate($collection, 'id:address'));
-    })->throws(ForestException::class, '🌳🌳🌳 Unexpected field type: cars.id (found Column expected \'ManyToOne\' or \'OneToOne\')');
+    })->throws(ForestException::class, '🌳🌳🌳 Unexpected field type: cars.id (found Column expected \'ManyToOne\' or \'OneToOne\' or \'PolymorphicManyToOne\')');
 
     test('should validate field when the value is an array', function () use ($before) {
         $before($this);

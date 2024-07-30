@@ -12,7 +12,7 @@ beforeEach(function () {
     $this->initDatabase();
     $datasource = new EloquentDatasource(TestCase::DB_CONFIG);
 
-    $bookCollection = $datasource->getCollection('Book');
+    $bookCollection = $datasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book');
 });
 
 test('of() should return a ForestAdmin\\AgentPHP\\DatasourceEloquent\\Utils\\QueryAggregate instance', function () {
