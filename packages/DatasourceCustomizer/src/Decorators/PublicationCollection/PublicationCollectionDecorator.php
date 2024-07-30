@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class PublicationCollectionDecorator extends CollectionDecorator
@@ -21,6 +22,16 @@ class PublicationCollectionDecorator extends CollectionDecorator
         $field = $this->childCollection->getFields()[$name] ?? throw new ForestException("Unknown field: $name");
         if ($field instanceof ColumnSchema && $field->isPrimaryKey()) {
             throw new ForestException("Cannot hide primary key");
+        }
+
+        foreach ($this->childCollection->getFields() as $fieldName => $fieldSchema) {
+            if ($fieldSchema instanceof PolymorphicManyToOneSchema) {
+                if (in_array($name, [$fieldSchema->getForeignKey(), $fieldSchema->getForeignKeyTypeField()], true)) {
+                    throw new ForestException(
+                        "Cannot remove field '{$this->getName()}.$name', because it's implied in a polymorphic relation '{$this->getName()}.$fieldName'"
+                    );
+                }
+            }
         }
 
         if (! $visible) {
