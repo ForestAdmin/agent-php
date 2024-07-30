@@ -275,17 +275,24 @@ test('QueryConverter should add the join with PolymorphicManyToOne relation', fu
         ->getQuery();
 
     expect($query->joins)->toHaveCount(1)
-        ->and($query->joins[0]->table)->toEqual('books as commentable')
-        ->and($query->joins[0]->wheres)->toHaveCount(1)
-        ->and($query->joins[0]->wheres[0])->toEqual(
+        ->and($query->joins[0]->table)->toEqual('books as polymorphic_commentable_Book')
+        ->and($query->joins[0]->wheres)->toHaveCount(2)
+        ->and($query->joins[0]->wheres)->toEqual([
             [
                 "type"     => "Column",
                 "first"    => "comments.commentableId",
                 "operator" => "=",
-                "second"   => "commentable.id",
+                "second"   => "polymorphic_commentable_Book.id",
                 "boolean"  => "and",
-            ]
-        );
+            ],
+            [
+                "type"      => "Basic",
+                "operator"  => "=",
+                "boolean"   => "and",
+                "column"    => "comments.commentableType",
+                "value"     => "Book",
+            ],
+        ]);
 });
 
 test('QueryConverter should apply sort', function () {
