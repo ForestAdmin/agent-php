@@ -31,6 +31,9 @@ class Collection
         $foreignCollection = AgentFactory::get('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relationField->getForeignCollection());
         $polyMorphicRelations = ['PolymorphicOneToOne', 'PolymorphicOneToMany'];
 
+        if ($foreignCollection === null) {
+            return null;
+        }
         $inverse = $foreignCollection->getFields();
         $inverse = $inverse
             ->filter(fn ($field) => is_a($field, RelationSchema::class))
