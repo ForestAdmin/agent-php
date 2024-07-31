@@ -3,7 +3,7 @@
     "description": "Subtree split of the PHP Agent Toolkit component",
     "type": "library",
     "license": "GPL-3.0-or-later",
-    "version": "1.9.4",
+    "version": "1.9.5",
     "require": {
         "php": "^8.0",
         "firebase/php-jwt": "^6.2",
