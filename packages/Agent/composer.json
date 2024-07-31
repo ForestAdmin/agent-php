@@ -23,9 +23,9 @@
         "symfony/dependency-injection": "^5.4|^6.0",
         "symfony/http-foundation": "^5.4|^6.0",
         "symfony/http-kernel": "^5.4|^6.0",
-        "forestadmin/php-datasource-customizer": "^1.0.0",
-        "forestadmin/php-datasource-toolkit": "^1.0.0",
-        "forestadmin/php-base-datasource": "^1.0.0",
+        "forestadmin/php-datasource-customizer": "^1.9.4",
+        "forestadmin/php-datasource-toolkit": "^1.9.4",
+        "forestadmin/php-base-datasource": "^1.9.4",
         "monolog/monolog": "^2.5|^3.0",
         "laravel/serializable-closure": "^1.3"
     },
