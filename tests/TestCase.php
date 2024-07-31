@@ -188,7 +188,7 @@ class TestCase extends BaseTestCase
             'comments',
             function (Blueprint $table) {
                 $table->id();
-                $table->morphs('commentable');
+                $table->nullableMorphs('commentable');
                 $table->text('body');
                 $table->timestamps();
             }
