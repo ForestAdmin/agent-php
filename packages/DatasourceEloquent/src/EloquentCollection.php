@@ -245,7 +245,19 @@ class EloquentCollection extends BaseCollection
         QueryConverter::of($this, $caller->getTimezone(), $filter)
             ->getQuery()
             ->get()
-            ->each(fn ($record) => $record->delete());
+            ->each(function ($record) {
+                $model = new ReflectionClass($record);
+                $relations = $this->getRelationships($model);
+                foreach ($relations as $name => $type) {
+                    if ($type === 'Illuminate\Database\Eloquent\Relations\MorphOne') {
+                        $this->nullablePolymorphicMorphOneRelationFields($record, $name);
+                    }
+                    if ($type === 'Illuminate\Database\Eloquent\Relations\MorphMany') {
+                        $this->nullablePolymorphicMorphManyRelationFields($record, $name);
+                    }
+                }
+                $record->delete();
+            });
     }
 
     /**
@@ -282,5 +294,41 @@ class EloquentCollection extends BaseCollection
     public function getModel(): Model
     {
         return $this->model;
+    }
+
+    private function nullablePolymorphicMorphOneRelationFields($record, string $relationName): void
+    {
+        try {
+            $relation = $record->$relationName();
+            $foreignKey = $relation->getForeignKeyName();
+            $morphType = $relation->getMorphType();
+
+            if ($record->$relationName !== null) {
+                $record->$relationName->fill([
+                    $foreignKey => null,
+                    $morphType  => null,
+                ])->save();
+            }
+        } catch (\Exception $e) {
+            // Do nothing
+        }
+    }
+
+    private function nullablePolymorphicMorphManyRelationFields($record, $relationName): void
+    {
+        $relation = $record->$relationName();
+        $foreignKey = $relation->getForeignKeyName();
+        $morphType = $relation->getMorphType();
+
+        try {
+            $record->$relationName->each(function ($r) use ($foreignKey, $morphType) {
+                $r->fill([
+                    $foreignKey => null,
+                    $morphType  => null,
+                ])->save();
+            });
+        } catch (\Exception $e) {
+            // Do nothing
+        }
     }
 }
