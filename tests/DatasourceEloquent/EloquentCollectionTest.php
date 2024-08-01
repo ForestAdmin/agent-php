@@ -25,7 +25,7 @@ beforeEach(closure: function () {
     global $eloquentDatasource;
     $this->buildAgent(new Datasource(), ['projectDir' => __DIR__]);
     $this->initDatabase();
-    $eloquentDatasource = new EloquentDatasource(TestCase::DB_CONFIG);
+    $eloquentDatasource = new EloquentDatasource(TestCase::DB_CONFIG, true);
 });
 
 describe('addRelationships()', function () {
