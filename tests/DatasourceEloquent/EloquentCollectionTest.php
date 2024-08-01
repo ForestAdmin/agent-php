@@ -21,14 +21,14 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToMany
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
-beforeEach(closure: function () {
-    global $eloquentDatasource;
-    $this->buildAgent(new Datasource(), ['projectDir' => __DIR__]);
-    $this->initDatabase();
-    $eloquentDatasource = new EloquentDatasource(TestCase::DB_CONFIG, true);
-});
-
 describe('addRelationships()', function () {
+    beforeEach(closure: function () {
+        global $eloquentDatasource;
+        $this->buildAgent(new Datasource(), ['projectDir' => __DIR__]);
+        $this->initDatabase();
+        $eloquentDatasource = new EloquentDatasource(TestCase::DB_CONFIG, true);
+    });
+
     test('should add OneToManySchema field when relation is a HasMany', function () {
         /** @var EloquentDatasource $eloquentDatasource */
         global $eloquentDatasource;
@@ -226,4 +226,31 @@ test('aggregate() should count the records in database', function () {
     expect($aggregateResult)->toBeArray()
         ->and($aggregateResult[0])->toBeArray()
         ->and($aggregateResult[0])->toHaveKeys(['value', 'group']);
+});
+
+describe('addRelationships() without support polymorphic Relations', function () {
+    beforeEach(closure: function () {
+        global $eloquentDatasource;
+        $this->buildAgent(new Datasource(), ['projectDir' => __DIR__]);
+        $this->initDatabase();
+        $eloquentDatasource = new EloquentDatasource(TestCase::DB_CONFIG, false);
+    });
+
+    test('should not add a PolymorphicOneToMany field when relation is a MorphMany', function () {
+        /** @var EloquentDatasource $eloquentDatasource */
+        global $eloquentDatasource;
+        /** @var EloquentCollection $collection */
+        $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book');
+
+        expect($collection->getFields())->not()->toHaveKey('comments');
+    });
+
+    test('should not add a PolymorphicManyToOne field when relation is a MorphTo', function () {
+        /** @var EloquentDatasource $eloquentDatasource */
+        global $eloquentDatasource;
+        /** @var EloquentCollection $collection */
+        $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Comment');
+
+        expect($collection->getFields())->not()->toHaveKey('commentable');
+    });
 });
