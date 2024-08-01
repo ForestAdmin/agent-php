@@ -10,7 +10,7 @@ class BaseDatasource extends ForestDatasource implements BaseDatasourceContract
 {
     protected Manager $orm;
 
-    public function __construct(array $databaseConfig, protected $supportPolymorphicRelations = false)
+    public function __construct(array $databaseConfig)
     {
         parent::__construct();
 

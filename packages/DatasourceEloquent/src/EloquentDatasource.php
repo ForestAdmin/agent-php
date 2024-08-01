@@ -21,9 +21,9 @@ class EloquentDatasource extends BaseDatasource
     /**
      * @throws \ReflectionException
      */
-    public function __construct(array $databaseConfig, $supportPolymorphicRelations = false)
+    public function __construct(array $databaseConfig, protected $supportPolymorphicRelations = false)
     {
-        parent::__construct($databaseConfig, $supportPolymorphicRelations);
+        parent::__construct($databaseConfig);
         $this->generate();
     }
 
