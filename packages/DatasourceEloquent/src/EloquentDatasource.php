@@ -21,9 +21,9 @@ class EloquentDatasource extends BaseDatasource
     /**
      * @throws \ReflectionException
      */
-    public function __construct(array $databaseConfig)
+    public function __construct(array $databaseConfig, $supportPolymorphicRelations = false)
     {
-        parent::__construct($databaseConfig);
+        parent::__construct($databaseConfig, $supportPolymorphicRelations);
         $this->generate();
     }
 
@@ -38,7 +38,7 @@ class EloquentDatasource extends BaseDatasource
 
         foreach ($this->models as $model) {
             try {
-                $this->addCollection(new EloquentCollection($this, new $model()));
+                $this->addCollection(new EloquentCollection($this, new $model(), $this->supportPolymorphicRelations));
             } catch (\Exception $e) {
                 // do nothing
             }

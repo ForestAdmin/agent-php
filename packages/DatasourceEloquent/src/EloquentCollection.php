@@ -36,7 +36,7 @@ class EloquentCollection extends BaseCollection
     /**
      * @throws \ReflectionException
      */
-    public function __construct(protected BaseDatasourceContract $datasource, public Model $model)
+    public function __construct(protected BaseDatasourceContract $datasource, public Model $model, protected $supportPolymorphicRelations = false)
     {
         $reflectionClass = new ReflectionClass($model);
         parent::__construct($datasource, CollectionUtils::fullNameToSnakeCase($reflectionClass->getName()), $model->getTable());
@@ -59,11 +59,16 @@ class EloquentCollection extends BaseCollection
                 BelongsToMany::class  => $this->addBelongsToManyRelation($name, $relation),
                 HasMany::class        => $this->addHasManyRelation($name, $relation),
                 HasOne::class         => $this->addHasOneRelation($name, $relation),
-                MorphMany::class      => $this->addPolymorphicOneToManyRelation($name, $relation),
-                MorphOne::class       => $this->addPolymorphicOneToOneRelation($name, $relation),
-                MorphTo::class        => $this->addPolymorphicManyToOneRelation($name, $relation),
                 default               => null
             };
+            if ($this->supportPolymorphicRelations) {
+                match(get_class($relation)) {
+                    MorphMany::class    => $this->addPolymorphicOneToManyRelation($name, $relation),
+                    MorphOne::class     => $this->addPolymorphicOneToOneRelation($name, $relation),
+                    MorphTo::class      => $this->addPolymorphicManyToOneRelation($name, $relation),
+                    default             => null
+                };
+            }
         }
     }
 
