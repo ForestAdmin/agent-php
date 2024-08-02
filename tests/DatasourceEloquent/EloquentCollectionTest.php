@@ -21,14 +21,14 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToMany
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
-describe('addRelationships()', function () {
-    beforeEach(closure: function () {
-        global $eloquentDatasource;
-        $this->buildAgent(new Datasource(), ['projectDir' => __DIR__]);
-        $this->initDatabase();
-        $eloquentDatasource = new EloquentDatasource(TestCase::DB_CONFIG, true);
-    });
+beforeEach(closure: function () {
+    global $eloquentDatasource;
+    $this->buildAgent(new Datasource(), ['projectDir' => __DIR__]);
+    $this->initDatabase();
+    $eloquentDatasource = new EloquentDatasource(TestCase::DB_CONFIG, true);
+});
 
+describe('addRelationships()', function () {
     test('should add OneToManySchema field when relation is a HasMany', function () {
         /** @var EloquentDatasource $eloquentDatasource */
         global $eloquentDatasource;

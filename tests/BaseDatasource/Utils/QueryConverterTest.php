@@ -1,6 +1,5 @@
 <?php
 
-
 use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseDatasource;
 use ForestAdmin\AgentPHP\BaseDatasource\Utils\QueryConverter;
