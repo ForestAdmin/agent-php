@@ -1,6 +1,5 @@
 <?php
 
-
 use ForestAdmin\AgentPHP\DatasourceEloquent\EloquentDatasource;
 use ForestAdmin\AgentPHP\DatasourceEloquent\Utils\QueryConverter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
@@ -25,7 +24,7 @@ beforeEach(function () {
     global $datasource, $bookCollection, $reviewCollection, $bookReviewCollection, $authorCollection, $commentCollection;
     $this->buildAgent(new Datasource(), ['projectDir' => str_replace('/Utils', '', __DIR__)]);
     $this->initDatabase();
-    $datasource = new EloquentDatasource(TestCase::DB_CONFIG);
+    $datasource = new EloquentDatasource(TestCase::DB_CONFIG, true);
 
     $bookCollection = $datasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book');
     $authorCollection = $datasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Author');
