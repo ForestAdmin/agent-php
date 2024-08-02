@@ -131,7 +131,7 @@ class EloquentCollection extends BaseCollection
 
     private function addPolymorphicManyToOneRelation(string $name, MorphTo $relation): void
     {
-        $foreignCollections = $this->getPolymorphicTypes($relation);
+        $foreignCollections = $this->getPolymorphicTypes();
 
         $relationSchema = new PolymorphicManyToOneSchema(
             foreignKeyTypeField: $relation->getMorphType(),
@@ -276,7 +276,7 @@ class EloquentCollection extends BaseCollection
     /**
      * @throws \ReflectionException
      */
-    private function getPolymorphicTypes(MorphTo $relation): array
+    private function getPolymorphicTypes(): array
     {
         $types = [];
 
