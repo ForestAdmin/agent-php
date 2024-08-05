@@ -9,6 +9,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
 
 describe('PublicationCollection', function () {
     beforeEach(function () {
@@ -69,12 +71,39 @@ describe('PublicationCollection', function () {
                     foreignCollection: 'Book',
                     throughCollection: 'BookPerson',
                 ),
+                'comments' => new PolymorphicOneToManySchema(
+                    originKey: 'commentableId',
+                    originKeyTarget: 'id',
+                    foreignCollection: 'Comment',
+                    originTypeField: 'commentableType',
+                    originTypeValue: 'Book',
+                ),
             ]
+        );
+
+        $collectionComment = new Collection($datasource, 'Comment');
+        $collectionComment->addFields(
+            [
+                'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'title'           => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+                'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'commentable'     => new PolymorphicManyToOneSchema(
+                    foreignKeyTypeField: 'commentableType',
+                    foreignKey: 'commentableId',
+                    foreignKeyTargets: [
+                        'Person'   => 'id',
+                    ],
+                    foreignCollections: [
+                        'Person',
+                    ],
+                ),]
         );
 
         $datasource->addCollection($collectionBook);
         $datasource->addCollection($collectionBookPerson);
         $datasource->addCollection($collectionPerson);
+        $datasource->addCollection($collectionComment);
         $this->buildAgent($datasource);
 
         $this->bucket['datasource'] = $datasource;
@@ -129,4 +158,14 @@ describe('PublicationCollection', function () {
             ->and($decoratedDataSource->getCollection('BookPerson')->getFields())->not()->toHaveKey('book')
             ->and($decoratedDataSource->getCollection('Person')->getFields())->not()->toHaveKey('book');
     });
+
+    test('removeCollection() on a collection that have a polymorphic relation should throw an error', function () {
+        $datasource = $this->bucket['datasource'];
+        $decoratedDataSource = new PublicationCollectionDatasourceDecorator($datasource);
+        $decoratedDataSource->build();
+
+        expect(fn () => $decoratedDataSource->removeCollection('Person'))
+            ->toThrow(ForestException::class, "🌳🌳🌳 Cannot remove Person because it's a potential target of polymorphic relation Comment.commentable");
+    });
+
 });

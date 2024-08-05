@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class PublicationCollectionDatasourceDecorator extends DatasourceDecorator
@@ -47,6 +48,7 @@ class PublicationCollectionDatasourceDecorator extends DatasourceDecorator
     public function removeCollection(string $collectionName): void
     {
         $this->validateCollectionNames([$collectionName]);
+        $this->validateIsRemovable($this->getCollection($collectionName));
 
         // Delete the collection
         $this->blackList[] = $collectionName;
@@ -67,6 +69,19 @@ class PublicationCollectionDatasourceDecorator extends DatasourceDecorator
     {
         foreach ($names as $name) {
             $this->getCollection($name);
+        }
+    }
+
+    private function validateIsRemovable(CollectionContract $collection): void
+    {
+        foreach ($collection->getFields() as $fieldName => $fieldSchema) {
+            if ($fieldSchema->getType() === 'PolymorphicOneToOne' || $fieldSchema->getType() === 'PolymorphicOneToMany') {
+                $inverse = CollectionUtils::getInverseRelation($collection, $fieldName);
+
+                throw new ForestException(
+                    "Cannot remove {$collection->getName()} because it's a potential target of polymorphic relation {$fieldSchema->getForeignCollection()}.$inverse"
+                );
+            }
         }
     }
 }
