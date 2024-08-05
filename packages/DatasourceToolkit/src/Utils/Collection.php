@@ -28,7 +28,7 @@ class Collection
         /** @var RelationSchema $relation */
         $relationField = $collection->getFields()->get($relationName);
         /** @var MainCollection $foreignCollection */
-        $foreignCollection = AgentFactory::get('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relationField->getForeignCollection());
+        $foreignCollection = $collection->getDataSource()->getCollections()->first(fn ($item) => $item->getName() === $relationField->getForeignCollection());
         $polyMorphicRelations = ['PolymorphicOneToOne', 'PolymorphicOneToMany'];
 
         if ($foreignCollection === null) {
