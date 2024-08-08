@@ -36,7 +36,11 @@ class EloquentDatasource extends BaseDatasource
         $finder = new ClassFinder(config('projectDir'));
         $this->models = $finder->getModelsInNamespace('App');
         foreach ($this->models as $model) {
-            $this->addCollection(new EloquentCollection($this, new $model()));
+            try {
+                $this->addCollection(new EloquentCollection($this, new $model()));
+            } catch (\Exception $e) {
+                // do nothing
+            }
         }
     }
 
