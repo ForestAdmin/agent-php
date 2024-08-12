@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/ForestAdmin/agent-php/compare/v1.9.5...v1.10.0) (2024-08-12)
+
+
+### Features
+
+* **onboard:** laravel 11 compatibily ([#108](https://github.com/ForestAdmin/agent-php/issues/108)) ([27ce6d7](https://github.com/ForestAdmin/agent-php/commit/27ce6d7f9113aa6764660fe4080e49c1ef8934a1))
+
 ## [1.9.5](https://github.com/ForestAdmin/agent-php/compare/v1.9.4...v1.9.5) (2024-07-31)
 
 
