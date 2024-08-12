@@ -54,7 +54,7 @@ class BaseDatasource extends ForestDatasource implements BaseDatasourceContract
         $this->orm->bootEloquent();
     }
 
-    private function makeDoctrineConnection(array &$databaseConfig): void
+    private function makeDoctrineConnection(array $databaseConfig): void
     {
         if (! isset(self::DRIVERS[$databaseConfig['driver']])) {
             throw new ForestException("The given driver '{$databaseConfig['driver']}' is unknown, " .
