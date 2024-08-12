@@ -33,7 +33,7 @@ class BaseCollection extends ForestCollection implements BaseCollectionContract
     protected function fetchFieldsFromTable(): array
     {
         /** @var Table $rawFields */
-        $table = $this->datasource->getOrm()->getDatabaseManager()->getDoctrineSchemaManager()->introspectTable($this->tableName);
+        $table = $this->datasource->getDoctrineConnection()->createSchemaManager()->introspectTable($this->tableName);
         $primaries = [];
 
         foreach ($table->getIndexes() as $index) {

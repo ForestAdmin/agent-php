@@ -23,7 +23,6 @@ beforeEach(closure: function () {
     $baseCollection = new BaseCollection($baseDatasource, 'Book', 'books');
 });
 
-
 test('fetchFieldsFromTable() should fetch all fields from table', function () {
     /** @var BaseCollection $baseCollection */
     global $baseCollection;
