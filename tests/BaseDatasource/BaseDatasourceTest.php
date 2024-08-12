@@ -3,6 +3,7 @@
 use Doctrine\DBAL\Connection;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseDatasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 use Illuminate\Database\Capsule\Manager;
 
@@ -25,4 +26,11 @@ test('makeDoctrineConnection() should return a Connection object', function () {
     $connection = $baseDatasource->getDoctrineConnection();
 
     expect($connection)->toBeInstanceOf(Connection::class);
+});
+
+test('makeDotrineConnection() should throw an exception if the driver is unknown', function () {
+    expect(
+        static fn () => new BaseDatasource(['driver' => 'fake-driver', 'database' => 'database.sqlite'])
+    )->toThrow(ForestException::class, "🌳🌳🌳 The given driver 'fake-driver' is unknown, only the following drivers are supported: pgsql, mariadb, mysql, sqlite, sqlsrv");
+
 });
