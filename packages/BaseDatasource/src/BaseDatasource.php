@@ -23,7 +23,7 @@ class BaseDatasource extends ForestDatasource implements BaseDatasourceContract
         'sqlsrv'  => 'pdo_sqlsrv',
     ];
 
-    public function __construct(array $databaseConfig, protected $supportPolymorphicRelations = false)
+    public function __construct(array $databaseConfig)
     {
         parent::__construct();
 
