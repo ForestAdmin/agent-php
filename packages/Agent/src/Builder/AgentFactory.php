@@ -3,12 +3,9 @@
 namespace ForestAdmin\AgentPHP\Agent\Builder;
 
 use Closure;
-use DI\Container;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Facades\Logger;
-use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Services\LoggerServices;
-use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
@@ -28,15 +25,14 @@ class AgentFactory
 
     protected bool $hasEnvSecret;
 
-    protected static Container $container;
-
     public function __construct(protected array $config)
     {
         $this->hasEnvSecret = isset($config['envSecret']);
         $this->customizer = new DatasourceCustomizer();
-        $this->buildContainer();
         $this->buildCache();
         $this->buildLogger();
+        Logger::log('Info', 'AF construct');
+
     }
 
     public function createAgent(array $config): self
@@ -80,9 +76,11 @@ class AgentFactory
 
     public function build(): void
     {
-        self::$container->set('datasource', $this->customizer->getDatasource());
-
-        self::sendSchema();
+        if (! Cache::has('datasource')) {
+            Cache::put('datasource', new SerializableClosure(fn () => $this->customizer->getDatasource()));
+            Logger::log('Info', 'AF build');
+            self::sendSchema();
+        }
     }
 
     /**
@@ -108,15 +106,16 @@ class AgentFactory
         return $this;
     }
 
-    public static function getContainer(): ?Container
-    {
-        return self::$container ?? null;
-    }
-
     public static function get(string $key)
     {
-        if (self::$container->has($key)) {
-            return self::$container->get($key);
+        if (Cache::has($key)) {
+            if($key === 'datasource') {
+                $closure = Cache::get($key);
+
+                return $closure();
+            }
+
+            return Cache::get($key);
         }
 
         return null;
@@ -146,19 +145,10 @@ class AgentFactory
         }
     }
 
-    private function buildContainer(): void
-    {
-        self::$container = new Container();
-    }
-
     private function buildCache(): void
     {
-        $filesystem = new Filesystem();
-        $directory = $this->config['cacheDir'];
-        self::$container->set('cache', new CacheServices($filesystem, $directory));
-
         if ($this->hasEnvSecret) {
-            self::$container->get('cache')->add('config', $this->config, self::TTL_CONFIG);
+            Cache::add('config', $this->config, self::TTL_CONFIG);
         }
     }
 
@@ -169,6 +159,6 @@ class AgentFactory
             logger: $this->config['logger'] ?? null
         );
 
-        self::$container->set('logger', $logger);
+        Cache::put('logger', $logger);
     }
 }

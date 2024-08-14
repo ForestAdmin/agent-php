@@ -3,7 +3,6 @@
 namespace ForestAdmin\AgentPHP\Agent\Facades;
 
 use Closure;
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 
 /**
@@ -11,6 +10,7 @@ use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
  *
  * @method static get($key)
  * @method static put($key, $value, $seconds)
+ * @method static add($key, $value, $seconds)
  * @method static remember($key, Closure $callback, $seconds)
  * @method static bool forget($key)
  *
@@ -20,7 +20,7 @@ class Cache extends Facade
 {
     public static function getFacadeObject()
     {
-        $container = AgentFactory::getContainer();
+        return new CacheServices();
 
         return $container->get('cache');
     }
