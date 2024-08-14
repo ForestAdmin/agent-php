@@ -29,16 +29,17 @@ class Collection
         $relationField = $collection->getFields()->get($relationName);
         /** @var MainCollection $foreignCollection */
         $foreignCollection = $collection->getDataSource()->getCollections()->first(fn ($item) => $item->getName() === $relationField->getForeignCollection());
+
         $polyMorphicRelations = ['PolymorphicOneToOne', 'PolymorphicOneToMany'];
 
         if ($foreignCollection === null) {
             return null;
         }
+
         $inverse = $foreignCollection->getFields();
         $inverse = $inverse
             ->filter(fn ($field) => is_a($field, RelationSchema::class))
             ->filter(function ($field) use ($relationField, $polyMorphicRelations, $collection) {
-
                 if (in_array($relationField->getType(), $polyMorphicRelations, true)) {
                     return is_a($field, PolymorphicManyToOneSchema::class) && in_array($collection->getName(), $field->getForeignCollectionNames(), true);
                 } else {

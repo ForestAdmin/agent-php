@@ -19,7 +19,7 @@ class RenameCollectionDecorator extends CollectionDecorator
         $fields = collect();
 
         foreach ($childSchema as $fieldName => $schema) {
-            if ($schema instanceof RelationSchema) {
+            if ($schema instanceof RelationSchema && $schema->getType() !== 'PolymorphicManyToOne') {
                 $schema->setForeignCollection($this->dataSource->getCollectionName($schema->getForeignCollection()));
                 if ($schema instanceof ManyToManySchema) {
                     $schema->setThroughCollection($this->dataSource->getCollectionName($schema->getThroughCollection()));
