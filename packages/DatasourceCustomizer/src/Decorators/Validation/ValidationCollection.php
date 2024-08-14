@@ -61,6 +61,11 @@ class ValidationCollection extends CollectionDecorator
         return $childSchema;
     }
 
+    public function getValidation(): array
+    {
+        return $this->validation;
+    }
+
     private function validate(array $record, string $timezone, bool $allFields): void
     {
         foreach ($this->validation as $name => $rules) {

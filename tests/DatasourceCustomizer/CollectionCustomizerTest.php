@@ -677,4 +677,20 @@ describe('CollectionCustomizer', function () {
             ->and(call_user_func($beforeHooks[0]))
             ->toEqual('before hook');
     });
+
+    test('addFieldValidation() should add a validation rule', function () use ($before) {
+        $before($this);
+        /**
+         * @var DatasourceCustomizer $datasourceCustomizer
+         * @var CollectionCustomizer $customizer
+         */
+        [$customizer, $datasourceCustomizer] = $this->bucket;
+        $customizer->addFieldValidation('title', Operators::LONGER_THAN, 5);
+        $datasourceCustomizer->getDatasource();
+        /** @var HookCollection $computedCollection */
+        $validationCollection = $datasourceCustomizer->getStack()->validation->getCollection('Book');
+
+        expect($validationCollection->getValidation())->toHaveKey('title')
+            ->and($validationCollection->getValidation()['title'])->toEqual([['operator' => Operators::LONGER_THAN, 'value' => 5]]);
+    });
 });
