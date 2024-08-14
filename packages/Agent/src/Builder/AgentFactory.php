@@ -25,14 +25,14 @@ class AgentFactory
 
     protected bool $hasEnvSecret;
 
+    protected static $datasource;
+
     public function __construct(protected array $config)
     {
         $this->hasEnvSecret = isset($config['envSecret']);
         $this->customizer = new DatasourceCustomizer();
         $this->buildCache();
         $this->buildLogger();
-        Logger::log('Info', 'AF construct');
-
     }
 
     public function createAgent(array $config): self
@@ -108,17 +108,22 @@ class AgentFactory
 
     public static function get(string $key)
     {
-        if (Cache::has($key)) {
-            if($key === 'datasource') {
-                $closure = Cache::get($key);
-
-                return $closure();
-            }
-
-            return Cache::get($key);
+        if ($key === 'datasource') {
+            return self::getDatasource();
         }
 
-        return null;
+        return Cache::get($key);
+    }
+
+    public static function getDatasource()
+    {
+        if (Cache::has('datasource')) {
+            $closure = Cache::get('datasource');
+
+            return $closure();
+        }
+
+        return self::$datasource;
     }
 
     /**
