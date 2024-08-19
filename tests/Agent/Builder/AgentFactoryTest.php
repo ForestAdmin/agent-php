@@ -30,7 +30,7 @@ test('addDatasource() should add datasource to the datasourceCustomizer', functi
         ->toEqual('User');
 });
 
-test('build() should add datasource to the container', function () {
+test('build() should add datasource into the cache', function () {
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
     $collectionUser->addFields(
@@ -51,7 +51,6 @@ test('build() should add datasource to the container', function () {
     $mockAgent->build();
 
     $expected = new DecoratorsStack($datasource);
-    $expected->build();
 
     expect(AgentFactory::get('datasource')->getCollections()->first())
         ->toEqual($expected->dataSource->getCollections()->first());
