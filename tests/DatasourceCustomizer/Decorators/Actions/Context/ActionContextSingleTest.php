@@ -39,7 +39,6 @@ describe('action context single', function () {
         $this->buildAgent($datasource);
 
         $datasourceDecorator = new DatasourceDecorator($datasource, ActionCollection::class);
-        $datasourceDecorator->build();
 
         /** @var ActionCollection $computedCollection */
         $this->bucket['actionCollection'] = $datasourceDecorator->getCollection('Book');

@@ -53,7 +53,6 @@ describe('ValidationCollection', function () {
         $this->buildAgent($datasource);
 
         $datasourceDecorator = new DatasourceDecorator($datasource, ValidationCollection::class);
-        $datasourceDecorator->build();
 
         /** @var ValidationCollection $newBooks */
         $newBooks = $datasourceDecorator->getCollection('Book');

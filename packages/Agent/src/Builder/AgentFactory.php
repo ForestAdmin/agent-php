@@ -43,7 +43,7 @@ class AgentFactory
             $serializableConfig = $this->config;
 
             if (isset($this->config['customizeErrorMessage']) && is_callable($this->config['customizeErrorMessage']) && ! is_string($this->config['customizeErrorMessage'])) {
-                self::$container->set('customizeErrorMessage', new SerializableClosure($this->config['customizeErrorMessage']));
+                Cache::put('customizeErrorMessage', new SerializableClosure($this->config['customizeErrorMessage']));
             }
 
             unset($serializableConfig['logger'], $serializableConfig['customizeErrorMessage']);

@@ -29,7 +29,6 @@ describe('RelaxedCollection', function () {
         $this->buildAgent($datasource);
 
         $datasourceDecorator = new DatasourceDecorator($datasource, ComputedCollection::class);
-        $datasourceDecorator->build();
 
         $this->bucket['bookCollection'] = $datasourceDecorator->getCollection('Book');
     });

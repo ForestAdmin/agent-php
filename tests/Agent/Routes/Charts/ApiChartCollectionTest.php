@@ -1,6 +1,7 @@
 <?php
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\ApiChartCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\CollectionCustomizer;
@@ -18,9 +19,9 @@ beforeEach(function () {
     $this->buildAgent(new Datasource());
     $this->agent->addDatasource($datasource);
 
-    $config = AgentFactory::getContainer()->get('cache')->get('config');
+    $config = Cache::get('config');
     unset($config['envSecret']);
-    AgentFactory::getContainer()->get('cache')->put('config', $config, 3600);
+    Cache::put('config', $config, 3600);
 
     $this->agent->customizeCollection(
         'Book',

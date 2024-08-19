@@ -3,11 +3,13 @@
 namespace ForestAdmin\AgentPHP\Agent\Services;
 
 use Closure;
+use ForestAdmin\AgentPHP\Agent\Contracts\Cache;
+use Illuminate\Support\Str;
 
 /**
  * @codeCoverageIgnore
  */
-class CacheServices
+class CacheServices implements Cache
 {
     public function __construct(protected string $prefix = 'forest_cache')
     {
@@ -38,7 +40,7 @@ class CacheServices
      *
      * @param  string $key
      * @param  mixed  $value
-     * @param int     $seconds
+     * @param  int    $seconds
      * @return bool
      */
     public function put($key, $value, int $seconds = 0)
@@ -89,7 +91,11 @@ class CacheServices
      */
     public function flush()
     {
-        // TODO
+        foreach (apcu_cache_info()['cache_list'] as $value) {
+            if(Str::startsWith($value['info'], $this->prefix)) {
+                $this->forget($value['info']);
+            }
+        }
     }
 
     private function formatKey($key): string

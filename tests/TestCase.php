@@ -4,6 +4,7 @@ namespace ForestAdmin\AgentPHP\Tests;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
+use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Connection;
@@ -23,6 +24,13 @@ class TestCase extends BaseTestCase
 
     public array $bucket = [];
 
+    public function __construct(string $name)
+    {
+        @class_alias(CacheMocked::class, CacheServices::class);
+
+        parent::__construct($name);
+    }
+
     public function buildAgent(Datasource $datasource, array $options = [])
     {
         $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
@@ -33,7 +41,8 @@ class TestCase extends BaseTestCase
             $options
         );
 
-        $this->agent = new AgentFactory($options, []);
+        $this->agent = new AgentFactory($options);
+        $datasource = clone $datasource;
         $this->invokeProperty($this->agent, 'datasource', $datasource);
 
         Cache::put('forest.has_permission', true, 10);

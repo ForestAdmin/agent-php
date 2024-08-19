@@ -1,6 +1,6 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Router;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Count;
@@ -30,9 +30,9 @@ test('getRoutes() should work', function () {
     $this->buildAgent(new Datasource());
     $this->agent->addDatasource($datasource);
 
-    $config = AgentFactory::getContainer()->get('cache')->get('config');
+    $config = Cache::get('config');
     unset($config['envSecret']);
-    AgentFactory::getContainer()->get('cache')->put('config', $config, 3600);
+    Cache::put('config', $config, 3600);
 
     $this->agent->addChart('myChart', fn () => true);
     $this->agent->customizeCollection(

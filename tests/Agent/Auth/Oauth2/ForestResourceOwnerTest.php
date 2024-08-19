@@ -75,7 +75,7 @@ test('expirationInSeconds() should return a timestamp', function () {
 test('makeJwt() should return a JWT token', function () {
     /** @var ForestResourceOwner $forestResourceOwner */
     $forestResourceOwner = $this->bucket['forestResourceOwner'];
-    (new AgentFactory(AGENT_OPTIONS, []));
+    (new AgentFactory(AGENT_OPTIONS));
     $result = JWT::decode($forestResourceOwner->makeJwt(), new Key(AUTH_SECRET, 'HS256'));
 
     expect($result->id)->toEqual(1);

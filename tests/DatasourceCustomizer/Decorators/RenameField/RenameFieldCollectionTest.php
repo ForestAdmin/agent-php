@@ -93,7 +93,6 @@ describe('RenameFieldCollection', function () {
         $this->buildAgent($datasource);
 
         $datasourceDecorator = new DatasourceDecorator($datasource, RenameFieldCollection::class);
-        $datasourceDecorator->build();
 
         $this->bucket = compact('datasource', 'datasourceDecorator', 'collectionBook');
     });

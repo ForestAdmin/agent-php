@@ -23,7 +23,6 @@ describe('Base Action', function () {
         $testCase->buildAgent($datasource);
 
         $datasourceDecorator = new DatasourceDecorator($datasource, ActionCollection::class);
-        $datasourceDecorator->build();
 
         $baseAction = new BaseAction(
             scope: ActionScope::SINGLE,

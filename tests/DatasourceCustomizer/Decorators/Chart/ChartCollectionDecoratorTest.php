@@ -26,7 +26,6 @@ describe('ChartCollection', function () {
         $this->buildAgent($datasource);
 
         $datasourceDecorator = new ChartDataSourceDecorator($datasource);
-        $datasourceDecorator->build();
 
         $this->bucket = [$collectionBook, $datasourceDecorator->getCollection('Book')];
     });

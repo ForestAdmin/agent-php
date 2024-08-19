@@ -25,7 +25,6 @@ describe('WriteBasicCollection', function () {
         $this->buildAgent($datasource);
 
         $datasourceDecorator = new WriteDataSourceDecorator($datasource);
-        $datasourceDecorator->build();
 
         $newBooks = $datasourceDecorator->getCollection('Book');
 
