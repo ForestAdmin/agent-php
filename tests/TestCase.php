@@ -2,10 +2,12 @@
 
 namespace ForestAdmin\AgentPHP\Tests;
 
+use Doctrine\DBAL\DriverManager;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
@@ -228,5 +230,13 @@ class TestCase extends BaseTestCase
     public function getConnection(): Connection
     {
         return $this->connection;
+    }
+
+    public function getDoctrineConnection()
+    {
+        $config['driver'] = 'pdo_sqlite';
+        $config['path'] = self::DB_CONFIG['database'];
+
+        return DriverManager::getConnection($config);
     }
 }
