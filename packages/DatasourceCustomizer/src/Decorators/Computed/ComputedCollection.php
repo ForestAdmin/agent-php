@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed;
 
+use ForestAdmin\AgentPHP\Agent\Facades\Logger;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\Utils\ComputeField;
@@ -28,6 +29,9 @@ class ComputedCollection extends CollectionDecorator
         } else {
             $schema = $this->getFields()->get(Str::before($path, ':'));
             if ($schema->getType() === 'PolymorphicManyToOne') {
+                $field = Str::before($path, ':');
+                Logger::log('Debug', "Cannot compute field over polymorphic relation {$this->getName()}.{$field}.");
+
                 return $this->computeds[$path] ?? null;
             }
 
