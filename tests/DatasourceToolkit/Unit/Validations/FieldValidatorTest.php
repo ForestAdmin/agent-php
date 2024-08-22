@@ -67,17 +67,17 @@ describe('validate()', function () {
         expect(FieldValidator::validate($collection, 'owner'));
     })->throws(ForestException::class, '🌳🌳🌳 Unexpected field type: cars.owner (found OneToOne expected \'Column\')');
 
-    test('should validate fields on other collections', function () use ($before) {
+    test('should throw when the suffix is different of "Asterisk character"', function () use ($before) {
         $before($this);
         $collection = $this->bucket['collection'];
         expect(FieldValidator::validate($collection, 'owner:name'));
-    })->expectNotToPerformAssertions();
+    })->throws(ForestException::class, '🌳🌳🌳 Unexpected nested field name under generic relation: cars.owner');
 
     test('should throw when the requested field is of type column', function () use ($before) {
         $before($this);
         $collection = $this->bucket['collection'];
         expect(FieldValidator::validate($collection, 'id:address'));
-    })->throws(ForestException::class, '🌳🌳🌳 Unexpected field type: cars.id (found Column expected \'ManyToOne\' or \'OneToOne\' or \'PolymorphicManyToOne\')');
+    })->throws(ForestException::class, '🌳🌳🌳 Unexpected nested field address under generic relation: cars.id');
 
     test('should validate field when the value is an array', function () use ($before) {
         $before($this);
