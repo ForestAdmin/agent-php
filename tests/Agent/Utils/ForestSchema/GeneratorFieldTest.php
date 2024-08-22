@@ -146,13 +146,13 @@ test('buildSchema() should generate relation One to One', function () {
             'inverseOf'    => 'author',
             'isFilterable' => false,
             'isPrimaryKey' => false,
-            'isReadOnly'   => false,
+            'isReadOnly'   => true,
             'isRequired'   => false,
             'isSortable'   => true,
             'isVirtual'    => false,
             'reference'    => 'Book.id',
             'relationship' => 'HasOne',
-            'type'         => 'Number',
+            'type'         => 'String',
             'validations'  => [],
         ]
     );
