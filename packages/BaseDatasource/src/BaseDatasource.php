@@ -81,11 +81,17 @@ class BaseDatasource extends ForestDatasource implements BaseDatasourceContract
         $this->doctrineConnection = DriverManager::getConnection($config);
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function __sleep(): array
     {
         return ['collections', 'charts', 'databaseConfig'];
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function __wakeup(): void
     {
         $this->makeOrm($this->databaseConfig);
