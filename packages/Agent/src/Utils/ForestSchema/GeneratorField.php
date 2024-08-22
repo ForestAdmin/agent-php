@@ -161,22 +161,19 @@ class GeneratorField
     public static function buildOneToOneSchema(OneToOneSchema|PolymorphicOneToOneSchema $relation, CollectionContract $collection, CollectionContract $foreignCollection, array $baseSchema): array
     {
         $key = $relation->getOriginKeyTarget();
-        /** @var ColumnSchema $column */
-        $column = $collection->getFields()->get($relation->getOriginKeyTarget());
-        if ($column === null) {
-            // inverse OneToOne case
-            $column = $collection->getFields()->get($relation->getOriginKey());
-        }
+        $targetField = $collection->getFields()->get($relation->getOriginKeyTarget());
+        $keyField = $foreignCollection->getFields()->get($relation->getOriginKey());
 
         return array_merge(
             $baseSchema,
             [
-                'type'         => $column->getColumnType(),
+                'type'         => $keyField->getColumnType(),
                 'defaultValue' => null,
                 'isFilterable' => self::isForeignCollectionFilterable($foreignCollection),
                 'isPrimaryKey' => false,
                 'isRequired'   => false,
-                'isSortable'   => $column->isSortable(),
+                'isReadOnly'   => $keyField->isReadOnly(),
+                'isSortable'   => $targetField->isSortable(),
                 'validations'  => [],
                 'reference'    => $foreignCollection->getName() . '.' . $key,
             ],
