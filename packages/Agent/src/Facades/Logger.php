@@ -15,6 +15,8 @@ class Logger extends Facade
 {
     public static function getFacadeObject()
     {
-        return Cache::get('logger');
+        $serializableLogger = Cache::get('logger');
+
+        return $serializableLogger();
     }
 }

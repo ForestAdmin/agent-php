@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\Agent\Auth\OAuth2\ForestResourceOwner;
 use ForestAdmin\AgentPHP\Agent\Auth\OidcClientManager;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use League\OAuth2\Client\Token\AccessToken;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -71,6 +72,7 @@ test('verifyCodeAndGenerateToken() should return the token', function () {
         'isProduction' => false,
         'debug'        => false,
     ];
+    $this->buildAgent(new Datasource(), $options);
     new AgentFactory($options, []);
 
     $return = '123ABC';

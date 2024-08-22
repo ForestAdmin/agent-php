@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 /**
  * @codeCoverageIgnore
  */
-class CacheServices implements Cache
+class ApcuCacheServices implements Cache
 {
     public function __construct(protected string $prefix = 'forest_cache')
     {
@@ -40,10 +40,10 @@ class CacheServices implements Cache
      *
      * @param  string $key
      * @param  mixed  $value
-     * @param  int    $seconds
+     * @param  int|null    $seconds
      * @return bool
      */
-    public function put($key, $value, int $seconds = 0)
+    public function put($key, $value, ?int $seconds = 0)
     {
         return apcu_store($this->formatKey($key), $value, $seconds);
     }

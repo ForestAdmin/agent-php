@@ -6,6 +6,7 @@ use Closure;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Facades\Logger;
 use ForestAdmin\AgentPHP\Agent\Services\LoggerServices;
+use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
@@ -26,6 +27,8 @@ class AgentFactory
     protected bool $hasEnvSecret;
 
     protected static $datasource;
+
+    protected static ?array $fileCacheOptions;
 
     public function __construct(protected array $config)
     {
@@ -115,6 +118,11 @@ class AgentFactory
         return Cache::get($key);
     }
 
+    public static function getFileCacheOptions(): ?array
+    {
+        return self::$fileCacheOptions ?? null;
+    }
+
     public static function getDatasource()
     {
         if (Cache::has('datasource')) {
@@ -153,6 +161,13 @@ class AgentFactory
     private function buildCache(): void
     {
         if ($this->hasEnvSecret) {
+            if(! Cache::apcuEnabled()) {
+                $filesystem = new Filesystem();
+                $directory = $this->config['cacheDir'];
+                $disabledApcuCache = $this->config['disabledApcuCache'] ?? false;
+                self::$fileCacheOptions = compact('filesystem', 'directory', 'disabledApcuCache');
+            }
+
             Cache::add('config', $this->config, self::TTL_CONFIG);
         }
     }
@@ -164,6 +179,6 @@ class AgentFactory
             logger: $this->config['logger'] ?? null
         );
 
-        Cache::put('logger', $logger);
+        Cache::put('logger', new SerializableClosure(fn () => $logger));
     }
 }

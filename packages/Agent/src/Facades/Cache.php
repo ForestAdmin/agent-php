@@ -3,7 +3,9 @@
 namespace ForestAdmin\AgentPHP\Agent\Facades;
 
 use Closure;
-use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
+use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Services\ApcuCacheServices;
+use ForestAdmin\AgentPHP\Agent\Services\FileCacheServices;
 
 /**
  * Class Cache
@@ -14,14 +16,31 @@ use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
  * @method static remember($key, Closure $callback, $seconds)
  * @method static bool forget($key)
  *
- * @see CacheServices
+ * @see ApcuCacheServices
  */
 class Cache extends Facade
 {
     public static function getFacadeObject()
     {
-        return new CacheServices();
+        if (self::apcuEnabled()) {
+            return new ApcuCacheServices();
+        }
 
-        return $container->get('cache');
+        $cacheOptions = AgentFactory::getFileCacheOptions();
+
+        return new FileCacheServices($cacheOptions['filesystem'], $cacheOptions['directory']);
+    }
+
+    public static function apcuEnabled(): bool
+    {
+        $cacheOptions = AgentFactory::getFileCacheOptions();
+
+        return (extension_loaded('apcu') && ini_get('apcu.enabled'))
+            && $cacheOptions['disabledApcuCache'] ?? false;
+    }
+
+    public static function enabled(): bool
+    {
+        return self::apcuEnabled() || AgentFactory::getFileCacheOptions() !== null;
     }
 }

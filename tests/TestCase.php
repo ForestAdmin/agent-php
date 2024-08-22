@@ -5,9 +5,8 @@ namespace ForestAdmin\AgentPHP\Tests;
 use Doctrine\DBAL\DriverManager;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
-use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
+use ForestAdmin\AgentPHP\Agent\Services\FileCacheServices;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
@@ -28,7 +27,7 @@ class TestCase extends BaseTestCase
 
     public function __construct(string $name)
     {
-        @class_alias(CacheMocked::class, CacheServices::class);
+        @class_alias(CacheMocked::class, FileCacheServices::class);
 
         parent::__construct($name);
     }
