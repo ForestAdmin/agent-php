@@ -80,7 +80,7 @@ class SearchCollection extends CollectionDecorator
                 $fields->put($name, $field);
             }
 
-            if ($field instanceof PolymorphicManyToOneSchema) {
+            if ($field instanceof PolymorphicManyToOneSchema && $searchExtended) {
                 Logger::log(
                     'Debug',
                     "We're not searching through {$this->getName()}.{$name} because it's a polymorphic relation. " .
