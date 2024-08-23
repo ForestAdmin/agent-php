@@ -260,27 +260,9 @@ class FileCacheServices implements Cache
         return $seconds === 0 || $time > 9999999999 ? 9999999999 : $time;
     }
 
-    public function getFilesystem()
-    {
-        return $this->files;
-    }
-
-    public function getDirectory()
-    {
-        return $this->directory;
-    }
-
     public function getPrefix()
     {
         return '';
-    }
-
-    public function many(array $keys)
-    {
-    }
-
-    public function putMany(array $values, $seconds)
-    {
     }
 
     /**
