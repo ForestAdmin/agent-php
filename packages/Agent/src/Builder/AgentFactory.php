@@ -81,7 +81,6 @@ class AgentFactory
     {
         if (! Cache::has('datasource')) {
             Cache::put('datasource', new SerializableClosure(fn () => $this->customizer->getDatasource()));
-            Logger::log('Info', 'AF build');
             self::sendSchema();
         }
     }
