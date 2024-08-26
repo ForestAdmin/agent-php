@@ -10,18 +10,20 @@ class Flattener
 
     public static function withNullMarker(Projection $projection): Projection
     {
-        $newProjection = new Projection($projection->toArray());
+        $paths = $projection->toArray();
 
-        foreach ($projection as $path) {
+        foreach ($paths as $path) {
             $parts = explode(':', $path);
             $partsCount = count($parts);
 
             for ($i = 1; $i < $partsCount; $i++) {
-                $newProjection->push(implode(':', array_slice($parts, 0, $i)) . ':' . self::MARKER_NAME);
+                $paths[] = implode(':', array_slice($parts, 0, $i)) . ':' . self::MARKER_NAME;
             }
         }
 
-        return $newProjection->unique();
+        $unique = collect($paths)->unique();
+
+        return new Projection($unique->values()->all());
     }
 
     public static function flatten(array $records, Projection $projection): array
@@ -55,26 +57,31 @@ class Flattener
         $numRecords = count($flatten[0] ?? []);
         $records = array_fill(0, $numRecords, []);
 
-        foreach ($projection as $index => $path) {
-            $parts = array_filter(explode(':', $path), function ($part) {
-                return ! in_array($part, [self::MARKER_NAME, '*']);
-            });
+        for ($recordIndex = 0; $recordIndex < $numRecords; $recordIndex++) {
+            $records[$recordIndex] = [];
 
-            foreach ($flatten[$index] as $recordIndex => $value) {
+            foreach ($projection as $pathIndex => $path) {
+                $parts = array_filter(explode(':', $path), function ($part) {
+                    return ! in_array($part, [self::MARKER_NAME, '*']);
+                });
+                $value = $flatten[$pathIndex][$recordIndex];
+
+                // Ignore undefined values.
                 if ($value instanceof Undefined) {
                     continue;
                 }
 
+                // Set all others (including null)
                 $record = &$records[$recordIndex];
+
                 foreach ($parts as $partIndex => $part) {
                     if ($partIndex === count($parts) - 1) {
                         $record[$part] = $value;
-                    } else {
-                        if (! isset($record[$part]) || ! is_array($record[$part])) {
-                            $record[$part] = [];
-                        }
-                        $record = &$record[$part];
+                    } elseif (! array_key_exists($part, $record)) {
+                        $record[$part] = [];
                     }
+
+                    $record = &$record[$part];
                 }
             }
         }
