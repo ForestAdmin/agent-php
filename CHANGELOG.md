@@ -1,3 +1,10 @@
+## [1.10.1](https://github.com/ForestAdmin/agent-php/compare/v1.10.0...v1.10.1) (2024-08-28)
+
+
+### Bug Fixes
+
+* **datasource:** add missing port attribute ([#111](https://github.com/ForestAdmin/agent-php/issues/111)) ([c49ff7e](https://github.com/ForestAdmin/agent-php/commit/c49ff7e99bd3bbb5207261c8edf40303a49badd0))
+
 # [1.10.0](https://github.com/ForestAdmin/agent-php/compare/v1.9.5...v1.10.0) (2024-08-12)
 
 
