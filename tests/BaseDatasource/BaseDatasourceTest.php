@@ -32,5 +32,28 @@ test('makeDoctrineConnection() should throw an exception if the driver is unknow
     expect(
         static fn () => new BaseDatasource(['driver' => 'fake-driver', 'database' => 'database.sqlite'])
     )->toThrow(ForestException::class, "🌳🌳🌳 The given driver 'fake-driver' is unknown, only the following drivers are supported: pgsql, mariadb, mysql, sqlite, sqlsrv");
+});
 
+test('makeDoctrineConnection() should sent the correct configuration to doctrineConnection', function () {
+    global $baseDatasource;
+    $databaseConfig = [
+        'driver'   => 'pgsql',
+        'host'     => 'localhost',
+        'database' => 'test',
+        'port'     => '5432',
+        'username' => 'pguser',
+        'password' => 'pgpass',
+    ];
+    $baseDatasource = new BaseDatasource($databaseConfig);
+    $connection = $baseDatasource->getDoctrineConnection();
+
+    expect($connection->getParams())->toBe([
+        'user'      => $databaseConfig['username'],
+        'password'  => $databaseConfig['password'],
+        'host'      => $databaseConfig['host'],
+        'dbname'    => $databaseConfig['database'],
+        'port'      => $databaseConfig['port'],
+        'driver'    => 'pdo_pgsql',
+        'url'       => null,
+    ]);
 });

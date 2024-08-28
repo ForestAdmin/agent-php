@@ -71,6 +71,7 @@ class BaseDatasource extends ForestDatasource implements BaseDatasourceContract
                 'password'  => $databaseConfig['password'],
                 'host'      => $databaseConfig['host'],
                 'dbname'    => $databaseConfig['database'],
+                'port'      => $databaseConfig['port'],
             ];
         }
 
