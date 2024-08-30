@@ -91,7 +91,7 @@ class WriteReplaceCollection extends CollectionDecorator
             unset($fieldPatch[$key]);
             $newPatch = $this->rewritePatch($context->getCaller(), $context->getAction(), $fieldPatch, $used);
 
-            return $value !== null ? $this->deepMerge([$key => $value], $newPatch) : $newPatch;
+            return array_key_exists($key, $context->getRecord()) ? $this->deepMerge([$key => $value], $newPatch) : $newPatch;
         }
 
         // Handle relation fields.
