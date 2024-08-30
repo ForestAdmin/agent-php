@@ -1,3 +1,10 @@
+## [1.10.2](https://github.com/ForestAdmin/agent-php/compare/v1.10.1...v1.10.2) (2024-08-30)
+
+
+### Bug Fixes
+
+* **security:** patch micromatch dependency vulnerabilities ([#112](https://github.com/ForestAdmin/agent-php/issues/112)) ([d92f6df](https://github.com/ForestAdmin/agent-php/commit/d92f6df8cefedd5a48aff4afdbb82324ccb28e18))
+
 ## [1.10.1](https://github.com/ForestAdmin/agent-php/compare/v1.10.0...v1.10.1) (2024-08-28)
 
 
