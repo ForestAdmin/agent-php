@@ -1,3 +1,10 @@
+## [1.10.3](https://github.com/ForestAdmin/agent-php/compare/v1.10.2...v1.10.3) (2024-09-02)
+
+
+### Bug Fixes
+
+* **writereplace:** rewrite patch does not remove field with null value ([#113](https://github.com/ForestAdmin/agent-php/issues/113)) ([f575cc3](https://github.com/ForestAdmin/agent-php/commit/f575cc3c4f00f686707b5700c8d615de4fb8d501))
+
 ## [1.10.2](https://github.com/ForestAdmin/agent-php/compare/v1.10.1...v1.10.2) (2024-08-30)
 
 
