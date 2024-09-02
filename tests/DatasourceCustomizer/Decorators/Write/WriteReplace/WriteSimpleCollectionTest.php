@@ -53,7 +53,7 @@ describe('WriteSimpleCollection', function () {
             ],
         ];
         $before($this, $data);
-        /** @var WriteReplaceCollection $newAuthor */
+        /** @var WriteReplaceCollection $newBook */
         $newBook = $this->bucket['newBook'];
 
         $newBook->replaceFieldWriting('title', fn ($value) => ['title' => 'another value']);
@@ -74,7 +74,7 @@ describe('WriteSimpleCollection', function () {
             ],
         ];
         $before($this, $data);
-        /** @var WriteReplaceCollection $newAuthor */
+        /** @var WriteReplaceCollection $newBook */
         $newBook = $this->bucket['newBook'];
         $newBook->replaceFieldWriting('title', fn ($value) => ['title' => 'another value']);
 
@@ -93,12 +93,36 @@ describe('WriteSimpleCollection', function () {
             ],
         ];
         $before($this, $data);
-        /** @var WriteReplaceCollection $newAuthor */
+        /** @var WriteReplaceCollection $newBook */
         $newBook = $this->bucket['newBook'];
         $newBook->replaceFieldWriting('title', fn ($value) => ['fakeField' => 'another value']);
 
         expect(fn () => $newBook->create($caller, [
             'title' => 'my value',
         ]))->toThrow(ForestException::class, '🌳🌳🌳 Unknown field : fakeField');
+    })->with('caller');
+
+    test('update() with a key that contains a null value should not remove the field of the patch', function (Caller $caller) use ($before) {
+        $patch = [
+            'id'    => 1,
+            'title' => null,
+        ];
+
+        $before($this, []);
+        $newBook = $this->bucket['newBook'];
+
+        \Mockery::mock($newBook->getDatasource()->getCollection('Book'))
+            ->shouldReceive('update')
+            ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), $patch)
+            ->andReturnNull()
+            ->getMock();
+
+
+        expect($newBook->update(
+            $caller,
+            new Filter(new ConditionTreeLeaf('id', Operators::EQUAL, 1)),
+            $patch
+        ))->toBeNull();
+
     })->with('caller');
 });
