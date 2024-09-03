@@ -13,6 +13,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactor
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema;
 
@@ -42,7 +43,7 @@ class DissociateRelated extends AbstractRelationRoute
 
         $relation = Schema::getToManyRelation($this->collection, $args['relationName']);
 
-        if ($relation instanceof OneToManySchema) {
+        if ($relation instanceof OneToManySchema || $relation instanceof PolymorphicOneToManySchema) {
             $this->dissociateOrDeleteOneToMany($relation, $args['relationName'], $parentId, $isDeleteMode, $childFilter);
         } else {
             $this->dissociateOrDeleteManyToMany($relation, $args['relationName'], $parentId, $isDeleteMode, $childFilter);
@@ -54,14 +55,19 @@ class DissociateRelated extends AbstractRelationRoute
         ];
     }
 
-    private function dissociateOrDeleteOneToMany(OneToManySchema $relation, string $relationName, array $parentId, bool $isDeleteMode, Filter $filter): void
+    private function dissociateOrDeleteOneToMany(OneToManySchema|PolymorphicOneToManySchema $relation, string $relationName, array $parentId, bool $isDeleteMode, Filter $filter): void
     {
         $foreignFilter = $this->makeForeignFilter($parentId, $filter, $relationName);
-
         if ($isDeleteMode) {
             $this->childCollection->delete($this->caller, $foreignFilter);
         } else {
-            $this->childCollection->update($this->caller, $foreignFilter, ['attributes' => [$relation->getOriginKey() => null]]);
+            if ($relation instanceof PolymorphicOneToManySchema) {
+                $patchAttributes = [$relation->getOriginKey() => null, $relation->getOriginTypeField() => null];
+            } else {
+                $patchAttributes = [$relation->getOriginKey() => null];
+            }
+
+            $this->childCollection->update($this->caller, $foreignFilter, $patchAttributes);
         }
     }
 

@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Search;
 
 use Closure;
+use ForestAdmin\AgentPHP\Agent\Facades\Logger;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
@@ -17,6 +18,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
 use Illuminate\Support\Collection as IlluminateCollection;
 use Illuminate\Support\Str;
 
@@ -77,7 +80,18 @@ class SearchCollection extends CollectionDecorator
                 $fields->put($name, $field);
             }
 
-            if ($searchExtended && ($field instanceof ManyToOneSchema || $field instanceof OneToOneSchema)) {
+            if ($field instanceof PolymorphicManyToOneSchema && $searchExtended) {
+                Logger::log(
+                    'Debug',
+                    "We're not searching through {$this->getName()}.{$name} because it's a polymorphic relation. " .
+                    "You can override the default search behavior with 'replace_search'. " .
+                    'See more: https://docs.forestadmin.com/developer-guide-agents-php/agent-customization/search'
+                );
+
+                continue;
+            }
+
+            if ($searchExtended && ($field instanceof ManyToOneSchema || $field instanceof OneToOneSchema || $field instanceof PolymorphicOneToOneSchema)) {
                 $related = $collection->getDataSource()->getCollection($field->getForeignCollection());
 
                 foreach ($related->getFields() as $subName => $subField) {

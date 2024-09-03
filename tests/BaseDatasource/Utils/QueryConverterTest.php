@@ -1,6 +1,5 @@
 <?php
 
-
 use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseDatasource;
 use ForestAdmin\AgentPHP\BaseDatasource\Utils\QueryConverter;
@@ -17,6 +16,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Carbon;
@@ -27,7 +27,7 @@ const TIMEZONE = 'Europe/Paris';
 
 beforeEach(function () {
     testTime()->freeze(Carbon::now(TIMEZONE));
-    global $datasource, $bookCollection, $reviewCollection, $bookReviewCollection, $userCollection;
+    global $datasource, $bookCollection, $reviewCollection, $bookReviewCollection, $userCollection, $commentCollection;
     $this->initDatabase();
     $datasource = new BaseDatasource(TestCase::DB_CONFIG);
 
@@ -124,10 +124,38 @@ beforeEach(function () {
         ]
     );
 
+    $commentCollection = new BaseCollection($datasource, 'Comment', 'comments');
+    $this->invokeProperty($commentCollection, 'fields', collect());
+    $commentCollection = \Mockery::mock($commentCollection)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('fetchFieldsFromTable')
+        ->andReturn(['columns' => [], 'primaries' => []])
+        ->getMock();
+    $commentCollection->addFields(
+        [
+            'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'title'           => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentable'     => new PolymorphicManyToOneSchema(
+                foreignKeyTypeField: 'commentableType',
+                foreignKey: 'commentableId',
+                foreignKeyTargets: [
+                    'Book' => 'id',
+                ],
+                foreignCollections: [
+                    'Book',
+                ],
+            ),
+        ]
+    );
+
     $datasource->addCollection($bookCollection);
     $datasource->addCollection($userCollection);
     $datasource->addCollection($reviewCollection);
     $datasource->addCollection($bookReviewCollection);
+    $datasource->addCollection($commentCollection);
 });
 
 test('of() should return a ForestAdmin\\AgentPHP\\BaseDatasource\\Utils\\QueryConverter instance', function () {
@@ -232,12 +260,38 @@ test('QueryConverter should add the join with OneToMany / OneToOne relation', fu
         ->and($query->joins[0]->wheres[0])->toEqual(
             [
                 "type"     => "Column",
-                "first"    => "users.id",
+                "first"    => "users.author_id",
                 "operator" => "=",
-                "second"   => "books.author_id",
+                "second"   => "books.id",
                 "boolean"  => "and",
             ]
         );
+});
+
+test('QueryConverter should add the join with PolymorphicManyToOne relation', function () {
+    global $commentCollection;
+    $query = QueryConverter::of($commentCollection, 'Europe/Paris', null, new Projection(['id', 'commentable:title']))
+        ->getQuery();
+
+    expect($query->joins)->toHaveCount(1)
+        ->and($query->joins[0]->table)->toEqual('books as polymorphic_commentable_Book')
+        ->and($query->joins[0]->wheres)->toHaveCount(2)
+        ->and($query->joins[0]->wheres)->toEqual([
+            [
+                "type"     => "Column",
+                "first"    => "comments.commentableId",
+                "operator" => "=",
+                "second"   => "polymorphic_commentable_Book.id",
+                "boolean"  => "and",
+            ],
+            [
+                "type"      => "Basic",
+                "operator"  => "=",
+                "boolean"   => "and",
+                "column"    => "comments.commentableType",
+                "value"     => "Book",
+            ],
+        ]);
 });
 
 test('QueryConverter should apply sort', function () {

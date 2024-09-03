@@ -11,6 +11,7 @@ describe('class finder', function () {
             'ForestAdmin\AgentPHP\Tests\DatasourceEloquent\Models\Book',
             'ForestAdmin\AgentPHP\Tests\DatasourceEloquent\Models\BookReview',
             'ForestAdmin\AgentPHP\Tests\DatasourceEloquent\Models\Car',
+            'ForestAdmin\AgentPHP\Tests\DatasourceEloquent\Models\Comment',
             'ForestAdmin\AgentPHP\Tests\DatasourceEloquent\Models\Owner',
             'ForestAdmin\AgentPHP\Tests\DatasourceEloquent\Models\Review',
             'ForestAdmin\AgentPHP\Tests\DatasourceEloquent\Models\User',

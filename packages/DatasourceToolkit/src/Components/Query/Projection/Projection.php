@@ -82,7 +82,11 @@ class Projection extends IlluminateCollection
         }
 
         foreach ($this->relations() as $relation => $projection) {
+
             $schema = $collection->getFields()[$relation];
+            if ($schema->getType() === 'PolymorphicManyToOne') {
+                continue;
+            }
             $association = $collection->getDataSource()->getCollection($schema->getForeignCollection());
             $projectionWithPk = $projection->withPks($association)->nest($relation);
 

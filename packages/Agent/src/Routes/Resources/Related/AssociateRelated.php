@@ -11,6 +11,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 
@@ -38,7 +39,7 @@ class AssociateRelated extends AbstractRelationRoute
         $this->permissions->getScope($this->collection);
         $relation = SchemaUtils::getToManyRelation($this->collection, $args['relationName']);
 
-        if ($relation instanceof OneToManySchema) {
+        if ($relation instanceof OneToManySchema || $relation instanceof PolymorphicOneToManySchema) {
             $this->associateOneToMany($relation, $parentId, $targetedRelationId);
         } else {
             $this->associateManyToMany($relation, $parentId, $targetedRelationId);
@@ -50,7 +51,7 @@ class AssociateRelated extends AbstractRelationRoute
         ];
     }
 
-    private function associateOneToMany(OneToManySchema $relation, array $parentId, array $targetedRelationId): void
+    private function associateOneToMany(OneToManySchema|PolymorphicOneToManySchema $relation, array $parentId, array $targetedRelationId): void
     {
         $id = SchemaUtils::getPrimaryKeys($this->childCollection)[0];
         $value = CollectionUtils::getValue($this->childCollection, $this->caller, $targetedRelationId, $id);
@@ -65,7 +66,17 @@ class AssociateRelated extends AbstractRelationRoute
             )
         );
         $value = CollectionUtils::getValue($this->collection, $this->caller, $parentId, $relation->getOriginKeyTarget());
-        $this->childCollection->update($this->caller, $filter, [$relation->getOriginKey() => $value]);
+
+        if ($relation instanceof PolymorphicOneToManySchema) {
+            $patch = [
+                $relation->getOriginKey()       => $value,
+                $relation->getOriginTypeField() => $relation->getOriginTypeValue(),
+            ];
+        } else {
+            $patch = [$relation->getOriginKey() => $value];
+        }
+
+        $this->childCollection->update($this->caller, $filter, $patch);
     }
 
     private function associateManyToMany(ManyToManySchema $relation, array $parentId, array $targetedRelationId)

@@ -7,6 +7,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
@@ -56,7 +58,7 @@ class QueryBuilder
         return $this->tableName . '.' . $field;
     }
 
-    protected function addJoinRelation(RelationSchema $relation, string $relationTableName, ?string $relationTableAlias = null): void
+    protected function addJoinRelation(RelationSchema $relation, string $relationTableName, ?string $relationTableAlias = null, ?string $foreignKeyTarget = null, ?string $foreignCollection = null): void
     {
         $relationTableAlias = $relationTableAlias ?? $relationTableName;
         if ($relation instanceof ManyToManySchema) {
@@ -86,9 +88,9 @@ class QueryBuilder
             ) {
                 $this->query->leftJoin(
                     $joinTable,
-                    $this->tableName . '.' . $relation->getOriginKey(),
+                    $this->tableName . '.' . $relation->getOriginKeyTarget(),
                     '=',
-                    $relationTableAlias . '.' . $relation->getOriginKeyTarget()
+                    $relationTableAlias . '.' . $relation->getOriginKey()
                 );
             } elseif ($relation instanceof ManyToOneSchema && ! $this->isJoin($joinTable)) {
                 $this->query->leftJoin(
@@ -97,6 +99,16 @@ class QueryBuilder
                     '=',
                     $relationTableAlias . '.' . $relation->getForeignKeyTarget()
                 );
+            } elseif ($relation instanceof PolymorphicManyToOneSchema && ! $this->isJoin($joinTable)) {
+                $this->query->leftJoin($joinTable, function (JoinClause $join) use ($relation, $relationTableAlias, $foreignKeyTarget, $foreignCollection) {
+                    $join->on($this->tableName . '.' . $relation->getForeignKey(), '=', $relationTableAlias . '.' . $foreignKeyTarget)
+                        ->where($this->tableName . '.' . $relation->getForeignKeyTypeField(), '=', $foreignCollection);
+                });
+            } elseif ($relation instanceof PolymorphicOneToOneSchema && ! $this->isJoin($joinTable)) {
+                $this->query->leftJoin($joinTable, function (JoinClause $join) use ($relation, $relationTableAlias) {
+                    $join->on($this->tableName . '.' . $relation->getOriginKeyTarget(), '=', $relationTableAlias . '.' . $relation->getOriginKey())
+                        ->where($relationTableAlias. '.' . $relation->getOriginTypeField(), '=', get_class($this->collection->getModel()));
+                });
             }
         }
     }

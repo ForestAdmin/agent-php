@@ -51,6 +51,8 @@ class RenameFieldCollection extends CollectionDecorator
     {
         $fields = collect();
 
+        # we don't handle schema modification for polymorphic many to one and reverse relations because
+        # we forbid to rename foreign key and type fields on polymorphic many to one
         foreach ($childSchema as $oldName => $schema) {
             if ($schema instanceof ManyToOneSchema) {
                 $schema->setForeignKey($this->fromChildCollection[$schema->getForeignKey()] ?? $schema->getForeignKey());
@@ -152,20 +154,26 @@ class RenameFieldCollection extends CollectionDecorator
     }
 
     /** Convert field path from this collection to child collection */
-    private function pathToChildCollection(string $thisPath): string
+    private function pathToChildCollection(string $path): string
     {
-        if (Str::contains($thisPath, ':')) {
-            $thisField = Str::before($thisPath, ':');
+        if (Str::contains($path, ':')) {
+            $relationName = Str::before($path, ':');
             /** @var RelationSchema $relationSchema */
-            $relationSchema = $this->getFields()[$thisField];
-            /** @var self $relation */
-            $relation = $this->getDataSource()->getCollection($relationSchema->getForeignCollection());
-            $childField = $this->toChildCollection[$thisField] ?? $thisField;
+            $relationSchema = $this->getFields()[$relationName];
+            if ($relationSchema->getType() === 'PolymorphicManyToOne') {
+                $relationName = $this->toChildCollection[$relationName];
 
-            return "$childField:" . $relation->pathToChildCollection(Str::after($thisPath, ':'));
+                return "$relationName:" . Str::after($path, ':');
+            } else {
+                /** @var self $relation */
+                $relation = $this->getDataSource()->getCollection($relationSchema->getForeignCollection());
+                $childField = $this->toChildCollection[$relationName] ?? $relationName;
+
+                return "$childField:" . $relation->pathToChildCollection(Str::after($path, ':'));
+            }
         }
 
-        return $this->toChildCollection[$thisPath] ?? $thisPath;
+        return $this->toChildCollection[$path] ?? $path;
     }
 
     /** Convert record from this collection to the child collection */
@@ -189,7 +197,7 @@ class RenameFieldCollection extends CollectionDecorator
             $fieldSchema = $this->getFields()[$thisField];
 
             // Perform the mapping, recurse for relations.
-            if ($fieldSchema instanceof ColumnSchema || $value === null) {
+            if ($fieldSchema instanceof ColumnSchema || $value === null || $fieldSchema->getType() === 'PolymorphicManyToOne' || $fieldSchema->getType() === 'PolymorphicOneToOne') {
                 $thisRecord[$thisField] = $value;
             } else {
                 /** @var self $relation */

@@ -91,7 +91,7 @@ test('getToManyRelation() should throw if relation is not ManyToMany or OneToMan
     );
 
     expect(static fn () => SchemaUtils::getToManyRelation($collection, 'relationManyToOne'))
-        ->toThrow(ForestException::class, '🌳🌳🌳 Relation relationManyToOne has invalid type should be one of OneToMany or ManyToMany.');
+        ->toThrow(ForestException::class, '🌳🌳🌳 Relation relationManyToOne has invalid type should be one of OneToMany, ManyToMany or PolymorphicOneToMany.');
 });
 
 test('isPrimaryKey() should work', function () {

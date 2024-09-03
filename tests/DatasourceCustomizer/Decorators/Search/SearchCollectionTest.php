@@ -16,6 +16,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
 
 describe('SearchCollection', function () {
     beforeEach(function () {
@@ -374,4 +376,60 @@ describe('SearchCollection', function () {
         );
     })->with('caller');
 
+    test('refineFilter() should not seach on a relation PolymorphicOneToMany', function (Caller $caller) {
+        $datasource = new Datasource();
+        $collectionBooks = new Collection($datasource, 'Book');
+        $collectionBooks->addFields(
+            [
+                'id'          => new ColumnSchema(columnType: PrimitiveType::UUID, filterOperators: [Operators::EQUAL], isPrimaryKey: true),
+                'comments'    => new PolymorphicOneToManySchema(
+                    originKey: 'commentableId',
+                    originKeyTarget: 'id',
+                    foreignCollection: 'Comment',
+                    originTypeField: 'commentableType',
+                    originTypeValue: 'Book',
+                ),
+            ]
+        );
+
+        $collectionComment = new Collection($datasource, 'Comment');
+        $collectionComment->addFields(
+            [
+                'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true),
+                'title'           => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+                'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'commentable'     => new PolymorphicManyToOneSchema(
+                    foreignKeyTypeField: 'commentableType',
+                    foreignKey: 'commentableId',
+                    foreignKeyTargets: [
+                        'Book'   => 'id',
+                    ],
+                    foreignCollections: [
+                        'Book',
+                    ],
+                ),
+            ]
+        );
+
+        $datasource->addCollection($collectionBooks);
+        $datasource->addCollection($collectionComment);
+
+        $this->buildAgent($datasource);
+
+        $searchCollection = new SearchCollection($collectionComment, $datasource);
+        $filter = new Filter(search: 'something');
+
+        expect($searchCollection->refineFilter($caller, $filter))->toEqual(
+            new Filter(
+                new ConditionTreeBranch(
+                    'Or',
+                    []
+                ),
+                null,
+                null,
+                null,
+            )
+        );
+    })->with('caller')->hasUnexpectedOutput('dd');
 });

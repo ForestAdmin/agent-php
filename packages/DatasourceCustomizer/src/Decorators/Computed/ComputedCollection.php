@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed;
 
+use ForestAdmin\AgentPHP\Agent\Facades\Logger;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\Utils\ComputeField;
@@ -27,6 +28,13 @@ class ComputedCollection extends CollectionDecorator
             return $this->computeds[$path] ?? null;
         } else {
             $schema = $this->getFields()->get(Str::before($path, ':'));
+            if ($schema->getType() === 'PolymorphicManyToOne') {
+                $field = Str::before($path, ':');
+                Logger::log('Debug', "Cannot compute field over polymorphic relation {$this->getName()}.{$field}.");
+
+                return $this->computeds[$path] ?? null;
+            }
+
             $association = $this->dataSource->getCollection($schema->getForeignCollection());
 
             return $association->getComputed(Str::after($path, ':'));
@@ -54,6 +62,14 @@ class ComputedCollection extends CollectionDecorator
     public function registerComputed(string $name, ComputedDefinition $computed): void
     {
         foreach ($computed->getDependencies() as $field) {
+            if (Str::contains($field, ':')) {
+                $prefix = explode(':', $field);
+                $schema = $this->getFields()->get($prefix[0]);
+                if ($schema->getType() === 'PolymorphicManyToOne') {
+                    throw new ForestException('Dependencies over a polymorphic relations(' . $this->getName() . '.' . $prefix[0] . ') are forbidden');
+                }
+            }
+
             FieldValidator::validate($this, $field);
         }
 
@@ -69,6 +85,10 @@ class ComputedCollection extends CollectionDecorator
     {
         $childProjection = $projection->replaceItem(fn ($path) => $this->rewriteField($this, $path));
         $records = $this->childCollection->list($caller, $filter, $childProjection);
+        if ($childProjection->toArray() === $projection->toArray()) {
+            return $records;
+        }
+
         $context = new CollectionCustomizationContext($this, $caller);
 
         return ComputeField::computeFromRecords($context, $this, $childProjection, $projection, $records);
@@ -95,12 +115,14 @@ class ComputedCollection extends CollectionDecorator
             $prefix = explode(':', $path);
             /** @var RelationSchema $schema */
             $schema = $collection->getFields()->get($prefix[0]);
-            $association = $collection->getDataSource()->getCollection($schema->getForeignCollection());
+            if ($schema->getType() !== 'PolymorphicManyToOne') {
+                $association = $collection->getDataSource()->getCollection($schema->getForeignCollection());
 
-            return (new Projection($path))
-                ->unnest()
-                ->replaceItem(fn ($subPath) => $this->rewriteField($association, $subPath))
-                ->nest($prefix[0]);
+                return (new Projection($path))
+                    ->unnest()
+                    ->replaceItem(fn ($subPath) => $this->rewriteField($association, $subPath))
+                    ->nest($prefix[0]);
+            }
         }
 
         $computed = $collection->getComputed($path);

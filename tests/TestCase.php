@@ -183,6 +183,16 @@ class TestCase extends BaseTestCase
                 $table->timestamps();
             }
         );
+
+        $schema->create(
+            'comments',
+            function (Blueprint $table) {
+                $table->id();
+                $table->nullableMorphs('commentable');
+                $table->text('body');
+                $table->timestamps();
+            }
+        );
     }
 
     private function seeds(): void

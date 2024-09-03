@@ -21,7 +21,7 @@ class EloquentDatasource extends BaseDatasource
     /**
      * @throws \ReflectionException
      */
-    public function __construct(array $databaseConfig)
+    public function __construct(array $databaseConfig, protected $supportPolymorphicRelations = false)
     {
         parent::__construct($databaseConfig);
         $this->generate();
@@ -35,9 +35,10 @@ class EloquentDatasource extends BaseDatasource
     {
         $finder = new ClassFinder(config('projectDir'));
         $this->models = $finder->getModelsInNamespace('App');
+
         foreach ($this->models as $model) {
             try {
-                $this->addCollection(new EloquentCollection($this, new $model()));
+                $this->addCollection(new EloquentCollection($this, new $model(), $this->supportPolymorphicRelations));
             } catch (\Exception $e) {
                 // do nothing
             }
@@ -62,5 +63,10 @@ class EloquentDatasource extends BaseDatasource
         }
 
         return false;
+    }
+
+    public function getModels(): array
+    {
+        return $this->models;
     }
 }

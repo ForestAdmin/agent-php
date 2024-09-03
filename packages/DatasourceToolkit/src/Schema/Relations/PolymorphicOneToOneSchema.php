@@ -4,15 +4,16 @@ namespace ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 
-abstract class SingleRelationSchema extends RelationSchema
+class PolymorphicOneToOneSchema extends RelationSchema
 {
     public function __construct(
         protected string $originKey,
         protected string $originKeyTarget,
         protected string $foreignCollection,
-        protected string $type,
+        protected string $originTypeField,
+        protected string $originTypeValue,
     ) {
-        parent::__construct($type);
+        parent::__construct('PolymorphicOneToOne');
     }
 
     public function setOriginKey(string $originKey): void
@@ -38,5 +39,15 @@ abstract class SingleRelationSchema extends RelationSchema
     public function setForeignCollection(string $foreignCollection): void
     {
         $this->foreignCollection = $foreignCollection;
+    }
+
+    public function getOriginTypeField(): string
+    {
+        return $this->originTypeField;
+    }
+
+    public function getOriginTypeValue(): string
+    {
+        return $this->originTypeValue;
     }
 }

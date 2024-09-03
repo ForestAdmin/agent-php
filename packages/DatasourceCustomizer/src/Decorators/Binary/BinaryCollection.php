@@ -12,6 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFil
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 use Illuminate\Support\Collection as IlluminateCollection;
 use Illuminate\Support\Str;
@@ -165,6 +166,10 @@ class BinaryCollection extends CollectionDecorator
         $prefix = Str::before($fieldName, ':');
         $suffix = Str::contains($fieldName, ':') ? Str::after($fieldName, ':') : null;
         $schema = $this->childCollection->getFields()->get($prefix);
+
+        if ($schema instanceof PolymorphicManyToOneSchema || $schema === null) {
+            return $value;
+        }
 
         if (! $schema instanceof ColumnSchema) {
             $foreignCollection = $this->dataSource->getCollection($schema->getForeignCollection());

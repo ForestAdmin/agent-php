@@ -16,22 +16,24 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 beforeEach(closure: function () {
     global $eloquentDatasource;
     $this->buildAgent(new Datasource(), ['projectDir' => __DIR__]);
     $this->initDatabase();
-    $eloquentDatasource = new EloquentDatasource(TestCase::DB_CONFIG);
+    $eloquentDatasource = new EloquentDatasource(TestCase::DB_CONFIG, true);
 });
-
 
 describe('addRelationships()', function () {
     test('should add OneToManySchema field when relation is a HasMany', function () {
         /** @var EloquentDatasource $eloquentDatasource */
         global $eloquentDatasource;
         /** @var EloquentCollection $collection */
-        $collection = $eloquentDatasource->getCollection('Author');
+        $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Author');
 
         expect($collection->getFields())->toHaveKey('books')
             ->and($collection->getFields()['books'])->toBeInstanceOf(OneToManySchema::class);
@@ -41,7 +43,7 @@ describe('addRelationships()', function () {
         /** @var EloquentDatasource $eloquentDatasource */
         global $eloquentDatasource;
         /** @var EloquentCollection $collection */
-        $collection = $eloquentDatasource->getCollection('Book');
+        $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book');
 
         expect($collection->getFields())->toHaveKey('author')
             ->and($collection->getFields()['author'])->toBeInstanceOf(ManyToOneSchema::class);
@@ -51,17 +53,17 @@ describe('addRelationships()', function () {
         /** @var EloquentDatasource $eloquentDatasource */
         global $eloquentDatasource;
         /** @var EloquentCollection $collection */
-        $collection = $eloquentDatasource->getCollection('Owner');
+        $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Owner');
 
         expect($collection->getFields())->toHaveKey('user')
-            ->and($collection->getFields()['user'])->toBeInstanceOf(OneToOneSchema::class);
+            ->and($collection->getFields()['user'])->toBeInstanceOf(ManyToOneSchema::class);
     });
 
     test('should add OneToOneSchema field when relation is a HasOne', function () {
         /** @var EloquentDatasource $eloquentDatasource */
         global $eloquentDatasource;
         /** @var EloquentCollection $collection */
-        $collection = $eloquentDatasource->getCollection('User');
+        $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_User');
 
         expect($collection->getFields())->toHaveKey('owner')
             ->and($collection->getFields()['owner'])->toBeInstanceOf(OneToOneSchema::class);
@@ -71,7 +73,7 @@ describe('addRelationships()', function () {
         /** @var EloquentDatasource $eloquentDatasource */
         global $eloquentDatasource;
         /** @var EloquentCollection $collection */
-        $collection = $eloquentDatasource->getCollection('Book');
+        $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book');
 
         expect($collection->getFields())->toHaveKey('reviews')
             ->and($collection->getFields()['reviews'])->toBeInstanceOf(ManyToManySchema::class);
@@ -85,13 +87,43 @@ describe('addRelationships()', function () {
         expect($collections)->toHaveKey('CarOwner')
             ->and($collections->get('CarOwner'))->toBeInstanceOf(ThroughCollection::class);
     });
+
+    test('should add a PolymorphicOneToMany field when relation is a MorphMany', function () {
+        /** @var EloquentDatasource $eloquentDatasource */
+        global $eloquentDatasource;
+        /** @var EloquentCollection $collection */
+        $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book');
+
+        expect($collection->getFields())->toHaveKey('comments')
+            ->and($collection->getFields()['comments'])->toBeInstanceOf(PolymorphicOneToManySchema::class);
+    });
+
+    test('should add a PolymorphicManyToOne field when relation is a MorphTo', function () {
+        /** @var EloquentDatasource $eloquentDatasource */
+        global $eloquentDatasource;
+        /** @var EloquentCollection $collection */
+        $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Comment');
+
+        expect($collection->getFields())->toHaveKey('commentable')
+            ->and($collection->getFields()['commentable'])->toBeInstanceOf(PolymorphicManyToOneSchema::class);
+    });
+
+    test('should add a PolymorphicOneToOne field when relation is a MorphOne', function () {
+        /** @var EloquentDatasource $eloquentDatasource */
+        global $eloquentDatasource;
+        /** @var EloquentCollection $collection */
+        $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_User');
+
+        expect($collection->getFields())->toHaveKey('comment')
+            ->and($collection->getFields()['comment'])->toBeInstanceOf(PolymorphicOneToOneSchema::class);
+    });
 });
 
 test('list() should return an array of records', function () {
     /** @var EloquentDatasource $baseCollection */
     global $eloquentDatasource;
-    $_GET['fields'] = ['Book' => 'id, title, price'];
-    $collection = $eloquentDatasource->getCollection('Book');
+    $_GET['fields'] = ['ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book' => 'id, title, price'];
+    $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book');
     $request = Request::createFromGlobals();
     $caller = QueryStringParser::parseCaller($request);
     $filter = ContextFilterFactory::buildPaginated($collection, $request, null);
@@ -107,7 +139,7 @@ test('list() should return an array of records', function () {
 test('create() should add a record in database and return it', function () {
     /** @var EloquentDatasource $baseCollection */
     global $eloquentDatasource;
-    $collection = $eloquentDatasource->getCollection('Book');
+    $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book');
     $request = Request::createFromGlobals();
     $caller = QueryStringParser::parseCaller($request);
 
@@ -140,7 +172,7 @@ test('create() should add a record in database and return it', function () {
 test('update() should update a record in database', function () {
     /** @var EloquentDatasource $baseCollection */
     global $eloquentDatasource;
-    $collection = $eloquentDatasource->getCollection('Book');
+    $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book');
     $request = Request::createFromGlobals();
     $caller = QueryStringParser::parseCaller($request);
     $filter = new Filter(
@@ -165,7 +197,7 @@ test('update() should update a record in database', function () {
 test('delete() should remove the record in database', function () {
     /** @var EloquentDatasource $baseCollection */
     global $eloquentDatasource;
-    $collection = $eloquentDatasource->getCollection('Book');
+    $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book');
     $request = Request::createFromGlobals();
     $caller = QueryStringParser::parseCaller($request);
     $filter = new Filter(
@@ -183,7 +215,7 @@ test('delete() should remove the record in database', function () {
 test('aggregate() should count the records in database', function () {
     /** @var EloquentDatasource $baseCollection */
     global $eloquentDatasource;
-    $collection = $eloquentDatasource->getCollection('Book');
+    $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book');
     $request = Request::createFromGlobals();
     $caller = QueryStringParser::parseCaller($request);
     $filter = new Filter();
@@ -194,4 +226,31 @@ test('aggregate() should count the records in database', function () {
     expect($aggregateResult)->toBeArray()
         ->and($aggregateResult[0])->toBeArray()
         ->and($aggregateResult[0])->toHaveKeys(['value', 'group']);
+});
+
+describe('addRelationships() without support polymorphic Relations', function () {
+    beforeEach(closure: function () {
+        global $eloquentDatasource;
+        $this->buildAgent(new Datasource(), ['projectDir' => __DIR__]);
+        $this->initDatabase();
+        $eloquentDatasource = new EloquentDatasource(TestCase::DB_CONFIG, false);
+    });
+
+    test('should not add a PolymorphicOneToMany field when relation is a MorphMany', function () {
+        /** @var EloquentDatasource $eloquentDatasource */
+        global $eloquentDatasource;
+        /** @var EloquentCollection $collection */
+        $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book');
+
+        expect($collection->getFields())->not()->toHaveKey('comments');
+    });
+
+    test('should not add a PolymorphicManyToOne field when relation is a MorphTo', function () {
+        /** @var EloquentDatasource $eloquentDatasource */
+        global $eloquentDatasource;
+        /** @var EloquentCollection $collection */
+        $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Comment');
+
+        expect($collection->getFields())->not()->toHaveKey('commentable');
+    });
 });

@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 describe('Computed collection', function () {
@@ -75,6 +76,27 @@ describe('Computed collection', function () {
             ]
         );
 
+        $collectionComment = new Collection($datasource, 'Comment');
+        $collectionComment->addFields(
+            [
+                'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'title'           => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+                'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
+                'commentable'     => new PolymorphicManyToOneSchema(
+                    foreignKeyTypeField: 'commentableType',
+                    foreignKey: 'commentableId',
+                    foreignKeyTargets: [
+                        'Car'   => 'id',
+                        'User'  => 'id',
+                    ],
+                    foreignCollections: [
+                        'Car',
+                        'User',
+                    ],
+                ),]
+        );
+
         if (isset($data)) {
             $create = $data['create'];
             unset($create[$data['unpublished']]);
@@ -88,18 +110,18 @@ describe('Computed collection', function () {
         $datasource->addCollection($collectionBook);
         $datasource->addCollection($collectionBookPerson);
         $datasource->addCollection($collectionPerson);
+        $datasource->addCollection($collectionComment);
         $testCase->buildAgent($datasource);
 
-        //        $decoratedDataSource = new DatasourceDecorator($datasource, PublicationCollectionDecorator::class);
         $decoratedDataSource = new PublicationCollectionDatasourceDecorator($datasource);
-
         $decoratedDataSource->build();
 
         $newBook = $decoratedDataSource->getCollection('Book');
         $newBookPersons = $decoratedDataSource->getCollection('BookPerson');
         $newPerson = $decoratedDataSource->getCollection('Person');
+        $newComment = $decoratedDataSource->getCollection('Comment');
 
-        $testCase->bucket = [$newBook, $newBookPersons, $newPerson, $datasource];
+        $testCase->bucket = [$newBook, $newBookPersons, $newPerson, $datasource, $newComment];
     };
 
     test('changeFieldVisibility() should throw when hiding a field which does not exists', function () use ($before) {
@@ -182,5 +204,13 @@ describe('Computed collection', function () {
         $newBook->changeFieldVisibility('authorId', false);
 
         expect($newBook->getFields())->not()->toHaveKey('author');
+    });
+
+    test('changeFieldVisibility() should throw if field is equal to a foreignKey or foreignKeyTypeField', function () use ($before) {
+        $before($this);
+        $newComment = $this->bucket[4];
+
+        expect(fn () => $newComment->changeFieldVisibility('commentableId', false))->toThrow(ForestException::class, "🌳🌳🌳 Cannot remove field 'Comment.commentableId', because it's implied in a polymorphic relation 'Comment.commentable'")
+            ->and(fn () => $newComment->changeFieldVisibility('commentableType', false))->toThrow(ForestException::class, "🌳🌳🌳 Cannot remove field 'Comment.commentableType', because it's implied in a polymorphic relation 'Comment.commentable'");
     });
 });

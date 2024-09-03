@@ -18,6 +18,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
 
 class Collection
@@ -27,26 +28,34 @@ class Collection
         /** @var RelationSchema $relation */
         $relationField = $collection->getFields()->get($relationName);
         /** @var MainCollection $foreignCollection */
-        $foreignCollection = AgentFactory::get('datasource')->getCollections()->first(fn ($item) => $item->getName() === $relationField->getForeignCollection());
+        $foreignCollection = $collection->getDataSource()->getCollections()->first(fn ($item) => $item->getName() === $relationField->getForeignCollection());
 
-        $inverse = $foreignCollection->getFields()
+        $polyMorphicRelations = ['PolymorphicOneToOne', 'PolymorphicOneToMany'];
+
+        if ($foreignCollection === null) {
+            return null;
+        }
+
+        $inverse = $foreignCollection->getFields();
+        $inverse = $inverse
             ->filter(fn ($field) => is_a($field, RelationSchema::class))
-            ->filter(
-                fn ($field, $key) =>
-                   $field->getForeignCollection() === $collection->getName() &&
-                   (
-                       (is_a($field, ManyToManySchema::class) &&
-                           is_a($relationField, ManyToManySchema::class) &&
-                           self::isManyToManyInverse($field, $relationField)) ||
-                       (is_a($field, ManyToOneSchema::class) &&
-                           (is_a($relationField, OneToOneSchema::class) || is_a($relationField, OneToManySchema::class)) &&
-                           self::isManyToOneInverse($field, $relationField)) ||
-                       ((is_a($field, OneToOneSchema::class) || is_a($field, OneToManySchema::class)) &&
-                           is_a($relationField, ManyToOneSchema::class) && self::isOtherInverse($field, $relationField))
-                   )
-            )
-            ->keys()
-            ->first();
+            ->filter(function ($field) use ($relationField, $polyMorphicRelations, $collection) {
+                if (in_array($relationField->getType(), $polyMorphicRelations, true)) {
+                    return is_a($field, PolymorphicManyToOneSchema::class) && in_array($collection->getName(), $field->getForeignCollectionNames(), true);
+                } else {
+                    return $field->getForeignCollection() === $collection->getName() &&
+                    (
+                        (is_a($field, ManyToManySchema::class) &&
+                            is_a($relationField, ManyToManySchema::class) &&
+                            self::isManyToManyInverse($field, $relationField)) ||
+                        (is_a($field, ManyToOneSchema::class) &&
+                            (is_a($relationField, OneToOneSchema::class) || is_a($relationField, OneToManySchema::class)) &&
+                            self::isManyToOneInverse($field, $relationField)) ||
+                        ((is_a($field, OneToOneSchema::class) || is_a($field, OneToManySchema::class)) &&
+                            is_a($relationField, ManyToOneSchema::class) && self::isOtherInverse($field, $relationField))
+                    );
+                }
+            })->keys()->first();
 
         return $inverse ?: null;
     }
@@ -215,5 +224,15 @@ class Collection
             $aggregation,
             $limit
         );
+    }
+
+    public static function fullNameToSnakeCase(string $fullName): string
+    {
+        return str_replace('\\', '_', $fullName);
+    }
+
+    public static function fullNameSnakeToNamespaceFormat(string $fullName): string
+    {
+        return str_replace('_', '\\', $fullName);
     }
 }
