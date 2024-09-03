@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/ForestAdmin/agent-php/compare/v1.10.3...v1.11.0) (2024-09-03)
+
+
+### Features
+
+* add polymorphic relations ([#109](https://github.com/ForestAdmin/agent-php/issues/109)) ([4048743](https://github.com/ForestAdmin/agent-php/commit/4048743fecd83af03cd66770a51bf1718db4e2fa))
+
 ## [1.10.3](https://github.com/ForestAdmin/agent-php/compare/v1.10.2...v1.10.3) (2024-09-02)
 
 
