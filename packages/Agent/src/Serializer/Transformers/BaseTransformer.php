@@ -8,8 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
-use Illuminate\Support\Str;
+use League\Fractal\Scope;
 use League\Fractal\TransformerAbstract;
 
 class BaseTransformer extends TransformerAbstract
@@ -60,26 +59,32 @@ class BaseTransformer extends TransformerAbstract
                 )
             ) {
                 $this->defaultIncludes[] = $key;
-
-                if ($value instanceof PolymorphicManyToOneSchema) {
-                    $foreignCollection = AgentFactory::get('datasource')->getCollection(CollectionUtils::fullNameToSnakeCase($data[$value->getForeignKeyTypeField()]));
-                    $this->addMethod(
-                        'include' . Str::ucfirst(Str::camel($key)),
-                        fn () => $this->item($data[$key], new BaseTransformer($foreignCollection->getName()), $foreignCollection->getName())
-                    );
-                } else {
-                    $this->addMethod(
-                        'include' . Str::ucfirst(Str::camel($key)),
-                        fn () => $this->item($data[$key], new BaseTransformer($value->getForeignCollection()), $value->getForeignCollection())
-                    );
-                }
-            } else {
-                $this->addMethod('include' . Str::ucfirst(Str::camel($key)), fn () => $this->null());
             }
-            unset($data[$key]);
         }
 
         return $data;
+    }
+
+    public function processIncludedResources(Scope $scope, $data)
+    {
+        $includedData = [];
+
+        $includes = $this->getDefaultIncludes();
+
+        foreach ($includes as $include) {
+            $relation = AgentFactory::get('datasource')->getCollection($this->name)->getFields()[$include];
+            $item = $this->item($data[$include], new BaseTransformer($relation->getForeignCollection()), $relation->getForeignCollection());
+
+            $includedData[$include] = [
+                'data' => [
+                    'type'               => $item->getResourceKey(),
+                    'id'                 => $item->getData()['id'],
+                    'attributes'         => $item->getData(),
+                ],
+            ];
+        }
+
+        return $includedData === [] ? false : $includedData;
     }
 
     public function setName(string $name): void
