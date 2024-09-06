@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 use function ForestAdmin\config;
@@ -20,15 +21,17 @@ class AgentFactory
 {
     protected const TTL_CONFIG = 3600;
 
+    public const TTL = 3600;
+
     protected const TTL_SCHEMA = 7200;
 
     protected DatasourceCustomizer $customizer;
 
     protected bool $hasEnvSecret;
 
-    protected static $datasource;
+    public static ?array $fileCacheOptions;
 
-    protected static ?array $fileCacheOptions;
+    protected ?DatasourceContract $datasource = null;
 
     public function __construct(protected array $config)
     {
@@ -79,8 +82,10 @@ class AgentFactory
 
     public function build(): void
     {
-        if (! Cache::has('datasource')) {
-            Cache::put('datasource', new SerializableClosure(fn () => $this->customizer->getDatasource()));
+        if ($this->datasource === null) {
+            $this->datasource = $this->customizer->getDatasource();
+            Cache::put('forestAgent', $this, self::TTL);
+
             self::sendSchema();
         }
     }
@@ -124,13 +129,10 @@ class AgentFactory
 
     public static function getDatasource()
     {
-        if (Cache::has('datasource')) {
-            $closure = Cache::get('datasource');
+        /** @var self $instance */
+        $instance = Cache::get('forestAgent');
 
-            return $closure();
-        }
-
-        return self::$datasource;
+        return $instance->getDatasourceInstance();
     }
 
     /**
@@ -179,5 +181,10 @@ class AgentFactory
         );
 
         Cache::put('logger', new SerializableClosure(fn () => $logger));
+    }
+
+    public function getDatasourceInstance(): ?DatasourceContract
+    {
+        return $this->datasource;
     }
 }
