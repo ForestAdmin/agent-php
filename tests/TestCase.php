@@ -46,6 +46,7 @@ class TestCase extends BaseTestCase
         $datasource = clone $datasource;
         $this->invokeProperty($this->agent, 'datasource', $datasource);
 
+        Cache::put('forestAgent', $this->agent);
         Cache::put('forest.has_permission', true, 10);
     }
 
@@ -64,6 +65,7 @@ class TestCase extends BaseTestCase
         $property->setAccessible(true);
 
         if (! is_null($setData)) {
+            $setData = $setData === 'null' ? null : $setData;
             $property->setValue($object, $setData);
         }
 

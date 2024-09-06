@@ -59,6 +59,7 @@ class BaseTransformer extends TransformerAbstract
                 )
             ) {
                 $this->defaultIncludes[] = $key;
+                unset($data[$key]);
             }
         }
 

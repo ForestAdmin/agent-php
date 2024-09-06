@@ -29,6 +29,7 @@ beforeEach(function () {
             ->addChart('myChart', fn ($context, ResultBuilder $resultBuilder) => $resultBuilder->value(34))
             ->addChart('mySmartChart', fn ($context) => [])
     );
+    $this->invokeProperty($this->agent, 'datasource', 'null');
     $this->agent->build();
     $_GET['record_id'] = 1;
     $request = Request::createFromGlobals();

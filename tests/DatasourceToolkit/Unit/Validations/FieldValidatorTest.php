@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\FieldValidator;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
@@ -20,6 +21,12 @@ describe('validate()', function () {
                     originKey: 'id',
                     originKeyTarget: 'id',
                     foreignCollection: 'owner',
+                ),
+                'commentable' => new PolymorphicManyToOneSchema(
+                    foreignKeyTypeField: 'commentableType',
+                    foreignKey: 'commentableId',
+                    foreignKeyTargets: ['Car' => 'id'],
+                    foreignCollections: ['Car']
                 ),
             ]
         );
@@ -70,14 +77,14 @@ describe('validate()', function () {
     test('should throw when the suffix is different of "Asterisk character"', function () use ($before) {
         $before($this);
         $collection = $this->bucket['collection'];
-        expect(FieldValidator::validate($collection, 'owner:name'));
-    })->throws(ForestException::class, '🌳🌳🌳 Unexpected nested field name under generic relation: cars.owner');
+        expect(FieldValidator::validate($collection, 'commentable:foo'));
+    })->throws(ForestException::class, '🌳🌳🌳 Unexpected nested field foo under generic relation: cars.commentable');
 
     test('should throw when the requested field is of type column', function () use ($before) {
         $before($this);
         $collection = $this->bucket['collection'];
         expect(FieldValidator::validate($collection, 'id:address'));
-    })->throws(ForestException::class, '🌳🌳🌳 Unexpected nested field address under generic relation: cars.id');
+    })->throws(ForestException::class, '🌳🌳🌳 Unexpected field type: cars.id (found Column)');
 
     test('should validate field when the value is an array', function () use ($before) {
         $before($this);

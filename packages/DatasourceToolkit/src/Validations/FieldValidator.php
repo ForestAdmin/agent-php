@@ -54,7 +54,7 @@ class FieldValidator
                 throw new ForestException(
                     'Unexpected field type: ' .
                     $collection->getName() . '.' . $prefix .
-                    ' (found ' . $relation->getType()
+                    ' (found ' . $relation->getType() . ')'
                 );
             }
 

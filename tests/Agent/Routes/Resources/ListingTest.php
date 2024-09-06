@@ -216,6 +216,7 @@ test('handleRequest() should return a response 200', function () use ($before) {
                             'type'       => 'DriverLicence',
                             'id'         => 1,
                             'attributes' => [
+                                'id'        => 1,
                                 'reference' => 'AAA456789',
                             ],
                         ],
@@ -223,6 +224,7 @@ test('handleRequest() should return a response 200', function () use ($before) {
                             'type'       => 'DriverLicence',
                             'id'         => 2,
                             'attributes' => [
+                                'id'        => 2,
                                 'reference' => 'BBB456789',
                             ],
                         ],

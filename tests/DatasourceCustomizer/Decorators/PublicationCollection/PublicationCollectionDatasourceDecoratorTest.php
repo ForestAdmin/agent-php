@@ -158,7 +158,6 @@ describe('PublicationCollection', function () {
     test('removeCollection() on a collection that have a polymorphic relation should throw an error', function () {
         $datasource = $this->bucket['datasource'];
         $decoratedDataSource = new PublicationCollectionDatasourceDecorator($datasource);
-        $decoratedDataSource->build();
 
         expect(fn () => $decoratedDataSource->removeCollection('Person'))
             ->toThrow(ForestException::class, "🌳🌳🌳 Cannot remove Person because it's a potential target of polymorphic relation Comment.commentable");

@@ -120,7 +120,6 @@ describe('RenameCollectionDatasourceDecorator', function () {
     test('renameCollections() should thrown when collection has polymorphic association', function () {
         $datasource = $this->bucket['datasource'];
         $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
-        $decoratedDataSource->build();
 
         expect(fn () => $decoratedDataSource->renameCollections(['Book' => 'BookRenamed']))
             ->toThrow(ForestException::class, "🌳🌳🌳 Cannot rename collection Book because it's a target of a polymorphic relation 'Comment.commentable'");
