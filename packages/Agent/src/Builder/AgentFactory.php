@@ -3,15 +3,14 @@
 namespace ForestAdmin\AgentPHP\Agent\Builder;
 
 use Closure;
-use DI\Container;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Facades\Logger;
-use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
 use ForestAdmin\AgentPHP\Agent\Services\LoggerServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestHttpApi;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 use function ForestAdmin\config;
@@ -22,19 +21,22 @@ class AgentFactory
 {
     protected const TTL_CONFIG = 3600;
 
+    public const TTL = 3600;
+
     protected const TTL_SCHEMA = 7200;
 
     protected DatasourceCustomizer $customizer;
 
     protected bool $hasEnvSecret;
 
-    protected static Container $container;
+    public static ?array $fileCacheOptions;
+
+    protected ?DatasourceContract $datasource = null;
 
     public function __construct(protected array $config)
     {
         $this->hasEnvSecret = isset($config['envSecret']);
         $this->customizer = new DatasourceCustomizer();
-        $this->buildContainer();
         $this->buildCache();
         $this->buildLogger();
     }
@@ -47,7 +49,7 @@ class AgentFactory
             $serializableConfig = $this->config;
 
             if (isset($this->config['customizeErrorMessage']) && is_callable($this->config['customizeErrorMessage']) && ! is_string($this->config['customizeErrorMessage'])) {
-                self::$container->set('customizeErrorMessage', new SerializableClosure($this->config['customizeErrorMessage']));
+                Cache::put('customizeErrorMessage', new SerializableClosure($this->config['customizeErrorMessage']));
             }
 
             unset($serializableConfig['logger'], $serializableConfig['customizeErrorMessage']);
@@ -80,9 +82,12 @@ class AgentFactory
 
     public function build(): void
     {
-        self::$container->set('datasource', $this->customizer->getDatasource());
+        if ($this->datasource === null) {
+            $this->datasource = $this->customizer->getDatasource();
+            Cache::put('forestAgent', $this, self::TTL);
 
-        self::sendSchema();
+            self::sendSchema();
+        }
     }
 
     /**
@@ -108,18 +113,26 @@ class AgentFactory
         return $this;
     }
 
-    public static function getContainer(): ?Container
-    {
-        return self::$container ?? null;
-    }
-
     public static function get(string $key)
     {
-        if (self::$container->has($key)) {
-            return self::$container->get($key);
+        if ($key === 'datasource') {
+            return self::getDatasource();
         }
 
-        return null;
+        return Cache::get($key);
+    }
+
+    public static function getFileCacheOptions(): ?array
+    {
+        return self::$fileCacheOptions ?? null;
+    }
+
+    public static function getDatasource()
+    {
+        /** @var self $instance */
+        $instance = Cache::get('forestAgent');
+
+        return $instance->getDatasourceInstance();
     }
 
     /**
@@ -146,19 +159,17 @@ class AgentFactory
         }
     }
 
-    private function buildContainer(): void
-    {
-        self::$container = new Container();
-    }
-
     private function buildCache(): void
     {
-        $filesystem = new Filesystem();
-        $directory = $this->config['cacheDir'];
-        self::$container->set('cache', new CacheServices($filesystem, $directory));
-
         if ($this->hasEnvSecret) {
-            self::$container->get('cache')->add('config', $this->config, self::TTL_CONFIG);
+            if(! Cache::apcuEnabled()) {
+                $filesystem = new Filesystem();
+                $directory = $this->config['cacheDir'];
+                $disabledApcuCache = $this->config['disabledApcuCache'] ?? false;
+                self::$fileCacheOptions = compact('filesystem', 'directory', 'disabledApcuCache');
+            }
+
+            Cache::add('config', $this->config, self::TTL_CONFIG);
         }
     }
 
@@ -169,6 +180,11 @@ class AgentFactory
             logger: $this->config['logger'] ?? null
         );
 
-        self::$container->set('logger', $logger);
+        Cache::put('logger', new SerializableClosure(fn () => $logger));
+    }
+
+    public function getDatasourceInstance(): ?DatasourceContract
+    {
+        return $this->datasource;
     }
 }

@@ -25,21 +25,17 @@ class DatasourceCustomizer
     {
         if (isset($options['include']) || isset($options['exclude'])) {
             $datasource = new PublicationCollectionDatasourceDecorator($datasource);
-            $datasource->build();
             $datasource->keepCollectionsMatching($options['include'] ?? [], $options['exclude'] ?? []);
         }
 
         if (isset($options['rename'])) {
             $datasource = new RenameCollectionDatasourceDecorator($datasource);
-            $datasource->build();
             $datasource->renameCollections($options['rename'] ?? []);
         }
 
         $datasource->getCollections()->each(
             fn ($collection) => $this->compositeDatasource->addCollection($collection)
         );
-
-        $this->stack->build();
 
         return $this;
     }

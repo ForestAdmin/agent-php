@@ -23,7 +23,7 @@ class BaseDatasource extends ForestDatasource implements BaseDatasourceContract
         'sqlsrv'  => 'pdo_sqlsrv',
     ];
 
-    public function __construct(array $databaseConfig)
+    public function __construct(protected array $databaseConfig)
     {
         parent::__construct();
 
@@ -63,7 +63,7 @@ class BaseDatasource extends ForestDatasource implements BaseDatasourceContract
 
         if ($databaseConfig['driver'] === 'sqlite') {
             $config = [
-                'path'      => $databaseConfig['database'],
+                'path' => $databaseConfig['database'],
             ];
         } else {
             $config = [
@@ -79,5 +79,22 @@ class BaseDatasource extends ForestDatasource implements BaseDatasourceContract
         $config['url'] = $databaseConfig['url'] ?? null;
 
         $this->doctrineConnection = DriverManager::getConnection($config);
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function __sleep(): array
+    {
+        return ['collections', 'charts', 'databaseConfig'];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function __wakeup(): void
+    {
+        $this->makeOrm($this->databaseConfig);
+        $this->makeDoctrineConnection($this->databaseConfig);
     }
 }

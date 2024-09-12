@@ -59,7 +59,7 @@ class RenameCollectionDatasourceDecorator extends DatasourceDecorator
         // Rename collection
         if ($currentName !== $newName) {
             // Check new name is not already used
-            if ($this->collections->some(fn ($collection) => $collection->getName() === $newName)) {
+            if ($this->getCollections()->some(fn ($collection) => $collection->getName() === $newName)) {
                 throw new ForestException("The given new collection name $newName is already defined in the dataSource");
             }
 

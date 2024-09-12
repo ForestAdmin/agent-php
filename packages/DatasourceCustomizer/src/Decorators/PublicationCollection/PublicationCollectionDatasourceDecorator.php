@@ -38,7 +38,7 @@ class PublicationCollectionDatasourceDecorator extends DatasourceDecorator
     {
         $this->validateCollectionNames([...$includes, ...$excludes]);
 
-        foreach ($this->collections->keys() as $name) {
+        foreach ($this->getCollections()->keys() as $name) {
             if (($includes && ! in_array($name, $includes, true)) || in_array($name, $excludes, true)) {
                 $this->removeCollection($name);
             }
@@ -55,7 +55,7 @@ class PublicationCollectionDatasourceDecorator extends DatasourceDecorator
 
         // Tell all collections that their schema is dirty: if we removed a collection, all
         // relations to this collection are now invalid and should be unpublished.
-        foreach ($this->collections as $collection) {
+        foreach ($this->getCollections() as $collection) {
             $collection->markSchemaAsDirty();
         }
     }

@@ -114,7 +114,6 @@ describe('Computed collection', function () {
         $testCase->buildAgent($datasource);
 
         $decoratedDataSource = new PublicationCollectionDatasourceDecorator($datasource);
-        $decoratedDataSource->build();
 
         $newBook = $decoratedDataSource->getCollection('Book');
         $newBookPersons = $decoratedDataSource->getCollection('BookPerson');

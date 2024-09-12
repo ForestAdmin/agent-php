@@ -79,7 +79,6 @@ describe('RenameCollectionDecoratorCollection', function () {
         $this->buildAgent($datasource);
 
         $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
-        $decoratedDataSource->build();
         $this->bucket = compact('decoratedDataSource');
 
     });

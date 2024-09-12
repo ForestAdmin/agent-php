@@ -1,6 +1,6 @@
 <?php
 
-use ForestAdmin\AgentPHP\Agent\Services\CacheServices;
+use ForestAdmin\AgentPHP\Agent\Services\FileCacheServices;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
@@ -15,6 +15,7 @@ const FOREST_PERMISSIONS_EXPIRATION_IN_SECONDS = 60;
 define("AGENT_OPTIONS", [
     'projectDir'            => sys_get_temp_dir(),
     'cacheDir'              => sys_get_temp_dir() . '/forest-cache',
+    'disabledApcuCache'     => true,
     'schemaPath'            => sys_get_temp_dir() . '/.forestadmin-schema.json',
     'authSecret'            => AUTH_SECRET,
     'envSecret'             => SECRET,
@@ -34,9 +35,7 @@ uses(TestCase::class)->in(
 uses()
     ->beforeEach(
         function () {
-            $filesystem = new Filesystem();
-            $directory = sys_get_temp_dir() . '/forest-cache' ;
-            $cache = new CacheServices($filesystem, $directory);
+            $cache = new FileCacheServices(new Filesystem(), AGENT_OPTIONS['cacheDir']);
             $cache->flush();
 
             $_GET = [];

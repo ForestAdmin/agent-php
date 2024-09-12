@@ -52,7 +52,6 @@ describe('Computed collection', function () {
         $testCase->buildAgent($datasource);
 
         $datasourceDecorator = new DatasourceDecorator($datasource, HookCollection::class);
-        $datasourceDecorator->build();
 
         $decoratedTransaction = $datasourceDecorator->getCollection('Transaction');
         $testCase->bucket = compact('datasource', 'datasourceDecorator', 'collectionTransactions', 'decoratedTransaction', 'records', 'aggregateResult');

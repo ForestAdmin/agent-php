@@ -62,7 +62,7 @@ class BinaryCollection extends CollectionDecorator
 
     public function setBinaryMode(string $name, string $type): void
     {
-        $field = $this->childCollection->getFields()[$name];
+        $field = $this->childCollection->getFields()->get($name);
 
         if ($field === null) {
             throw new \Exception('Field not found');

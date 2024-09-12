@@ -25,7 +25,6 @@ describe('ChartDecorator', function () {
         $this->buildAgent($datasource);
 
         $datasourceDecorator = new ChartDataSourceDecorator($datasource);
-        $datasourceDecorator->build();
 
         $this->bucket['datasourceDecorator'] = $datasourceDecorator;
     });
@@ -75,7 +74,6 @@ describe('ChartDecorator', function () {
         $datasource->addCollection($collectionBook);
         $this->buildAgent($datasource);
         $chartDatasource = new ChartDataSourceDecorator($datasource);
-        $chartDatasource->build();
 
         expect(static fn () => $chartDatasource->addChart('myChart', fn () => true))
             ->toThrow(ForestException::class, "🌳🌳🌳 Chart 'myChart' already exists.");
@@ -85,9 +83,7 @@ describe('ChartDecorator', function () {
         $datasource = new Datasource();
         $this->buildAgent($datasource);
         $chartDatasource1 = new ChartDataSourceDecorator($datasource);
-        $chartDatasource1->build();
         $chartDatasource2 = new ChartDataSourceDecorator($chartDatasource1);
-        $chartDatasource2->build();
         $chartDatasource2->addChart('myChart', fn () => true);
         $chartDatasource1->addChart('myChart', fn () => true);
 

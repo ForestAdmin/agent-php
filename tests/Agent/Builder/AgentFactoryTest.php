@@ -30,7 +30,7 @@ test('addDatasource() should add datasource to the datasourceCustomizer', functi
         ->toEqual('User');
 });
 
-test('build() should add datasource to the container', function () {
+test('build() should add datasource into the cache', function () {
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
     $collectionUser->addFields(
@@ -51,7 +51,6 @@ test('build() should add datasource to the container', function () {
     $mockAgent->build();
 
     $expected = new DecoratorsStack($datasource);
-    $expected->build();
 
     expect(AgentFactory::get('datasource')->getCollections()->first())
         ->toEqual($expected->dataSource->getCollections()->first());
@@ -59,8 +58,9 @@ test('build() should add datasource to the container', function () {
 
 test('buildLogger() should call in construct and add logger to the agent container', function () {
     new AgentFactory(AGENT_OPTIONS);
+    $serializableLogger = AgentFactory::get('logger');
 
-    expect(AgentFactory::get('logger'))->toBeInstanceOf(LoggerServices::class);
+    expect($serializableLogger())->toBeInstanceOf(LoggerServices::class);
 });
 
 test('createAgent() should add a new logger instance to the agent container', function () {
@@ -73,7 +73,7 @@ test('createAgent() should add a new logger instance to the agent container', fu
         ]
     );
 
-    expect(AgentFactory::get('logger'))->not->toEqual($oldLogger);
+    expect(AgentFactory::get('logger')())->not->toEqual($oldLogger());
 });
 
 test('createAgent() should add a serialized closure customizeErrorMessage to the agent container', function () {

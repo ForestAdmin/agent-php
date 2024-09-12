@@ -10,7 +10,7 @@ beforeEach(closure: function () {
     global $doctrineDatasource;
     $this->initDatabase();
     $config = ORMSetup::createAttributeMetadataConfiguration([__DIR__ . '/Entity'], false);
-    $entityManager = new EntityManager($this->getConnection()->getDoctrineConnection(), $config);
+    $entityManager = new EntityManager($this->getDoctrineConnection(), $config);
     $doctrineDatasource = new DoctrineDatasource($entityManager, TestCase::DB_CONFIG);
 });
 

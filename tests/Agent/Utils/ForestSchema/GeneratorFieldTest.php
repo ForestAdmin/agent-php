@@ -131,6 +131,32 @@ beforeEach(function () {
     $this->bucket['datasource'] = $datasource;
 });
 
+test('buildSchema() should generate Column', function () {
+    $schema = GeneratorField::buildSchema(
+        $this->bucket['datasource']->getCollection('Person'),
+        'id'
+    );
+
+    expect($schema)->toEqual(
+        [
+            'defaultValue' => null,
+            'enums'        => [],
+            'field'        => 'id',
+            'integration'  => null,
+            'inverseOf'    => null,
+            'isFilterable' => false,
+            'isPrimaryKey' => true,
+            'isReadOnly'   => false,
+            'isRequired'   => false,
+            'isSortable'   => true,
+            'isVirtual'    => false,
+            'reference'    => null,
+            'type'         => 'Number',
+            'validations'  => [],
+        ]
+    );
+});
+
 test('buildSchema() should generate relation One to One', function () {
     $schema = GeneratorField::buildSchema(
         $this->bucket['datasource']->getCollection('Person'),

@@ -24,7 +24,6 @@ describe('getInverseRelation() when inverse relations is missing', function () {
         $this->buildAgent($datasource);
 
         $datasourceDecorator = new DatasourceDecorator($datasource, ActionCollection::class);
-        $datasourceDecorator->build();
 
         $baseAction = new BaseAction(
             scope: ActionScope::SINGLE,

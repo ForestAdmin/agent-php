@@ -2,44 +2,36 @@
 
 namespace ForestAdmin;
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 
 // @codeCoverageIgnoreStart
 
 if (! function_exists(__NAMESPACE__ . '\cache')) {
     function cache(string $key, $value = null, ?int $ttl = 60)
     {
-        $container = AgentFactory::getContainer();
         if ($value !== null) {
-            return $container->get('cache')->put($key, $value, $ttl);
+            return Cache::put($key, $value, $ttl);
         }
 
-        return $container->get('cache')->get($key);
+        return Cache::get($key);
     }
 }
 
 if (! function_exists(__NAMESPACE__ . '\forget')) {
     function forget(string $key)
     {
-        $container = AgentFactory::getContainer();
-
-        return $container->get('cache')->forget($key);
+        return Cache::forget($key);
     }
 }
 
 if (! function_exists(__NAMESPACE__ . '\cacheRemember')) {
     function cacheRemember(string $key, \Closure $callback, ?int $ttl = 60)
     {
-        $container = AgentFactory::getContainer();
-
-        return $container->get('cache')->remember($key, $callback, $ttl);
+        return Cache::remember($key, $callback, $ttl);
     }
 }
 
 if (! function_exists(__NAMESPACE__ . '\config')) {
-    /**
-     * @throws ErrorException
-     */
     function config(?string $key = null)
     {
         $config = cache('config');

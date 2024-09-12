@@ -43,7 +43,7 @@ class FieldValidator
                 throw new ForestException('Relation not found: ' . $collection->getName() . '.' . $prefix);
             }
 
-            if ($relation->getType() !== 'ManyToOne' && $suffix !== '*') {
+            if ($relation->getType() === 'PolymorphicManyToOne' && $suffix !== '*') {
                 throw new ForestException(
                     'Unexpected nested field ' . $suffix .
                     ' under generic relation: ' . $collection->getName() . '.' . $prefix
@@ -54,7 +54,7 @@ class FieldValidator
                 throw new ForestException(
                     'Unexpected field type: ' .
                     $collection->getName() . '.' . $prefix .
-                    ' (found ' . $relation->getType()
+                    ' (found ' . $relation->getType() . ')'
                 );
             }
 

@@ -2,7 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Facades;
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Services\LoggerServices;
 
 /**
@@ -16,8 +15,8 @@ class Logger extends Facade
 {
     public static function getFacadeObject()
     {
-        $container = AgentFactory::getContainer();
+        $serializableLogger = Cache::get('logger');
 
-        return $container->get('logger');
+        return $serializableLogger();
     }
 }

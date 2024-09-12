@@ -63,7 +63,6 @@ describe('Computed collection', function () {
         $datasource->addCollection($collectionProduct);
 
         $datasourceDecorator = new DatasourceDecorator($datasource, EmptyCollection::class);
-        $datasourceDecorator->build();
 
         $testCase->buildAgent($datasource);
 

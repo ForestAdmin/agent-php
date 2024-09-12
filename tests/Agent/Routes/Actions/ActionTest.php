@@ -59,7 +59,6 @@ function factoryAction(TestCase $testCase, $smartAction): Actions
     $testCase->buildAgent($datasource);
 
     $datasourceDecorator = new DatasourceDecorator($datasource, ActionCollection::class);
-    $datasourceDecorator->build();
 
     $collection = $datasourceDecorator->getCollection('User');
     $collection->addAction($smartAction[0], $smartAction[1]);
@@ -194,7 +193,6 @@ test('when a action is create, the action route should return the appropriate ro
     $this->buildAgent($datasource);
 
     $datasourceDecorator = new DatasourceDecorator($datasource, ActionCollection::class);
-    $datasourceDecorator->build();
 
     $collection = $datasourceDecorator->getCollection('User');
     $closure = fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO');

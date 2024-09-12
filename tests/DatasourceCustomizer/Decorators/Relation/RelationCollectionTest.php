@@ -131,7 +131,6 @@ describe('RelationCollection', function () {
         $datasource->addCollection($collectionPerson);
         $this->buildAgent($datasource);
         $datasourceDecorator = new DatasourceDecorator($datasource, RelationCollection::class);
-        $datasourceDecorator->build();
 
         $this->bucket = compact('datasource', 'datasourceDecorator');
     });

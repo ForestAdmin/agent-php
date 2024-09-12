@@ -104,29 +104,4 @@ class DecoratorsStack
             $this->applyQueuedCustomizations();
         }
     }
-
-    public function build(): void
-    {
-        $this->empty->build();
-        $this->earlyComputed->build();
-        $this->earlyOpEmulate->build();
-        $this->earlyOpReplace->build();
-        $this->relation->build();
-        $this->lateComputed->build();
-        $this->lateOpEmulate->build();
-        $this->lateOpReplace->build();
-        $this->search->build();
-        $this->segment->build();
-        $this->sort->build();
-        $this->chart->build();
-        $this->action->build();
-        $this->schema->build();
-        $this->write->build();
-        $this->hook->build();
-        $this->validation->build();
-        $this->binary->build();
-        $this->publication->build();
-        $this->renameField->build();
-        $this->dataSource->build();
-    }
 }

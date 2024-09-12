@@ -16,7 +16,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 
-describe('BinaryCollectin', function () {
+describe('BinaryCollection', function () {
     beforeEach(function () {
         $datasource = new Datasource();
         $collectionFavorite = new Collection($datasource, 'Favorite');
@@ -50,7 +50,6 @@ describe('BinaryCollectin', function () {
         $this->buildAgent($datasource);
 
         $datasourceDecorator = new DatasourceDecorator($datasource, BinaryCollection::class);
-        $datasourceDecorator->build();
 
         $this->bucket = [$datasourceDecorator, $collectionFavorite, $collectionBook];
     });

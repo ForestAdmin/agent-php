@@ -102,7 +102,6 @@ describe('Computed collection', function () {
         $testCase->buildAgent($datasource);
 
         $datasourceDecorator = new DatasourceDecorator($datasource, ComputedCollection::class);
-        $datasourceDecorator->build();
 
         $datasourceDecorator->getCollection('Person')->registerComputed(
             'fullName',

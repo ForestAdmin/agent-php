@@ -38,7 +38,6 @@ describe('WriteSimpleCollection', function () {
         $testCase->buildAgent($datasource);
 
         $datasourceDecorator = new WriteDataSourceDecorator($datasource);
-        $datasourceDecorator->build();
 
         $newBook = $datasourceDecorator->getCollection('Book');
 

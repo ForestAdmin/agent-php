@@ -24,3 +24,7 @@ test('forgot should remove a cache key', function () {
 
     expect(Cache::get('foo'))->toBeNull();
 });
+
+test('enabled should return true', function () {
+    expect(Cache::enabled())->toBeTrue();
+});

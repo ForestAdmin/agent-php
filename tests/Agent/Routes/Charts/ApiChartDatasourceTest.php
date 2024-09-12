@@ -1,6 +1,7 @@
 <?php
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\ApiChartDatasource;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Chart\ResultBuilder;
@@ -13,12 +14,13 @@ beforeEach(function () {
     $datasource->addCollection($collectionBooks);
     $this->buildAgent($datasource);
 
-    $config = AgentFactory::getContainer()->get('cache')->get('config');
+    $config = Cache::get('config');
     unset($config['envSecret']);
-    AgentFactory::getContainer()->get('cache')->put('config', $config, 3600);
+    Cache::put('config', $config, 3600);
 
     $this->agent->addChart('myChart', fn ($context, ResultBuilder $resultBuilder) => $resultBuilder->value(34));
     $this->agent->addChart('mySmartChart', fn ($context) => []);
+    $this->invokeProperty($this->agent, 'datasource', 'null');
     $this->agent->build();
 
     $request = Request::createFromGlobals();

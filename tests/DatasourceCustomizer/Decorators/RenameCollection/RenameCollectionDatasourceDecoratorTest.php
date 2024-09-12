@@ -78,7 +78,6 @@ describe('RenameCollectionDatasourceDecorator', function () {
     test('replaceSearch() should return the real name when it is not renamed', function () {
         $datasource = $this->bucket['datasource'];
         $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
-        $decoratedDataSource->build();
 
         expect($decoratedDataSource->getCollection('Person')->getName())->toEqual('Person');
     });
@@ -86,7 +85,6 @@ describe('RenameCollectionDatasourceDecorator', function () {
     test('renameCollections() should rename a collection when the rename option is given', function () {
         $datasource = $this->bucket['datasource'];
         $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
-        $decoratedDataSource->build();
         $decoratedDataSource->renameCollections(['Person' => 'User']);
 
         expect(fn () => $decoratedDataSource->getCollection('Person'))->toThrow(ForestException::class, "🌳🌳🌳 Collection 'Person' has been renamed to 'User'")
@@ -96,7 +94,6 @@ describe('RenameCollectionDatasourceDecorator', function () {
     test('renameCollections() should throw an error if the given new name is already used', function () {
         $datasource = $this->bucket['datasource'];
         $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
-        $decoratedDataSource->build();
 
         expect(fn () => $decoratedDataSource->renameCollections(['Person' => 'Book']))
             ->toThrow(ForestException::class, '🌳🌳🌳 The given new collection name Book is already defined in the dataSource');
@@ -105,7 +102,6 @@ describe('RenameCollectionDatasourceDecorator', function () {
     test('renameCollections() should throw an error if the given old name does not exist', function () {
         $datasource = $this->bucket['datasource'];
         $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
-        $decoratedDataSource->build();
 
         expect(fn () => $decoratedDataSource->renameCollections(['Foo' => 'Bar']))
             ->toThrow(ForestException::class, '🌳🌳🌳 Collection Foo not found.');
@@ -114,7 +110,6 @@ describe('RenameCollectionDatasourceDecorator', function () {
     test('renameCollections() should thrown when renameCollections is called twice on the same collection', function () {
         $datasource = $this->bucket['datasource'];
         $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
-        $decoratedDataSource->build();
 
         $decoratedDataSource->renameCollections(['Person' => 'User']);
 
@@ -125,7 +120,6 @@ describe('RenameCollectionDatasourceDecorator', function () {
     test('renameCollections() should thrown when collection has polymorphic association', function () {
         $datasource = $this->bucket['datasource'];
         $decoratedDataSource = new RenameCollectionDatasourceDecorator($datasource);
-        $decoratedDataSource->build();
 
         expect(fn () => $decoratedDataSource->renameCollections(['Book' => 'BookRenamed']))
             ->toThrow(ForestException::class, "🌳🌳🌳 Cannot rename collection Book because it's a target of a polymorphic relation 'Comment.commentable'");

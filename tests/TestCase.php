@@ -2,8 +2,10 @@
 
 namespace ForestAdmin\AgentPHP\Tests;
 
+use Doctrine\DBAL\DriverManager;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
+use ForestAdmin\AgentPHP\Agent\Services\FileCacheServices;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Connection;
@@ -23,6 +25,13 @@ class TestCase extends BaseTestCase
 
     public array $bucket = [];
 
+    public function __construct(string $name)
+    {
+        @class_alias(CacheMocked::class, FileCacheServices::class);
+
+        parent::__construct($name);
+    }
+
     public function buildAgent(Datasource $datasource, array $options = [])
     {
         $_SERVER['HTTP_AUTHORIZATION'] = BEARER;
@@ -33,11 +42,11 @@ class TestCase extends BaseTestCase
             $options
         );
 
-        $this->agent = new AgentFactory($options, []);
-        $container = AgentFactory::getContainer();
-        $container->set('datasource', $datasource);
-        $this->invokeProperty($this->agent, 'container', $container);
+        $this->agent = new AgentFactory($options);
+        $datasource = clone $datasource;
+        $this->invokeProperty($this->agent, 'datasource', $datasource);
 
+        Cache::put('forestAgent', $this->agent);
         Cache::put('forest.has_permission', true, 10);
     }
 
@@ -56,6 +65,7 @@ class TestCase extends BaseTestCase
         $property->setAccessible(true);
 
         if (! is_null($setData)) {
+            $setData = $setData === 'null' ? null : $setData;
             $property->setValue($object, $setData);
         }
 
@@ -221,5 +231,13 @@ class TestCase extends BaseTestCase
     public function getConnection(): Connection
     {
         return $this->connection;
+    }
+
+    public function getDoctrineConnection()
+    {
+        $config['driver'] = 'pdo_sqlite';
+        $config['path'] = self::DB_CONFIG['database'];
+
+        return DriverManager::getConnection($config);
     }
 }

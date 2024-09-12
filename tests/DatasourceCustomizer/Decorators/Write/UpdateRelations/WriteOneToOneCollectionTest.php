@@ -46,7 +46,6 @@ describe('WriteManyToOneCollection', function () {
         $this->buildAgent($datasource);
 
         $datasourceDecorator = new WriteDataSourceDecorator($datasource);
-        $datasourceDecorator->build();
 
         $newBook = $datasourceDecorator->getCollection('Book');
         $newAuthor = $datasourceDecorator->getCollection('Person');

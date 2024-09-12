@@ -5,7 +5,7 @@ namespace ForestAdmin\AgentPHP\Agent\Services;
 use Carbon\Carbon;
 use Closure;
 use Exception;
-use ForestAdmin\AgentPHP\Agent\Contracts\Store;
+use ForestAdmin\AgentPHP\Agent\Contracts\Cache;
 use ForestAdmin\AgentPHP\Agent\Utils\Filesystem;
 use ForestAdmin\AgentPHP\Agent\Utils\LockableFile;
 use Illuminate\Contracts\Filesystem\LockTimeoutException;
@@ -13,17 +13,21 @@ use Illuminate\Contracts\Filesystem\LockTimeoutException;
 /**
  * @codeCoverageIgnore
  */
-class CacheServices implements Store
+class FileCacheServices implements Cache
 {
     public function __construct(protected Filesystem $files, protected string $directory, protected ?int $filePermission = null)
     {
     }
 
+    public function has($key)
+    {
+        $payload = $this->getPayload($key);
+
+        return $payload['data'] !== null && $payload['time'] !== null;
+    }
+
     /**
      * Retrieve an item from the cache by key.
-     *
-     * @param  string|array  $key
-     * @return mixed
      */
     public function get($key)
     {
@@ -38,7 +42,7 @@ class CacheServices implements Store
      * @param  int  $seconds
      * @return bool
      */
-    public function put($key, $value, $seconds)
+    public function put($key, $value, $seconds = 0)
     {
         $this->ensureCacheDirectoryExists($path = $this->path($key));
 
@@ -58,11 +62,7 @@ class CacheServices implements Store
     }
 
     /**
-     * Get an item from the cache, or execute the given Closure and store the result.
-     * @param         $key
-     * @param Closure $callback
-     * @param         $ttl
-     * @return bool
+    @@ -66,13 +57,7 @@ public function put($key, $value, $seconds)
      */
     public function remember($key, Closure $callback, $ttl)
     {
@@ -76,12 +76,7 @@ class CacheServices implements Store
     }
 
     /**
-     * Store an item in the cache if the key doesn't exist.
-     *
-     * @param  string  $key
-     * @param  mixed  $value
-     * @param  int  $seconds
-     * @return bool
+    @@ -85,111 +70,7 @@ public function remember($key, Closure $callback, $ttl)
      */
     public function add($key, $value, $seconds)
     {
@@ -153,50 +148,7 @@ class CacheServices implements Store
     }
 
     /**
-     * Increment the value of an item in the cache.
-     *
-     * @param  string  $key
-     * @param  mixed  $value
-     * @return int
-     */
-    public function increment($key, $value = 1)
-    {
-        $raw = $this->getPayload($key);
-
-        return tap(((int) $raw['data']) + $value, function ($newValue) use ($key, $raw) {
-            $this->put($key, $newValue, $raw['time'] ?? 0);
-        });
-    }
-
-    /**
-     * Decrement the value of an item in the cache.
-     *
-     * @param  string  $key
-     * @param  mixed  $value
-     * @return int
-     */
-    public function decrement($key, $value = 1)
-    {
-        return $this->increment($key, $value * -1);
-    }
-
-    /**
-     * Store an item in the cache indefinitely.
-     *
-     * @param  string  $key
-     * @param  mixed  $value
-     * @return bool
-     */
-    public function forever($key, $value)
-    {
-        return $this->put($key, $value, 0);
-    }
-
-    /**
-     * Remove an item from the cache.
-     *
-     * @param  string  $key
-     * @return bool
+    @@ -200,11 +81,7 @@ public function forever($key, $value)
      */
     public function forget($key)
     {
@@ -207,11 +159,6 @@ class CacheServices implements Store
         return false;
     }
 
-    /**
-     * Remove all items from the cache.
-     *
-     * @return bool
-     */
     public function flush()
     {
         if (! $this->files->isDirectory($this->directory)) {
@@ -313,27 +260,9 @@ class CacheServices implements Store
         return $seconds === 0 || $time > 9999999999 ? 9999999999 : $time;
     }
 
-    public function getFilesystem()
-    {
-        return $this->files;
-    }
-
-    public function getDirectory()
-    {
-        return $this->directory;
-    }
-
     public function getPrefix()
     {
         return '';
-    }
-
-    public function many(array $keys)
-    {
-    }
-
-    public function putMany(array $values, $seconds)
-    {
     }
 
     /**

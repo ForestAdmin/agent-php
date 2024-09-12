@@ -112,7 +112,6 @@ describe('PublicationCollection', function () {
     test('should return all collections when no parameter is provided', function () {
         $datasource = $this->bucket['datasource'];
         $decoratedDataSource = new PublicationCollectionDatasourceDecorator($datasource);
-        $decoratedDataSource->build();
 
         expect($decoratedDataSource->getCollection('Book')->getName())
             ->toEqual($datasource->getCollection('Book')->getName())
@@ -123,7 +122,6 @@ describe('PublicationCollection', function () {
     test('keepCollectionsMatching() should throw an error if a name is unknown', function () {
         $datasource = $this->bucket['datasource'];
         $decoratedDataSource = new PublicationCollectionDatasourceDecorator($datasource);
-        $decoratedDataSource->build();
 
 
         expect(fn () => $decoratedDataSource->keepCollectionsMatching(['unknown']))
@@ -135,7 +133,6 @@ describe('PublicationCollection', function () {
     test('keepCollectionsMatching() should be able to remove "BookPerson" collection', function () {
         $datasource = $this->bucket['datasource'];
         $decoratedDataSource = new PublicationCollectionDatasourceDecorator($datasource);
-        $decoratedDataSource->build();
 
         $decoratedDataSource->keepCollectionsMatching(['Book', 'Person']);
 
@@ -149,7 +146,6 @@ describe('PublicationCollection', function () {
     test('keepCollectionsMatching() should be able to remove "books" collection', function () {
         $datasource = $this->bucket['datasource'];
         $decoratedDataSource = new PublicationCollectionDatasourceDecorator($datasource);
-        $decoratedDataSource->build();
         $decoratedDataSource->keepCollectionsMatching([], ['Book']);
 
 
@@ -162,7 +158,6 @@ describe('PublicationCollection', function () {
     test('removeCollection() on a collection that have a polymorphic relation should throw an error', function () {
         $datasource = $this->bucket['datasource'];
         $decoratedDataSource = new PublicationCollectionDatasourceDecorator($datasource);
-        $decoratedDataSource->build();
 
         expect(fn () => $decoratedDataSource->removeCollection('Person'))
             ->toThrow(ForestException::class, "🌳🌳🌳 Cannot remove Person because it's a potential target of polymorphic relation Comment.commentable");

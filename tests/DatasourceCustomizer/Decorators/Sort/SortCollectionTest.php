@@ -208,7 +208,6 @@ describe('SortChildCollection', function () {
         $datasource->addCollection($collectionUser);
 
         $datasourceDecorator = new DatasourceDecorator($datasource, SortCollection::class);
-        $datasourceDecorator->build();
 
         $testCase->buildAgent($datasource);
 

@@ -54,11 +54,4 @@ class DatasourceDecorator extends Datasource
     {
         return $this->childDataSource->renderChart($caller, $name);
     }
-
-    public function build()
-    {
-        foreach ($this->childDataSource->getCollections() as $collection) {
-            $this->addCollection(new $this->classCollectionDecorator($collection, $this));
-        }
-    }
 }
