@@ -3,7 +3,7 @@
     "description": "Subtree split of the PHP Datasource Doctrine component",
     "type": "library",
     "license": "GPL-3.0-or-later",
-    "version": "1.11.0",
+    "version": "1.11.1",
     "require": {
         "php": "^8.0",
         "illuminate/collections": "^8.0|^9.0|^10.0|^11.0",

@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/ForestAdmin/agent-php/compare/v1.11.0...v1.11.1) (2024-09-12)
+
+
+### Bug Fixes
+
+* store agent in cache to improve performance ([#110](https://github.com/ForestAdmin/agent-php/issues/110)) ([61684eb](https://github.com/ForestAdmin/agent-php/commit/61684eb136fb4195febe7d7031b39829442780a5))
+
 # [1.11.0](https://github.com/ForestAdmin/agent-php/compare/v1.10.3...v1.11.0) (2024-09-03)
 
 
