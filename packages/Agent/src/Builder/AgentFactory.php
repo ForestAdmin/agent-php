@@ -56,6 +56,8 @@ class AgentFactory
             Cache::put('config', $serializableConfig, self::TTL_CONFIG);
         }
 
+        Cache::put('forestAgent', new SerializableClosure(fn () => $this), self::TTL);
+
         return $this;
     }
 
@@ -84,7 +86,7 @@ class AgentFactory
     {
         if ($this->datasource === null) {
             $this->datasource = $this->customizer->getDatasource();
-            Cache::put('forestAgent', $this, self::TTL);
+            Cache::put('forestAgent', new SerializableClosure(fn () => $this), self::TTL);
 
             self::sendSchema();
         }
@@ -130,7 +132,8 @@ class AgentFactory
     public static function getDatasource()
     {
         /** @var self $instance */
-        $instance = Cache::get('forestAgent');
+        $forestAgentClosure = Cache::get('forestAgent');
+        $instance = $forestAgentClosure();
 
         return $instance->getDatasourceInstance();
     }
