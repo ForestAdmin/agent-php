@@ -1,3 +1,10 @@
+## [1.11.2](https://github.com/ForestAdmin/agent-php/compare/v1.11.1...v1.11.2) (2024-09-16)
+
+
+### Bug Fixes
+
+* packages version ([#116](https://github.com/ForestAdmin/agent-php/issues/116)) ([62ffcda](https://github.com/ForestAdmin/agent-php/commit/62ffcda78cb44a0b68d1787c5289f21c89ba56e2))
+
 ## [1.11.1](https://github.com/ForestAdmin/agent-php/compare/v1.11.0...v1.11.1) (2024-09-12)
 
 
