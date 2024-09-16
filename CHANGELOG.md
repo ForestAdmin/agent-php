@@ -1,3 +1,10 @@
+## [1.11.6](https://github.com/ForestAdmin/agent-php/compare/v1.11.5...v1.11.6) (2024-09-16)
+
+
+### Bug Fixes
+
+* **composer:** remove ext-apcu from dependencies ([#119](https://github.com/ForestAdmin/agent-php/issues/119)) ([7a2d5bc](https://github.com/ForestAdmin/agent-php/commit/7a2d5bcf311d7671f85b51c02b0eacf501c364d4))
+
 ## [1.11.5](https://github.com/ForestAdmin/agent-php/compare/v1.11.4...v1.11.5) (2024-09-16)
 
 
