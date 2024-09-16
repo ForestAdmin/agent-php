@@ -18,14 +18,39 @@ module.exports = {
       {
         prepareCmd:
           'sed -i "s/LIANA_VERSION = \'.*\'/LIANA_VERSION = \'${nextRelease.version}\'/g" packages/Agent/src/Utils/ForestSchema/SchemaEmitter.php; ' +
+          // Main composer.json
           'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' composer.json; ' +
+          // Agent package
           'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/Agent/composer.json; ' +
+          'sed -i \'s/"forestadmin/php-datasource-customizer": ".*"/"forestadmin/php-datasource-customizer": "\^${nextRelease.version}"/g\' packages/Agent/composer.json; ' +
+          'sed -i \'s/"forestadmin/php-datasource-toolkit": ".*"/"forestadmin/php-datasource-toolkit": "\^${nextRelease.version}"/g\' packages/Agent/composer.json; ' +
+          // BaseDatasource package
           'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/BaseDatasource/composer.json; ' +
+          'sed -i \'s/"forestadmin/php-agent-toolkit": ".*"/"forestadmin/php-agent-toolkit": "\^${nextRelease.version}"/g\' packages/BaseDatasource/composer.json; ' +
+          'sed -i \'s/"forestadmin/php-datasource-toolkit": ".*"/"forestadmin/php-datasource-toolkit": "\^${nextRelease.version}"/g\' packages/BaseDatasource/composer.json; ' +
+          // DatasourceCustomizer package
           'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/DatasourceCustomizer/composer.json; ' +
+          'sed -i \'s/"forestadmin/php-datasource-toolkit": ".*"/"forestadmin/php-datasource-toolkit": "\^${nextRelease.version}"/g\' packages/DatasourceCustomizer/composer.json; ' +
+          'sed -i \'s/"forestadmin/php-agent-toolkit": ".*"/"forestadmin/php-agent-toolkit": "\^${nextRelease.version}"/g\' packages/DatasourceCustomizer/composer.json; ' +
+          // DatasourceDoctrine package
           'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/DatasourceDoctrine/composer.json; ' +
+          'sed -i \'s/"forestadmin/php-agent-toolkit": ".*"/"forestadmin/php-agent-toolkit": "\^${nextRelease.version}"/g\' packages/DatasourceDoctrine/composer.json; ' +
+          'sed -i \'s/"forestadmin/php-datasource-toolkit": ".*"/"forestadmin/php-datasource-toolkit": "\^${nextRelease.version}"/g\' packages/DatasourceDoctrine/composer.json; ' +
+          'sed -i \'s/"forestadmin/php-base-datasource": ".*"/"forestadmin/php-base-datasource": "\^${nextRelease.version}"/g\' packages/DatasourceDoctrine/composer.json; ' +
+          // DatasourceDummy package
           'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/DatasourceDummy/composer.json; ' +
+          'sed -i \'s/"forestadmin/php-agent-toolkit": ".*"/"forestadmin/php-agent-toolkit": "\^${nextRelease.version}"/g\' packages/DatasourceDummy/composer.json; ' +
+          'sed -i \'s/"forestadmin/php-datasource-toolkit": ".*"/"forestadmin/php-datasource-toolkit": "\^${nextRelease.version}"/g\' packages/DatasourceDummy/composer.json; ' +
+          // DatasourceToolkit package
           'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/DatasourceToolkit/composer.json; ' +
+          'sed -i \'s/"forestadmin/php-agent-toolkit": ".*"/"forestadmin/php-agent-toolkit": "\^${nextRelease.version}"/g\' packages/DatasourceToolkit/composer.json; ' +
+          'sed -i \'s/"forestadmin/php-datasource-customizer": ".*"/"forestadmin/php-datasource-customizer": "\^${nextRelease.version}"/g\' packages/DatasourceToolkit/composer.json; ' +
+          // DatasourceEloquent package
           'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' packages/DatasourceEloquent/composer.json; ' +
+          'sed -i \'s/"forestadmin/php-agent-toolkit": ".*"/"forestadmin/php-agent-toolkit": "\^${nextRelease.version}"/g\' packages/DatasourceEloquent/composer.json; ' +
+          'sed -i \'s/"forestadmin/php-datasource-toolkit": ".*"/"forestadmin/php-datasource-toolkit": "\^${nextRelease.version}"/g\' packages/DatasourceEloquent/composer.json; ' +
+          'sed -i \'s/"forestadmin/php-base-datasource": ".*"/"forestadmin/php-base-datasource": "\^${nextRelease.version}"/g\' packages/DatasourceEloquent/composer.json; ' +
+          // package.json
           'sed -i \'s/"version": ".*"/"version": "${nextRelease.version}"/g\' package.json;',
       },
     ],
