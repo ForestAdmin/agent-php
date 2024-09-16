@@ -2,7 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Services;
 
-use Closure;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Level;
@@ -14,7 +13,7 @@ class LoggerServices
 
     protected Logger $defaultLogger;
 
-    public function __construct(protected string $loggerLevel = 'Info', protected ?Closure $logger = null)
+    public function __construct(protected string $loggerLevel = 'Info', protected $logger = null)
     {
         $this->defaultLogger = new Logger('forestadmin');
         $output = "[%datetime%] forestadmin.%level_name%: %message% %context% %extra%\n";

@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
+use Laravel\SerializableClosure\SerializableClosure;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use SQLite3;
 
@@ -46,7 +47,7 @@ class TestCase extends BaseTestCase
         $datasource = clone $datasource;
         $this->invokeProperty($this->agent, 'datasource', $datasource);
 
-        Cache::put('forestAgent', $this->agent);
+        Cache::put('forestAgent', new SerializableClosure(fn () => $this->agent));
         Cache::put('forest.has_permission', true, 10);
     }
 
