@@ -1,3 +1,10 @@
+## [1.11.5](https://github.com/ForestAdmin/agent-php/compare/v1.11.4...v1.11.5) (2024-09-16)
+
+
+### Bug Fixes
+
+* **agent:** serialize agent with closure to put in cache ([#115](https://github.com/ForestAdmin/agent-php/issues/115)) ([775cabc](https://github.com/ForestAdmin/agent-php/commit/775cabcd705a68c07612836010494fd657dceb8e))
+
 ## [1.11.4](https://github.com/ForestAdmin/agent-php/compare/v1.11.3...v1.11.4) (2024-09-16)
 
 
