@@ -6,7 +6,6 @@
     "require": {
         "composer/class-map-generator": "^1.0",
         "doctrine/orm": "^2.7.3",
-        "ext-apcu": "*",
         "firebase/php-jwt": "^6.2",
         "galbar/jsonpath": "^2.0",
         "guzzlehttp/guzzle": "^6.0|^7.4",
