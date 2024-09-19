@@ -54,20 +54,22 @@ class EloquentCollection extends BaseCollection
 
         foreach ($relationships as $name => $type) {
             $relation = $this->model->$name();
-            match (get_class($relation)) {
-                BelongsTo::class      => $this->addBelongsToRelation($name, $relation),
-                BelongsToMany::class  => $this->addBelongsToManyRelation($name, $relation),
-                HasMany::class        => $this->addHasManyRelation($name, $relation),
-                HasOne::class         => $this->addHasOneRelation($name, $relation),
-                default               => null
-            };
-            if ($this->supportPolymorphicRelations) {
-                match(get_class($relation)) {
-                    MorphMany::class    => $this->addPolymorphicOneToManyRelation($name, $relation),
-                    MorphOne::class     => $this->addPolymorphicOneToOneRelation($name, $relation),
-                    MorphTo::class      => $this->addPolymorphicManyToOneRelation($name, $relation),
-                    default             => null
+            if (in_array(class_basename($relation->getRelated()), $this->datasource->getModels(), true)) {
+                match (get_class($relation)) {
+                    BelongsTo::class      => $this->addBelongsToRelation($name, $relation),
+                    BelongsToMany::class  => $this->addBelongsToManyRelation($name, $relation),
+                    HasMany::class        => $this->addHasManyRelation($name, $relation),
+                    HasOne::class         => $this->addHasOneRelation($name, $relation),
+                    default               => null
                 };
+                if ($this->supportPolymorphicRelations) {
+                    match(get_class($relation)) {
+                        MorphMany::class    => $this->addPolymorphicOneToManyRelation($name, $relation),
+                        MorphOne::class     => $this->addPolymorphicOneToOneRelation($name, $relation),
+                        MorphTo::class      => $this->addPolymorphicManyToOneRelation($name, $relation),
+                        default             => null
+                    };
+                }
             }
         }
     }
