@@ -1,3 +1,10 @@
+## [1.11.7](https://github.com/ForestAdmin/agent-php/compare/v1.11.6...v1.11.7) (2024-09-19)
+
+
+### Bug Fixes
+
+* **eloquent:** ensure the model is available before creating a relationship ([#120](https://github.com/ForestAdmin/agent-php/issues/120)) ([34e990a](https://github.com/ForestAdmin/agent-php/commit/34e990a676679a8d683963570062b71150505232))
+
 ## [1.11.6](https://github.com/ForestAdmin/agent-php/compare/v1.11.5...v1.11.6) (2024-09-16)
 
 
