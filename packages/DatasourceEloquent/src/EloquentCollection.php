@@ -54,7 +54,7 @@ class EloquentCollection extends BaseCollection
 
         foreach ($relationships as $name => $type) {
             $relation = $this->model->$name();
-            if (in_array(class_basename($relation->getRelated()), $this->datasource->getModels(), true)) {
+            if (in_array(get_class($relation->getRelated()), $this->datasource->getModels(), true)) {
                 match (get_class($relation)) {
                     BelongsTo::class      => $this->addBelongsToRelation($name, $relation),
                     BelongsToMany::class  => $this->addBelongsToManyRelation($name, $relation),
