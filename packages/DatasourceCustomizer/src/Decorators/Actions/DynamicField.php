@@ -2,7 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions;
 
-class DynamicField
+class DynamicField extends BaseFormElement
 {
     public function __construct(
         protected string $type,
@@ -15,7 +15,14 @@ class DynamicField
         protected \Closure|string|null $defaultValue = null,
         protected \Closure|string|null $collectionName = null,
         protected \Closure|array|null $enumValues = null,
+        protected ?string $placeholder = null,
+        array $extraArguments = [] // workaround like kwargs in other languages
     ) {
+        parent::__construct($type);
+
+        foreach ($extraArguments as $argumentKey => $argumentValue) {
+            $this->$argumentKey = $argumentValue;
+        }
     }
 
     public function __set($key, $value)
@@ -191,6 +198,16 @@ class DynamicField
     public function setEnumValues(array|\Closure|null $enumValues): void
     {
         $this->enumValues = $enumValues;
+    }
+
+    public function getPlaceholder(): ?string
+    {
+        return $this->placeholder;
+    }
+
+    public function setPlaceholder(?string $placeholder): void
+    {
+        $this->placeholder = $placeholder;
     }
 
     public function isStatic(): bool
