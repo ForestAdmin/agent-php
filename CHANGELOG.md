@@ -1,3 +1,10 @@
+## [1.11.8](https://github.com/ForestAdmin/agent-php/compare/v1.11.7...v1.11.8) (2024-09-24)
+
+
+### Bug Fixes
+
+* **serializer:** use primary key of  the foreign collection for serialize the data ([#121](https://github.com/ForestAdmin/agent-php/issues/121)) ([1f93606](https://github.com/ForestAdmin/agent-php/commit/1f936069128bba3e7c0c543496df1baed0e383ff))
+
 ## [1.11.7](https://github.com/ForestAdmin/agent-php/compare/v1.11.6...v1.11.7) (2024-09-19)
 
 
