@@ -17,7 +17,7 @@ class JsonApiSerializer extends FractalJsonApiSerializer
     public function item(?string $resourceKey, array $data): array
     {
         $collection = AgentFactory::get('datasource')
-            ->getCollections($resourceKey)
+            ->getCollections()
             ->first(fn ($item) => $item->getName() === $resourceKey);
 
         $resource = [
