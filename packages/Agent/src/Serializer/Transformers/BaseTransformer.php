@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\Agent\Serializer\Transformers;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyRelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
@@ -78,9 +79,9 @@ class BaseTransformer extends TransformerAbstract
 
             $includedData[$include] = [
                 'data' => [
-                    'type'               => $item->getResourceKey(),
-                    'id'                 => $item->getData()['id'],
-                    'attributes'         => $item->getData(),
+                    'type'          => $item->getResourceKey(),
+                    'id'            => Id::packId(AgentFactory::get('datasource')->getCollection($this->name), $data),
+                    'attributes'    => $item->getData(),
                 ],
             ];
         }
