@@ -5,6 +5,8 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions;
 class DynamicField extends BaseFormElement
 {
     public function __construct(
+        //        TODO
+        //        protected string $id,
         protected string $type,
         protected string $label,
         protected ?string $description = null,
@@ -19,6 +21,9 @@ class DynamicField extends BaseFormElement
         array $extraArguments = [] // workaround like kwargs in other languages
     ) {
         parent::__construct($type);
+        //        TODO
+        //        $this->id = $id ?? $label;
+        //        $this->label = $label ?? $id;
 
         foreach ($extraArguments as $argumentKey => $argumentValue) {
             $this->$argumentKey = $argumentValue;
