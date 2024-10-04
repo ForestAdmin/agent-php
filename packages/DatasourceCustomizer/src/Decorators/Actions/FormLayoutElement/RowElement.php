@@ -6,9 +6,6 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseFormElement
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
-/**
- * @codeCoverageIgnore
- */
 class RowElement extends BaseFormElement
 {
     public function __construct(

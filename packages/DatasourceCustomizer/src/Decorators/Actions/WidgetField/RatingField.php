@@ -8,7 +8,7 @@ use ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField\WidgetValidato
 
 /**
  * @codeCoverageIgnore
- */
+*/
 class RatingField extends DynamicField
 {
     use Widget;
