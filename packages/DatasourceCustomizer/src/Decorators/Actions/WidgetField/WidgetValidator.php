@@ -1,6 +1,6 @@
 <?php
 
-namespace ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField;
+namespace ForestAdmin\AgentPHP\ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 

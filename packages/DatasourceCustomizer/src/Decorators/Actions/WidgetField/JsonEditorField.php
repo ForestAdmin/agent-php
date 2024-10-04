@@ -1,6 +1,6 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\WidgetField;
+namespace ForestAdmin\AgentPHP\ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\WidgetField;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
