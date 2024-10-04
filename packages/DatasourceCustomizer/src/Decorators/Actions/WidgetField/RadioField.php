@@ -2,8 +2,8 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\WidgetField;
 
+use DatasourceCustomizer\Decorators\Action\WidgetField\WidgetValidator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
-use ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField\WidgetValidator;
 
 /**
  * @codeCoverageIgnore
@@ -16,7 +16,7 @@ class RadioField extends DynamicField
 
     public function __construct($options)
     {
-        parent::__construct($options['type'], $options['label']);
+        parent::__construct(...$options);
         WidgetValidator::validateArg($options, 'options', ['type' => 'present']);
         WidgetValidator::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::STRING_LIST]]);
         $this->widget = 'Radio';
