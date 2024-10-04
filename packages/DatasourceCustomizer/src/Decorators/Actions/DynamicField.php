@@ -17,7 +17,8 @@ class DynamicField extends BaseFormElement
         protected \Closure|string|null $defaultValue = null,
         protected \Closure|string|null $collectionName = null,
         protected \Closure|array|null $enumValues = null,
-        protected ?string $placeholder = null,
+        // TODO
+        // protected ?string $placeholder = null,
         array $extraArguments = [] // workaround like kwargs in other languages
     ) {
         parent::__construct($type);
