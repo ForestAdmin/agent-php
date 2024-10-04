@@ -15,8 +15,8 @@ class CheckboxGroupField extends DynamicField
     public function __construct($options)
     {
         parent::__construct($options['type'], $options['label']);
-        WidgetField::validateArg($options, 'options', ['type' => 'present']);
-        WidgetField::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::STRING_LIST, FieldType::NUMBER_LIST]]);
+        WidgetValidator::validateArg($options, 'options', ['type' => 'present']);
+        WidgetValidator::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::STRING_LIST, FieldType::NUMBER_LIST]]);
         $this->widget = 'CheckboxGroup';
         $this->options = $options['options'];
     }

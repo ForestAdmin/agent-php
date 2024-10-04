@@ -4,7 +4,7 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\WidgetFie
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
-use ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField\WidgetField;
+use ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField\WidgetValidator;
 
 class JsonEditorField extends DynamicField
 {
@@ -13,7 +13,7 @@ class JsonEditorField extends DynamicField
     public function __construct($options)
     {
         parent::__construct($options['type'], $options['label']);
-        WidgetField::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::STRING, FieldType::STRING_LIST]]);
+        WidgetValidator::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::STRING, FieldType::STRING_LIST]]);
         $this->widget = 'JsonEditor';
     }
 }

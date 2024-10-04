@@ -4,7 +4,7 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\WidgetFie
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
-use ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField\WidgetField;
+use ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField\WidgetValidator;
 
 class TagInputField extends DynamicField
 {
@@ -15,8 +15,8 @@ class TagInputField extends DynamicField
     public function __construct($options)
     {
         parent::__construct($options['type'], $options['label']);
-        WidgetField::validateArg($options, 'options', ['type' => 'present']);
-        WidgetField::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::STRING_LIST]]);
+        WidgetValidator::validateArg($options, 'options', ['type' => 'present']);
+        WidgetValidator::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::STRING_LIST]]);
         $this->widget = 'TagInput';
         $this->options = $options['options'];
     }

@@ -4,7 +4,7 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\WidgetFie
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
-use ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField\WidgetField;
+use ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField\WidgetValidator;
 
 class NumberInputField extends DynamicField
 {
@@ -19,7 +19,7 @@ class NumberInputField extends DynamicField
     public function __construct($options)
     {
         parent::__construct($options['type'], $options['label']);
-        WidgetField::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::NUMBER]]);
+        WidgetValidator::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::NUMBER]]);
         $this->widget = 'NumberInput';
         $this->step = $options['step'] ?? null;
         $this->min = $options['min'] ?? null;

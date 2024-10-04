@@ -17,7 +17,7 @@ class ColorPickerField extends DynamicField
     public function __construct($options)
     {
         parent::__construct($options['type'], $options['label']);
-        WidgetField::validateArg($options, 'enable_opacity', ['type' => 'contains', 'value' => [FieldType::STRING]]);
+        WidgetValidator::validateArg($options, 'enable_opacity', ['type' => 'contains', 'value' => [FieldType::STRING]]);
         $this->widget = 'ColorPicker';
         $this->enableOpacity = $options['enable_opacity'] ?? null;
         $this->quickPalette = $options['quick_palette'] ?? null;

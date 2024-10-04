@@ -12,7 +12,7 @@ class TimePickerField extends DynamicField
     public function __construct($options)
     {
         parent::__construct($options['type'], $options['label']);
-        WidgetField::validateArg($options, 'type', ['type' => 'contains', 'value' => ['Time']]);
+        WidgetValidator::validateArg($options, 'type', ['type' => 'contains', 'value' => ['Time']]);
         $this->widget = 'TimePicker';
     }
 }

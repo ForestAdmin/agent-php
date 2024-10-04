@@ -13,7 +13,7 @@ class CheckboxField extends DynamicField
     public function __construct($options)
     {
         parent::__construct($options['type'], $options['label']);
-        WidgetField::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::BOOLEAN]]);
+        WidgetValidator::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::BOOLEAN]]);
         $this->widget = 'Checkbox';
     }
 }

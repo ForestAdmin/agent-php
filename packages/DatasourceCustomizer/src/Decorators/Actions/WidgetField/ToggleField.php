@@ -4,7 +4,7 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\WidgetFie
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
-use ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField\WidgetField;
+use ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField\WidgetValidator;
 
 class ToggleField extends DynamicField
 {
@@ -17,7 +17,7 @@ class ToggleField extends DynamicField
     public function __construct($options)
     {
         parent::__construct($options['type'], $options['label']);
-        WidgetField::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::BOOLEAN]]);
+        WidgetValidator::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::BOOLEAN]]);
         $this->widget = 'Toggle';
         $this->onLabel = $options['on_label'] ?? 'On';
         $this->offLabel = $options['off_label'] ?? 'Off';

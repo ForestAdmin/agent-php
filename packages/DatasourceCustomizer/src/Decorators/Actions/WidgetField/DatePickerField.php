@@ -21,7 +21,7 @@ class DatePickerField extends DynamicField
     public function __construct($options)
     {
         parent::__construct($options['type'], $options['label']);
-        WidgetField::validateArg($options, 'type', [
+        WidgetValidator::validateArg($options, 'type', [
             'type'  => 'contains',
             'value' => [FieldType::DATE, FieldType::DATE_ONLY, FieldType::STRING],
         ]);

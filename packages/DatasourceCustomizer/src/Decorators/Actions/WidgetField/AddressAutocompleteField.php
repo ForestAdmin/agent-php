@@ -12,7 +12,7 @@ class AddressAutocompleteField extends DynamicField
     public function __construct($options)
     {
         parent::__construct($options['type'], $options['label']);
-        WidgetField::validateArg($options, 'type', ['type' => 'contains', 'value' => ['String']]);
+        WidgetValidator::validateArg($options, 'type', ['type' => 'contains', 'value' => ['String']]);
         $this->widget = 'AddressAutocomplete';
     }
 }

@@ -18,8 +18,8 @@ class CurrencyInputField extends DynamicField
     public function __construct($options)
     {
         parent::__construct($options['type'], $options['label']);
-        WidgetField::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::NUMBER]]);
-        WidgetField::validateArg($options, 'currency', ['type' => 'present']);
+        WidgetValidator::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::NUMBER]]);
+        WidgetValidator::validateArg($options, 'currency', ['type' => 'present']);
         $this->widget = 'CurrencyInput';
         $this->currency = $options['currency'];
         $this->base = $options['base'] ?? 'Unit';

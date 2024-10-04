@@ -15,8 +15,8 @@ class DropdownField extends DynamicField
     public function __construct($options)
     {
         parent::__construct($options['type'], $options['label']);
-        WidgetField::validateArg($options, 'options', ['type' => 'present']);
-        WidgetField::validateArg($options, 'type', [
+        WidgetValidator::validateArg($options, 'options', ['type' => 'present']);
+        WidgetValidator::validateArg($options, 'type', [
             'type'  => 'contains',
             'value' => [FieldType::DATE, FieldType::DATE_ONLY, FieldType::STRING, FieldType::STRING_LIST],
         ]);

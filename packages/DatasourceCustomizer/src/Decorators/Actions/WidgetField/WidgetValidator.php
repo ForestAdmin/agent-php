@@ -4,7 +4,7 @@ namespace ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
-class WidgetField
+class WidgetValidator
 {
     public static function validateArg($options, $attribute, $rule)
     {

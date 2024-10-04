@@ -4,7 +4,7 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\WidgetFie
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
-use ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField\WidgetField;
+use ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField\WidgetValidator;
 
 class TextAreaField extends DynamicField
 {
@@ -15,7 +15,7 @@ class TextAreaField extends DynamicField
     public function __construct($options)
     {
         parent::__construct($options['type'], $options['label']);
-        WidgetField::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::STRING]]);
+        WidgetValidator::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::STRING]]);
         $this->widget = 'TextArea';
         $this->rows = $options['rows'] ?? null;
     }

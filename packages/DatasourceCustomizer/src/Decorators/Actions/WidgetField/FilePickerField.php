@@ -19,8 +19,8 @@ class FilePickerField extends DynamicField
     public function __construct($options)
     {
         parent::__construct($options['type'], $options['label']);
-        WidgetField::validateArg($options, 'options', ['type' => 'present']);
-        WidgetField::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::FILE, FieldType::FILE_LIST]]);
+        WidgetValidator::validateArg($options, 'options', ['type' => 'present']);
+        WidgetValidator::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::FILE, FieldType::FILE_LIST]]);
         $this->widget = 'FilePicker';
         $this->extensions = $options['extensions'] ?? null;
         $this->maxSizeMb = $options['max_size_mb'] ?? null;
