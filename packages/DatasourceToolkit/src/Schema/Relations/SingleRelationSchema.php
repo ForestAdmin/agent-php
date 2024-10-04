@@ -12,7 +12,7 @@ abstract class SingleRelationSchema extends RelationSchema
         protected string $foreignCollection,
         protected string $type,
     ) {
-        parent::__construct($foreignCollection, $type);
+        parent::__construct($type);
     }
 
     public function setOriginKey(string $originKey): void
@@ -28,5 +28,15 @@ abstract class SingleRelationSchema extends RelationSchema
     public function getOriginKeyTarget(): string
     {
         return $this->originKeyTarget;
+    }
+
+    public function getForeignCollection(): string
+    {
+        return $this->foreignCollection;
+    }
+
+    public function setForeignCollection(string $foreignCollection): void
+    {
+        $this->foreignCollection = $foreignCollection;
     }
 }

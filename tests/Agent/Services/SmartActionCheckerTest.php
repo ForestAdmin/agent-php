@@ -11,19 +11,20 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 
-function smartActionCheckerFactory($requesterId = false, $requestWithAllRecordsIdsExcluded = false)
+function smartActionCheckerFactory(TestCase $testCase, $requesterId = false, $requestWithAllRecordsIdsExcluded = false)
 {
     $datasource = new Datasource();
-    $collectionBooking = new Collection($datasource, 'Booking');
-    $collectionBooking->addFields(
+    $collection = new Collection($datasource, 'Booking');
+    $collection->addFields(
         [
             'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
             'title' => new ColumnSchema(columnType: PrimitiveType::STRING),
         ]
     );
-    $datasource->addCollection($collectionBooking);
-    buildAgent($datasource);
+    $datasource->addCollection($collection);
+    $testCase->buildAgent($datasource);
 
     $_POST = [
         'data' => [
@@ -57,7 +58,7 @@ function smartActionCheckerFactory($requesterId = false, $requestWithAllRecordsI
 
     if ($requestWithAllRecordsIdsExcluded) {
         $_POST['data']['attributes']['all_records'] = true;
-        $_POST['data']['attributes']['all_records_ids_excluded'] = [1,2,3];
+        $_POST['data']['attributes']['all_records_ids_excluded'] = [1, 2, 3];
     }
 
     $request = Request::createFromGlobals();
@@ -71,11 +72,12 @@ function smartActionCheckerFactory($requesterId = false, $requestWithAllRecordsI
         'selfApprovalEnabled'        => [],
     ];
 
-    return [$collectionBooking, $request, $smartAction];
+    $testCase->bucket = compact('collection', 'request', 'smartAction');
 }
 
 test('canExecute() should return true when the user can trigger the action', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory();
+    smartActionCheckerFactory($this);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
 
     $smartAction = array_merge($smartAction, ['triggerEnabled' => [1]]);
     $smartActionChecker = new SmartActionChecker($request, $collection, $smartAction, QueryStringParser::parseCaller($request), 1, new Filter());
@@ -84,13 +86,13 @@ test('canExecute() should return true when the user can trigger the action', fun
 });
 
 test('canExecute() should return true when the user can trigger the action with trigger conditions', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory();
-
+    smartActionCheckerFactory($this);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
     $smartAction = array_merge(
         $smartAction,
         [
-            'triggerEnabled'             => [1],
-            'triggerConditions'          => [
+            'triggerEnabled'    => [1],
+            'triggerConditions' => [
                 [
                     'filter' => [
                         'aggregator' => 'and',
@@ -109,7 +111,7 @@ test('canExecute() should return true when the user can trigger the action with 
         ]
     );
 
-    $collection = mock($collection)
+    $collection = \Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn([
             [
@@ -125,13 +127,13 @@ test('canExecute() should return true when the user can trigger the action with 
 });
 
 test('canExecute() should return true when the user can trigger the action with trigger conditions with all_records_ids_excluded not empty', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory(false, true);
-
+    smartActionCheckerFactory($this, false, true);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
     $smartAction = array_merge(
         $smartAction,
         [
-            'triggerEnabled'             => [1],
-            'triggerConditions'          => [
+            'triggerEnabled'    => [1],
+            'triggerConditions' => [
                 [
                     'filter' => [
                         'aggregator' => 'and',
@@ -150,7 +152,7 @@ test('canExecute() should return true when the user can trigger the action with 
         ]
     );
 
-    $collection = mock($collection)
+    $collection = \Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn([
             [
@@ -166,7 +168,8 @@ test('canExecute() should return true when the user can trigger the action with 
 });
 
 test('canExecute() should throw when the user try to trigger the action with approvalRequired and without approvalRequiredConditions', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory();
+    smartActionCheckerFactory($this);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
 
     $smartAction = array_merge($smartAction, [
         'triggerEnabled'             => [1],
@@ -180,7 +183,8 @@ test('canExecute() should throw when the user try to trigger the action with app
 });
 
 test('canExecute() should throw when the user try to trigger the action with approvalRequired and match approvalRequiredConditions', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory();
+    smartActionCheckerFactory($this);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
 
     $smartAction = array_merge($smartAction, [
         'triggerEnabled'             => [1],
@@ -203,7 +207,7 @@ test('canExecute() should throw when the user try to trigger the action with app
         ],
     ]);
 
-    $collection = mock($collection)
+    $collection = \Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn([
             [
@@ -218,7 +222,8 @@ test('canExecute() should throw when the user try to trigger the action with app
 });
 
 test('canExecute() should return true when the user try to trigger the action with approvalRequired without triggerConditions and correct role into approvalRequired', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory();
+    smartActionCheckerFactory($this);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
 
     $smartAction = array_merge($smartAction, [
         'triggerEnabled'             => [1],
@@ -241,7 +246,7 @@ test('canExecute() should return true when the user try to trigger the action wi
         ],
     ]);
 
-    $collection = mock($collection)
+    $collection = \Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn([
             [
@@ -256,7 +261,8 @@ test('canExecute() should return true when the user try to trigger the action wi
 });
 
 test('canExecute() should return true when the user try to trigger the action with approvalRequired with triggerConditions and correct role into approvalRequired', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory();
+    smartActionCheckerFactory($this);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
 
     $smartAction = array_merge($smartAction, [
         'triggerEnabled'             => [1],
@@ -295,7 +301,7 @@ test('canExecute() should return true when the user try to trigger the action wi
         ],
     ]);
 
-    $collection = mock($collection)
+    $collection = \Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn(
             [
@@ -318,7 +324,8 @@ test('canExecute() should return true when the user try to trigger the action wi
 });
 
 test('canExecute() should throw when the user roleId is not into triggerEnabled & approvalRequired', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory();
+    smartActionCheckerFactory($this);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
 
     $smartAction = array_merge($smartAction, [
         'triggerEnabled'             => [1000],
@@ -333,7 +340,8 @@ test('canExecute() should throw when the user roleId is not into triggerEnabled 
 });
 
 test('canExecute() should throw when smart action doesn\'t match with triggerConditions & approvalRequiredConditions', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory();
+    smartActionCheckerFactory($this);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
 
     $smartAction = array_merge($smartAction, [
         'triggerEnabled'             => [1],
@@ -372,7 +380,7 @@ test('canExecute() should throw when smart action doesn\'t match with triggerCon
         ],
     ]);
 
-    $collection = mock($collection)
+    $collection = \Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn(
             [
@@ -395,7 +403,12 @@ test('canExecute() should throw when smart action doesn\'t match with triggerCon
 });
 
 test('canExecute() should return true when the user can approve and there is no userApprovalConditions and requesterId is not the callerId', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory(20);
+    smartActionCheckerFactory($this, 20);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
+
+    $smartAction = array_merge($smartAction, [
+        'userApprovalEnabled' => [1],
+    ]);
 
     $smartActionChecker = new SmartActionChecker($request, $collection, $smartAction, QueryStringParser::parseCaller($request), 1, new Filter());
 
@@ -403,10 +416,12 @@ test('canExecute() should return true when the user can approve and there is no 
 });
 
 test('canExecute() should return true when the user can approve and there is no userApprovalConditions and user roleId is present into selfApprovalEnabled', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory(1);
+    smartActionCheckerFactory($this, 1);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
 
     $smartAction = array_merge($smartAction, [
-        'selfApprovalEnabled'        => [1],
+        'userApprovalEnabled' => [1],
+        'selfApprovalEnabled' => [1],
     ]);
 
     $smartActionChecker = new SmartActionChecker($request, $collection, $smartAction, QueryStringParser::parseCaller($request), 1, new Filter());
@@ -415,10 +430,12 @@ test('canExecute() should return true when the user can approve and there is no 
 });
 
 test('canExecute() should return true when the user can approve and the condition match with userApprovalConditions and requesterId is not the callerId', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory(20);
+    smartActionCheckerFactory($this, 20);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
 
     $smartAction = array_merge($smartAction, [
-        'userApprovalConditions'          => [
+        'userApprovalEnabled'    => [1],
+        'userApprovalConditions' => [
             [
                 'filter' => [
                     'aggregator' => 'and',
@@ -435,7 +452,7 @@ test('canExecute() should return true when the user can approve and the conditio
             ],
         ],
     ]);
-    $collection = mock($collection)
+    $collection = \Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn(
             [
@@ -453,10 +470,11 @@ test('canExecute() should return true when the user can approve and the conditio
 });
 
 test('canExecute() should return true when the user can approve and the condition match with userApprovalConditions and user roleId is present into selfApprovalEnabled', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory(1);
+    smartActionCheckerFactory($this, 1);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
 
     $smartAction = array_merge($smartAction, [
-        'userApprovalConditions'          => [
+        'userApprovalConditions' => [
             [
                 'filter' => [
                     'aggregator' => 'and',
@@ -472,9 +490,10 @@ test('canExecute() should return true when the user can approve and the conditio
                 'roleId' => 1,
             ],
         ],
-        'selfApprovalEnabled'             => [1],
+        'userApprovalEnabled'    => [1],
+        'selfApprovalEnabled'    => [1],
     ]);
-    $collection = mock($collection)
+    $collection = \Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn(
             [
@@ -492,7 +511,8 @@ test('canExecute() should return true when the user can approve and the conditio
 });
 
 test('canExecute() throw when the user try to approve when there is no userApprovalConditions and requesterId is equal to the callerId', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory(1);
+    smartActionCheckerFactory($this, 1);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
 
     $smartActionChecker = new SmartActionChecker($request, $collection, $smartAction, QueryStringParser::parseCaller($request), 1, new Filter());
 
@@ -500,10 +520,11 @@ test('canExecute() throw when the user try to approve when there is no userAppro
 });
 
 test('canExecute() should throw when the user try to approve and there is no userApprovalConditions and user roleId is not present into selfApprovalEnabled', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory(1);
+    smartActionCheckerFactory($this, 1);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
 
     $smartAction = array_merge($smartAction, [
-        'selfApprovalEnabled'        => [1000],
+        'selfApprovalEnabled' => [1000],
     ]);
 
     $smartActionChecker = new SmartActionChecker($request, $collection, $smartAction, QueryStringParser::parseCaller($request), 1, new Filter());
@@ -512,10 +533,11 @@ test('canExecute() should throw when the user try to approve and there is no use
 });
 
 test('canExecute() should throw when the user try to approve and the condition don\'t match with userApprovalConditions and requesterId is the callerId', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory(1);
+    smartActionCheckerFactory($this, 1);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
 
     $smartAction = array_merge($smartAction, [
-        'userApprovalConditions'          => [
+        'userApprovalConditions' => [
             [
                 'filter' => [
                     'aggregator' => 'and',
@@ -532,7 +554,7 @@ test('canExecute() should throw when the user try to approve and the condition d
             ],
         ],
     ]);
-    $collection = mock($collection)
+    $collection = \Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn(
             [
@@ -550,10 +572,11 @@ test('canExecute() should throw when the user try to approve and the condition d
 });
 
 test('canExecute() should throw when the user try to approve and the condition don\'t match with userApprovalConditions and requesterId is not the callerId', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory(20);
+    smartActionCheckerFactory($this, 20);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
 
     $smartAction = array_merge($smartAction, [
-        'userApprovalConditions'          => [
+        'userApprovalConditions' => [
             [
                 'filter' => [
                     'aggregator' => 'and',
@@ -570,7 +593,7 @@ test('canExecute() should throw when the user try to approve and the condition d
             ],
         ],
     ]);
-    $collection = mock($collection)
+    $collection = \Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn(
             [
@@ -588,10 +611,11 @@ test('canExecute() should throw when the user try to approve and the condition d
 });
 
 test('canExecute() should throw when the user try to approve and the condition don\'t match with userApprovalConditions and user roleId is not present into selfApprovalEnabled', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory(1);
+    smartActionCheckerFactory($this, 1);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
 
     $smartAction = array_merge($smartAction, [
-        'userApprovalConditions'          => [
+        'userApprovalConditions' => [
             [
                 'filter' => [
                     'aggregator' => 'and',
@@ -607,9 +631,9 @@ test('canExecute() should throw when the user try to approve and the condition d
                 'roleId' => 1,
             ],
         ],
-        'selfApprovalEnabled'             => [1000],
+        'selfApprovalEnabled'    => [1000],
     ]);
-    $collection = mock($collection)
+    $collection = \Mockery::mock($collection)
         ->shouldReceive('aggregate')
         ->andReturn(
             [
@@ -627,13 +651,14 @@ test('canExecute() should throw when the user try to approve and the condition d
 });
 
 test('canExecute() should throw with an unknown operators', function () {
-    [$collection, $request, $smartAction] = smartActionCheckerFactory();
+    smartActionCheckerFactory($this);
+    ['collection' => $collection, 'request' => $request, 'smartAction' => $smartAction] = $this->bucket;
 
     $smartAction = array_merge(
         $smartAction,
         [
-            'triggerEnabled'             => [1],
-            'triggerConditions'          => [
+            'triggerEnabled'    => [1],
+            'triggerConditions' => [
                 [
                     'filter' => [
                         'aggregator' => 'and',

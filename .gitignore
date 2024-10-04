@@ -12,8 +12,11 @@ vendor
 .phpunit.result.cache
 coverage
 coverage.xml
+.phpunit.cache
 
 #php_cs_fixer
 .php-cs-fixer.cache
 
 composer.lock
+
+tests/Datasets/database.sqlite

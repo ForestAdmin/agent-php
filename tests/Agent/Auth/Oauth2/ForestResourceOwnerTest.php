@@ -5,10 +5,8 @@ use Firebase\JWT\Key;
 use ForestAdmin\AgentPHP\Agent\Auth\OAuth2\ForestResourceOwner;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 
-use function ForestAdmin\config;
-
-dataset('forestResourceOwner', function () {
-    yield new ForestResourceOwner(
+beforeEach(function () {
+    $this->bucket['forestResourceOwner'] = new ForestResourceOwner(
         [
             'type'                              => 'users',
             'id'                                => '1',
@@ -32,11 +30,17 @@ dataset('forestResourceOwner', function () {
     );
 });
 
-test('getId() should return user id', function (ForestResourceOwner $forestResourceOwner) {
-    expect($forestResourceOwner->getId())->toEqual(1);
-})->with('forestResourceOwner');
+test('getId() should return user id', function () {
+    /** @var ForestResourceOwner $forestResourceOwner */
+    $forestResourceOwner = $this->bucket['forestResourceOwner'];
 
-test('toArray() should return all user data', function (ForestResourceOwner $forestResourceOwner) {
+    expect($forestResourceOwner->getId())->toEqual(1);
+});
+
+test('toArray() should return all user data', function () {
+    /** @var ForestResourceOwner $forestResourceOwner */
+    $forestResourceOwner = $this->bucket['forestResourceOwner'];
+
     expect($forestResourceOwner->toArray())
         ->toBeArray()
         ->toHaveKeys(['id', 'first_name', 'last_name', 'email', 'teams', 'tags', 'two_factor_authentication_enabled', 'two_factor_authentication_active', 'permission_level'])
@@ -59,16 +63,20 @@ test('toArray() should return all user data', function (ForestResourceOwner $for
             'two_factor_authentication_active'  => false,
             'permission_level'                  => 'admin',
         ]);
-})->with('forestResourceOwner');
+});
 
-test('expirationInSeconds() should return a timestamp', function (ForestResourceOwner $forestResourceOwner) {
+test('expirationInSeconds() should return a timestamp', function () {
+    /** @var ForestResourceOwner $forestResourceOwner */
+    $forestResourceOwner = $this->bucket['forestResourceOwner'];
+
     expect($forestResourceOwner->expirationInSeconds())->toBeInt();
-})->with('forestResourceOwner');
+});
 
-test('makeJwt() should return a JWT token', function (ForestResourceOwner $forestResourceOwner) {
-    (new AgentFactory(AGENT_OPTIONS, []));
-
+test('makeJwt() should return a JWT token', function () {
+    /** @var ForestResourceOwner $forestResourceOwner */
+    $forestResourceOwner = $this->bucket['forestResourceOwner'];
+    (new AgentFactory(AGENT_OPTIONS));
     $result = JWT::decode($forestResourceOwner->makeJwt(), new Key(AUTH_SECRET, 'HS256'));
 
     expect($result->id)->toEqual(1);
-})->with('forestResourceOwner');
+});

@@ -17,6 +17,7 @@ class ActionCollection extends CollectionDecorator
     public function addAction(string $name, BaseAction $action)
     {
         $this->actions[$name] = $action;
+        $this->markSchemaAsDirty();
     }
 
     public function getActions(): IlluminateCollection
@@ -39,13 +40,13 @@ class ActionCollection extends CollectionDecorator
         return $result ?? $resultBuilder->success();
     }
 
-    public function getForm(Caller $caller, string $name, ?array $data = null, ?Filter $filter = null): array
+    public function getForm(Caller $caller, string $name, ?array $data = null, ?Filter $filter = null, ?string $changeField = null): array
     {
         /** @var BaseAction $action */
         $action = $this->actions[$name] ?? null;
 
         if (! $action) {
-            return $this->childCollection->getForm($caller, $name, $data, $filter);
+            return $this->childCollection->getForm($caller, $name, $data, $filter, $changeField);
         }
 
         if ($action->getForm() === []) {
@@ -54,10 +55,10 @@ class ActionCollection extends CollectionDecorator
 
         $formValues = $data ?: [];
         $used = [];
-        $context = $this->getContext($caller, $action, $formValues, $filter, $used);
+        $context = $this->getContext($caller, $action, $formValues, $filter, $used, $changeField);
 
         $dynamicFields = $action->getForm();
-        $dynamicFields = $this->dropDefaults($context, $dynamicFields, empty($data), $formValues);
+        $dynamicFields = $this->dropDefaults($context, $dynamicFields, $formValues);
         $dynamicFields = $this->dropIfs($context, $dynamicFields);
         $fields = $this->dropDeferred($context, $dynamicFields);
         $used = $context->getUsed();
@@ -76,24 +77,27 @@ class ActionCollection extends CollectionDecorator
         return $fields;
     }
 
-    private function getContext(Caller $caller, BaseAction $action, array $formValues = [], ?Filter $filter = null, array &$used = []): ActionContext
+    private function getContext(Caller $caller, BaseAction $action, array $formValues = [], ?Filter $filter = null, array &$used = [], ?string $changeField = null): ActionContext
     {
         $filter = $filter ? new PaginatedFilter($filter->getConditionTree(), $filter->getSearch(), $filter->getSearchExtended(), $filter->getSegment()) : new PaginatedFilter();
         if ($action->getScope() === ActionScope::SINGLE) {
-            return new ActionContextSingle($this, $caller, $filter, $formValues, $used);
+            return new ActionContextSingle($this, $caller, $filter, $formValues, $used, $changeField);
         } else {
-            return new ActionContext($this, $caller, $filter, $formValues, $used);
+            return new ActionContext($this, $caller, $filter, $formValues, $used, $changeField);
         }
     }
 
-    private function dropDefaults(ActionContext $context, array $fields, bool $isFirstCall, array &$data): array
+    private function dropDefaults(ActionContext $context, array $fields, array &$data): array
     {
-        if ($isFirstCall) {
-            $defaults = collect($fields)->map(fn ($field) => $this->evaluate($context, $field->getDefaultValue()));
+        $unvaluedFields = collect($fields)->filter(fn ($field) => ! array_key_exists($field->getLabel(), $data));
+        $defaults = $unvaluedFields->map(fn ($field) => $this->evaluate($context, $field->getDefaultValue()));
 
-            foreach ($fields as $index => $field) {
-                $data[$field->getLabel()] = $defaults[$index];
-            }
+        foreach ($unvaluedFields as $index => $field) {
+            $data[$field->getLabel()] = $defaults[$index];
+        }
+
+        foreach ($fields as &$field) {
+            $field->setDefaultValue(null);
         }
 
         return $fields;

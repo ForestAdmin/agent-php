@@ -3,32 +3,28 @@
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
-function factoryCache()
-{
-    $datasource = new Datasource();
-    buildAgent($datasource);
-}
-
+beforeEach(fn () => $this->buildAgent(new Datasource()));
 afterEach(fn () => Cache::forget('foo'));
 
 test('put() should save into cache & get() should return the value of the key', function () {
-    factoryCache();
     Cache::put('foo', 'value', 2);
 
     expect(Cache::get('foo'))->toEqual('value');
 });
 
 test('remember should save cache and return the value of the key', function () {
-    factoryCache();
     Cache::remember('foo', fn () => 'value', 2);
 
     expect(Cache::get('foo'))->toEqual('value');
 });
 
 test('forgot should remove a cache key', function () {
-    factoryCache();
     Cache::put('foo', 'value', 2);
     Cache::forget('foo');
 
     expect(Cache::get('foo'))->toBeNull();
+});
+
+test('enabled should return true', function () {
+    expect(Cache::enabled())->toBeTrue();
 });

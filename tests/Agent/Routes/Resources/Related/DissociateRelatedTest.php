@@ -14,12 +14,14 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
 
-function factoryDissociateRelated($args = []): DissociateRelated
-{
+$before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
     $collectionUser->addFields(
@@ -39,6 +41,13 @@ function factoryDissociateRelated($args = []): DissociateRelated
                 foreignKeyTarget: 'id',
                 foreignCollection: 'House',
                 throughCollection: 'HouseUser'
+            ),
+            'comments' => new PolymorphicOneToManySchema(
+                originKey: 'commentableId',
+                originKeyTarget: 'id',
+                foreignCollection: 'Comment',
+                originTypeField: 'commentableType',
+                originTypeValue: 'User',
             ),
         ]
     );
@@ -95,8 +104,29 @@ function factoryDissociateRelated($args = []): DissociateRelated
         ]
     );
 
+    $collectionComment = new Collection($datasource, 'Comment');
+    $collectionComment->addFields(
+        [
+            'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true),
+            'title'           => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentable'     => new PolymorphicManyToOneSchema(
+                foreignKeyTypeField: 'commentableType',
+                foreignKey: 'commentableId',
+                foreignKeyTargets: [
+                    'Car'   => 'id',
+                    'User'  => 'id',
+                ],
+                foreignCollections: [
+                    'Car',
+                    'User',
+                ],
+            ),]
+    );
+
     if (isset($args['dissociate'])) {
-        $collectionUser = mock($collectionUser)
+        $collectionUser = \Mockery::mock($collectionUser)
             ->shouldReceive('dissociate')
             ->with(
                 \Mockery::type(Caller::class),
@@ -112,7 +142,8 @@ function factoryDissociateRelated($args = []): DissociateRelated
     $datasource->addCollection($collectionCar);
     $datasource->addCollection($collectionHouse);
     $datasource->addCollection($collectionHouseUser);
-    buildAgent($datasource);
+    $datasource->addCollection($collectionComment);
+    $testCase->buildAgent($datasource);
 
     $request = Request::createFromGlobals();
 
@@ -159,7 +190,7 @@ function factoryDissociateRelated($args = []): DissociateRelated
         config('permissionExpiration')
     );
 
-    $dissociate = mock(DissociateRelated::class)
+    $dissociate = \Mockery::mock(DissociateRelated::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('checkIp')
@@ -167,10 +198,10 @@ function factoryDissociateRelated($args = []): DissociateRelated
         ->andReturn(new Filter())
         ->getMock();
 
-    invokeProperty($dissociate, 'request', $request);
+    $testCase->invokeProperty($dissociate, 'request', $request);
 
     return $dissociate;
-}
+};
 
 test('make() should return a new instance of DissociateRelated with routes', function () {
     $dissociate = DissociateRelated::make();
@@ -179,7 +210,7 @@ test('make() should return a new instance of DissociateRelated with routes', fun
         ->and($dissociate->getRoutes())->toHaveKey('forest.related.dissociate');
 });
 
-test('handleRequest() on ManyToOneSchema relation should return a response 200', function () {
+test('handleRequest() on ManyToOneSchema relation should return a response 200', function () use ($before) {
     $_GET['data'] = [
         [
             'id'   => 1,
@@ -190,7 +221,7 @@ test('handleRequest() on ManyToOneSchema relation should return a response 200',
             'type' => 'Car',
         ],
     ];
-    $dissociate = factoryDissociateRelated(['dissociate' => true]);
+    $dissociate = $before($this, ['dissociate' => true]);
 
     expect($dissociate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'cars']))
         ->toBeArray()
@@ -202,7 +233,30 @@ test('handleRequest() on ManyToOneSchema relation should return a response 200',
         );
 });
 
-test('Delete mode on handleRequest() to a ManyToOneSchema relation should return a response 200', function () {
+test('handleRequest() on PolymorphicOneToManySchema relation should return a response 200', function () use ($before) {
+    $_GET['data'] = [
+        [
+            'id'   => 1,
+            'type' => 'Comment',
+        ],
+        [
+            'id'   => 2,
+            'type' => 'Comment',
+        ],
+    ];
+    $dissociate = $before($this, ['dissociate' => true]);
+
+    expect($dissociate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'comments']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'content' => null,
+                'status'  => 204,
+            ]
+        );
+});
+
+test('Delete mode on handleRequest() to a ManyToOneSchema relation should return a response 200', function () use ($before) {
     $_GET['delete'] = true;
     $_GET['data'] = [
         'attributes' => [
@@ -225,7 +279,7 @@ test('Delete mode on handleRequest() to a ManyToOneSchema relation should return
         ],
         'type'       => 'action-requests',
     ];
-    $dissociate = factoryDissociateRelated(['dissociate' => true]);
+    $dissociate = $before($this, ['dissociate' => true]);
 
     expect($dissociate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'cars']))
         ->toBeArray()
@@ -237,7 +291,7 @@ test('Delete mode on handleRequest() to a ManyToOneSchema relation should return
         );
 });
 
-test('Delete mode on handleRequest() to a ManyToManySchema relation should return a response 200', function () {
+test('Delete mode on handleRequest() to a ManyToManySchema relation should return a response 200', function () use ($before) {
     $_GET['delete'] = true;
     $_GET['data'] = [
         [
@@ -249,7 +303,7 @@ test('Delete mode on handleRequest() to a ManyToManySchema relation should retur
             'type' => 'House',
         ],
     ];
-    $dissociate = factoryDissociateRelated(['dissociate' => true]);
+    $dissociate = $before($this, ['dissociate' => true]);
 
     expect($dissociate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'houses']))
         ->toBeArray()
@@ -261,9 +315,33 @@ test('Delete mode on handleRequest() to a ManyToManySchema relation should retur
         );
 });
 
-test('handleRequest() should throw if there is no ids', function () {
+test('Delete mode on handleRequest() to a PolymorphicOneToManySchema relation should return a response 200', function () use ($before) {
+    $_GET['delete'] = true;
+    $_GET['data'] = [
+        [
+            'id'   => 1,
+            'type' => 'Comment',
+        ],
+        [
+            'id'   => 2,
+            'type' => 'Comment',
+        ],
+    ];
+    $dissociate = $before($this, ['dissociate' => true]);
+
+    expect($dissociate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'comments']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'content' => null,
+                'status'  => 204,
+            ]
+        );
+});
+
+test('handleRequest() should throw if there is no ids', function () use ($before) {
     $_GET['data'] = [];
-    $dissociate = factoryDissociateRelated(['dissociate' => true]);
+    $dissociate = $before($this, ['dissociate' => true]);
 
     expect(fn () => $dissociate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'cars']))
         ->toThrow(ForestException::class, '🌳🌳🌳 Expected no empty id list');

@@ -1,43 +1,44 @@
 <?php
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\ApiChartDatasource;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Chart\ResultBuilder;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
-function factoryChartDatasourceApi($args = []): ApiChartDatasource
-{
+beforeEach(function () {
     $datasource = new Datasource();
     $collectionBooks = new Collection($datasource, 'Book');
     $datasource->addCollection($collectionBooks);
-    $agent = buildAgent($datasource);
+    $this->buildAgent($datasource);
 
-    $config = AgentFactory::getContainer()->get('cache')->get('config');
+    $config = Cache::get('config');
     unset($config['envSecret']);
-    AgentFactory::getContainer()->get('cache')->put('config', $config, 3600);
+    Cache::put('config', $config, 3600);
 
-    $agent->addChart('myChart', fn ($context, ResultBuilder $resultBuilder) => $resultBuilder->value(34));
-    $agent->addChart('mySmartChart', fn ($context) => []);
-    $agent->build();
+    $this->agent->addChart('myChart', fn ($context, ResultBuilder $resultBuilder) => $resultBuilder->value(34));
+    $this->agent->addChart('mySmartChart', fn ($context) => []);
+    $this->invokeProperty($this->agent, 'datasource', 'null');
+    $this->agent->build();
 
     $request = Request::createFromGlobals();
 
-    $chart = mock(ApiChartDatasource::class)
+    $chart = \Mockery::mock(ApiChartDatasource::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($chart, 'request', $request);
-    invokeProperty($chart, 'datasource', AgentFactory::get('datasource'));
+    $this->invokeProperty($chart, 'request', $request);
+    $this->invokeProperty($chart, 'datasource', AgentFactory::get('datasource'));
 
-    return $chart;
-}
+    $this->bucket['chart'] = $chart;
+});
 
 test('handleApiChart() should return an array', function () {
-    $chartDatasourceApi = factoryChartDatasourceApi();
-    invokeProperty($chartDatasourceApi, 'chartName', 'myChart');
+    $chartDatasourceApi = $this->bucket['chart'];
+    $this->invokeProperty($chartDatasourceApi, 'chartName', 'myChart');
     $result = $chartDatasourceApi->handleApiChart();
 
     expect($result)
@@ -55,8 +56,8 @@ test('handleApiChart() should return an array', function () {
 });
 
 test('handleSmartChart() should return an array', function () {
-    $chartDatasourceApi = factoryChartDatasourceApi();
-    invokeProperty($chartDatasourceApi, 'chartName', 'mySmartChart');
+    $chartDatasourceApi = $this->bucket['chart'];
+    $this->invokeProperty($chartDatasourceApi, 'chartName', 'mySmartChart');
     $result = $chartDatasourceApi->handleSmartChart();
 
     expect($result)->toBeArray()->and($result['content']);

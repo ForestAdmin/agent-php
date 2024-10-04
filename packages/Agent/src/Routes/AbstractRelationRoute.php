@@ -5,7 +5,8 @@ namespace ForestAdmin\AgentPHP\Agent\Routes;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
 
 abstract class AbstractRelationRoute extends AbstractAuthenticatedRoute
 {
@@ -24,8 +25,15 @@ abstract class AbstractRelationRoute extends AbstractAuthenticatedRoute
         $this->datasource = AgentFactory::get('datasource');
         $this->collection = $this->datasource->getCollection($args['collectionName']);
 
-//        $relation = Schema::getToManyRelation($this->collection, $args['relationName']);
         $relation = $this->collection->getFields()[$args['relationName']];
-        $this->childCollection = $this->datasource->getCollection($relation->getForeignCollection());
+
+        if ($relation instanceof PolymorphicManyToOneSchema || $relation instanceof PolymorphicOneToOneSchema) {
+            // Patch Frontend on Polymorphic OneToOne
+            $type = ucfirst($this->request->input('data.type'));
+
+            $this->childCollection = $this->datasource->getCollection($type);
+        } else {
+            $this->childCollection = $this->datasource->getCollection($relation->getForeignCollection());
+        }
     }
 }

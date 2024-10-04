@@ -25,7 +25,7 @@ class OperatorsEmulateCollection extends CollectionDecorator
 
     public function emulateFieldOperator(string $name, string $operator): void
     {
-        self::replaceFieldOperator($name, $operator, null);
+        $this->replaceFieldOperator($name, $operator);
     }
 
     public function replaceFieldOperator(string $name, string $operator, ?\Closure $replaceBy = null): void
@@ -38,21 +38,15 @@ class OperatorsEmulateCollection extends CollectionDecorator
             $operators = $schema->getFilterOperators();
 
             if (! in_array('Equal', $operators, true) || ! in_array('In', $operators, true)) {
-                throw new ForestException("Cannot override operators on collection $this->name: the primary key columns must support 'Equal' and 'In' operators");
+                throw new ForestException("Cannot override operators on collection $name: the primary key columns must support 'Equal' and 'In' operators");
             }
         }
 
         // Check that targeted field is valid
-        /** @var ColumnSchema $schema */
-        $field = $this->childCollection->getFields()[$name];
-        if (! $field) {
-            throw new ForestException('Cannot replace operator for relation');
-        }
         FieldValidator::validate($this, $name);
 
-
         // Mark the field operator as replaced.
-        if (! in_array($name, $this->emulateOperators, true)) {
+        if (! isset($this->emulateOperators[$name])) {
             $this->emulateOperators[$name] = [];
         }
 
@@ -60,15 +54,13 @@ class OperatorsEmulateCollection extends CollectionDecorator
         $this->markSchemaAsDirty();
     }
 
-    public function getFields(): IlluminateCollection
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
     {
-        $fields = $this->childCollection->getFields();
-
         /**
          * @var string $fieldName
          * @var ColumnSchema $schema
          */
-        foreach ($fields as $fieldName => $schema) {
+        foreach ($childSchema as $fieldName => $schema) {
             if (array_key_exists($fieldName, $this->emulateOperators)) {
                 $schema->setFilterOperators(
                     array_unique(
@@ -78,7 +70,7 @@ class OperatorsEmulateCollection extends CollectionDecorator
             }
         }
 
-        return $fields;
+        return $childSchema;
     }
 
     protected function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null

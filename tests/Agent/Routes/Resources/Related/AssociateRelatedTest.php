@@ -13,12 +13,14 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\RelationSchema;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
 
-function factoryAssociateRelated($args = []): AssociateRelated
-{
+$before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
     $collectionUser->addFields(
@@ -38,6 +40,13 @@ function factoryAssociateRelated($args = []): AssociateRelated
                 foreignKeyTarget: 'id',
                 foreignCollection: 'House',
                 throughCollection: 'HouseUser'
+            ),
+            'comments' => new PolymorphicOneToManySchema(
+                originKey: 'commentableId',
+                originKeyTarget: 'id',
+                foreignCollection: 'Comment',
+                originTypeField: 'commentableType',
+                originTypeValue: 'User',
             ),
         ]
     );
@@ -94,8 +103,29 @@ function factoryAssociateRelated($args = []): AssociateRelated
         ]
     );
 
+    $collectionComment = new Collection($datasource, 'Comment');
+    $collectionComment->addFields(
+        [
+            'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true),
+            'title'           => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentable'     => new PolymorphicManyToOneSchema(
+                foreignKeyTypeField: 'commentableType',
+                foreignKey: 'commentableId',
+                foreignKeyTargets: [
+                    'Car'   => 'id',
+                    'User'  => 'id',
+                ],
+                foreignCollections: [
+                    'Car',
+                    'User',
+                ],
+            ),]
+    );
+
     if (isset($args['associate'])) {
-        $collectionUser = mock($collectionUser)
+        $collectionUser = \Mockery::mock($collectionUser)
             ->shouldReceive('associate')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Filter::class), \Mockery::type(RelationSchema::class))
             ->andReturnNull()
@@ -106,7 +136,8 @@ function factoryAssociateRelated($args = []): AssociateRelated
     $datasource->addCollection($collectionCar);
     $datasource->addCollection($collectionHouse);
     $datasource->addCollection($collectionHouseUser);
-    buildAgent($datasource);
+    $datasource->addCollection($collectionComment);
+    $testCase->buildAgent($datasource);
 
     $request = Request::createFromGlobals();
 
@@ -153,15 +184,15 @@ function factoryAssociateRelated($args = []): AssociateRelated
         config('permissionExpiration')
     );
 
-    $associate = mock(AssociateRelated::class)
+    $associate = \Mockery::mock(AssociateRelated::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($associate, 'request', $request);
+    $testCase->invokeProperty($associate, 'request', $request);
 
     return $associate;
-}
+};
 
 test('make() should return a new instance of AssociateRelated with routes', function () {
     $associate = AssociateRelated::make();
@@ -170,7 +201,7 @@ test('make() should return a new instance of AssociateRelated with routes', func
         ->and($associate->getRoutes())->toHaveKey('forest.related.associate');
 });
 
-test('handleRequest() should return a response 200', function () {
+test('handleRequest() should return a response 200', function () use ($before) {
     $_GET['data'] = [
         [
             'id'   => 1,
@@ -181,7 +212,7 @@ test('handleRequest() should return a response 200', function () {
             'type' => 'Car',
         ],
     ];
-    $associate = factoryAssociateRelated(['associate' => true]);
+    $associate = $before($this, ['associate' => true]);
 
     expect($associate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'cars']))
         ->toBeArray()
@@ -193,16 +224,35 @@ test('handleRequest() should return a response 200', function () {
         );
 });
 
-test('handleRequest() should return a response 200 with ManyToMany', function () {
+test('handleRequest() should return a response 200 with ManyToMany', function () use ($before) {
     $_GET['data'] = [
         [
             'id'   => 1,
             'type' => 'House',
         ],
     ];
-    $associate = factoryAssociateRelated(['associate' => true]);
+    $associate = $before($this, ['associate' => true]);
 
     expect($associate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'houses']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'content' => null,
+                'status'  => 204,
+            ]
+        );
+});
+
+test('handleRequest() should return a response 200 with PolymorphicOneToMany', function () use ($before) {
+    $_GET['data'] = [
+        [
+            'id'   => 1,
+            'type' => 'Comment',
+        ],
+    ];
+    $associate = $before($this, ['associate' => true]);
+
+    expect($associate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'comments']))
         ->toBeArray()
         ->toEqual(
             [

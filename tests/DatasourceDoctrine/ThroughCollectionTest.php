@@ -1,34 +1,29 @@
 <?php
 
-use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\ForeignKeyConstraint;
-use Doctrine\DBAL\Schema\Index;
-use Doctrine\DBAL\Types\IntegerType;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\ORMSetup;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\DoctrineDatasource;
 use ForestAdmin\AgentPHP\DatasourceDoctrine\ThroughCollection;
-use Prophecy\Prophet;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 
 beforeEach(closure: function () {
     global $metaData, $doctrineDatasource;
 
-    $prophet = new Prophet();
-    $doctrineDatasource = $prophet->prophesize(DoctrineDatasource::class);
-    $doctrineDatasource = $doctrineDatasource->reveal();
+    $this->initDatabase();
+    $config = ORMSetup::createAttributeMetadataConfiguration([__DIR__ . '/Entity'], false);
+    $entityManager = new EntityManager($this->getDoctrineConnection(), $config);
+    $doctrineDatasource = new DoctrineDatasource($entityManager, TestCase::DB_CONFIG);
 
     $metaData = [
-        'name'               => 'foo_bar',
-        'columns'            => [
-            'foo_id' => new Column('foo_id', new IntegerType()),
-            'bar_id' => new Column('bar_id', new IntegerType()),
-        ],
+        'name'               => 'car_owner',
         'foreignKeys'        => [
-            'fk_123' => new ForeignKeyConstraint(['foo_id'], 'foo', ['id']),
-            'fk_456' => new ForeignKeyConstraint(['bar_id'], 'bar', ['id']),
+            'fk_123' => new ForeignKeyConstraint(['car_id'], 'cars', ['id']),
+            'fk_456' => new ForeignKeyConstraint(['owner_id'], 'owners', ['id']),
         ],
-        'primaryKey'         => new Index('id', ['id']),
         'foreignCollections' => [
-            'foo' => 'foo',
-            'bar' => 'bar',
+            'cars'   => 'Car',
+            'owners' => 'Owner',
         ],
     ];
 });
@@ -37,6 +32,6 @@ test('getIdentifier() should return the primary key name', function () {
     global $metaData, $doctrineDatasource;
     $collection = new ThroughCollection($doctrineDatasource, $metaData);
 
-    expect($collection->getFields())->toHaveKeys(['foo_id', 'bar_id'])
-        ->and($collection->getTableName())->toEqual('foo_bar');
+    expect($collection->getFields())->toHaveKeys(['car_id', 'owner_id'])
+        ->and($collection->getTableName())->toEqual('car_owner');
 });

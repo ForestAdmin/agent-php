@@ -12,11 +12,14 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
 
-function factoryUpdateRelated($args = []): UpdateRelated
-{
+$before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
     $collectionUser->addFields(
@@ -28,6 +31,13 @@ function factoryUpdateRelated($args = []): UpdateRelated
                 originKey: 'user_id',
                 originKeyTarget: 'id',
                 foreignCollection: 'Car',
+            ),
+            'comment' => new PolymorphicOneToOneSchema(
+                originKey: 'commentableId',
+                originKeyTarget: 'id',
+                foreignCollection: 'Comment',
+                originTypeField: 'commentableType',
+                originTypeValue: 'User',
             ),
         ]
     );
@@ -44,11 +54,39 @@ function factoryUpdateRelated($args = []): UpdateRelated
                 foreignKeyTarget: 'id',
                 foreignCollection: 'User',
             ),
+            'comments' => new PolymorphicOneToManySchema(
+                originKey: 'commentableId',
+                originKeyTarget: 'id',
+                foreignCollection: 'Comment',
+                originTypeField: 'commentableType',
+                originTypeValue: 'Car',
+            ),
         ]
     );
 
+    $collectionComment = new Collection($datasource, 'Comment');
+    $collectionComment->addFields(
+        [
+            'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::IN], isPrimaryKey: true),
+            'title'           => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentable'     => new PolymorphicManyToOneSchema(
+                foreignKeyTypeField: 'commentableType',
+                foreignKey: 'commentableId',
+                foreignKeyTargets: [
+                    'Car'   => 'id',
+                    'User'  => 'id',
+                ],
+                foreignCollections: [
+                    'Car',
+                    'User',
+                ],
+            ),]
+    );
+
     if (isset($args['Car']['listing'])) {
-        $collectionCar = mock($collectionCar)
+        $collectionCar = \Mockery::mock($collectionCar)
             ->shouldReceive('list')
             ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type(Projection::class))
             ->andReturn($args['Car']['listing'])
@@ -56,7 +94,7 @@ function factoryUpdateRelated($args = []): UpdateRelated
     }
 
     if (isset($args['User']['listing'])) {
-        $collectionUser = mock($collectionUser)
+        $collectionUser = \Mockery::mock($collectionUser)
             ->shouldReceive('list')
             ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type(Projection::class))
             ->andReturn($args['User']['listing'])
@@ -65,7 +103,8 @@ function factoryUpdateRelated($args = []): UpdateRelated
 
     $datasource->addCollection($collectionUser);
     $datasource->addCollection($collectionCar);
-    buildAgent($datasource);
+    $datasource->addCollection($collectionComment);
+    $testCase->buildAgent($datasource);
 
     SchemaEmitter::getSerializedSchema($datasource);
 
@@ -101,6 +140,11 @@ function factoryUpdateRelated($args = []): UpdateRelated
                     0 => 1,
                 ],
             ],
+            'Comment'  => [
+                'edit'  => [
+                    0 => 1,
+                ],
+            ],
         ],
         config('permissionExpiration')
     );
@@ -119,15 +163,15 @@ function factoryUpdateRelated($args = []): UpdateRelated
         config('permissionExpiration')
     );
 
-    $update = mock(UpdateRelated::class)
+    $update = \Mockery::mock(UpdateRelated::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($update, 'request', $request);
+    $testCase->invokeProperty($update, 'request', $request);
 
     return $update;
-}
+};
 
 test('make() should return a new instance of UpdateRelated with routes', function () {
     $update = UpdateRelated::make();
@@ -136,7 +180,7 @@ test('make() should return a new instance of UpdateRelated with routes', functio
         ->and($update->getRoutes())->toHaveKey('forest.related.update');
 });
 
-test('handleRequest() should return a response 200 with OneToOne relation', function () {
+test('handleRequest() should return a response 204 with OneToOne relation', function () use ($before) {
     $data = [
         'id'    => 2,
         'model' => 'Murcielago',
@@ -147,7 +191,7 @@ test('handleRequest() should return a response 200 with OneToOne relation', func
         'attributes' => $data,
         'type'       => 'Car',
     ];
-    $update = factoryUpdateRelated(['Car' => ['listing' => $data]]);
+    $update = $before($this, ['Car' => ['listing' => $data]]);
 
     expect($update->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'car']))
         ->toBeArray()
@@ -159,7 +203,7 @@ test('handleRequest() should return a response 200 with OneToOne relation', func
         );
 });
 
-test('handleRequest() should return a response 200 with ManyToOne relation', function () {
+test('handleRequest() should return a response 200 with ManyToOne relation', function () use ($before) {
     $data = [
         'id' => 1,
     ];
@@ -168,9 +212,57 @@ test('handleRequest() should return a response 200 with ManyToOne relation', fun
         'attributes' => $data,
         'type'       => 'Car',
     ];
-    $update = factoryUpdateRelated(['Car' => ['listing' => $data]]);
+    $update = $before($this, ['Car' => ['listing' => $data]]);
 
     expect($update->handleRequest(['collectionName' => 'Car', 'id' => 1, 'relationName' => 'user']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'content' => null,
+                'status'  => 204,
+            ]
+        );
+});
+
+test('handleRequest() should return a response 204 with PolymorphicManyToOne relation', function () use ($before) {
+    $data = [
+        'id'              => 1,
+        'title'           => 'Comment',
+        'commentableId'   => 1,
+        'commentableType' => 'User',
+    ];
+    $_GET['data'] = [
+        'id'         => 1,
+        'attributes' => $data,
+        'type'       => 'Comment',
+    ];
+    $update = $before($this, ['Comment' => ['listing' => $data]]);
+
+    expect($update->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'comment']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'content' => null,
+                'status'  => 204,
+            ]
+        );
+});
+
+test('handleRequest() should return a response 204 with PolymorphicOneToOne relation', function () use ($before) {
+    $data = [
+        'id'              => 1,
+        'title'           => 'Comment',
+        'commentableId'   => 1,
+        'commentableType' => 'User',
+    ];
+    $_GET['data'] = [
+        'id'         => 1,
+        'attributes' => $data,
+        'type'       => 'Comment',
+    ];
+    $update = $before($this, ['Comment' => ['listing' => $data]]);
+
+    expect($update->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'comment']))
         ->toBeArray()
         ->toEqual(
             [

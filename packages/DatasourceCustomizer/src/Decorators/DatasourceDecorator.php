@@ -13,9 +13,12 @@ class DatasourceDecorator extends Datasource
 {
     protected DatasourceContract|DatasourceDecorator $childDataSource;
 
+    protected IlluminateCollection $decorators;
+
     public function __construct(DatasourceContract|DatasourceDecorator $childDataSource, private string $classCollectionDecorator)
     {
         parent::__construct();
+        $this->decorators = new IlluminateCollection();
         $this->childDataSource = &$childDataSource;
     }
 
@@ -31,15 +34,24 @@ class DatasourceDecorator extends Datasource
         }
     }
 
+    public function getCollections(): IlluminateCollection
+    {
+        return $this->childDataSource->getCollections()->map(fn ($collection) => $this->getCollection($collection->getName()));
+    }
+
+    public function getCollection(string $name): CollectionContract
+    {
+        $collection = $this->childDataSource->getCollection($name);
+
+        if (! $this->decorators->has($collection->getName())) {
+            $this->decorators->put($collection->getName(), new $this->classCollectionDecorator($collection, $this));
+        }
+
+        return $this->decorators->get($collection->getName());
+    }
+
     public function renderChart(Caller $caller, string $name): Chart|array
     {
         return $this->childDataSource->renderChart($caller, $name);
-    }
-
-    public function build()
-    {
-        foreach ($this->childDataSource->getCollections() as $collection) {
-            $this->addCollection(new $this->classCollectionDecorator($collection, $this));
-        }
     }
 }

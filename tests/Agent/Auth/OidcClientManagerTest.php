@@ -2,9 +2,10 @@
 
 use ForestAdmin\AgentPHP\Agent\Auth\OAuth2\ForestProvider;
 use ForestAdmin\AgentPHP\Agent\Auth\OidcClientManager;
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Http\ForestApiRequester;
 use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
+
+use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 
 use function ForestAdmin\cache;
 
@@ -12,17 +13,9 @@ use GuzzleHttp\Psr7\Response;
 use Prophecy\Argument;
 use Prophecy\Prophet;
 
-function makeAgentForOidc()
-{
-    $options = [
-        'projectDir'   => sys_get_temp_dir(),
-        'cacheDir'     => sys_get_temp_dir() . '/forest-cache',
-        'authSecret'   => AUTH_SECRET,
-        'envSecret'    => SECRET,
-        'isProduction' => false,
-    ];
-    new AgentFactory($options, []);
-}
+beforeEach(function () {
+    $this->buildAgent(new Datasource());
+});
 
 /**
  * @return array
@@ -110,12 +103,10 @@ function makeForestApiGetAndPost(?string $body = null)
 }
 
 test('makeForestProvider() should return a new ForestProvider & the associate cache', function () {
-    makeAgentForOidc();
-
     $forestApi = makeForestApiGetAndPost(json_encode(['client_id' => 1, 'redirect_uris' => ['http://backend.api']], JSON_THROW_ON_ERROR));
 
     $oidc = new OidcClientManager();
-    invokeProperty($oidc, 'forestApi', $forestApi);
+    $this->invokeProperty($oidc, 'forestApi', $forestApi);
 
     $clientForCallbackUrl = $oidc->makeForestProvider();
 
@@ -127,18 +118,15 @@ test('makeForestProvider() should return a new ForestProvider & the associate ca
 });
 
 test('makeForestProvider() throw when the API call failed', function () {
-    makeAgentForOidc();
     $forestApi = makeForestApiGetAndPost();
 
     $oidc = new OidcClientManager();
-    invokeProperty($oidc, 'forestApi', $forestApi);
+    $this->invokeProperty($oidc, 'forestApi', $forestApi);
 
     expect(fn () => $oidc->makeForestProvider())->toThrow(ErrorException::class, ErrorMessages::REGISTRATION_FAILED);
 });
 
 test('register() should return the body response of the api', function () {
-    makeAgentForOidc();
-
     $data = [
         'token_endpoint_auth_method' => 'none',
         'registration_endpoint'      => mockedConfig()['registration_endpoint'],
@@ -156,9 +144,9 @@ test('register() should return the body response of the api', function () {
         );
 
     $oidc = new OidcClientManager();
-    invokeProperty($oidc, 'forestApi', $forestApi->reveal());
+    $this->invokeProperty($oidc, 'forestApi', $forestApi->reveal());
 
-    $register = invokeMethod($oidc, 'register', [&$data]);
+    $register = $this->invokeMethod($oidc, 'register', [&$data]);
 
     expect($register)
         ->toBeArray()
@@ -167,8 +155,6 @@ test('register() should return the body response of the api', function () {
 });
 
 test('retrieve() should return the body response of the api', function () {
-    makeAgentForOidc();
-
     $prophet = new Prophet();
     $forestApi = $prophet->prophesize(ForestApiRequester::class);
     $forestApi
@@ -179,9 +165,9 @@ test('retrieve() should return the body response of the api', function () {
         );
 
     $oidc = new OidcClientManager();
-    invokeProperty($oidc, 'forestApi', $forestApi->reveal());
+    $this->invokeProperty($oidc, 'forestApi', $forestApi->reveal());
 
-    $retrieve = invokeMethod($oidc, 'retrieve');
+    $retrieve = $this->invokeMethod($oidc, 'retrieve');
 
     expect($retrieve)
         ->toBeArray()
@@ -189,7 +175,7 @@ test('retrieve() should return the body response of the api', function () {
 });
 
 test('retrieve() throw when the call api failed', function () {
-    makeAgentForOidc();
+    //    makeAgentForOidc();
 
     $prophet = new Prophet();
     $forestApi = $prophet->prophesize(ForestApiRequester::class);
@@ -199,8 +185,8 @@ test('retrieve() throw when the call api failed', function () {
         ->willThrow(new \RuntimeException());
 
     $oidc = new OidcClientManager();
-    invokeProperty($oidc, 'forestApi', $forestApi->reveal());
+    $this->invokeProperty($oidc, 'forestApi', $forestApi->reveal());
 
-    expect(fn () => invokeMethod($oidc, 'retrieve'))
+    expect(fn () => $this->invokeMethod($oidc, 'retrieve'))
         ->toThrow(ErrorException::class, ErrorMessages::OIDC_CONFIGURATION_RETRIEVAL_FAILED);
 });

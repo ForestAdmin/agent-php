@@ -3,9 +3,13 @@
 namespace ForestAdmin\AgentPHP\Agent\Serializer\Transformers;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Utils\Id;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyRelationSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
-use Illuminate\Support\Str;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToOneSchema;
+use League\Fractal\Scope;
 use League\Fractal\TransformerAbstract;
 
 class BaseTransformer extends TransformerAbstract
@@ -41,24 +45,48 @@ class BaseTransformer extends TransformerAbstract
     public function transform($data)
     {
         $forestCollection = AgentFactory::get('datasource')->getCollection($this->name);
+
         $relations = $forestCollection
             ->getFields()
-            ->filter(fn ($field) => $field instanceof ManyToOneSchema || $field instanceof OneToOneSchema);
+            ->filter(fn ($field) => $field instanceof ManyToOneSchema || $field instanceof OneToOneSchema || $field instanceof PolymorphicManyToOneSchema || $field instanceof PolymorphicOneToOneSchema);
 
         foreach ($relations as $key => $value) {
-            if (isset($data[$key])) {
+            if (isset($data[$key]) && ! empty($data[$key]) &&
+                (
+                    ($value instanceof ManyRelationSchema && $data[$key][$value->getforeignKeyTarget()] !== null) ||
+                    ($value instanceof OneToOneSchema && $data[$key][$value->getOriginKeyTarget()] !== null) ||
+                    ($value instanceof PolymorphicManyToOneSchema) ||
+                    ($value instanceof PolymorphicOneToOneSchema && $data[$key][$value->getOriginKeyTarget()] !== null)
+                )
+            ) {
                 $this->defaultIncludes[] = $key;
-                $this->addMethod(
-                    'include' . Str::ucfirst(Str::camel($key)),
-                    fn () => $this->item($data[$key], new BaseTransformer($value->getForeignCollection()), $value->getForeignCollection())
-                );
-            } else {
-                $this->addMethod('include' . Str::ucfirst(Str::camel($key)), fn () => $this->null());
+                unset($data[$key]);
             }
-            unset($data[$key]);
         }
 
         return $data;
+    }
+
+    public function processIncludedResources(Scope $scope, $data)
+    {
+        $includedData = [];
+
+        $includes = $this->getDefaultIncludes();
+
+        foreach ($includes as $include) {
+            $relation = AgentFactory::get('datasource')->getCollection($this->name)->getFields()[$include];
+            $item = $this->item($data[$include], new BaseTransformer($relation->getForeignCollection()), $relation->getForeignCollection());
+
+            $includedData[$include] = [
+                'data' => [
+                    'type'          => $item->getResourceKey(),
+                    'id'            => Id::packId(AgentFactory::get('datasource')->getCollection($this->name), $data),
+                    'attributes'    => $item->getData(),
+                ],
+            ];
+        }
+
+        return $includedData === [] ? false : $includedData;
     }
 
     public function setName(string $name): void

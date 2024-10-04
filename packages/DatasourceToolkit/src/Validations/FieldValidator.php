@@ -36,18 +36,30 @@ class FieldValidator
             }
         } else {
             $prefix = Str::before($field, ':');
+            $suffix = Str::after($field, ':');
             $relation = $collection->getFields()->get($prefix);
 
             if (! $relation) {
                 throw new ForestException('Relation not found: ' . $collection->getName() . '.' . $prefix);
             }
 
-            if ($relation->getType() !== 'ManyToOne' && $relation->getType() !== 'OneToOne') {
+            if ($relation->getType() === 'PolymorphicManyToOne' && $suffix !== '*') {
+                throw new ForestException(
+                    'Unexpected nested field ' . $suffix .
+                    ' under generic relation: ' . $collection->getName() . '.' . $prefix
+                );
+            }
+
+            if (! in_array($relation->getType(), ['ManyToOne', 'OneToOne', 'PolymorphicManyToOne', 'PolymorphicOneToOne'], true)) {
                 throw new ForestException(
                     'Unexpected field type: ' .
                     $collection->getName() . '.' . $prefix .
-                    ' (found ' . $relation->getType() . ' expected \'ManyToOne\' or \'OneToOne\')'
+                    ' (found ' . $relation->getType() . ')'
                 );
+            }
+
+            if ($relation->getType() === 'PolymorphicManyToOne') {
+                return true;
             }
 
             $suffix = Str::after($field, ':');

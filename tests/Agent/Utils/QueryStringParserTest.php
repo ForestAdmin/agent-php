@@ -15,10 +15,10 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-function factoryQueryStringParser()
-{
+beforeEach(function () {
     $datasource = new Datasource();
     $collectionCategory = new Collection($datasource, 'Category');
     $collectionCategory->addFields(
@@ -59,23 +59,43 @@ function factoryQueryStringParser()
         ]
     );
 
+    $collectionComment = new Collection($datasource, 'Comment');
+    $collectionComment->addFields(
+        [
+            'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'name'            => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentable'     => new PolymorphicManyToOneSchema(
+                foreignKeyTypeField: 'commentableType',
+                foreignKey: 'commentableId',
+                foreignKeyTargets: [
+                    'Car' => 'id',
+                ],
+                foreignCollections: [
+                    'Car',
+                ],
+            ),]
+    );
+
     $datasource->addCollection($collectionCategory);
     $datasource->addCollection($collectionUser);
     $datasource->addCollection($collectionCar);
-    buildAgent($datasource);
+    $datasource->addCollection($collectionComment);
+    $this->buildAgent($datasource);
 
-    return compact('collectionCategory', 'collectionUser', 'collectionCar');
-}
+    $this->bucket = compact('collectionCategory', 'collectionUser', 'collectionCar', 'collectionComment');
+});
 
 test('parseConditionTree() should return null when not provided', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
 
     expect(QueryStringParser::parseConditionTree($collectionCategory, Request::createFromGlobals()))
         ->toBeNull();
 });
 
 test('parseConditionTree() should work when passed in the querystring (for list)', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
 
     $_GET['filters'] = json_encode([
         'aggregator' => 'And',
@@ -99,7 +119,7 @@ test('parseConditionTree() should work when passed in the querystring (for list)
 });
 
 test('parseConditionTree() should work when passed in the body (for charts)', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
 
     $_GET['filters'] = json_encode([
         'field'    => 'id',
@@ -122,7 +142,7 @@ test('parseConditionTree() should work when passed in the body (for charts)', fu
 });
 
 test('parseConditionTree() should work when passed in the body (for actions)', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
 
     $_GET['data']['attributes']['all_records_subset_query']['filters'] = json_encode([
         'field'    => 'id',
@@ -145,7 +165,7 @@ test('parseConditionTree() should work when passed in the body (for actions)', f
 });
 
 test('parseConditionTree() throw when the collection does not supports the requested operators', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
 
     $_GET['filters'] = json_encode([
         'aggregator' => 'And',
@@ -159,7 +179,7 @@ test('parseConditionTree() throw when the collection does not supports the reque
 });
 
 test('parseProjection() on a flat collection on a well formed request should convert the request to a valid projection', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
 
     $_GET['fields'] = ['Category' => 'id'];
 
@@ -169,7 +189,7 @@ test('parseProjection() on a flat collection on a well formed request should con
 });
 
 test('parseProjection() on a flat collection on a well formed request when the request does no contain fields should return a projection with all the fields', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
 
     $_GET['fields'] = ['User' => ''];
 
@@ -179,7 +199,7 @@ test('parseProjection() on a flat collection on a well formed request when the r
 });
 
 test('parseProjection() on a flat collection on a well formed request when the request does not contain the primary keys should return the requested project without the primary keys', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
 
     $_GET['fields'] = ['Category' => 'label'];
 
@@ -189,7 +209,7 @@ test('parseProjection() on a flat collection on a well formed request when the r
 });
 
 test('parseProjection() on a flat collection on a malformed request when the request does not contains fields at all should return all the projection fields', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
 
     $projection = QueryStringParser::parseProjection($collectionCategory, Request::createFromGlobals());
 
@@ -197,7 +217,7 @@ test('parseProjection() on a flat collection on a malformed request when the req
 });
 
 test('parseProjection() on a collection with relationships should convert the request to a valid projection', function () {
-    $collectionCar = factoryQueryStringParser()['collectionCar'];
+    $collectionCar = $this->bucket['collectionCar'];
 
     $_GET['fields'] = [
         'Car'  => 'id, model, user',
@@ -210,7 +230,7 @@ test('parseProjection() on a collection with relationships should convert the re
 });
 
 test('parseProjection() on a flat collection on a request with an unknown field should return a ForestException error', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
 
     $_GET['fields'] = ['Category' => 'foo'];
 
@@ -218,8 +238,20 @@ test('parseProjection() on a flat collection on a request with an unknown field 
         ->toThrow(ForestException::class, '🌳🌳🌳 Invalid projection');
 });
 
+test('parseProjectionWithPks() when the request is about a PolymorphicOneToMany association', function () {
+    $collectionComment = $this->bucket['collectionComment'];
+
+    $_GET['fields'] = [
+        'Comment' => 'commentable,commentableId,commentableType,name',
+    ];
+
+    $projection = QueryStringParser::parseProjection($collectionComment, Request::createFromGlobals());
+
+    expect($projection)->toEqual((new Projection(['commentable:*', 'commentableId', 'commentableType', 'name'])));
+});
+
 test('parseProjectionWithPks() when the request does not contain the primary keys should return the requested project with the primary keys', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
 
     $_GET['fields'] = ['Category' => 'label'];
 
@@ -229,7 +261,7 @@ test('parseProjectionWithPks() when the request does not contain the primary key
 });
 
 test('parseProjectionWithPks() when the request does not contain the primary keys on a collection with relationships should convert the request to a valid projection', function () {
-    $collectionCar = factoryQueryStringParser()['collectionCar'];
+    $collectionCar = $this->bucket['collectionCar'];
 
     $_GET['fields'] = [
         'Car'  => 'id, user',
@@ -242,7 +274,7 @@ test('parseProjectionWithPks() when the request does not contain the primary key
 });
 
 test('parseSearch() should return null when not provided', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
 
     $parseSearch = QueryStringParser::parseSearch($collectionCategory, Request::createFromGlobals());
 
@@ -250,7 +282,7 @@ test('parseSearch() should return null when not provided', function () {
 });
 
 test('parseSearch() should throw an error when the collection is not searchable', function () {
-    $collectionUser = factoryQueryStringParser()['collectionUser'];
+    $collectionUser = $this->bucket['collectionUser'];
 
     $_GET['search'] = 'searched argument';
     $parseSearch = QueryStringParser::parseSearch($collectionUser, Request::createFromGlobals());
@@ -259,7 +291,7 @@ test('parseSearch() should throw an error when the collection is not searchable'
 });
 
 test('parseSearch() should convert the query search parameter as string', function () {
-    $collectionUser = factoryQueryStringParser()['collectionUser'];
+    $collectionUser = $this->bucket['collectionUser'];
 
     $_GET['search'] = 1234;
     $parseSearch = QueryStringParser::parseSearch($collectionUser, Request::createFromGlobals());
@@ -268,7 +300,7 @@ test('parseSearch() should convert the query search parameter as string', functi
 });
 
 test('parseSearch() should work when passed in the body (actions)', function () {
-    $collectionUser = factoryQueryStringParser()['collectionUser'];
+    $collectionUser = $this->bucket['collectionUser'];
 
     $_GET['data']['attributes']['all_records_subset_query']['search'] = 'searched argument';
     $parseSearch = QueryStringParser::parseSearch($collectionUser, Request::createFromGlobals());
@@ -277,7 +309,7 @@ test('parseSearch() should work when passed in the body (actions)', function () 
 });
 
 test('parseSearch() on a Collection not searchable should return a ForestException error', function () {
-    $collectionCar = factoryQueryStringParser()['collectionCar'];
+    $collectionCar = $this->bucket['collectionCar'];
 
     $_GET['data']['attributes']['all_records_subset_query']['search'] = 'searched argument';
 
@@ -307,14 +339,14 @@ test('parseSearchExtended() should return false for falsy "false" string', funct
 });
 
 test('parseSegment() should return null when no segment is provided', function () {
-    $collectionUser = factoryQueryStringParser()['collectionUser'];
+    $collectionUser = $this->bucket['collectionUser'];
     $parseSegment = QueryStringParser::parseSegment($collectionUser, Request::createFromGlobals());
 
     expect($parseSegment)->toBeNull();
 });
 
 test('parseSegment() should return the segment name when it exists', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
     $_GET['segment'] = 'fake-segment';
     $parseSegment = QueryStringParser::parseSegment($collectionCategory, Request::createFromGlobals());
 
@@ -322,7 +354,7 @@ test('parseSegment() should return the segment name when it exists', function ()
 });
 
 test('parseSegment() should throw when the segment name does not exist', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
     $_GET['segment'] = 'fake-segment-that-dont-exist';
 
     expect(fn () => QueryStringParser::parseSegment($collectionCategory, Request::createFromGlobals()))
@@ -330,7 +362,7 @@ test('parseSegment() should throw when the segment name does not exist', functio
 });
 
 test('parseSegment() should work when passed in the body (actions)', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
     $_GET['data']['attributes']['all_records_subset_query']['segment'] = 'fake-segment';
 
     $parseSegment = QueryStringParser::parseSegment($collectionCategory, Request::createFromGlobals());
@@ -339,7 +371,6 @@ test('parseSegment() should work when passed in the body (actions)', function ()
 });
 
 test('parseCaller() should return the timezone and the user', function () {
-    factoryQueryStringParser();
     $_GET['timezone'] = 'America/Los_Angeles';
 
     $projection = QueryStringParser::parseCaller(Request::createFromGlobals());
@@ -353,7 +384,6 @@ test('parseCaller() should return the timezone and the user', function () {
 });
 
 test('parseCaller() should throw a ValidationError when the timezone is missing', function () {
-    factoryQueryStringParser();
     unset($_GET['timezone']);
 
     expect(fn () => QueryStringParser::parseCaller(Request::createFromGlobals()))
@@ -361,7 +391,7 @@ test('parseCaller() should throw a ValidationError when the timezone is missing'
 });
 
 test('parseCaller() should throw a ValidationError when the timezone is invalid', function () {
-    factoryQueryStringParser();
+
     $_GET['timezone'] = 'ThisTZ/Donotexist';
 
     expect(fn () => QueryStringParser::parseCaller(Request::createFromGlobals()))
@@ -369,7 +399,6 @@ test('parseCaller() should throw a ValidationError when the timezone is invalid'
 });
 
 test('parseCaller() should throw a HttpException when the user is not connected', function () {
-    factoryQueryStringParser();
     $_SERVER['HTTP_AUTHORIZATION'] = '';
 
     expect(fn () => QueryStringParser::parseCaller(Request::createFromGlobals()))
@@ -377,7 +406,6 @@ test('parseCaller() should throw a HttpException when the user is not connected'
 });
 
 test('parsePagination() should return the pagination parameters', function () {
-    factoryQueryStringParser();
     $_GET['page'] = [
         'size'   => 10,
         'number' => 3,
@@ -389,15 +417,12 @@ test('parsePagination() should return the pagination parameters', function () {
 });
 
 test('parsePagination() when context does not provide the pagination parameters should return the default limit 15 skip 0', function () {
-    factoryQueryStringParser();
-
     $pagination = QueryStringParser::parsePagination(Request::createFromGlobals());
 
     expect($pagination)->toEqual(new Page(0, 15));
 });
 
 test('parsePagination() when context provides invalid values should return a ForestException error', function () {
-    factoryQueryStringParser();
     $_GET['page'] = [
         'size'   => -5,
         'number' => 'NaN',
@@ -408,7 +433,7 @@ test('parsePagination() when context provides invalid values should return a For
 });
 
 test('parseSort() should sort by pk ascending when not sort is given', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
 
     $sort = QueryStringParser::parseSort($collectionCategory, Request::createFromGlobals());
 
@@ -416,7 +441,7 @@ test('parseSort() should sort by pk ascending when not sort is given', function 
 });
 
 test('parseSort() should sort by the request field and order when given', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
     $_GET['sort'] = '-label';
     $sort = QueryStringParser::parseSort($collectionCategory, Request::createFromGlobals());
 
@@ -424,7 +449,7 @@ test('parseSort() should sort by the request field and order when given', functi
 });
 
 test('parseSort() should throw a ForestException when the requested sort is invalid', function () {
-    $collectionCategory = factoryQueryStringParser()['collectionCategory'];
+    $collectionCategory = $this->bucket['collectionCategory'];
     $_GET['sort'] = '-fieldThatDoNotExist';
 
     expect(fn () => QueryStringParser::parseSort($collectionCategory, Request::createFromGlobals()))

@@ -17,7 +17,7 @@ class JsonApiSerializer extends FractalJsonApiSerializer
     public function item(?string $resourceKey, array $data): array
     {
         $collection = AgentFactory::get('datasource')
-            ->getCollections($resourceKey)
+            ->getCollections()
             ->first(fn ($item) => $item->getName() === $resourceKey);
 
         $resource = [
@@ -51,10 +51,6 @@ class JsonApiSerializer extends FractalJsonApiSerializer
      */
     public function injectAvailableIncludeData(array $data, array $availableIncludes): array
     {
-        if (! $this->shouldIncludeLinks()) {
-            return $data;
-        }
-
         if ($this->isCollection($data)) {
             $data['data'] = array_map(function ($resource) use ($availableIncludes) {
                 foreach ($availableIncludes as $relationshipKey) {

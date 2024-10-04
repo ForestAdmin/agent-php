@@ -14,6 +14,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Condit
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 
 class SmartActionChecker
 {
@@ -29,8 +30,7 @@ class SmartActionChecker
 
     public function canExecute(): bool
     {
-        if ($this->request->input('data.attributes.signed_approval_request') === null &&
-            ! in_array($this->roleId, $this->smartAction['userApprovalEnabled'], true)) {
+        if ($this->request->input('data.attributes.signed_approval_request') === null) {
             return $this->canTrigger();
         } else {
             return $this->canApprove();
@@ -39,8 +39,10 @@ class SmartActionChecker
 
     private function canApprove(): bool
     {
-        if ((empty($this->smartAction['userApprovalConditions']) || $this->matchConditions('userApprovalConditions')) &&
-            ($this->request->input('data.attributes.requester_id') !== $this->caller->getId() ||
+        if (
+            in_array($this->roleId, $this->smartAction['userApprovalEnabled'], true)
+            && (empty($this->smartAction['userApprovalConditions']) || $this->matchConditions('userApprovalConditions'))
+            && ($this->request->input('data.attributes.requester_id') !== $this->caller->getId() ||
                 in_array($this->roleId, $this->smartAction['selfApprovalEnabled'], true))
         ) {
             return true;
@@ -56,7 +58,9 @@ class SmartActionChecker
             if (empty($this->smartAction['triggerConditions']) || $this->matchConditions('triggerConditions')) {
                 return true;
             }
-        } elseif (in_array($this->roleId, $this->smartAction['approvalRequired'], true)) {
+        } elseif (in_array($this->roleId, $this->smartAction['approvalRequired'], true)
+            && in_array($this->roleId, $this->smartAction['triggerEnabled'], true)
+        ) {
             if (empty($this->smartAction['approvalRequiredConditions']) || $this->matchConditions('approvalRequiredConditions')) {
                 throw new RequireApproval('This action requires to be approved.', [], 'CustomActionRequiresApprovalError', $this->smartAction['userApprovalEnabled']);
             } else {
@@ -72,10 +76,11 @@ class SmartActionChecker
     private function matchConditions(string $conditionName): bool
     {
         try {
+            $pk = SchemaUtils::getPrimaryKeys($this->collection)[0];
             if ($this->request->input('data.attributes.all_records')) {
-                $conditionRecordFilter = new ConditionTreeLeaf('id', Operators::NOT_EQUAL, $this->request->input('data.attributes.all_records_ids_excluded'));
+                $conditionRecordFilter = new ConditionTreeLeaf($pk, Operators::NOT_EQUAL, $this->request->input('data.attributes.all_records_ids_excluded'));
             } else {
-                $conditionRecordFilter = new ConditionTreeLeaf('id', Operators::IN, $this->request->input('data.attributes.ids'));
+                $conditionRecordFilter = new ConditionTreeLeaf($pk, Operators::IN, $this->request->input('data.attributes.ids'));
             }
 
             $condition = $this->smartAction[$conditionName][0]['filter'];

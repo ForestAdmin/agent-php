@@ -12,195 +12,171 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 
-function factoryCollectionDecorator()
-{
-    $datasource = new Datasource();
-    $collectionProduct = new Collection($datasource, 'Product');
-    $collectionProduct->addFields(
-        [
-            'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'name'  => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::EQUAL, Operators::IN]),
-            'price' => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::GREATER_THAN, Operators::LESS_THAN]),
-        ]
-    );
+describe('CollectionDecorator', function () {
+    beforeEach(function () {
+        $datasource = new Datasource();
+        $collectionProduct = new Collection($datasource, 'Product');
+        $collectionProduct->addFields(
+            [
+                'id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+                'name'  => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::EQUAL, Operators::IN]),
+                'price' => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::GREATER_THAN, Operators::LESS_THAN]),
+            ]
+        );
 
-    $datasource->addCollection($collectionProduct);
-    buildAgent($datasource);
-    $collectionDecorator = new CollectionDecorator($collectionProduct, $datasource);
+        $datasource->addCollection($collectionProduct);
+        $this->buildAgent($datasource);
+        $collectionDecorator = new CollectionDecorator($collectionProduct, $datasource);
 
-    return $collectionDecorator;
-}
+        $this->bucket['collectionDecorator'] = $collectionDecorator;
+    });
 
-test('isSearchable() should call the childCollection corresponding method', function () {
-    $collectionDecorator = factoryCollectionDecorator();
+    test('isSearchable() should call the childCollection corresponding method', function () {
+        $collectionDecorator = $this->bucket['collectionDecorator'];
 
-    $childCollection = invokeProperty($collectionDecorator, 'childCollection');
-    $childCollection = mock($childCollection)
-        ->shouldReceive('isSearchable')
-        ->once()
-        ->andReturn(false)
-        ->getMock();
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = \Mockery::mock($childCollection)
+            ->shouldReceive('isSearchable')
+            ->once()
+            ->andReturn(false)
+            ->getMock();
 
-    invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
 
-    expect($collectionDecorator->isSearchable())->toBeFalse();
-});
+        expect($collectionDecorator->isSearchable())->toBeFalse();
+    });
 
-test('getFields() should call the childCollection corresponding method', function () {
-    $collectionDecorator = factoryCollectionDecorator();
+    test('getFields() should call the childCollection corresponding method', function () {
+        $collectionDecorator = $this->bucket['collectionDecorator'];
 
-    $childCollection = invokeProperty($collectionDecorator, 'childCollection');
-    $childCollection = mock($childCollection)
-        ->shouldReceive('getFields')
-        ->once()
-        ->andReturn(collect())
-        ->getMock();
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = \Mockery::mock($childCollection)
+            ->shouldReceive('getFields')
+            ->once()
+            ->andReturn(collect())
+            ->getMock();
 
-    invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
 
-    expect($collectionDecorator->getFields())->toEqual(collect());
-});
+        expect($collectionDecorator->getFields())->toEqual(collect());
+    });
 
-test('execute() should call the childCollection corresponding method', function (Caller $caller) {
-    $collectionDecorator = factoryCollectionDecorator();
+    test('execute() should call the childCollection corresponding method', function (Caller $caller) {
+        $collectionDecorator = $this->bucket['collectionDecorator'];
 
-    $childCollection = invokeProperty($collectionDecorator, 'childCollection');
-    $childCollection = mock($childCollection)
-        ->shouldReceive('execute')
-        ->once()
-        ->getMock();
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = \Mockery::mock($childCollection)
+            ->shouldReceive('execute')
+            ->once()
+            ->getMock();
 
-    invokeProperty($collectionDecorator, 'childCollection', $childCollection);
-    $collectionDecorator->execute($caller, 'foo', []);
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        $collectionDecorator->execute($caller, 'foo', []);
 
-    expect($collectionDecorator->getFields()->toArray())->toHaveKeys(['id', 'name', 'price']);
-})->with('caller');
+        expect($collectionDecorator->getFields()->toArray())->toHaveKeys(['id', 'name', 'price']);
+    })->with('caller');
 
-test('getForm() should call the childCollection corresponding method', function (Caller $caller) {
-    $collectionDecorator = factoryCollectionDecorator();
+    test('getForm() should call the childCollection corresponding method', function (Caller $caller) {
+        $collectionDecorator = $this->bucket['collectionDecorator'];
 
-    $childCollection = invokeProperty($collectionDecorator, 'childCollection');
-    $childCollection = mock($childCollection)
-        ->shouldReceive('getForm')
-        ->once()
-        ->getMock();
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = \Mockery::mock($childCollection)
+            ->shouldReceive('getForm')
+            ->once()
+            ->getMock();
 
-    invokeProperty($collectionDecorator, 'childCollection', $childCollection);
-    $collectionDecorator->getForm($caller, 'foo', []);
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        $collectionDecorator->getForm($caller, 'foo', []);
 
-    expect($collectionDecorator->getFields()->toArray())->toHaveKeys(['id', 'name', 'price']);
-})->with('caller');
+        expect($collectionDecorator->getFields()->toArray())->toHaveKeys(['id', 'name', 'price']);
+    })->with('caller');
 
-test('create() should call the childCollection corresponding method', function (Caller $caller) {
-    $collectionDecorator = factoryCollectionDecorator();
+    test('create() should call the childCollection corresponding method', function (Caller $caller) {
+        $collectionDecorator = $this->bucket['collectionDecorator'];
 
-    $childCollection = invokeProperty($collectionDecorator, 'childCollection');
-    $childCollection = mock($childCollection)
-        ->shouldReceive('create')
-        ->once()
-        ->andReturn(['id' => 1, 'name' => 'foo', 'price' => 1000])
-        ->getMock();
-    invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = \Mockery::mock($childCollection)
+            ->shouldReceive('create')
+            ->once()
+            ->andReturn(['id' => 1, 'name' => 'foo', 'price' => 1000])
+            ->getMock();
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
 
-    expect($collectionDecorator->create($caller, []))->toEqual(['id' => 1, 'name' => 'foo', 'price' => 1000]);
-})->with('caller');
+        expect($collectionDecorator->create($caller, []))->toEqual(['id' => 1, 'name' => 'foo', 'price' => 1000]);
+    })->with('caller');
 
-test('list() should call the childCollection corresponding method', function (Caller $caller) {
-    $collectionDecorator = factoryCollectionDecorator();
+    test('list() should call the childCollection corresponding method', function (Caller $caller) {
+        $collectionDecorator = $this->bucket['collectionDecorator'];
 
-    $childCollection = invokeProperty($collectionDecorator, 'childCollection');
-    $childCollection = mock($childCollection)
-        ->shouldReceive('list')
-        ->once()
-        ->andReturn([
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = \Mockery::mock($childCollection)
+            ->shouldReceive('list')
+            ->once()
+            ->andReturn([
+                ['id' => 1, 'name' => 'foo', 'price' => 1000],
+                ['id' => 2, 'name' => 'foo2', 'price' => 1500],
+                ['id' => 3, 'name' => 'foo3', 'price' => 2000],
+            ])
+            ->getMock();
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+
+        expect($collectionDecorator->list($caller, new PaginatedFilter(), new Projection()))->toEqual([
             ['id' => 1, 'name' => 'foo', 'price' => 1000],
             ['id' => 2, 'name' => 'foo2', 'price' => 1500],
             ['id' => 3, 'name' => 'foo3', 'price' => 2000],
-        ])
-        ->getMock();
-    invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        ]);
+    })->with('caller');
 
-    expect($collectionDecorator->list($caller, new PaginatedFilter(), new Projection()))->toEqual([
-        ['id' => 1, 'name' => 'foo', 'price' => 1000],
-        ['id' => 2, 'name' => 'foo2', 'price' => 1500],
-        ['id' => 3, 'name' => 'foo3', 'price' => 2000],
-    ]);
-})->with('caller');
+    test('update() should call the childCollection corresponding method', function (Caller $caller) {
+        $collectionDecorator = $this->bucket['collectionDecorator'];
 
-test('update() should call the childCollection corresponding method', function (Caller $caller) {
-    $collectionDecorator = factoryCollectionDecorator();
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = \Mockery::mock($childCollection)
+            ->shouldReceive('update')
+            ->once()
+            ->getMock();
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
 
-    $childCollection = invokeProperty($collectionDecorator, 'childCollection');
-    $childCollection = mock($childCollection)
-        ->shouldReceive('update')
-        ->once()
-        ->getMock();
-    invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        expect($collectionDecorator->update($caller, new Filter(), ['id' => 1]))->toBeNull();
+    })->with('caller');
 
-    expect($collectionDecorator->update($caller, new Filter(), ['id' => 1]))->toBeNull();
-})->with('caller');
+    test('delete() should call the childCollection corresponding method', function (Caller $caller) {
+        $collectionDecorator = $this->bucket['collectionDecorator'];
 
-test('delete() should call the childCollection corresponding method', function (Caller $caller) {
-    $collectionDecorator = factoryCollectionDecorator();
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = \Mockery::mock($childCollection)
+            ->shouldReceive('delete')
+            ->once()
+            ->getMock();
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
 
-    $childCollection = invokeProperty($collectionDecorator, 'childCollection');
-    $childCollection = mock($childCollection)
-        ->shouldReceive('delete')
-        ->once()
-        ->getMock();
-    invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        expect($collectionDecorator->delete($caller, new Filter()))->toBeNull();
+    })->with('caller');
 
-    expect($collectionDecorator->delete($caller, new Filter()))->toBeNull();
-})->with('caller');
+    test('aggregate() should call the childCollection corresponding method', function (Caller $caller) {
+        $collectionDecorator = $this->bucket['collectionDecorator'];
 
-test('aggregate() should call the childCollection corresponding method', function (Caller $caller) {
-    $collectionDecorator = factoryCollectionDecorator();
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = \Mockery::mock($childCollection)
+            ->shouldReceive('aggregate')
+            ->once()
+            ->getMock();
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
 
-    $childCollection = invokeProperty($collectionDecorator, 'childCollection');
-    $childCollection = mock($childCollection)
-        ->shouldReceive('aggregate')
-        ->once()
-        ->getMock();
-    invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        expect($collectionDecorator->aggregate($caller, new Filter(), new Aggregation(operation: 'Count')))->toBeNull();
+    })->with('caller');
 
-    expect($collectionDecorator->aggregate($caller, new Filter(), new Aggregation(operation: 'Count')))->toBeNull();
-})->with('caller');
+    test('makeTransformer() should call the childCollection corresponding method', function () {
+        $collectionDecorator = $this->bucket['collectionDecorator'];
 
-test('show() should call the childCollection corresponding method', function (Caller $caller) {
-    $collectionDecorator = factoryCollectionDecorator();
+        $childCollection = $this->invokeProperty($collectionDecorator, 'childCollection');
+        $childCollection = \Mockery::mock($childCollection)
+            ->shouldReceive('makeTransformer')
+            ->once()
+            ->getMock();
+        $this->invokeProperty($collectionDecorator, 'childCollection', $childCollection);
 
-    $childCollection = invokeProperty($collectionDecorator, 'childCollection');
-    $childCollection = mock($childCollection)
-        ->shouldReceive('show')
-        ->once()
-        ->getMock();
-    invokeProperty($collectionDecorator, 'childCollection', $childCollection);
+        expect($collectionDecorator->makeTransformer())->toBeNull();
+    });
 
-    expect($collectionDecorator->show($caller, new Filter(), 1, new Projection()))->toBeNull();
-})->with('caller');
-
-test('makeTransformer() should call the childCollection corresponding method', function () {
-    $collectionDecorator = factoryCollectionDecorator();
-
-    $childCollection = invokeProperty($collectionDecorator, 'childCollection');
-    $childCollection = mock($childCollection)
-        ->shouldReceive('makeTransformer')
-        ->once()
-        ->getMock();
-    invokeProperty($collectionDecorator, 'childCollection', $childCollection);
-
-    expect($collectionDecorator->makeTransformer())->toBeNull();
-});
-
-test('toArray() should call the childCollection corresponding method', function () {
-    $collectionDecorator = factoryCollectionDecorator();
-
-    $childCollection = invokeProperty($collectionDecorator, 'childCollection');
-    $childCollection = mock($childCollection)
-        ->shouldReceive('toArray')
-        ->once()
-        ->getMock();
-    invokeProperty($collectionDecorator, 'childCollection', $childCollection);
-
-    expect($collectionDecorator->toArray([]))->toEqual([]);
 });

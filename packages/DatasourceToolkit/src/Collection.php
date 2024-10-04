@@ -12,25 +12,37 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projectio
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection as IlluminateCollection;
 
+/**
+ * @codeCoverageIgnore
+ */
 class Collection implements CollectionContract
 {
     use CollectionMethods;
 
     protected string $transformer;
 
+    protected IlluminateCollection $schema;
+
     public function __construct(
         protected DatasourceContract $dataSource,
         protected string $name,
+        protected $nativeDriver = null
     ) {
         $this->fields = new IlluminateCollection();
         $this->actions = new IlluminateCollection();
         $this->segments = new IlluminateCollection();
         $this->charts = new IlluminateCollection();
+        $this->schema = new IlluminateCollection();
     }
 
     public function getDataSource(): DatasourceContract
     {
         return $this->dataSource;
+    }
+
+    public function getSchema(): IlluminateCollection
+    {
+        return $this->schema;
     }
 
     public function getName(): string
@@ -45,16 +57,12 @@ class Collection implements CollectionContract
         }
     }
 
-    public function getForm(Caller $caller, string $name, ?array $formValues = null, ?Filter $filter = null): array
+    public function getForm(Caller $caller, string $name, ?array $formValues = null, ?Filter $filter = null, ?string $changeField = null): array
     {
         return [];
     }
 
     public function create(Caller $caller, array $data)
-    {
-    }
-
-    public function show(Caller $caller, Filter $filter, $id, Projection $projection)
     {
     }
 
@@ -79,13 +87,12 @@ class Collection implements CollectionContract
         return new BaseTransformer($this->getName());
     }
 
-    public function toArray($record, ?Projection $projection = null): array
-    {
-        // by default $record is an array
-        return $record;
-    }
-
     public function renderChart(Caller $caller, string $name, array $recordId)
     {
+    }
+
+    public function getNativeDriver()
+    {
+        return $this->nativeDriver;
     }
 }

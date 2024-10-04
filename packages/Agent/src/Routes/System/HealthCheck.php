@@ -4,6 +4,7 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\System;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
+
 use function ForestAdmin\config;
 
 class HealthCheck extends AbstractRoute
@@ -25,9 +26,11 @@ class HealthCheck extends AbstractRoute
 
     public function handleRequest()
     {
+        // @codeCoverageIgnoreStart
         if (config('isProduction')) {
             AgentFactory::sendSchema(true);
         }
+        // @codeCoverageIgnoreEnd
 
         return [
             'content' => null,

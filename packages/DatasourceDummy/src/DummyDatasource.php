@@ -15,9 +15,9 @@ class DummyDatasource extends Datasource
     {
         parent::__construct();
         $this->addCollection(new Book($this));
-//        $this->addCollection(new Library($this));
-//        $this->addCollection(new LibraryBook($this));
-//        $this->addCollection(new Person($this));
-//        $this->addCollection(new Address($this));
+        //        $this->addCollection(new Library($this));
+        //        $this->addCollection(new LibraryBook($this));
+        //        $this->addCollection(new Person($this));
+        //        $this->addCollection(new Address($this));
     }
 }

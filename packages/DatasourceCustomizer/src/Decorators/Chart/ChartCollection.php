@@ -16,6 +16,7 @@ class ChartCollection extends CollectionDecorator
         }
 
         $this->charts[$name] = $definition;
+        $this->markSchemaAsDirty();
     }
 
     public function renderChart(Caller $caller, string $name, array $recordId)

@@ -2,17 +2,22 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Http;
 
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestValidationException;
+use ForestAdmin\AgentPHP\Agent\Facades\Logger;
+use ForestAdmin\AgentPHP\Agent\Http\Exceptions\AuthenticationOpenIdClient;
+use ForestAdmin\AgentPHP\Agent\Http\Traits\ErrorHandling;
+
+use function ForestAdmin\config;
+
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
 class ForestController
 {
+    use ErrorHandling;
     public const ROUTE_CHARTS_PREFIX = '/forest/_charts';
 
     /**
@@ -40,10 +45,14 @@ class ForestController
         }
 
         if (isset($data['is_action'])) {
-            unset($data['is_action']);
+            $headers = $data['headers'];
+            unset($data['is_action'], $data['headers']);
 
             if ($data['type'] === 'File') {
-                $response = new BinaryFileResponse($data['stream'], 200, ['Content-Type' => $data['mimeType'], 'Access-Control-Expose-Headers' => 'Content-Disposition']);
+                $headers['Content-Type'] = $data['mimeType'];
+                $headers['Access-Control-Expose-Headers'] = 'Content-Disposition';
+
+                $response = new BinaryFileResponse($data['stream'], 200, $headers);
                 $response->setContentDisposition(
                     ResponseHeaderBag::DISPOSITION_ATTACHMENT,
                     $data['name']
@@ -52,7 +61,7 @@ class ForestController
                 return $response;
             }
 
-            return new JsonResponse($data, $data['status'] ?? 200);
+            return new JsonResponse($data, $data['status'] ?? 200, $headers);
         }
 
         return new JsonResponse($data['content'], $data['status'] ?? 200, $data['headers'] ?? []);
@@ -63,25 +72,21 @@ class ForestController
      */
     protected function exceptionHandler(Throwable $exception): JsonResponse
     {
-        if ($exception instanceof ForestValidationException) {
+        if ($exception instanceof AuthenticationOpenIdClient) {
             $data = [
-                'errors' => [
-                    [
-                        'name'   => 'ForestValidationException',
-                        'detail' => $exception->getMessage(),
-                        'status' => 400,
-                    ],
-                ],
+                'error'             => $exception->getError(),
+                'error_description' => $exception->getErrorDescription(),
+                'state'             => $exception->getState(),
             ];
 
-            return new JsonResponse($data, 400);
-        } elseif ($exception instanceof HttpException) {
+            return new JsonResponse($data, $exception->getStatusCode(), $exception->getHeaders());
+        } else {
             $data = [
                 'errors' => [
                     [
-                        'name'   => $exception->getName(),
-                        'detail' => $exception->getMessage(),
-                        'status' => $exception->getStatusCode(),
+                        'name'   => $this->getErrorName($exception),
+                        'detail' => $this->getErrorMessage($exception),
+                        'status' => $this->getErrorStatus($exception),
                     ],
                 ],
             ];
@@ -90,12 +95,19 @@ class ForestController
                 $data['errors'][0]['data'] = $exception->getData();
             }
 
-            return new JsonResponse($data, $exception->getStatusCode(), $exception->getHeaders());
-        }
+            if (! config('isProduction')) {
+                Logger::log('Debug', $exception->getTraceAsString());
+            }
 
-        throw $exception;
+            return new JsonResponse($data, $this->getErrorStatus($exception), $this->getErrorHeaders($exception));
+        }
     }
 
+    /**
+     * @param string $routeName
+     * @return \Closure
+     * @codeCoverageIgnore
+     */
     protected function getClosure(string $routeName): \Closure
     {
         $routes = Router::getRoutes();

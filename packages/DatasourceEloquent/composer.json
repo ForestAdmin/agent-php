@@ -1,0 +1,44 @@
+{
+    "name": "forestadmin/php-datasource-eloquent",
+    "description": "Subtree split of the PHP Datasource Doctrine component",
+    "type": "library",
+    "license": "GPL-3.0-or-later",
+    "version": "1.11.8",
+    "require": {
+        "php": "^8.0",
+        "illuminate/collections": "^8.0|^9.0|^10.0|^11.0",
+        "illuminate/database": "^v8.83|^9.0|^10.0|^11.0",
+        "illuminate/support": "^8.0|^9.0|^10.0|^11.0",
+        "symfony/cache": "^5.4|^6.0",
+        "symfony/dependency-injection": "^5.4|^6.0",
+        "symfony/http-foundation": "^5.4|^6.0|^7.0",
+        "symfony/http-kernel": "^5.4|^6.0|^7.0",
+        "composer/class-map-generator": "^1.0",
+        "forestadmin/php-agent-toolkit": "1.11.8",
+        "forestadmin/php-datasource-toolkit": "1.11.8",
+        "forestadmin/php-base-datasource": "1.11.8"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "mockery/mockery": "^1.6",
+        "pestphp/pest": "^1.21|^2.34",
+        "phpspec/prophecy-phpunit": "^2.0",
+        "symfony/var-dumper": "^5.4|^6.0",
+        "spatie/pest-plugin-test-time": "^1.1|^2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "ForestAdmin\\AgentPHP\\DatasourceEloquent\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ForestAdmin\\AgentPHP\\Tests\\": "tests"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}

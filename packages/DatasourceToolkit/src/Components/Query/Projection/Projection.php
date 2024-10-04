@@ -3,7 +3,6 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection;
 
 use Closure;
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
@@ -83,8 +82,12 @@ class Projection extends IlluminateCollection
         }
 
         foreach ($this->relations() as $relation => $projection) {
+
             $schema = $collection->getFields()[$relation];
-            $association = AgentFactory::get('datasource')->getCollection($schema->getForeignCollection());
+            if ($schema->getType() === 'PolymorphicManyToOne') {
+                continue;
+            }
+            $association = $collection->getDataSource()->getCollection($schema->getForeignCollection());
             $projectionWithPk = $projection->withPks($association)->nest($relation);
 
             foreach ($projectionWithPk as $field) {

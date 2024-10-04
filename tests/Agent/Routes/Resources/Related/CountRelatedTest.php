@@ -13,11 +13,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
 
-function factoryCountRelated($args = []): CountRelated
-{
+$before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
     $collectionUser = new Collection($datasource, 'User');
     $collectionUser->addFields(
@@ -49,7 +49,7 @@ function factoryCountRelated($args = []): CountRelated
     );
 
     if (isset($args['count'])) {
-        $collectionCar = mock($collectionCar)
+        $collectionCar = \Mockery::mock($collectionCar)
             ->shouldReceive('aggregate')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
             ->andReturn($args['count'])
@@ -57,7 +57,7 @@ function factoryCountRelated($args = []): CountRelated
     }
 
     if (isset($args['countDisable'])) {
-        $collectionCar = mock($collectionCar)
+        $collectionCar = \Mockery::mock($collectionCar)
             ->shouldReceive('isCountable')
             ->andReturnFalse()
             ->getMock();
@@ -68,7 +68,7 @@ function factoryCountRelated($args = []): CountRelated
 
     $datasource->addCollection($collectionUser);
     $datasource->addCollection($collectionCar);
-    buildAgent($datasource);
+    $testCase->buildAgent($datasource);
 
     $request = Request::createFromGlobals();
 
@@ -115,15 +115,15 @@ function factoryCountRelated($args = []): CountRelated
         config('permissionExpiration')
     );
 
-    $CountRelated = mock(CountRelated::class)
+    $CountRelated = \Mockery::mock(CountRelated::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($CountRelated, 'request', $request);
+    $testCase->invokeProperty($CountRelated, 'request', $request);
 
     return $CountRelated;
-}
+};
 
 test('make() should return a new instance of CountRelated with routes', function () {
     $count = CountRelated::make();
@@ -132,7 +132,7 @@ test('make() should return a new instance of CountRelated with routes', function
         ->and($count->getRoutes())->toHaveKey('forest.related.count');
 });
 
-test('handleRequest() should return a response 200', function () {
+test('handleRequest() should return a response 200', function () use ($before) {
     $data = [
         [
             'value' => 2,
@@ -140,7 +140,7 @@ test('handleRequest() should return a response 200', function () {
         ],
     ];
 
-    $count = factoryCountRelated(['count' => $data]);
+    $count = $before($this, ['count' => $data]);
 
     expect($count->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'cars']))
         ->toBeArray()
@@ -153,8 +153,8 @@ test('handleRequest() should return a response 200', function () {
         );
 });
 
-test('handleRequest() should return deactivate count when the collecion is not countable', function () {
-    $count = factoryCountRelated(['countDisable' => true]);
+test('handleRequest() should return deactivate count when the collecion is not countable', function () use ($before) {
+    $count = $before($this, ['countDisable' => true]);
 
     expect($count->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'cars']))->toEqual([
         'content' => [

@@ -17,9 +17,8 @@ class CollectionDecorator implements CollectionContract
 {
     use CollectionMethods;
 
-    private ?array $lastSchema;
-
-    private array $lastSubSchema;
+    private ?IlluminateCollection $lastSchema = null;
+    private ?CollectionDecorator $parent = null;
 
     public function __construct(protected CollectionContract|CollectionDecorator $childCollection, protected Datasource $dataSource)
     {
@@ -27,6 +26,42 @@ class CollectionDecorator implements CollectionContract
         $this->actions = new IlluminateCollection();
         $this->segments = new IlluminateCollection();
         $this->charts = new IlluminateCollection();
+
+        if ($this->childCollection instanceof self) {
+            $this->childCollection->setParent($this);
+        }
+    }
+
+    public function setParent(CollectionDecorator $parent): self
+    {
+        $this->parent = $parent;
+
+        return $this;
+    }
+
+    public function getSchema(): IlluminateCollection
+    {
+        if (! $this->lastSchema) {
+            if (! $this->childCollection instanceof CollectionDecorator) {
+                $childSchema = $this->childCollection->getFields();
+            } else {
+                $childSchema = $this->childCollection->getSchema();
+            }
+            $this->lastSchema = $this->refineSchema($childSchema);
+        }
+
+        return $this->lastSchema;
+    }
+
+    public function markSchemaAsDirty(): void
+    {
+        $this->lastSchema = null;
+        $this->parent?->markSchemaAsDirty();
+    }
+
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
+    {
+        return $childSchema;
     }
 
     public function isSearchable(): bool
@@ -36,7 +71,7 @@ class CollectionDecorator implements CollectionContract
 
     public function getFields(): IlluminateCollection
     {
-        return $this->childCollection->getFields();
+        return $this->getSchema();
     }
 
     public function execute(Caller $caller, string $name, array $data, ?Filter $filter = null)
@@ -46,11 +81,11 @@ class CollectionDecorator implements CollectionContract
         return $this->childCollection->execute($caller, $name, $data, $refinedFilter);
     }
 
-    public function getForm(Caller $caller, string $name, ?array $data = null, ?Filter $filter = null): array
+    public function getForm(Caller $caller, string $name, ?array $data = null, ?Filter $filter = null, ?string $changeField = null): array
     {
         $refinedFilter = $this->refineFilter($caller, $filter);
 
-        return $this->childCollection->getForm($caller, $name, $data, $refinedFilter);
+        return $this->childCollection->getForm($caller, $name, $data, $refinedFilter, $changeField);
     }
 
     public function create(Caller $caller, array $data)
@@ -86,11 +121,6 @@ class CollectionDecorator implements CollectionContract
         return $this->childCollection->aggregate($caller, $refinedFilter, $aggregation, $limit);
     }
 
-    protected function markSchemaAsDirty(): void
-    {
-        $this->lastSchema = null;
-    }
-
     protected function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
     {
         return $filter;
@@ -106,19 +136,9 @@ class CollectionDecorator implements CollectionContract
         return $this->childCollection->makeTransformer();
     }
 
-    public function toArray($record): array
-    {
-        return $this->childCollection->toArray($record);
-    }
-
     public function getDataSource(): DatasourceContract
     {
         return $this->dataSource;
-    }
-
-    public function show(Caller $caller, Filter $filter, $id, Projection $projection)
-    {
-        return $this->childCollection->show($caller, $filter, $id, $projection);
     }
 
     public function getSegments()
@@ -144,5 +164,10 @@ class CollectionDecorator implements CollectionContract
     public function getActions(): IlluminateCollection
     {
         return $this->childCollection->getActions();
+    }
+
+    public function getNativeDriver()
+    {
+        return $this->childCollection->getNativeDriver();
     }
 }

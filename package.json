@@ -1,6 +1,6 @@
 {
   "name": "agent-php",
-  "version": "1.0.0-beta.39",
+  "version": "1.11.8",
   "description": "The official agent PHP for Forest.",
   "private": false,
   "scripts": {
@@ -20,13 +20,13 @@
   },
   "homepage": "https://github.com/ForestAdmin/agent-php#readme",
   "devDependencies": {
-    "@commitlint/cli": "11.0.0",
-    "@commitlint/config-conventional": "11.0.0",
-    "@semantic-release/changelog": "6.0.1",
+    "@commitlint/cli": "17.4.2",
+    "@commitlint/config-conventional": "17.4.2",
+    "@semantic-release/changelog": "6.0.3",
     "@semantic-release/exec": "6.0.3",
     "@semantic-release/git": "10.0.1",
     "husky": "^8.0.2",
-    "semantic-release": "19.0.2",
-    "semantic-release-slack-bot": "3.5.2"
+    "semantic-release": "19.0.5",
+    "semantic-release-slack-bot": "3.5.3"
   }
 }

@@ -196,7 +196,7 @@ class DynamicField
     public function isStatic(): bool
     {
         foreach ($this as $field => $value) {
-            if (is_callable($value)) {
+            if (is_callable($value) && ! is_string($value)) {
                 return false;
             }
         }

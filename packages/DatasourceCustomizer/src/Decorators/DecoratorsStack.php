@@ -10,7 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Empty\EmptyCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Hook\HookCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsEmulate\OperatorsEmulateCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsReplace\OperatorsReplaceCollection;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\PublicationCollectionDecorator;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\PublicationCollectionDatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Relation\RelationCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\RenameField\RenameFieldCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Schema\SchemaCollection;
@@ -20,6 +20,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Sort\SortCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Validation\ValidationCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Write\WriteDataSourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
+use Illuminate\Support\Collection;
 
 class DecoratorsStack
 {
@@ -35,24 +36,26 @@ class DecoratorsStack
     public DatasourceDecorator $segment;
     public DatasourceDecorator $sort;
     public DatasourceDecorator $relation;
+    public ChartDataSourceDecorator $chart;
     public DatasourceDecorator $action;
     public DatasourceDecorator $schema;
     public DatasourceDecorator $write;
-    public DatasourceContract $validation;
-    public ChartDataSourceDecorator $chart;
-    public DatasourceDecorator $renameField;
-    public DatasourceDecorator $publication;
     public DatasourceDecorator $hook;
+    public DatasourceContract $validation;
     public DatasourceDecorator $binary;
+    public DatasourceDecorator $publication;
+    public DatasourceDecorator $renameField;
+
+    private Collection $customizations;
 
     public function __construct(DatasourceContract $dataSource)
     {
+        $this->customizations = collect();
+
         $last = &$dataSource;
 
-        $last = $this->empty = new DatasourceDecorator($last, EmptyCollection::class);
-
         // Step 0: Do not query datasource when we know the result with yield an empty set.
-        // last = this.empty = new DataSourceDecorator(last, EmptyCollectionDecorator);
+        $last = $this->empty = new DatasourceDecorator($last, EmptyCollection::class);
 
         // Step 1: Computed-Relation-Computed sandwich (needed because some emulated relations depend
         // on computed fields, and some computed fields depend on relation...)
@@ -79,36 +82,26 @@ class DecoratorsStack
         $last = $this->validation = new DatasourceDecorator($last, ValidationCollection::class);
         $last = $this->binary = new DatasourceDecorator($last, BinaryCollection::class);
 
-
         // Step 4: Renaming must be either the very first or very last so that naming in customer code is consistent.
-        $last = $this->publication = new DatasourceDecorator($last, PublicationCollectionDecorator::class);
+        $last = $this->publication = new PublicationCollectionDatasourceDecorator($last);
         $last = $this->renameField = new DatasourceDecorator($last, RenameFieldCollection::class);
 
         $this->dataSource = &$last;
     }
 
-    public function build(): void
+    public function queueCustomization(\Closure $customization): void
     {
-        $this->empty->build();
-        $this->earlyComputed->build();
-        $this->earlyOpEmulate->build();
-        $this->earlyOpReplace->build();
-        $this->relation->build();
-        $this->lateComputed->build();
-        $this->lateOpEmulate->build();
-        $this->lateOpReplace->build();
-        $this->search->build();
-        $this->segment->build();
-        $this->sort->build();
-        $this->chart->build();
-        $this->action->build();
-        $this->schema->build();
-        $this->write->build();
-        $this->hook->build();
-        $this->validation->build();
-        $this->binary->build();
-        $this->publication->build();
-        $this->renameField->build();
-        $this->dataSource->build();
+        $this->customizations->push($customization);
+    }
+
+    public function applyQueuedCustomizations(): void
+    {
+        $queuedCustomizations = $this->customizations->slice(0);
+        $this->customizations = collect();
+
+        while ($queuedCustomizations->isNotEmpty()) {
+            call_user_func($queuedCustomizations->shift());
+            $this->applyQueuedCustomizations();
+        }
     }
 }

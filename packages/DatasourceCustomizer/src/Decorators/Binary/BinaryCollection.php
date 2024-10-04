@@ -12,6 +12,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFil
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
 use Illuminate\Support\Collection as IlluminateCollection;
 use Illuminate\Support\Str;
@@ -40,30 +41,32 @@ class BinaryCollection extends CollectionDecorator
 
     private array $useHexConversion = [];
 
-    public function getFields(): IlluminateCollection
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
     {
-        $fields = collect();
-
         /**
          * @var string $fieldName
          * @var ColumnSchema|RelationSchema $schema
          */
-        foreach ($this->childCollection->getFields() as $fieldName => $schema) {
+        foreach ($childSchema as $fieldName => $schema) {
             if ($schema instanceof ColumnSchema && $schema->getColumnType() === PrimitiveType::BINARY) {
                 $this->binaryFields[] = $fieldName;
                 $schema->setColumnType(PrimitiveType::STRING);
                 $schema->setValidation($this->replaceValidation($fieldName, $schema));
             }
 
-            $fields->put($fieldName, $schema);
+            $childSchema->put($fieldName, $schema);
         }
 
-        return $fields;
+        return $childSchema;
     }
 
     public function setBinaryMode(string $name, string $type): void
     {
-        $field = $this->childCollection->getFields()[$name];
+        $field = $this->childCollection->getFields()->get($name);
+
+        if ($field === null) {
+            throw new \Exception('Field not found');
+        }
 
         if ($type !== 'datauri' && $type !== 'hex') {
             throw new \Exception('Invalid binary mode');
@@ -163,6 +166,10 @@ class BinaryCollection extends CollectionDecorator
         $prefix = Str::before($fieldName, ':');
         $suffix = Str::contains($fieldName, ':') ? Str::after($fieldName, ':') : null;
         $schema = $this->childCollection->getFields()->get($prefix);
+
+        if ($schema instanceof PolymorphicManyToOneSchema || $schema === null) {
+            return $value;
+        }
 
         if (! $schema instanceof ColumnSchema) {
             $foreignCollection = $this->dataSource->getCollection($schema->getForeignCollection());

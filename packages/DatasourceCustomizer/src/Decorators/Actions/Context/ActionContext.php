@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Context;
 
+use ForestAdmin\AgentPHP\Agent\Facades\Logger;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Context\CollectionCustomizationContext;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ActionCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
@@ -17,7 +18,8 @@ class ActionContext extends CollectionCustomizationContext
         Caller $caller,
         protected PaginatedFilter $filter,
         protected array $formValues = [],
-        protected array $used = []
+        protected array $used = [],
+        protected ?string $changeField = null
     ) {
         parent::__construct($collection, $caller);
     }
@@ -71,19 +73,40 @@ class ActionContext extends CollectionCustomizationContext
         return collect($compositeIds)->map(fn ($id) => $id[0])->toArray();
     }
 
-  /**
-   * Get all the records ids (when the collection uses composite keys)
-   */
-  public function getCompositeRecordIds(): array
-  {
-      $projection = (new Projection())->withPks($this->realCollection);
-      $records = $this->getRecords($projection);
+    /**
+     * Get all the records ids (when the collection uses composite keys)
+     */
+    public function getCompositeRecordIds(): array
+    {
+        $projection = (new Projection())->withPks($this->realCollection);
+        $records = $this->getRecords($projection);
 
-      return collect($records)->map(fn ($record) => Record::getPrimaryKeys($this->realCollection, $record))->toArray();
-  }
+        return collect($records)->map(fn ($record) => Record::getPrimaryKeys($this->realCollection, $record))->toArray();
+    }
 
     public function getUsed(): array
     {
         return $this->used;
+    }
+
+    /**
+     * @return string|null
+     * @deprecated use `hasFieldChange` instead.
+     */
+    public function getChangeField(): ?string
+    {
+        Logger::log(
+            'warn',
+            'Usage of `getChangeField` is deprecated, please use `hasFieldChanged` instead.'
+        );
+
+        return $this->changeField;
+    }
+
+    public function hasFieldChanged(string $fieldName): bool
+    {
+        $this->used[$fieldName] = $fieldName;
+
+        return $this->changeField === $fieldName;
     }
 }

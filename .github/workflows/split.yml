@@ -31,7 +31,9 @@ jobs:
           -
             local_path: 'DatasourceToolkit'
             split_repository: 'php-datasource-toolkit'
-
+          -
+            local_path: 'DatasourceEloquent'
+            split_repository: 'php-datasource-eloquent'
 
     steps:
       - uses: actions/checkout@v3

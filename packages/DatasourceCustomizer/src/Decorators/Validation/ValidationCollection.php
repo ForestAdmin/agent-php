@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Validation;
 
+use ForestAdmin\AgentPHP\Agent\Http\Exceptions\ValidationError;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
@@ -9,7 +10,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestValidationException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\FieldValidator;
 use Illuminate\Support\Collection as IlluminateCollection;
 
@@ -51,15 +51,19 @@ class ValidationCollection extends CollectionDecorator
         parent::update($caller, $filter, $patch);
     }
 
-    public function getFields(): IlluminateCollection
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
     {
-        $fields = $this->childCollection->getFields();
         foreach ($this->validation as $name => $rules) {
-            $validation = array_merge($fields[$name]->getValidation(), $rules);
-            $fields[$name]->setValidation($validation);
+            $validation = array_merge($childSchema[$name]->getValidation(), $rules);
+            $childSchema[$name]->setValidation($validation);
         }
 
-        return $fields;
+        return $childSchema;
+    }
+
+    public function getValidation(): array
+    {
+        return $this->validation;
     }
 
     private function validate(array $record, string $timezone, bool $allFields): void
@@ -82,7 +86,7 @@ class ValidationCollection extends CollectionDecorator
                             $rule = $validator['operator'];
                         }
 
-                        throw new ForestValidationException("$message $rule");
+                        throw new ValidationError("$message $rule");
                     }
                 }
             }

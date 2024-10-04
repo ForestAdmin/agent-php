@@ -11,38 +11,38 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use Illuminate\Support\Str;
 
-dataset('conditionTreeBranch', function () {
-    yield $tree = new ConditionTreeBranch('And', [
+beforeEach(function () {
+    $this->bucket['tree'] = new ConditionTreeBranch('And', [
         new ConditionTreeLeaf('column1', Operators::EQUAL, true),
         new ConditionTreeLeaf('column2', Operators::EQUAL, true),
     ]);
 });
 
-test('replaceFields() should work', function (ConditionTreeBranch $tree) {
-    expect($tree->replaceFields(fn ($field) => "$field:suffix"))
+test('replaceFields() should work', function () {
+    expect($this->bucket['tree']->replaceFields(fn ($field) => "$field:suffix"))
         ->toEqual(
             new ConditionTreeBranch('And', [
                 new ConditionTreeLeaf('column1:suffix', Operators::EQUAL, true),
                 new ConditionTreeLeaf('column2:suffix', Operators::EQUAL, true),
             ])
         );
-})->with('conditionTreeBranch');
+});
 
-test('replaceLeafs() should work', function (ConditionTreeBranch $tree) {
-    expect($tree->replaceLeafs(fn (ConditionTreeLeaf $leaf) => $leaf->override(value: ! $leaf->getValue())))
+test('replaceLeafs() should work', function () {
+    expect($this->bucket['tree']->replaceLeafs(fn (ConditionTreeLeaf $leaf) => $leaf->override(value: ! $leaf->getValue())))
         ->toEqual(
             new ConditionTreeBranch('And', [
                 new ConditionTreeLeaf('column1', Operators::EQUAL, false),
                 new ConditionTreeLeaf('column2', Operators::EQUAL, false),
             ])
         );
-})->with('conditionTreeBranch');
+});
 
-test('someLeaf() should work', function (ConditionTreeBranch $tree) {
-    expect($tree->someLeaf(fn (ConditionTreeLeaf $leaf) => $leaf->getValue() === true))->toBe(true)
-        ->and($tree->someLeaf(fn (ConditionTreeLeaf $leaf) => $leaf->getField() === 'column1'))->toBe(true)
-        ->and($tree->someLeaf(fn (ConditionTreeLeaf $leaf) => Str::startsWith($leaf->getField(), 'something')))->toBe(false);
-})->with('conditionTreeBranch');
+test('someLeaf() should work', function () {
+    expect($this->bucket['tree']->someLeaf(fn (ConditionTreeLeaf $leaf) => $leaf->getValue() === true))->toBe(true)
+        ->and($this->bucket['tree']->someLeaf(fn (ConditionTreeLeaf $leaf) => $leaf->getField() === 'column1'))->toBe(true)
+        ->and($this->bucket['tree']->someLeaf(fn (ConditionTreeLeaf $leaf) => Str::startsWith($leaf->getField(), 'something')))->toBe(false);
+});
 
 test('useIntervalOperator() should return true', function () {
     $leaf = new ConditionTreeLeaf('column', Operators::TODAY, true);
@@ -56,66 +56,66 @@ test('useIntervalOperator() should return false', function () {
     expect($leaf->useIntervalOperator())->toBe(false);
 });
 
-test('projection() should work', function (ConditionTreeBranch $tree) {
-    expect($tree->getProjection())
+test('projection() should work', function () {
+    expect($this->bucket['tree']->getProjection())
         ->toEqual(new Projection(['column1', 'column2']));
-})->with('conditionTreeBranch');
+});
 
-test('nest() should work', function (ConditionTreeBranch $tree) {
-    expect($tree->nest('prefix'))->toEqual(
+test('nest() should work', function () {
+    expect($this->bucket['tree']->nest('prefix'))->toEqual(
         new ConditionTreeBranch('And', [
             new ConditionTreeLeaf('prefix:column1', Operators::EQUAL, true),
             new ConditionTreeLeaf('prefix:column2', Operators::EQUAL, true),
         ])
     );
-})->with('conditionTreeBranch');
+});
 
-test('unnest() should work with conditionTreeBranch', function (ConditionTreeBranch $tree) {
-    expect($tree->nest('prefix')->unnest())->toEqual($tree);
-})->with('conditionTreeBranch');
+test('unnest() should work with conditionTreeBranch', function () {
+    expect($this->bucket['tree']->nest('prefix')->unnest())->toEqual($this->bucket['tree']);
+});
 
-test('unnest() should work with conditionTreeLeaf', function (ConditionTreeBranch $tree) {
-    $tree = $tree->nest('prefix');
-    $conditionTreeLeaf = $tree->getConditions()[0];
+test('unnest() should work with conditionTreeLeaf', function () {
+    $this->bucket['tree'] = $this->bucket['tree']->nest('prefix');
+    $conditionTreeLeaf = $this->bucket['tree']->getConditions()[0];
 
     expect($conditionTreeLeaf->unnest())
         ->toEqual(new ConditionTreeLeaf('column1', Operators::EQUAL, true));
-})->with('conditionTreeBranch');
+});
 
-test('unnest() should throw', function (ConditionTreeBranch $tree) {
-    expect(static fn () => $tree->unnest())
+test('unnest() should throw', function () {
+    expect(fn () => $this->bucket['tree']->unnest())
             ->toThrow(ForestException::class, '🌳🌳🌳 Cannot unnest condition tree.');
-})->with('conditionTreeBranch');
+});
 
-test('inverse() should work', function (ConditionTreeBranch $tree) {
-    expect($tree->inverse())->toEqual(
+test('inverse() should work', function () {
+    expect($this->bucket['tree']->inverse())->toEqual(
         new ConditionTreeBranch('Or', [
             new ConditionTreeLeaf('column1', Operators::NOT_EQUAL, true),
             new ConditionTreeLeaf('column2', Operators::NOT_EQUAL, true),
         ])
     )
-        ->and($tree->inverse()->inverse())->toEqual($tree);
-})->with('conditionTreeBranch');
+        ->and($this->bucket['tree']->inverse()->inverse())->toEqual($this->bucket['tree']);
+});
 
 test('inverse() should work with blank', function () {
-    $tree = new ConditionTreeLeaf('column1', Operators::BLANK);
-    expect($tree->inverse())->toEqual(new ConditionTreeLeaf('column1', Operators::PRESENT))
-        ->and($tree->inverse()->inverse())->toEqual($tree);
+    $this->bucket['tree'] = new ConditionTreeLeaf('column1', Operators::BLANK);
+    expect($this->bucket['tree']->inverse())->toEqual(new ConditionTreeLeaf('column1', Operators::PRESENT))
+        ->and($this->bucket['tree']->inverse()->inverse())->toEqual($this->bucket['tree']);
 });
 
 test('inverse() should crash with unsupported operator', function () {
-    $tree = new ConditionTreeLeaf('column1', Operators::TODAY);
-    expect(fn () => $tree->inverse())
+    $this->bucket['tree'] = new ConditionTreeLeaf('column1', Operators::TODAY);
+    expect(fn () => $this->bucket['tree']->inverse())
         ->toThrow(ForestException::class, '🌳🌳🌳 Operator: Today cannot be inverted.');
 });
 
-test('everyLeaf() should work', function (ConditionTreeBranch $tree) {
-    expect($tree->everyLeaf(fn ($leaf) => $leaf->getField() === 'column1'))->toBe(false);
-})->with('conditionTreeBranch');
+test('everyLeaf() should work', function () {
+    expect($this->bucket['tree']->everyLeaf(fn ($leaf) => $leaf->getField() === 'column1'))->toBe(false);
+});
 
-test('forEachLeaf() should work', function (ConditionTreeBranch $tree) {
+test('forEachLeaf() should work', function () {
     expect(
-        $tree->forEachLeaf(fn ($leaf) => $leaf->override(field: 'field'))
+        $this->bucket['tree']->forEachLeaf(fn ($leaf) => $leaf->override(field: 'field'))
     )->toEqual(
         new ConditionTreeBranch(
             'And',
@@ -125,14 +125,14 @@ test('forEachLeaf() should work', function (ConditionTreeBranch $tree) {
             ]
         )
     );
-})->with('conditionTreeBranch');
+});
 
 test('validOperator() should throw', function () {
     expect(static fn () => new ConditionTreeLeaf('column1', 'unknown'))
         ->toThrow(ForestException::class, '🌳🌳🌳 Invalid operators, the unknown operator does not exist.');
 });
 
-test('match() should work', function (ConditionTreeBranch $tree) {
+test('match() should work', function () {
     $collection = new Collection(new Datasource(), 'myCollection');
     $collection->addFields(
         [
@@ -147,11 +147,11 @@ test('match() should work', function (ConditionTreeBranch $tree) {
         ]
     );
 
-    expect($tree->match(['column1' => true, 'column2' => true], $collection, 'Europe/Paris'))->toBeTrue()
-        ->and($tree->match(['column1' => true, 'column2' => false], $collection, 'Europe/Paris'))->toBeFalse()
-        ->and($tree->inverse()->match(['column1' => true, 'column2' => true], $collection, 'Europe/Paris'))->toBeFalse()
-        ->and($tree->inverse()->match(['column1' => true, 'column2' => false], $collection, 'Europe/Paris'))->toBeTrue();
-})->with('conditionTreeBranch');
+    expect($this->bucket['tree']->match(['column1' => true, 'column2' => true], $collection, 'Europe/Paris'))->toBeTrue()
+        ->and($this->bucket['tree']->match(['column1' => true, 'column2' => false], $collection, 'Europe/Paris'))->toBeFalse()
+        ->and($this->bucket['tree']->inverse()->match(['column1' => true, 'column2' => true], $collection, 'Europe/Paris'))->toBeFalse()
+        ->and($this->bucket['tree']->inverse()->match(['column1' => true, 'column2' => false], $collection, 'Europe/Paris'))->toBeTrue();
+});
 
 test('match() should work with many operators', function () {
     $collection = new Collection(new Datasource(), 'myCollection');
@@ -201,7 +201,7 @@ test('match() should work with null value', function () {
     expect($leaf->match(['string' => null], $collection, 'Europe/Paris'))->toBeFalse();
 });
 
-test('apply() should work', function (ConditionTreeBranch $tree) {
+test('apply() should work', function () {
     $collection = new Collection(new Datasource(), 'myCollection');
     $collection->addFields(
         [
@@ -221,9 +221,9 @@ test('apply() should work', function (ConditionTreeBranch $tree) {
         ['id' => 3, 'column1' => true, 'column2' => false],
     ];
 
-    expect($tree->apply($records, $collection, 'Europe/Paris'))->toEqual(
+    expect($this->bucket['tree']->apply($records, $collection, 'Europe/Paris'))->toEqual(
         [
             ['id' => 1, 'column1' => true, 'column2' => true],
         ]
     );
-})->with('conditionTreeBranch');
+});

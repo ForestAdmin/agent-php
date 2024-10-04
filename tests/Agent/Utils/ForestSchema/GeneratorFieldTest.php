@@ -1,6 +1,5 @@
 <?php
 
-
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\GeneratorField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
@@ -10,9 +9,10 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicManyToOneSchema;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
 
-function GeneratorFieldWithOneToOneRelation(): Datasource
-{
+beforeEach(function () {
     $datasource = new Datasource();
 
     $collectionBook = new Collection($datasource, 'Book');
@@ -25,7 +25,42 @@ function GeneratorFieldWithOneToOneRelation(): Datasource
                 foreignKeyTarget: 'id',
                 foreignCollection: 'Person',
             ),
+            'libraryId'     => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true, isSortable: true),
+            'library'       => new ManyToOneSchema(
+                foreignKey: 'libraryId',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'Library',
+            ),
+            'persons'      => new ManyToManySchema(
+                originKey: 'bookId',
+                originKeyTarget: 'id',
+                foreignKey: 'personId',
+                foreignKeyTarget: 'id',
+                foreignCollection: 'Person',
+                throughCollection: 'BookPerson',
+            ),
         ]
+    );
+
+    $collectionComment = new Collection($datasource, 'Comment');
+    $collectionComment->addFields(
+        [
+            'id'              => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'title'           => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentableId'   => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'commentableType' => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'commentable'     => new PolymorphicManyToOneSchema(
+                foreignKeyTypeField: 'commentableType',
+                foreignKey: 'commentableId',
+                foreignKeyTargets: [
+                    'Book'   => 'id',
+                    'Person' => 'id',
+                ],
+                foreignCollections: [
+                    'Book',
+                    'Person',
+                ],
+            ),]
     );
 
     $collectionPerson = new Collection($datasource, 'Person');
@@ -37,67 +72,32 @@ function GeneratorFieldWithOneToOneRelation(): Datasource
                 originKeyTarget: 'id',
                 foreignCollection: 'Book',
             ),
-        ]
-    );
-
-    $datasource->addCollection($collectionBook);
-    $datasource->addCollection($collectionPerson);
-    buildAgent($datasource);
-
-    return $datasource;
-}
-
-function GeneratorFieldWithOneToManyRelation(): Datasource
-{
-    $datasource = new Datasource();
-
-    $collectionBook = new Collection($datasource, 'Book');
-    $collectionBook->addFields(
-        [
-            'id'           => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'authorId'     => new ColumnSchema(columnType: PrimitiveType::STRING, isReadOnly: true, isSortable: true),
-            'author'       => new ManyToOneSchema(
-                foreignKey: 'authorId',
+            'books'         => new ManyToManySchema(
+                originKey: 'personId',
+                originKeyTarget: 'id',
+                foreignKey: 'bookId',
                 foreignKeyTarget: 'id',
-                foreignCollection: 'Person',
+                foreignCollection: 'Book',
+                throughCollection: 'BookPerson',
+            ),
+            'comment' => new PolymorphicOneToManySchema(
+                originKey: 'commentableId',
+                originKeyTarget: 'id',
+                foreignCollection: 'Comment',
+                originTypeField: 'commentableType',
+                originTypeValue: 'Person',
             ),
         ]
     );
 
-    $collectionPerson = new Collection($datasource, 'Person');
-    $collectionPerson->addFields(
+    $collectionLibrary = new Collection($datasource, 'Library');
+    $collectionLibrary->addFields(
         [
             'id'            => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
             'books'         => new OneToManySchema(
-                originKey: 'authorId',
+                originKey: 'libraryId',
                 originKeyTarget: 'id',
                 foreignCollection: 'Book',
-            ),
-        ]
-    );
-
-    $datasource->addCollection($collectionBook);
-    $datasource->addCollection($collectionPerson);
-    buildAgent($datasource);
-
-    return $datasource;
-}
-
-function GeneratorFieldWithManyToManyRelation(): Datasource
-{
-    $datasource = new Datasource();
-
-    $collectionBook = new Collection($datasource, 'Book');
-    $collectionBook->addFields(
-        [
-            'id'           => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'persons'      => new ManyToManySchema(
-                originKey: 'bookId',
-                originKeyTarget: 'id',
-                foreignKey: 'personId',
-                foreignKeyTarget: 'id',
-                foreignCollection: 'Person',
-                throughCollection: 'BookPerson',
             ),
         ]
     );
@@ -120,32 +120,46 @@ function GeneratorFieldWithManyToManyRelation(): Datasource
         ]
     );
 
-    $collectionPerson = new Collection($datasource, 'Person');
-    $collectionPerson->addFields(
-        [
-            'id'            => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'books'         => new ManyToManySchema(
-                originKey: 'personId',
-                originKeyTarget: 'id',
-                foreignKey: 'bookId',
-                foreignKeyTarget: 'id',
-                foreignCollection: 'Book',
-                throughCollection: 'BookPerson',
-            ),
-        ]
+    $datasource->addCollection($collectionBook);
+    $datasource->addCollection($collectionComment);
+    $datasource->addCollection($collectionPerson);
+    $datasource->addCollection($collectionLibrary);
+    $datasource->addCollection($collectionBookPerson);
+
+    $this->buildAgent($datasource);
+
+    $this->bucket['datasource'] = $datasource;
+});
+
+test('buildSchema() should generate Column', function () {
+    $schema = GeneratorField::buildSchema(
+        $this->bucket['datasource']->getCollection('Person'),
+        'id'
     );
 
-    $datasource->addCollection($collectionBook);
-    $datasource->addCollection($collectionBookPerson);
-    $datasource->addCollection($collectionPerson);
-    buildAgent($datasource);
-
-    return $datasource;
-}
+    expect($schema)->toEqual(
+        [
+            'defaultValue' => null,
+            'enums'        => [],
+            'field'        => 'id',
+            'integration'  => null,
+            'inverseOf'    => null,
+            'isFilterable' => false,
+            'isPrimaryKey' => true,
+            'isReadOnly'   => false,
+            'isRequired'   => false,
+            'isSortable'   => true,
+            'isVirtual'    => false,
+            'reference'    => null,
+            'type'         => 'Number',
+            'validations'  => [],
+        ]
+    );
+});
 
 test('buildSchema() should generate relation One to One', function () {
     $schema = GeneratorField::buildSchema(
-        GeneratorFieldWithOneToOneRelation()->getCollection('Person'),
+        $this->bucket['datasource']->getCollection('Person'),
         'book'
     );
 
@@ -158,13 +172,13 @@ test('buildSchema() should generate relation One to One', function () {
             'inverseOf'    => 'author',
             'isFilterable' => false,
             'isPrimaryKey' => false,
-            'isReadOnly'   => false,
+            'isReadOnly'   => true,
             'isRequired'   => false,
             'isSortable'   => true,
             'isVirtual'    => false,
             'reference'    => 'Book.id',
             'relationship' => 'HasOne',
-            'type'         => 'Number',
+            'type'         => 'String',
             'validations'  => [],
         ]
     );
@@ -172,7 +186,7 @@ test('buildSchema() should generate relation One to One', function () {
 
 test('buildSchema() should generate inverse relation One to One', function () {
     $schema = GeneratorField::buildSchema(
-        GeneratorFieldWithOneToOneRelation()->getCollection('Book'),
+        $this->bucket['datasource']->getCollection('Book'),
         'author'
     );
 
@@ -199,7 +213,7 @@ test('buildSchema() should generate inverse relation One to One', function () {
 
 test('buildSchema() should generate relation One to Many', function () {
     $schema = GeneratorField::buildSchema(
-        GeneratorFieldWithOneToManyRelation()->getCollection('Person'),
+        $this->bucket['datasource']->getCollection('Library'),
         'books'
     );
 
@@ -209,7 +223,7 @@ test('buildSchema() should generate relation One to Many', function () {
             'enums'        => null,
             'field'        => 'books',
             'integration'  => null,
-            'inverseOf'    => 'author',
+            'inverseOf'    => 'library',
             'isFilterable' => false,
             'isPrimaryKey' => false,
             'isReadOnly'   => false,
@@ -226,15 +240,15 @@ test('buildSchema() should generate relation One to Many', function () {
 
 test('buildSchema() should generate inverse relation One to Many', function () {
     $schema = GeneratorField::buildSchema(
-        GeneratorFieldWithOneToManyRelation()->getCollection('Book'),
-        'author'
+        $this->bucket['datasource']->getCollection('Book'),
+        'library'
     );
 
     expect($schema)->toEqual(
         [
             'defaultValue' => null,
             'enums'        => null,
-            'field'        => 'author',
+            'field'        => 'library',
             'integration'  => null,
             'inverseOf'    => 'books',
             'isFilterable' => false,
@@ -243,7 +257,7 @@ test('buildSchema() should generate inverse relation One to Many', function () {
             'isRequired'   => false,
             'isSortable'   => true,
             'isVirtual'    => false,
-            'reference'    => 'Person.id',
+            'reference'    => 'Library.id',
             'relationship' => 'BelongsTo',
             'type'         => 'Number',
             'validations'  => [],
@@ -251,9 +265,64 @@ test('buildSchema() should generate inverse relation One to Many', function () {
     );
 });
 
+test('buildSchema() should generate relation Polymorphic Many to One', function () {
+    $schema = GeneratorField::buildSchema(
+        $this->bucket['datasource']->getCollection('Comment'),
+        'commentable'
+    );
+
+    expect($schema)->toEqual(
+        [
+            'defaultValue'                  => null,
+            'enums'                         => null,
+            'field'                         => 'commentable',
+            'integration'                   => null,
+            'inverseOf'                     => 'Comment',
+            'isFilterable'                  => false,
+            'isPrimaryKey'                  => false,
+            'isReadOnly'                    => false,
+            'isRequired'                    => false,
+            'isSortable'                    => true,
+            'isVirtual'                     => false,
+            'reference'                     => 'commentable.id',
+            'relationship'                  => 'BelongsTo',
+            'type'                          => 'Number',
+            'validations'                   => [],
+            'polymorphic_referenced_models' => ['Book', 'Person'],
+        ]
+    );
+});
+
+test('buildSchema() should generate Polymorphic One To Many', function () {
+    $schema = GeneratorField::buildSchema(
+        $this->bucket['datasource']->getCollection('Person'),
+        'comment'
+    );
+
+    expect($schema)->toEqual(
+        [
+            'defaultValue'                  => null,
+            'enums'                         => null,
+            'field'                         => 'comment',
+            'integration'                   => null,
+            'inverseOf'                     => 'commentable',
+            'isFilterable'                  => false,
+            'isPrimaryKey'                  => false,
+            'isReadOnly'                    => false,
+            'isRequired'                    => false,
+            'isSortable'                    => false,
+            'isVirtual'                     => false,
+            'reference'                     => 'Comment.id',
+            'relationship'                  => 'HasMany',
+            'type'                          => ['Number'],
+            'validations'                   => [],
+        ]
+    );
+});
+
 test('buildSchema() should generate relation when inverse is defined', function () {
     $schema = GeneratorField::buildSchema(
-        GeneratorFieldWithManyToManyRelation()->getCollection('Book'),
+        $this->bucket['datasource']->getCollection('Book'),
         'persons'
     );
 
@@ -280,7 +349,7 @@ test('buildSchema() should generate relation when inverse is defined', function 
 
 test('buildSchema() should generate relation as primary key', function () {
     $schema = GeneratorField::buildSchema(
-        GeneratorFieldWithManyToManyRelation()->getCollection('BookPerson'),
+        $this->bucket['datasource']->getCollection('BookPerson'),
         'book'
     );
 
@@ -307,7 +376,7 @@ test('buildSchema() should generate relation as primary key', function () {
 
 test('buildSchema() should sort schema property', function () {
     $schema = GeneratorField::buildSchema(
-        GeneratorFieldWithManyToManyRelation()->getCollection('BookPerson'),
+        $this->bucket['datasource']->getCollection('BookPerson'),
         'book'
     );
 

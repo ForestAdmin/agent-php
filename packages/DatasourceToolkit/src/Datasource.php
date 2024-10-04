@@ -46,6 +46,7 @@ class Datasource implements DatasourceContract
         if ($this->collections->has($collection->getName())) {
             throw new ForestException('Collection ' . $collection->getName() . ' already defined in datasource');
         }
+
         $this->collections->put($collection->getName(), $collection);
     }
 

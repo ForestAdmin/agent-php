@@ -3,37 +3,37 @@
     "description": "Subtree split of the PHP Datasource Customizer component",
     "type": "library",
     "license": "GPL-3.0-or-later",
-    "version": "1.0.0-beta.39",
+    "version": "1.11.8",
     "require": {
         "php": "^8.0",
-        "illuminate/collections": "^8.0|^9.0",
-        "illuminate/support": "^8.0|^9.0",
+        "illuminate/collections": "^8.0|^9.0|^10.0|^11.0",
+        "illuminate/support": "^8.0|^9.0|^10.0|^11.0",
         "nesbot/carbon": "^2.58",
-        "symfony/http-kernel": "^5.4|^6.0",
-        "forestadmin/php-datasource-toolkit": "^1.0.0-beta",
-        "forestadmin/php-agent-toolkit": "^1.0.0-beta"
+        "symfony/http-kernel": "^5.4|^6.0|^7.0",
+        "forestadmin/php-datasource-toolkit": "1.11.8",
+        "forestadmin/php-agent-toolkit": "1.11.8"
     },
     "require-dev": {
-      "friendsofphp/php-cs-fixer": "^3.0",
-      "pestphp/pest": "^1.21",
-      "pestphp/pest-plugin-mock": "^1.0",
-      "phpspec/prophecy-phpunit": "^2.0",
-      "symfony/var-dumper": "^5.4|^6.0",
-      "spatie/pest-plugin-test-time": "^1.1"
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "mockery/mockery": "^1.6",
+        "pestphp/pest": "^1.21|^2.34",
+        "phpspec/prophecy-phpunit": "^2.0",
+        "symfony/var-dumper": "^5.4|^6.0",
+        "spatie/pest-plugin-test-time": "^1.1|^2.1"
     },
     "autoload": {
         "psr-4": {
-          "ForestAdmin\\AgentPHP\\DatasourceCustomizer\\": "src"
+            "ForestAdmin\\AgentPHP\\DatasourceCustomizer\\": "src"
         }
     },
     "autoload-dev": {
-      "psr-4": {
-        "ForestAdmin\\AgentPHP\\Tests\\": "tests"
-      }
+        "psr-4": {
+            "ForestAdmin\\AgentPHP\\Tests\\": "tests"
+        }
     },
     "config": {
-      "allow-plugins": {
-        "pestphp/pest-plugin": true
-      }
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     }
 }

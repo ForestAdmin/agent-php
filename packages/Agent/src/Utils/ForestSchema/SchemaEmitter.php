@@ -2,8 +2,8 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
+use ForestAdmin\AgentPHP\Agent\Facades\Logger;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 use function ForestAdmin\config;
 
@@ -11,7 +11,7 @@ class SchemaEmitter
 {
     public const LIANA_NAME = 'agent-php';
 
-    public const LIANA_VERSION = '1.0.0-beta.34';
+    public const LIANA_VERSION = '1.11.8';
 
     public static function getSerializedSchema(Datasource $datasource)
     {
@@ -19,7 +19,11 @@ class SchemaEmitter
             if (config('schemaPath') && file_exists(config('schemaPath'))) {
                 $schema = json_decode(file_get_contents(config('schemaPath')), true, 512, JSON_THROW_ON_ERROR);
             } else {
-                throw new ForestException('The .forestadmin-schema.json file doesn\'t exist');
+                Logger::log('Warn', 'The .forestadmin-schema.json file doesn\'t exist');
+                $schema = [
+                    'meta'        => self::meta(sha1(json_encode([], JSON_THROW_ON_ERROR))),
+                    'collections' => [],
+                ];
             }
         } else {
             $schema = self::generate($datasource);

@@ -12,11 +12,11 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projectio
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
 
-function factoryShow($args = []): Show
-{
+$before = static function (TestCase $testCase, $args = []) {
     $datasource = new Datasource();
     $collectionCar = new Collection($datasource, 'Car');
     $collectionCar->addFields(
@@ -28,7 +28,7 @@ function factoryShow($args = []): Show
     );
 
     if (isset($args['show'])) {
-        $collectionCar = mock($collectionCar)
+        $collectionCar = \Mockery::mock($collectionCar)
             ->shouldReceive('list')
             ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Projection::class))
             ->andReturn(($args['show']))
@@ -36,7 +36,7 @@ function factoryShow($args = []): Show
     }
 
     $datasource->addCollection($collectionCar);
-    buildAgent($datasource);
+    $testCase->buildAgent($datasource);
 
     SchemaEmitter::getSerializedSchema($datasource);
 
@@ -85,15 +85,15 @@ function factoryShow($args = []): Show
         config('permissionExpiration')
     );
 
-    $show = mock(Show::class)
+    $show = \Mockery::mock(Show::class)
         ->makePartial()
         ->shouldReceive('checkIp')
         ->getMock();
 
-    invokeProperty($show, 'request', $request);
+    $testCase->invokeProperty($show, 'request', $request);
 
     return $show;
-}
+};
 
 test('make() should return a new instance of Show with routes', function () {
     $show = Show::make();
@@ -102,7 +102,7 @@ test('make() should return a new instance of Show with routes', function () {
         ->and($show->getRoutes())->toHaveKey('forest.show');
 });
 
-test('handleRequest() should return a response 200', function () {
+test('handleRequest() should return a response 200', function () use ($before) {
     $data = [
         [
             'id'    => 1,
@@ -110,11 +110,7 @@ test('handleRequest() should return a response 200', function () {
             'brand' => 'Ferrari',
         ],
     ];
-    $show = factoryShow(
-        [
-            'show' => $data,
-        ]
-    );
+    $show = $before($this, ['show' => $data]);
 
     expect($show->handleRequest(['collectionName' => 'Car', 'id' => 1]))
         ->toBeArray()

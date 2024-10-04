@@ -17,16 +17,17 @@ class ComputeField
         Projection         $desiredProjection,
         array              $records
     ) {
-        $paths = clone $recordsProjection;
+        $paths = Flattener::withNullMarker($recordsProjection);
         $flatten = Flattener::flatten($records, $paths);
+        $finalProjection = Flattener::withNullMarker($desiredProjection);
 
-        foreach ($desiredProjection as $path) {
+        foreach ($finalProjection as $path) {
             self::queueField($context, $collection, $path, $paths, $flatten);
         }
 
         return Flattener::unFlatten(
-            $desiredProjection->map(fn ($path) => $flatten[$paths->search($path)])->toArray(),
-            $desiredProjection
+            $finalProjection->map(fn ($path) => $flatten[$paths->search($path)])->toArray(),
+            $finalProjection
         );
     }
 
@@ -39,7 +40,9 @@ class ComputeField
     ): void {
         if (! $paths->contains($newPath)) {
             $computed = $collection->getComputed($newPath);
-            $nestedDependencies = (new Projection($computed->getDependencies()))
+
+            $computedDependencies = Flattener::withNullMarker(new Projection($computed->getDependencies()))->toArray();
+            $nestedDependencies = (new Projection($computedDependencies))
                 ->nest(Str::contains($newPath, ':') ? Str::before($newPath, ':') : null);
 
             foreach ($nestedDependencies as $path) {
@@ -49,7 +52,7 @@ class ComputeField
             $dependencyValues = $nestedDependencies->map(fn ($path) => $flatten[$paths->search($path)])->toArray();
             $paths->push($newPath);
 
-            $flatten[] = self::computeField($context, $computed, $computed->getDependencies(), $dependencyValues);
+            $flatten[] = self::computeField($context, $computed, $computedDependencies, $dependencyValues);
         }
     }
 

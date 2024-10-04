@@ -15,7 +15,7 @@ class WriteReplaceCollection extends CollectionDecorator
 
     public function replaceFieldWriting(string $fieldName, ?\Closure $definition): void
     {
-        if (! $this->getFields()->keys()->contains($fieldName)) {
+        if (! $this->getSchema()->keys()->contains($fieldName)) {
             throw new ForestException('The given field "' . $fieldName . '" does not exist on the ' . $this->getName() . ' collection.');
         }
 
@@ -23,15 +23,13 @@ class WriteReplaceCollection extends CollectionDecorator
         $this->markSchemaAsDirty();
     }
 
-    public function getFields(): IlluminateCollection
+    public function refineSchema(IlluminateCollection $childSchema): IlluminateCollection
     {
-        $fields = $this->childCollection->getFields();
-
         foreach ($this->handlers as $fieldName => $handler) {
-            $fields[$fieldName]->setIsReadOnly($handler === null);
+            $childSchema[$fieldName]->setIsReadOnly($handler === null);
         }
 
-        return $fields;
+        return $childSchema;
     }
 
     public function create(Caller $caller, array $data)
@@ -85,15 +83,25 @@ class WriteReplaceCollection extends CollectionDecorator
         if ($field?->getType() === 'Column') {
             // We either call the customer handler or a default one that does nothing.
             $handler = $this->handlers[$key] ?? static fn ($v) => [$key => $v];
-            $fieldPatch = isset($context->getRecord()[$key]) && $handler($context->getRecord()[$key], $context) ? $handler($context->getRecord()[$key], $context) : [];
+            $fieldPatch = ($handler($context->getRecord()[$key], $context) ?? []);
 
             // Isolate change to our own value (which should not recurse) and the rest which should
             // trigger the other handlers.
-            $value = $fieldPatch[$key] ?? null;
+            if (array_key_exists($key, $fieldPatch)) {
+                $value = $fieldPatch[$key];
+                $isValue = true;
+            } else {
+                $value = null;
+                $isValue = false;
+            }
             unset($fieldPatch[$key]);
-            $newPatch = $this->rewritePatch($context->getCaller(), $context->getAction(), $fieldPatch, $used);
 
-            return $value !== null ? $this->deepMerge([$key => $value], $newPatch) : $newPatch;
+            $newPatch = $this->rewritePatch($context->getCaller(), $context->getAction(), $fieldPatch, array_merge($used, [$key]));
+            if ($isValue) {
+                return $this->deepMerge([$key => $value], $newPatch);
+            } else {
+                return $newPatch;
+            }
         }
 
         // Handle relation fields.

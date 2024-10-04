@@ -10,46 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
 
-use function ForestAdmin\cache;
-
 test('all() should return all the collection fields and the relation fields', function () {
-    $datasource = datasourceWithOneToOneAndManyToOne();
-    $collection = $datasource->getCollection('books');
-
-    expect(ProjectionFactory::all($collection))->toEqual(
-        new Projection(
-            [
-                'id',
-                'format_id',
-                'title',
-                'myAuthor:id',
-                'myAuthor:name',
-                'myAuthor:book_id',
-                'myFormat:id',
-                'myFormat:name',
-            ]
-        )
-    );
-});
-
-
-test('all() should return all the collection fields without the relations', function () {
-    $datasource = datasourceOtherRelations();
-    $collection = $datasource->getCollection('books');
-
-    expect(ProjectionFactory::all($collection))->toEqual(
-        new Projection(
-            [
-                'id',
-                'title',
-            ]
-        )
-    );
-});
-
-
-function datasourceWithOneToOneAndManyToOne(): Datasource
-{
     $datasource = new Datasource();
     $collectionBooks = new Collection($datasource, 'books');
     $collectionBooks->addFields(
@@ -88,13 +49,27 @@ function datasourceWithOneToOneAndManyToOne(): Datasource
     $datasource->addCollection($collectionAuthors);
     $datasource->addCollection($collectionFormats);
 
-    buildAgent($datasource);
+    $this->buildAgent($datasource);
+    $collection = $datasource->getCollection('books');
 
-    return $datasource;
-}
+    expect(ProjectionFactory::all($collection))->toEqual(
+        new Projection(
+            [
+                'id',
+                'format_id',
+                'title',
+                'myAuthor:id',
+                'myAuthor:name',
+                'myAuthor:book_id',
+                'myFormat:id',
+                'myFormat:name',
+            ]
+        )
+    );
+});
 
-function datasourceOtherRelations(): Datasource
-{
+
+test('all() should return all the collection fields without the relations', function () {
     $datasource = new Datasource();
     $collectionBookPersons = new Collection($datasource, 'bookPersons');
     $collectionBookPersons->addFields(
@@ -119,7 +94,16 @@ function datasourceOtherRelations(): Datasource
     $datasource->addCollection($collectionBooks);
     $datasource->addCollection($collectionBookPersons);
 
-    buildAgent($datasource);
+    $this->buildAgent($datasource);
 
-    return $datasource;
-}
+    $collection = $datasource->getCollection('books');
+
+    expect(ProjectionFactory::all($collection))->toEqual(
+        new Projection(
+            [
+                'id',
+                'title',
+            ]
+        )
+    );
+});

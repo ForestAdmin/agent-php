@@ -19,7 +19,7 @@ it('should add field with unique name',  function () {
     $collection->addField('__field__', $expectedField);
 
     expect($collection)->toBeInstanceOf(Collection::class)
-        ->and($collection->getFields()->toArray())->toMatchArray($expectedField);
+        ->and($collection->getFields()->toArray())->toMatchArray(['__field__' => new ColumnSchema(columnType: PrimitiveType::STRING)]);
 });
 
 it('should add all fields',  function () {

@@ -14,13 +14,15 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
+use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
 
 use GuzzleHttp\Psr7\Response;
+
 use Prophecy\Prophet;
 
-function permissionsFactory($post = [], $scope = null, $loadDataSetForestSchema = true)
+function permissionsFactory(TestCase $testCase, array $post = [], $scope = null, $loadDataSetForestSchema = true)
 {
     if ($loadDataSetForestSchema) {
         $options = AGENT_OPTIONS;
@@ -40,8 +42,9 @@ function permissionsFactory($post = [], $scope = null, $loadDataSetForestSchema 
             'title' => new ColumnSchema(columnType: PrimitiveType::STRING),
         ]
     );
+
     $datasource->addCollection($collectionBooking);
-    buildAgent($datasource);
+    $testCase->buildAgent($datasource);
 
     $prophet = new Prophet();
     $forestApi = $prophet->prophesize(ForestApiRequester::class);
@@ -143,10 +146,7 @@ function permissionsFactory($post = [], $scope = null, $loadDataSetForestSchema 
                                     ],
                                 ],
                                 'approvalRequired'           => [
-                                    'roles' => [
-                                        0 => 13,
-                                        1 => $roleId,
-                                    ],
+                                    'roles' => [],
                                 ],
                                 'approvalRequiredConditions' => [],
                                 'userApprovalEnabled'        => [
@@ -207,28 +207,33 @@ function permissionsFactory($post = [], $scope = null, $loadDataSetForestSchema 
 
     $request = Request::createFromGlobals();
     $permissions = new Permissions(QueryStringParser::parseCaller($request));
-    invokeProperty($permissions, 'forestApi', $forestApi->reveal());
+    $testCase->invokeProperty($permissions, 'forestApi', $forestApi->reveal());
 
-    return [$permissions, $collectionBooking];
+    $testCase->bucket['permissions'] = $permissions;
+    $testCase->bucket['collection'] = $collectionBooking;
 }
 
 test('invalidate cache should delete the cache', function () {
-    $permissions = permissionsFactory()[0];
+    permissionsFactory($this);
+    $permissions = $this->bucket['permissions'];
     $permissions->invalidateCache('forest.stats');
 
     expect(Cache::get('forest.stats'))->toBeNull();
 });
 
 test('can() should return true when user is allowed', function () {
-    [$permissions, $collection] = permissionsFactory();
+    permissionsFactory($this);
+    $permissions = $this->bucket['permissions'];
+    $collection = $this->bucket['collection'];
 
     expect($permissions->can('browse', $collection))->toBeTrue();
 });
 
 test('can() should call getCollectionsPermissionsData twice', function () {
-    $collection = permissionsFactory()[1];
+    permissionsFactory($this);
+    $collection = $this->bucket['collection'];
     $request = Request::createFromGlobals();
-    $mockPermissions = mock(Permissions::class)
+    $mockPermissions = \Mockery::mock(Permissions::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('getUserData')
@@ -300,16 +305,16 @@ test('can() should call getCollectionsPermissionsData twice', function () {
             ]
         )
         ->getMock();
-    invokeProperty($mockPermissions, 'caller', QueryStringParser::parseCaller($request));
+    $this->invokeProperty($mockPermissions, 'caller', QueryStringParser::parseCaller($request));
 
     expect($mockPermissions->can('browse', $collection))->toBeTrue();
 });
 
 test('can() should throw HttpException when user doesn\'t have the right access', function () {
-    $collection = permissionsFactory()[1];
-
+    permissionsFactory($this);
+    $collection = $this->bucket['collection'];
     $request = Request::createFromGlobals();
-    $mockPermissions = mock(Permissions::class)
+    $mockPermissions = \Mockery::mock(Permissions::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('getUserData')
@@ -381,7 +386,7 @@ test('can() should throw HttpException when user doesn\'t have the right access'
             ]
         )
         ->getMock();
-    invokeProperty($mockPermissions, 'caller', QueryStringParser::parseCaller($request));
+    $this->invokeProperty($mockPermissions, 'caller', QueryStringParser::parseCaller($request));
 
     expect(static fn () => $mockPermissions->can('browse', $collection))
         ->toThrow(ForbiddenError::class, 'You don\'t have permission to browse this collection.');
@@ -396,7 +401,8 @@ test('canChart() should return true on allowed chart', function () {
         'sourceCollectionName' => 'Booking',
         'type'                 => 'Value',
     ];
-    $permissions = permissionsFactory($post)[0];
+    permissionsFactory($this, $post);
+    $permissions = $this->bucket['permissions'];
     $request = Request::createFromGlobals();
 
     expect($permissions->canChart($request))->toBeTrue();
@@ -409,9 +415,9 @@ test('canChart() should call twice and return true on allowed chart', function (
         'sourceCollectionName' => 'Booking',
         'type'                 => 'Pie',
     ];
-    permissionsFactory($post);
+    permissionsFactory($this, $post);
     $request = Request::createFromGlobals();
-    $mockPermissions = mock(Permissions::class)
+    $mockPermissions = \Mockery::mock(Permissions::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('fetch')
@@ -440,8 +446,8 @@ test('canChart() should call twice and return true on allowed chart', function (
         ->getMock();
 
     $caller = QueryStringParser::parseCaller($request);
-    invokeProperty($caller, 'permissionLevel', 'foo');
-    invokeProperty($mockPermissions, 'caller', $caller);
+    $this->invokeProperty($caller, 'permissionLevel', 'foo');
+    $this->invokeProperty($mockPermissions, 'caller', $caller);
 
     expect($mockPermissions->canChart($request))->toBeTrue();
 });
@@ -453,9 +459,9 @@ test('canChart() should throw on forbidden chart', function () {
         'sourceCollectionName' => 'Car',
         'type'                 => 'Pie',
     ];
-    permissionsFactory($post);
+    permissionsFactory($this, $post);
     $request = Request::createFromGlobals();
-    $mockPermissions = mock(Permissions::class)
+    $mockPermissions = \Mockery::mock(Permissions::class)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('getChartData')
@@ -465,15 +471,16 @@ test('canChart() should throw on forbidden chart', function () {
         ->getMock();
 
     $caller = QueryStringParser::parseCaller($request);
-    invokeProperty($caller, 'permissionLevel', 'foo');
-    invokeProperty($mockPermissions, 'caller', $caller);
+    $this->invokeProperty($caller, 'permissionLevel', 'foo');
+    $this->invokeProperty($mockPermissions, 'caller', $caller);
 
     expect(static fn () => $mockPermissions->canChart($request))
         ->toThrow(ForbiddenError::class, 'You don\'t have permission to access this collection.');
 });
 
 test('getScope() should return null when permission has no scopes', function () {
-    $permissions = permissionsFactory()[0];
+    permissionsFactory($this);
+    $permissions = $this->bucket['permissions'];
     $fakeCollection = new Collection(new Datasource(), 'FakeCollection');
 
     expect($permissions->getScope($fakeCollection))->toBeNull();
@@ -495,7 +502,9 @@ test('getScope() should work in simple case', function () {
             ],
         ],
     ];
-    [$permissions, $collection] = permissionsFactory([], $scope);
+    permissionsFactory($this, [], $scope);
+    $permissions = $this->bucket['permissions'];
+    $collection = $this->bucket['collection'];
     $conditionTree = $permissions->getScope($collection);
 
     expect($conditionTree)->toEqual(ConditionTreeFactory::fromArray($scope));
@@ -512,7 +521,9 @@ test('getScope() should work with substitutions', function () {
             ],
         ],
     ];
-    [$permissions, $collection] = permissionsFactory([], $scope);
+    permissionsFactory($this, [], $scope);
+    $permissions = $this->bucket['permissions'];
+    $collection = $this->bucket['collection'];
     $conditionTree = $permissions->getScope($collection);
 
     expect($conditionTree)->toEqual(ConditionTreeFactory::fromArray([
@@ -552,10 +563,15 @@ test('canSmartAction() should return true when user can execute the action', fun
             'type'       => 'custom-action-requests',
         ],
     ];
-    [$permissions, $collection] = permissionsFactory($post);
+    permissionsFactory($this, $post);
+    $permissions = $this->bucket['permissions'];
+    $collection = \Mockery::mock($this->bucket['collection'])
+        ->shouldReceive('aggregate')
+        ->andReturn([['value' => 1]])
+        ->getMock();
 
     $request = Request::createFromGlobals();
-    $mockRequest = mock($request)
+    $mockRequest = \Mockery::mock($request)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('getPathInfo')
@@ -592,11 +608,13 @@ test('canSmartAction() should return true when the permissions system is deactiv
             'type'       => 'custom-action-requests',
         ],
     ];
-    [$permissions, $collection] = permissionsFactory($post);
+    permissionsFactory($this, $post);
+    $permissions = $this->bucket['permissions'];
+    $collection = $this->bucket['collection'];
     Cache::put('forest.has_permission', false, config('permissionExpiration'));
 
     $request = Request::createFromGlobals();
-    $mockRequest = mock($request)
+    $mockRequest = \Mockery::mock($request)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('getPathInfo')
@@ -633,10 +651,12 @@ test('canSmartAction() should throw when the action is unknown', function () {
             'type'       => 'custom-action-requests',
         ],
     ];
-    [$permissions, $collection] = permissionsFactory($post);
+    permissionsFactory($this, $post);
+    $permissions = $this->bucket['permissions'];
+    $collection = $this->bucket['collection'];
 
     $request = Request::createFromGlobals();
-    $mockRequest = mock($request)
+    $mockRequest = \Mockery::mock($request)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('getPathInfo')
@@ -673,10 +693,12 @@ test('canSmartAction() should throw when the forest schema doesn\'t have any act
             'type'       => 'custom-action-requests',
         ],
     ];
-    [$permissions, $collection] = permissionsFactory($post, null, false);
+    permissionsFactory($this, $post, null, false);
+    $permissions = $this->bucket['permissions'];
+    $collection = $this->bucket['collection'];
 
     $request = Request::createFromGlobals();
-    $mockRequest = mock($request)
+    $mockRequest = \Mockery::mock($request)
         ->makePartial()
         ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('getPathInfo')
