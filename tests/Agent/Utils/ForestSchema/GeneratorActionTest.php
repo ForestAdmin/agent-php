@@ -4,6 +4,7 @@ use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\GeneratorAction;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ActionCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseAction;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\FormLayoutElement\SeparatorElement;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\ActionScope;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DatasourceDecorator;
@@ -44,6 +45,7 @@ describe('without form', function () {
                 'redirect'   => null,
                 'download'   => false,
                 'fields'     => [],
+                'layout'     => [],
                 'hooks'      => [ 'load' => false, 'change' => ['changeHook'] ],
             ]
         );
@@ -94,6 +96,60 @@ describe('with no hooks', function () {
                         'type'          => 'String',
                         'defaultValue'  => '',
                     ],
+                ],
+                'layout'     => [['component' => 'input', 'fieldId' => 'label']],
+                'hooks'      => [ 'load' => false, 'change' => ['changeHook'] ],
+            ]
+        );
+    });
+});
+
+describe('with layout elements', function () {
+    test('buildSchema() should generate schema correctly', function () {
+        $actionDatasource = new DatasourceDecorator($this->bucket['datasource'], ActionCollection::class);
+        $actionDatasource->getCollection('Book')->addAction(
+            'Send email',
+            new BaseAction(
+                scope: ActionScope::SINGLE,
+                execute: fn () => true,
+                form: [
+                    new DynamicField(
+                        type: FieldType::STRING,
+                        label: 'label',
+                    ),
+                    new SeparatorElement(),
+                ]
+            )
+        );
+
+        $schema = GeneratorAction::buildSchema(
+            $actionDatasource->getCollection('Book'),
+            'Send email'
+        );
+
+        expect($schema)->toEqual(
+            [
+                'id'         => 'Book-0-send-email',
+                'name'       => 'Send email',
+                'type'       => 'single',
+                'baseUrl'    => null,
+                'endpoint'   => '/forest/_actions/Book/0/send-email',
+                'httpMethod' => 'POST',
+                'redirect'   => null,
+                'download'   => false,
+                'fields'     => [
+                    [
+                        'description'   => null,
+                        'isRequired'    => false,
+                        'isReadOnly'    => false,
+                        'field'         => 'label',
+                        'type'          => 'String',
+                        'defaultValue'  => null,
+                    ],
+                ],
+                'layout' => [
+                    ['component' => 'input', 'fieldId' => 'label'],
+                    ['component' => 'separator'],
                 ],
                 'hooks'      => [ 'load' => false, 'change' => ['changeHook'] ],
             ]
