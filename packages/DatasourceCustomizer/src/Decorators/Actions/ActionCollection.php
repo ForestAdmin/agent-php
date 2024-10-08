@@ -68,7 +68,7 @@ class ActionCollection extends CollectionDecorator
         return $fields;
     }
 
-    private function setWatchChangesOnFields($formValues, $used, &$fields)
+    private function setWatchChangesOnFields($formValues, $used, $fields)
     {
         foreach ($fields as &$field) {
             if ($field->getType() !== 'Layout') {
@@ -101,16 +101,16 @@ class ActionCollection extends CollectionDecorator
     {
         foreach ($fields as &$field) {
             if($field->getType() !== 'Layout') {
-                $field = $this->dropDefault($context, $field, $data);
+                $this->dropDefault($context, $field, $data);
             }
         }
 
         return $fields;
     }
 
-    private function dropDefault(ActionContext $context, $field, &$data)
+    private function dropDefault(ActionContext $context, $field, $data)
     {
-        if (! array_key_exists($field->getLabel(), $data)) {
+        if (! isset($data[$field->getLabel()])) {
             $data[$field->getLabel()] = $this->evaluate($context, $field->getDefaultValue());
         }
 
@@ -146,7 +146,7 @@ class ActionCollection extends CollectionDecorator
             foreach ($field->keys() as $key) {
                 $field->__set($key, $this->evaluate($context, $field->__get($key)));
             }
-            $newFields[] = ActionFieldFactory::build($field);
+            $newFields[] = ActionFieldFactory::build($field->toArray());
         }
 
         return $newFields;
