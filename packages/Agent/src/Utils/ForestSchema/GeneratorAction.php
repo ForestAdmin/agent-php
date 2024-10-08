@@ -7,6 +7,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseAction;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\InputElement;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema as SchemaUtils;
@@ -38,7 +39,14 @@ class GeneratorAction
         $index = $collection->getActions()->keys()->search($name);
         $slug = Str::slug($name);
 
-        $fields = self::buildFields($action);
+        $formElements = self::extractFieldsAndLayout($action->getForm());
+        if($action->isStaticForm()) {
+            $fields = self::buildFields($formElements['fields']);
+            $layout = $formElements['layout'];
+        } else {
+            $fields = self::$defaultFields;
+            $layout = null;
+        }
 
         return [
             'id'         => "$collectionName-$index-$slug",
@@ -50,12 +58,67 @@ class GeneratorAction
             'redirect'   => null, // frontend ignores this attribute
             'download'   => $action->isGenerateFile(),
             'fields'     => $fields,
+            'layout'     => self::buildLayout($layout),
             'hooks'      => [
                 'load'   => ! $action->isStaticForm(),
                 // Always registering the change hook has no consequences, even if we don't use it.
                 'change' => ['changeHook'],
             ],
         ];
+    }
+
+    public static function buildLayoutSchema($element): array
+    {
+        $result = [...$element->toArray(), 'component' => Str::camel($element->getComponent())];
+        unset($result['type']);
+
+        return $result;
+    }
+
+    public static function buildLayout($elements): array
+    {
+        $realLayoutElements = array_filter($elements, fn ($element) => $element !== 'Input');
+
+        if (count($realLayoutElements) > 0) {
+            foreach ($elements as &$element) {
+                $element = self::buildLayoutSchema($element);
+            }
+
+            return $elements;
+        }
+
+        return [];
+    }
+
+    public static function extractFieldsAndLayout(array $form): array
+    {
+        $fields = [];
+        $layout = [];
+
+        foreach ($form as $element) {
+            if($element->getType() == 'Layout') {
+                if (in_array($element->getComponent(), ['Page', 'Row'])) {
+                    $extract = self::extractFieldsAndLayoutForComponent($element);
+                    $layout[] = $element;
+                    $fields[] = $extract['fields'];
+                } else {
+                    $layout[] = $element;
+                }
+            } else {
+                $fields[] = $element;
+                // TODO: replace $element->label by  $element->id when id will be add
+                $layout[] = new InputElement(fieldId: $element->label);
+            }
+        }
+
+        return compact('fields', 'layout');
+    }
+
+    public static function extractFieldsAndLayoutForComponent($element): array
+    {
+        // TODO
+
+        return [];
     }
 
     public static function buildFieldSchema(Datasource $datasource, ActionField|DynamicField $field)
@@ -98,15 +161,8 @@ class GeneratorAction
         return $output;
     }
 
-    private static function buildFields(BaseAction $action): array
+    public static function buildFields(?array $fields): array
     {
-        // We want the schema to be generated on usage => send dummy schema
-        if (! $action->isStaticForm()) {
-            return self::$defaultFields;
-        }
-
-        $fields = $action->getForm();
-
         if ($fields) {
             // When sending to server, we need to rename 'value' into 'defaultValue'
             // otherwise, it does not gets applied 🤷‍♂️

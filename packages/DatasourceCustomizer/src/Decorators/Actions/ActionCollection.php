@@ -7,6 +7,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Context\ActionC
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\ActionScope;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\ActionFieldFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
@@ -133,7 +134,7 @@ class ActionCollection extends CollectionDecorator
             foreach ($field->keys() as $key) {
                 $field->__set($key, $this->evaluate($context, $field->__get($key)));
             }
-            $newFields[] = ActionField::buildFromDynamicField($field);
+            $newFields[] = ActionFieldFactory::build($field);
         }
 
         return $newFields;

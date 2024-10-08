@@ -1,6 +1,6 @@
 <?php
 
-namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components;
+namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 
