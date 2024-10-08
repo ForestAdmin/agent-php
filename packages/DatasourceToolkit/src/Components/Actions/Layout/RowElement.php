@@ -20,7 +20,7 @@ class RowElement extends BaseLayoutElement
     protected function instanciateSubfields(array $fields): array
     {
         return array_map(static function ($field) {
-            return ActionFieldFactory::build($field->toArray());
+            return ActionFieldFactory::build($field); // to check
         }, $fields);
     }
 }
