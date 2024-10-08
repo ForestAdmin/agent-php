@@ -146,7 +146,7 @@ class ActionCollection extends CollectionDecorator
             foreach ($field->keys() as $key) {
                 $field->__set($key, $this->evaluate($context, $field->__get($key)));
             }
-            $newFields[] = ActionFieldFactory::build($field->toArray());
+            $newFields[] = ActionFieldFactory::build($field);
         }
 
         return $newFields;
