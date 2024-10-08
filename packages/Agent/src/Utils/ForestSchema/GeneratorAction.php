@@ -95,7 +95,7 @@ class GeneratorAction
         $layout = [];
 
         foreach ($form as $element) {
-            if($element->getType() == 'Layout') {
+            if($element->getType() === 'Layout') {
                 if (in_array($element->getComponent(), ['Page', 'Row'])) {
                     $extract = self::extractFieldsAndLayoutForComponent($element);
                     $layout[] = $element;

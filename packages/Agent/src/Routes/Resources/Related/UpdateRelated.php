@@ -132,7 +132,7 @@ class UpdateRelated extends AbstractRelationRoute
             1
         );
 
-        if ($result[0]['value'] > 0) {
+        if (isset($result[0]['value']) && $result[0]['value'] > 0) {
             $this->childCollection->update($this->caller, $oldFkOwnerFilter, [$relation->getOriginKey() => null]);
         }
     }
@@ -161,7 +161,7 @@ class UpdateRelated extends AbstractRelationRoute
 
         // add a behavior if originKey & originTypeField cannot be null
 
-        if ($result[0]['value'] > 0) {
+        if (isset($result[0]['value']) && $result[0]['value'] > 0) {
             $this->childCollection->update(
                 $this->caller,
                 $oldFkOwnerFilter,

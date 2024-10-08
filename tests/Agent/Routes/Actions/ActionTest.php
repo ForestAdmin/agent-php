@@ -374,38 +374,38 @@ test('handleHookRequest should return the result of an action', function () {
     $this->invokeProperty($action, 'request', Request::createFromGlobals());
     $this->invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
 
+    $result = $action->handleHookRequest(['collectionName' => 'User']);
 
-    expect($action->handleHookRequest(['collectionName' => 'User']))->toBeArray()
-        ->and($action->handleHookRequest(['collectionName' => 'User']))->toHaveKey('content')
-        ->and($action->handleHookRequest(['collectionName' => 'User'])['content']['fields'])->toEqual(
-            collect(
+    expect($result)->toBeArray()
+        ->and($result)->toHaveKey('content')
+        ->and($result['content']['fields'])->toEqual(
+            [
                 [
-                    [
-                        'description' => null,
-                        'isRequired'  => false,
-                        'isReadOnly'  => false,
-                        'field'       => 'amount',
-                        'value'       => null,
-                        'type'        => 'Number',
-                    ],
-                    [
-                        'description' => null,
-                        'isRequired'  => true,
-                        'isReadOnly'  => false,
-                        'field'       => 'description',
-                        'value'       => null,
-                        'type'        => 'String',
-                    ],
-                    [
-                        'description' => null,
-                        'isRequired'  => false,
-                        'isReadOnly'  => true,
-                        'field'       => 'amount X10',
-                        'value'       => '0',
-                        'type'        => 'String',
-                    ],
-                ]
-            )
+                    'description'        => null,
+                    'isRequired'         => false,
+                    'isReadOnly'         => false,
+                    'field'              => 'amount',
+                    'defaultValue'       => null,
+                    'type'               => 'Number',
+                    'hook'               => 'changeHook',
+                ],
+                [
+                    'description'        => null,
+                    'isRequired'         => true,
+                    'isReadOnly'         => false,
+                    'field'              => 'description',
+                    'defaultValue'       => null,
+                    'type'               => 'String',
+                ],
+                [
+                    'description'        => null,
+                    'isRequired'         => false,
+                    'isReadOnly'         => true,
+                    'field'              => 'amount X10',
+                    'defaultValue'       => '0',
+                    'type'               => 'String',
+                ],
+            ]
         );
 });
 
@@ -466,20 +466,27 @@ test('handleHookRequest should return the result of an action on a association',
     $this->invokeProperty($action, 'request', Request::createFromGlobals());
     $this->invokeProperty($action, 'action', new BaseAction($type, fn ($context, $responseBuilder) => $responseBuilder->success('BRAVO')));
 
-    expect($action->handleHookRequest(['collectionName' => 'User']))->toBeArray()
-        ->and($action->handleHookRequest(['collectionName' => 'User']))->toHaveKey('content')
-        ->and($action->handleHookRequest(['collectionName' => 'User'])['content']['fields'])->toEqual(
-            collect(
+    $result = $action->handleHookRequest(['collectionName' => 'User']);
+    expect($result)->toBeArray()
+        ->and($result)->toHaveKey('content')
+        ->and($result['content']['fields'])->toEqual(
+            [
                 [
-                    [
-                        'description' => null,
-                        'isRequired'  => false,
-                        'isReadOnly'  => false,
-                        'field'       => 'rate',
-                        'value'       => 10,
-                        'type'        => 'Number',
-                    ],
-                ]
-            )
+                    'description'        => null,
+                    'isRequired'         => false,
+                    'isReadOnly'         => false,
+                    'field'              => 'rate',
+                    'defaultValue'       => 10,
+                    'type'               => 'Number',
+                ],
+            ]
+        )
+        ->and($result['content']['layout'])->toEqual(
+            [
+                [
+                    'component' => 'input',
+                    'fieldId'   => 'rate',
+                ],
+            ]
         );
 });
