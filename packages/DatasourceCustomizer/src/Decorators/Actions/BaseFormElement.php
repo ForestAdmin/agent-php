@@ -58,4 +58,9 @@ class BaseFormElement
     {
         return array_keys(get_object_vars($this));
     }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
 }

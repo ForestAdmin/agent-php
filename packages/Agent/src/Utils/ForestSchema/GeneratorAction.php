@@ -115,9 +115,14 @@ class GeneratorAction
 
     public static function extractFieldsAndLayoutForComponent($element): array
     {
-        // TODO
+        $key = $element->getComponent() === 'Page' ? 'elements' : 'fields';
+        $getterMethod = 'get' . ucfirst($key);
+        $setterMethod = 'set' . ucfirst($key);
 
-        return [];
+        $extract = self::extractFieldsAndLayout($element->{$getterMethod}());
+        $element->{$setterMethod}($extract['layout']);
+
+        return $extract;
     }
 
     public static function buildFieldSchema(Datasource $datasource, ActionField $field)
