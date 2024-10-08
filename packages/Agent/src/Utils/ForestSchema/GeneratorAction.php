@@ -4,9 +4,8 @@ namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseAction;
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\ActionField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\InputElement;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
@@ -39,7 +38,7 @@ class GeneratorAction
         $index = $collection->getActions()->keys()->search($name);
         $slug = Str::slug($name);
 
-        $formElements = self::extractFieldsAndLayout($action->getForm());
+        $formElements = self::extractFieldsAndLayout($collection->getForm(null, $name));
         if($action->isStaticForm()) {
             $fields = self::buildFields($formElements['fields']);
             $layout = $formElements['layout'];
@@ -107,7 +106,7 @@ class GeneratorAction
             } else {
                 $fields[] = $element;
                 // TODO: replace $element->label by  $element->id when id will be add
-                $layout[] = new InputElement(fieldId: $element->label);
+                $layout[] = new InputElement(fieldId: $element->getLabel());
             }
         }
 
@@ -121,7 +120,7 @@ class GeneratorAction
         return [];
     }
 
-    public static function buildFieldSchema(Datasource $datasource, ActionField|DynamicField $field)
+    public static function buildFieldSchema(Datasource $datasource, ActionField $field)
     {
         $output = [
             'description' => $field->getDescription(),

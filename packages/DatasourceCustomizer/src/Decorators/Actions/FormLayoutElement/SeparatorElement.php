@@ -2,12 +2,10 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\FormLayoutElement;
 
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseFormElement;
-
-class SeparatorElement extends BaseFormElement
+class SeparatorElement extends LayoutElement
 {
-    public function __construct(array $extraArguments = [])
+    public function __construct()
     {
-        parent::__construct('Separator', $extraArguments);
+        parent::__construct('Separator');
     }
 }

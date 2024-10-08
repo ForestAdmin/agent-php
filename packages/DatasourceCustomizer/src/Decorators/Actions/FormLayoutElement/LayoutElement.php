@@ -8,7 +8,7 @@ class LayoutElement extends BaseFormElement
 {
     public function __construct(
         protected string $component,
-        protected ?string $ifCondition = null,
+        protected ?string $if = null,
         array $extraArguments = []
     ) {
         parent::__construct('Layout', $extraArguments);
@@ -19,8 +19,13 @@ class LayoutElement extends BaseFormElement
         return $this->component;
     }
 
-    public function getIfCondition(): ?string
+    public function getIf(): ?string
     {
-        return $this->ifCondition;
+        return $this->if;
+    }
+
+    public function setIf(?string $if): void
+    {
+        $this->if = $if;
     }
 }

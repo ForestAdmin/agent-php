@@ -2,17 +2,17 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout;
 
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseFormElement;
-
-class BaseLayoutElement extends BaseFormElement
+class BaseLayoutElement
 {
+    protected string $type;
+
     /**
      * @param string $component
      */
     public function __construct(
         protected string $component,
     ) {
-        parent::__construct(type: 'Layout');
+        $this->type = 'Layout';
     }
 
     /**
@@ -31,5 +31,20 @@ class BaseLayoutElement extends BaseFormElement
     public function setComponent(string $component): void
     {
         $this->component = $component;
+    }
+
+    public function toArray(): array
+    {
+        $result = [];
+        foreach ($this->keys() as $attribute) {
+            $result[$attribute] = $this->$attribute;
+        }
+
+        return $result;
+    }
+
+    public function keys(): array
+    {
+        return array_keys(get_object_vars($this));
     }
 }

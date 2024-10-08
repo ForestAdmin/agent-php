@@ -15,7 +15,7 @@ class ActionContext extends CollectionCustomizationContext
 {
     public function __construct(
         ActionCollection $collection,
-        Caller $caller,
+        ?Caller $caller,
         protected PaginatedFilter $filter,
         protected array $formValues = [],
         protected array $used = [],

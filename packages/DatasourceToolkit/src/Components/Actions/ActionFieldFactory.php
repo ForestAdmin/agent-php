@@ -2,23 +2,22 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions;
 
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\InputElement;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\SeparatorElement;
 
 class ActionFieldFactory
 {
-    public static function buildFromDynamicField(DynamicField $field)
+    public static function buildField(array $field)
     {
         return new ActionField(
-            type: $field->getType(),
-            label: $field->getLabel(),
-            description: $field->getDescription(),
-            isRequired: $field->isRequired(),
-            isReadOnly: $field->isReadOnly(),
-            value: $field->getValue(),
-            enumValues: $field->getEnumValues(),
-            collectionName: $field->getCollectionName(),
+            type: $field['type'],
+            label: $field['label'],
+            description: $field['description'],
+            isRequired: $field['isRequired'],
+            isReadOnly: $field['isReadOnly'],
+            value: $field['value'],
+            enumValues: $field['enumValues'],
+            collectionName: $field['collectionName'],
         );
     }
 
@@ -28,7 +27,7 @@ class ActionFieldFactory
             return self::buildLayoutElement($element);
         }
 
-        return self::buildFromDynamicField($element);
+        return self::buildField($element);
     }
 
     public static function buildLayoutElement($element)
