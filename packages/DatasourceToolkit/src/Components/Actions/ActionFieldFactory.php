@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\InputElement;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\RowElement;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\SeparatorElement;
 
 class ActionFieldFactory
@@ -37,6 +38,12 @@ class ActionFieldFactory
                 return new SeparatorElement();
             case 'Input':
                 return new InputElement(fieldId: $element['fieldId']);
+            case 'Row':
+                if (empty($element['fields'])) {
+                    return null;
+                }
+
+                return new RowElement(fields: $element['fields']);
         }
     }
 }
