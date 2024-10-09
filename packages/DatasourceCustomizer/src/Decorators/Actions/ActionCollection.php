@@ -126,9 +126,6 @@ class ActionCollection extends CollectionDecorator
 
     private function dropIfs(ActionContext $context, array $fields): array
     {
-        /**
-         * @var DynamicField $field
-         */
         foreach ($fields as $key => &$field) {
             $ifValue = $this->evaluate($context, $field->getIf());
             if ($ifValue !== null && ! $ifValue) {
