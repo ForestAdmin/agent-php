@@ -121,7 +121,7 @@ class CollectionDecorator implements CollectionContract
         return $this->childCollection->aggregate($caller, $refinedFilter, $aggregation, $limit);
     }
 
-    protected function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
+    protected function refineFilter(?Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
     {
         return $filter;
     }

@@ -117,7 +117,7 @@ class BinaryCollection extends CollectionDecorator
         })->toArray();
     }
 
-    public function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
+    public function refineFilter(?Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
     {
         return $filter?->override(conditionTree: $filter?->getConditionTree()?->replaceLeafs(fn ($leaf) => $this->convertConditionTreeLeaf($leaf)));
     }
