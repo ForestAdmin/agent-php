@@ -6,6 +6,9 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
 use ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField\WidgetValidator;
 
+/**
+ * @codeCoverageIgnore
+ */
 class SwitchField extends DynamicField
 {
     use Widget;

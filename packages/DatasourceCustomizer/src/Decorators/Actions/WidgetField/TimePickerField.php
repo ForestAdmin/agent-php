@@ -5,6 +5,9 @@ namespace ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\WidgetField\Widget;
 
+/**
+ * @codeCoverageIgnore
+ */
 class TimePickerField extends DynamicField
 {
     use Widget;

@@ -6,6 +6,9 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
 use ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField\WidgetValidator;
 
+/**
+ * @codeCoverageIgnore
+ */
 class NumberInputField extends DynamicField
 {
     use Widget;

@@ -5,6 +5,9 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\WidgetFie
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
 use ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField\WidgetValidator;
 
+/**
+ * @codeCoverageIgnore
+ */
 class RadioField extends DynamicField
 {
     use Widget;

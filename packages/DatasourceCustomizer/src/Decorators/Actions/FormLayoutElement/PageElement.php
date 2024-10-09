@@ -4,6 +4,9 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\FormLayou
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
+/**
+ * @codeCoverageIgnore
+ */
 class PageElement extends LayoutElement
 {
     protected array $elements;

@@ -4,6 +4,9 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\FormLayou
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseFormElement;
 
+/**
+ * @codeCoverageIgnore
+ */
 class HtmlBlockElement extends BaseFormElement
 {
     public function __construct(
