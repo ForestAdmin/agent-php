@@ -5,13 +5,13 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\FormLayou
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
-class RowElement extends BaseFormElement
+class RowElement extends LayoutElement
 {
     public function __construct(
         protected array $fields,
-        protected ?string $ifCondition = null
+        protected ?string $if = null
     ) {
-        parent::__construct('Row', $ifCondition);
+        parent::__construct('Row', $if);
         $this->validateFieldsPresence();
         $this->validateNoLayoutSubfields($this->fields);
     }
