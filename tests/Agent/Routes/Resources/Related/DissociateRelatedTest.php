@@ -168,6 +168,21 @@ $before = static function (TestCase $testCase, $args = []) {
         'forest.collections',
         [
             'User' => [
+                'edit'  => [
+                    0 => 1,
+                ],
+            ],
+            'Comment' => [
+                'delete'  => [
+                    0 => 1,
+                ],
+            ],
+            'Car' => [
+                'delete'  => [
+                    0 => 1,
+                ],
+            ],
+            'House' => [
                 'delete'  => [
                     0 => 1,
                 ],
@@ -221,8 +236,8 @@ test('handleRequest() on ManyToOneSchema relation should return a response 200',
             'type' => 'Car',
         ],
     ];
-    $dissociate = $before($this, ['dissociate' => true]);
 
+    $dissociate = $before($this, ['dissociate' => true]);
     expect($dissociate->handleRequest(['collectionName' => 'User', 'id' => 1, 'relationName' => 'cars']))
         ->toBeArray()
         ->toEqual(
