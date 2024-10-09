@@ -9,6 +9,9 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\ActionSco
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\ActionField;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\InputElement;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\SeparatorElement as ActionSeparatorElement;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
@@ -152,6 +155,38 @@ describe('with layout elements', function () {
                     ['component' => 'separator'],
                 ],
                 'hooks'      => [ 'load' => false, 'change' => ['changeHook'] ],
+            ]
+        );
+    });
+
+    test('extractFieldsAndLayout() should extract fields and layout from form', function () {
+        $actionDatasource = new DatasourceDecorator($this->bucket['datasource'], ActionCollection::class);
+        $actionDatasource->getCollection('Book')->addAction(
+            'Send email',
+            new BaseAction(
+                scope: ActionScope::SINGLE,
+                execute: fn () => true,
+                form: [
+                    new DynamicField(
+                        type: FieldType::STRING,
+                        label: 'label',
+                    ),
+                    new SeparatorElement(),
+                ]
+            )
+        );
+
+        $extract = GeneratorAction::extractFieldsAndLayout(
+            $actionDatasource->getCollection('Book')->getForm(null, 'Send email')
+        );
+
+        expect($extract)->toEqual(
+            [
+                'fields'     => [new ActionField(type: 'String', label: 'label')],
+                'layout'     => [
+                    new InputElement(fieldId: 'label'),
+                    new ActionSeparatorElement(),
+                ],
             ]
         );
     });
