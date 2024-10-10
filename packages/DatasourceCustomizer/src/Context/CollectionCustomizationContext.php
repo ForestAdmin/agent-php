@@ -8,7 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContra
 
 class CollectionCustomizationContext extends AgentCustomizationContext
 {
-    public function __construct(protected CollectionContract $realCollection, Caller $caller)
+    public function __construct(protected CollectionContract $realCollection, ?Caller $caller)
     {
         parent::__construct($this->realCollection->getDataSource(), $caller);
     }

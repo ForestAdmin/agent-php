@@ -5,7 +5,7 @@ namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\ActionField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\File;
 use Illuminate\Support\Str;

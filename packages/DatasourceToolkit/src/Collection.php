@@ -57,7 +57,7 @@ class Collection implements CollectionContract
         }
     }
 
-    public function getForm(Caller $caller, string $name, ?array $formValues = null, ?Filter $filter = null, ?string $changeField = null): array
+    public function getForm(?Caller $caller, string $name, ?array $formValues = null, ?Filter $filter = null, ?string $changeField = null): array
     {
         return [];
     }

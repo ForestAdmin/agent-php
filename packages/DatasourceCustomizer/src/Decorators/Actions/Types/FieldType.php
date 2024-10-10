@@ -29,4 +29,6 @@ final class FieldType
     public const STRING = 'String';
 
     public const STRING_LIST = 'StringList';
+
+    public const LAYOUT = 'Layout';
 }

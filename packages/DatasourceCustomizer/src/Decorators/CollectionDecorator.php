@@ -81,7 +81,7 @@ class CollectionDecorator implements CollectionContract
         return $this->childCollection->execute($caller, $name, $data, $refinedFilter);
     }
 
-    public function getForm(Caller $caller, string $name, ?array $data = null, ?Filter $filter = null, ?string $changeField = null): array
+    public function getForm(?Caller $caller, string $name, ?array $data = null, ?Filter $filter = null, ?string $changeField = null): array
     {
         $refinedFilter = $this->refineFilter($caller, $filter);
 
@@ -121,7 +121,7 @@ class CollectionDecorator implements CollectionContract
         return $this->childCollection->aggregate($caller, $refinedFilter, $aggregation, $limit);
     }
 
-    protected function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
+    protected function refineFilter(?Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
     {
         return $filter;
     }

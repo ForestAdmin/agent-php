@@ -31,7 +31,7 @@ class SegmentCollection extends CollectionDecorator
         $this->markSchemaAsDirty();
     }
 
-    public function refineFilter(Caller $caller, PaginatedFilter|Filter|null $filter): PaginatedFilter|Filter|null
+    public function refineFilter(?Caller $caller, PaginatedFilter|Filter|null $filter): PaginatedFilter|Filter|null
     {
         if (! $filter) {
             return null;

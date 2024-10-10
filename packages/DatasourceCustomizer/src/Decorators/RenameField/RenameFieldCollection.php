@@ -117,7 +117,7 @@ class RenameFieldCollection extends CollectionDecorator
             ->toArray();
     }
 
-    protected function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
+    protected function refineFilter(?Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
     {
         if ($filter instanceof PaginatedFilter) {
             return $filter?->override(

@@ -36,7 +36,7 @@ class OperatorsReplaceCollection extends CollectionDecorator
         return $childSchema;
     }
 
-    protected function refineFilter(Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
+    protected function refineFilter(?Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
     {
         return $filter?->override(
             conditionTree: $filter->getConditionTree()?->replaceLeafs(function ($leaf) use ($caller) {
