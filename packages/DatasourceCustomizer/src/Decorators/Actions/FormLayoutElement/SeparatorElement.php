@@ -4,7 +4,7 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\FormLayou
 
 class SeparatorElement extends LayoutElement
 {
-    public function __construct(?\Closure $if)
+    public function __construct(?\Closure $if = null)
     {
         parent::__construct('Separator', $if);
     }
