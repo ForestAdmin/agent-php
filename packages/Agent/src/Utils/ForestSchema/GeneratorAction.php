@@ -49,17 +49,19 @@ class GeneratorAction
         }
 
         return [
-            'id'         => "$collectionName-$index-$slug",
-            'name'       => $name,
-            'type'       => strtolower($action->getScope()),
-            'baseUrl'    => null,
-            'endpoint'   => "/forest/_actions/$collectionName/$index/$slug",
-            'httpMethod' => 'POST',
-            'redirect'   => null, // frontend ignores this attribute
-            'download'   => $action->isGenerateFile(),
-            'fields'     => $fields,
-            'layout'     => self::buildLayout($layout),
-            'hooks'      => [
+            'id'                => "$collectionName-$index-$slug",
+            'name'              => $name,
+            'submitButtonLabel' => $action->getSubmitButtonLabel(),
+            'description'       => $action->getDescription(),
+            'type'              => strtolower($action->getScope()),
+            'baseUrl'           => null,
+            'endpoint'          => "/forest/_actions/$collectionName/$index/$slug",
+            'httpMethod'        => 'POST',
+            'redirect'          => null, // frontend ignores this attribute
+            'download'          => $action->isGenerateFile(),
+            'fields'            => $fields,
+            'layout'            => self::buildLayout($layout),
+            'hooks'             => [
                 'load'   => ! $action->isStaticForm(),
                 // Always registering the change hook has no consequences, even if we don't use it.
                 'change' => ['changeHook'],
