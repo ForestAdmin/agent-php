@@ -6,8 +6,14 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Context\ActionC
 
 class BaseAction
 {
-    public function __construct(protected string $scope, protected $execute, protected bool $isGenerateFile = false, protected array $form = [])
-    {
+    public function __construct(
+        protected string $scope,
+        protected $execute,
+        protected bool $isGenerateFile = false,
+        protected array $form = [],
+        protected ?string $description = null,
+        protected ?string $submitButtonLabel = null
+    ) {
     }
 
     public function callExecute(ActionContext $context, ResultBuilder $resultBuilder)
@@ -37,6 +43,16 @@ class BaseAction
     public function isGenerateFile(): bool
     {
         return $this->isGenerateFile;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function getSubmitButtonLabel(): ?string
+    {
+        return $this->submitButtonLabel;
     }
 
     public function isStaticForm(): bool
