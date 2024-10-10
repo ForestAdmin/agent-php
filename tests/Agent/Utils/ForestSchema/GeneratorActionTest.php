@@ -41,17 +41,19 @@ describe('without form', function () {
 
         expect($schema)->toEqual(
             [
-                'id'         => 'Book-0-send-email',
-                'name'       => 'Send email',
-                'type'       => 'single',
-                'baseUrl'    => null,
-                'endpoint'   => '/forest/_actions/Book/0/send-email',
-                'httpMethod' => 'POST',
-                'redirect'   => null,
-                'download'   => false,
-                'fields'     => [],
-                'layout'     => [],
-                'hooks'      => [ 'load' => false, 'change' => ['changeHook'] ],
+                'id'                => 'Book-0-send-email',
+                'name'              => 'Send email',
+                'type'              => 'single',
+                'baseUrl'           => null,
+                'endpoint'          => '/forest/_actions/Book/0/send-email',
+                'httpMethod'        => 'POST',
+                'redirect'          => null,
+                'download'          => false,
+                'fields'            => [],
+                'layout'            => [],
+                'hooks'             => [ 'load' => false, 'change' => ['changeHook'] ],
+                'submitButtonLabel' => null,
+                'description'       => null,
             ]
         );
     });
@@ -102,8 +104,10 @@ describe('with no hooks', function () {
                         'defaultValue'  => '',
                     ],
                 ],
-                'layout'     => [['component' => 'input', 'fieldId' => 'label']],
-                'hooks'      => [ 'load' => false, 'change' => ['changeHook'] ],
+                'layout'            => [['component' => 'input', 'fieldId' => 'label']],
+                'hooks'             => [ 'load' => false, 'change' => ['changeHook'] ],
+                'submitButtonLabel' => null,
+                'description'       => null,
             ]
         );
     });
@@ -156,7 +160,9 @@ describe('with layout elements', function () {
                     ['component' => 'input', 'fieldId' => 'label'],
                     ['component' => 'separator'],
                 ],
-                'hooks'      => [ 'load' => false, 'change' => ['changeHook'] ],
+                'hooks'             => [ 'load' => false, 'change' => ['changeHook'] ],
+                'submitButtonLabel' => null,
+                'description'       => null,
             ]
         );
     });
@@ -207,7 +213,9 @@ describe('with layout elements', function () {
                     ['component' => 'input', 'fieldId' => 'label'],
                     ['component' => 'htmlBlock', 'content' => '<p>test</p>'],
                 ],
-                'hooks'      => [ 'load' => false, 'change' => ['changeHook'] ],
+                'hooks'             => [ 'load' => false, 'change' => ['changeHook'] ],
+                'submitButtonLabel' => null,
+                'description'       => null,
             ]
         );
     });
