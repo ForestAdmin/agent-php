@@ -9,11 +9,11 @@ class RowElement extends LayoutElement
 {
     public function __construct(
         protected array $fields,
-        protected ?string $if = null
+        protected ?\Closure $if = null
     ) {
         parent::__construct('Row', $if);
         $this->validateFieldsPresence();
-        $this->validateNoLayoutSubfields($this->fields);
+        $this->validateSubfields();
     }
 
     private function validateFieldsPresence(): void
@@ -23,11 +23,11 @@ class RowElement extends LayoutElement
         }
     }
 
-    private function validateNoLayoutSubfields(array $fields): void
+    private function validateSubfields(): void
     {
-        foreach ($fields as $field) {
-            if ($field instanceof DynamicField && $field->getType() === 'Layout') {
-                throw new ForestException("A 'Row' form element doesn't allow layout elements as subfields");
+        foreach ($this->fields as $field) {
+            if (! $field instanceof DynamicField) {
+                throw new ForestException("A field must be an instance of DynamicField");
             }
         }
     }

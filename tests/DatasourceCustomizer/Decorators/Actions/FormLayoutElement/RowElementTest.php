@@ -11,12 +11,6 @@ test('throws an exception if fields are empty', function () {
     new RowElement([]);
 })->throws(ForestException::class, "Using 'fields' in a 'Row' configuration is mandatory");
 
-test('throws an exception if a field is of type Layout', function () {
-    $fields = [
-        new DynamicField(type: FieldType::LAYOUT, label: 'foo'),
-    ];
-    new RowElement($fields);
-})->throws(ForestException::class, "A 'Row' form element doesn't allow layout elements as subfields");
 
 test('creates an instance with valid fields', function () {
     $fields = [new DynamicField(type: FieldType::STRING, label: 'field 1'), new DynamicField(type: FieldType::STRING, label: 'field 2')];
@@ -24,6 +18,10 @@ test('creates an instance with valid fields', function () {
 
     expect($rowElement->getFields())->toEqual($fields);
 });
+
+test('throws an exception if a field is not an instance of DynamicField', function () {
+    new RowElement([new DynamicField(type: FieldType::STRING, label: 'field 1'), 'field 2']);
+})->throws(ForestException::class, "A field must be an instance of DynamicField");
 
 test('allows setting fields after instantiation', function () {
     $initialFields = [
