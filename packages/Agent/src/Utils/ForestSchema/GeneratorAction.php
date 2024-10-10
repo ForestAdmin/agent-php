@@ -75,13 +75,15 @@ class GeneratorAction
                 'component' => Str::camel($element->getComponent()),
                 'fields'    => array_map(fn ($f) => self::buildLayoutSchema($f), $element->getFields()),
             ];
-        } elseif ($element->getComponent() === 'Page') {
-            return [
-                ...$element->toArray(),
-                'component' => Str::camel($element->getComponent()),
-                'elements'  => array_map(fn ($f) => self::buildLayoutSchema($f), $element->getElements()),
-            ];
         }
+        // TODO PAGE
+        //        } elseif ($element->getComponent() === 'Page') {
+        //            return [
+        //                ...$element->toArray(),
+        //                'component' => Str::camel($element->getComponent()),
+        //                'elements'  => array_map(fn ($f) => self::buildLayoutSchema($f), $element->getElements()),
+        //            ];
+        //        }
 
         $result = [...$element->toArray(), 'component' => Str::camel($element->getComponent())];
         unset($result['type']);
@@ -131,11 +133,9 @@ class GeneratorAction
     public static function extractFieldsAndLayoutForComponent($element): array
     {
         $key = $element->getComponent() === 'Page' ? 'elements' : 'fields';
-        $getterMethod = 'get' . ucfirst($key);
-        $setterMethod = 'set' . ucfirst($key);
 
-        $extract = self::extractFieldsAndLayout($element->{$getterMethod}());
-        $element->{$setterMethod}($extract['layout']);
+        $extract = self::extractFieldsAndLayout($element->__get($key));
+        $element->__set($key, $extract['layout']);
 
         return $extract;
     }
