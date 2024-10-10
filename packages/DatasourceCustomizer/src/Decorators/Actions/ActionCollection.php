@@ -6,7 +6,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Context\ActionC
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Context\ActionContextSingle;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\ActionScope;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\ActionField;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\ActionFieldFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
@@ -40,7 +40,7 @@ class ActionCollection extends CollectionDecorator
         return $result ?? $resultBuilder->success();
     }
 
-    public function getForm(Caller $caller, string $name, ?array $data = null, ?Filter $filter = null, ?string $changeField = null): array
+    public function getForm(?Caller $caller, string $name, ?array $data = null, ?Filter $filter = null, ?string $changeField = null): array
     {
         /** @var BaseAction $action */
         $action = $this->actions[$name] ?? null;
@@ -63,21 +63,31 @@ class ActionCollection extends CollectionDecorator
         $fields = $this->dropDeferred($context, $dynamicFields);
         $used = $context->getUsed();
 
-        /** @var ActionField $field */
-        foreach ($fields as $field) {
-            // customer did not define a handler to rewrite the previous value => reuse current one.
-            if (null === $field->getValue()) {
-                $field->setValue($formValues[$field->getLabel()] ?? null);
-            }
-
-            // fields that were accessed through the context.formValues.X getter should be watched.
-            $field->setWatchChanges(isset($used[$field->getLabel()]));
-        }
+        $this->setWatchChangesOnFields($formValues, $used, $fields);
 
         return $fields;
     }
 
-    private function getContext(Caller $caller, BaseAction $action, array $formValues = [], ?Filter $filter = null, array &$used = [], ?string $changeField = null): ActionContext
+    private function setWatchChangesOnFields($formValues, $used, &$fields)
+    {
+        foreach ($fields as &$field) {
+            if ($field->getType() !== 'Layout') {
+                if ($field->getValue() === null) {
+                    // customer did not define a handler to rewrite the previous value => reuse current one.
+                    $field->setValue($formValues[$field->getLabel()] ?? null);
+                }
+
+                // fields that were accessed through the context.formValues.X getter should be watched.
+                $field->setWatchChanges(isset($used[$field->getLabel()]));
+            } elseif ($field->getComponent() === 'Row') {
+                $this->setWatchChangesOnFields($formValues, $used, $field->getFields());
+            } elseif ($field->getComponent() === 'Page') {
+                $this->setWatchChangesOnFields($formValues, $used, $field->getElements());
+            }
+        }
+    }
+
+    private function getContext(?Caller $caller, BaseAction $action, array $formValues = [], ?Filter $filter = null, array &$used = [], ?string $changeField = null): ActionContext
     {
         $filter = $filter ? new PaginatedFilter($filter->getConditionTree(), $filter->getSearch(), $filter->getSearchExtended(), $filter->getSegment()) : new PaginatedFilter();
         if ($action->getScope() === ActionScope::SINGLE) {
@@ -89,18 +99,24 @@ class ActionCollection extends CollectionDecorator
 
     private function dropDefaults(ActionContext $context, array $fields, array &$data): array
     {
-        $unvaluedFields = collect($fields)->filter(fn ($field) => ! array_key_exists($field->getLabel(), $data));
-        $defaults = $unvaluedFields->map(fn ($field) => $this->evaluate($context, $field->getDefaultValue()));
-
-        foreach ($unvaluedFields as $index => $field) {
-            $data[$field->getLabel()] = $defaults[$index];
-        }
-
         foreach ($fields as &$field) {
-            $field->setDefaultValue(null);
+            if($field->getType() !== 'Layout') {
+                $field = $this->dropDefault($context, $field, $data);
+            }
         }
 
         return $fields;
+    }
+
+    private function dropDefault(ActionContext $context, $field, &$data)
+    {
+        if (! array_key_exists($field->getLabel(), $data)) {
+            $data[$field->getLabel()] = $this->evaluate($context, $field->getDefaultValue());
+        }
+
+        $field->setDefaultValue(null);
+
+        return $field;
     }
 
     private function evaluate(ActionContext $context, $value)
@@ -110,9 +126,6 @@ class ActionCollection extends CollectionDecorator
 
     private function dropIfs(ActionContext $context, array $fields): array
     {
-        /**
-         * @var DynamicField $field
-         */
         foreach ($fields as $key => &$field) {
             $ifValue = $this->evaluate($context, $field->getIf());
             if ($ifValue !== null && ! $ifValue) {
@@ -133,7 +146,7 @@ class ActionCollection extends CollectionDecorator
             foreach ($field->keys() as $key) {
                 $field->__set($key, $this->evaluate($context, $field->__get($key)));
             }
-            $newFields[] = ActionField::buildFromDynamicField($field);
+            $newFields[] = ActionFieldFactory::build($field->toArray());
         }
 
         return $newFields;
