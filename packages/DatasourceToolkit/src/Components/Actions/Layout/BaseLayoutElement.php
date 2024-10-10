@@ -37,6 +37,9 @@ class BaseLayoutElement
     {
         $result = [];
         foreach ($this->keys() as $attribute) {
+            if ($attribute === 'type') {
+                continue;
+            }
             $result[$attribute] = $this->$attribute;
         }
 
