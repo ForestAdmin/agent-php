@@ -39,6 +39,7 @@ class GeneratorAction
         $slug = Str::slug($name);
 
         $formElements = self::extractFieldsAndLayout($collection->getForm(null, $name));
+
         if($action->isStaticForm()) {
             $fields = self::buildFields($formElements['fields']);
             $layout = $formElements['layout'];
@@ -68,6 +69,20 @@ class GeneratorAction
 
     public static function buildLayoutSchema($element): array
     {
+        if ($element->getComponent() === 'Row') {
+            return [
+                ...$element->toArray(),
+                'component' => Str::camel($element->getComponent()),
+                'fields'    => array_map(fn ($f) => self::buildLayoutSchema($f), $element->getFields()),
+            ];
+        } elseif ($element->getComponent() === 'Page') {
+            return [
+                ...$element->toArray(),
+                'component' => Str::camel($element->getComponent()),
+                'elements'  => array_map(fn ($f) => self::buildLayoutSchema($f), $element->getElements()),
+            ];
+        }
+
         $result = [...$element->toArray(), 'component' => Str::camel($element->getComponent())];
         unset($result['type']);
 
@@ -99,7 +114,7 @@ class GeneratorAction
                 if (in_array($element->getComponent(), ['Page', 'Row'])) {
                     $extract = self::extractFieldsAndLayoutForComponent($element);
                     $layout[] = $element;
-                    $fields[] = $extract['fields'];
+                    $fields = [...$fields, ...$extract['fields']];
                 } else {
                     $layout[] = $element;
                 }
