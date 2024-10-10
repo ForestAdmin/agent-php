@@ -6,6 +6,6 @@ class SeparatorElement extends LayoutElement
 {
     public function __construct(?\Closure $if = null)
     {
-        parent::__construct('Separator', $if);
+        parent::__construct('Separator', if: $if);
     }
 }

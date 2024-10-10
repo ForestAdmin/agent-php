@@ -2,18 +2,12 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\FormLayoutElement;
 
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseFormElement;
-
-/**
- * @codeCoverageIgnore
- */
-class HtmlBlockElement extends BaseFormElement
+class HtmlBlockElement extends LayoutElement
 {
     public function __construct(
         protected string $content,
-        array $extraArguments = []
     ) {
-        parent::__construct('HtmlBlock', $extraArguments);
+        parent::__construct('HtmlBlock');
     }
 
     public function getContent(): string
