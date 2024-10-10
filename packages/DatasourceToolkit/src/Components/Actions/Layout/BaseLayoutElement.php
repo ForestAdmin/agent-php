@@ -36,18 +36,27 @@ class BaseLayoutElement
     public function toArray(): array
     {
         $result = [];
-        foreach ($this->keys() as $attribute) {
-            if ($attribute === 'type') {
-                continue;
+        foreach (get_object_vars($this) as $key => $value) {
+            if ($key !== 'type') {
+                $result[$key] = $value;
             }
-            $result[$attribute] = $this->$attribute;
         }
 
         return $result;
     }
 
-    public function keys(): array
+    public function __set($key, $value)
     {
-        return array_keys(get_object_vars($this));
+        $this->$key = $value;
+    }
+
+    public function __get($key)
+    {
+        return $this->$key ?? null;
+    }
+
+    public function __isset($key)
+    {
+        return isset($this->$key);
     }
 }
