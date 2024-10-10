@@ -80,7 +80,9 @@ class ActionCollection extends CollectionDecorator
                 // fields that were accessed through the context.formValues.X getter should be watched.
                 $field->setWatchChanges(isset($used[$field->getLabel()]));
             } elseif ($field->getComponent() === 'Row') {
-                $this->setWatchChangesOnFields($formValues, $used, $field->getFields());
+                $fields = $field->getFields();
+                $this->setWatchChangesOnFields($formValues, $used, $fields);
+                $field->setFields($fields);
             } elseif ($field->getComponent() === 'Page') {
                 $this->setWatchChangesOnFields($formValues, $used, $field->getElements());
             }
@@ -146,7 +148,7 @@ class ActionCollection extends CollectionDecorator
             foreach ($field->keys() as $key) {
                 $field->__set($key, $this->evaluate($context, $field->__get($key)));
             }
-            $newFields[] = ActionFieldFactory::build($field->toArray());
+            $newFields[] = ActionFieldFactory::build($field);
         }
 
         return $newFields;
