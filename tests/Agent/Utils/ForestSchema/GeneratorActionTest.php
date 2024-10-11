@@ -251,15 +251,17 @@ describe('with layout elements', function () {
 
         expect($schema)->toEqual(
             [
-                'id'         => 'Book-0-send-email',
-                'name'       => 'Send email',
-                'type'       => 'single',
-                'baseUrl'    => null,
-                'endpoint'   => '/forest/_actions/Book/0/send-email',
-                'httpMethod' => 'POST',
-                'redirect'   => null,
-                'download'   => false,
-                'fields'     => [
+                'id'                => 'Book-0-send-email',
+                'name'              => 'Send email',
+                'type'              => 'single',
+                'baseUrl'           => null,
+                'endpoint'          => '/forest/_actions/Book/0/send-email',
+                'httpMethod'        => 'POST',
+                'redirect'          => null,
+                'download'          => false,
+                'submitButtonLabel' => null,
+                'description'       => null,
+                'fields'            => [
                     [
                         'description'   => null,
                         'isRequired'    => false,
