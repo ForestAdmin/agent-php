@@ -1,6 +1,6 @@
 <?php
 
-namespace ForestAdminDatasourceCustomizer\Decorators\Action\WidgetField;
+namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Action\WidgetField;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
@@ -15,7 +15,7 @@ class CheckboxField extends DynamicField
 
     public function __construct($options)
     {
-        parent::__construct($options['type'], $options['label']);
+        parent::__construct(...$options);
         WidgetValidator::validateArg($options, 'type', ['type' => 'contains', 'value' => [FieldType::BOOLEAN]]);
         $this->widget = 'Checkbox';
     }

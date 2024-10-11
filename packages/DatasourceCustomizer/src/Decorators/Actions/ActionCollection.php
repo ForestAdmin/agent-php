@@ -63,12 +63,10 @@ class ActionCollection extends CollectionDecorator
         $fields = $this->dropDeferred($context, $dynamicFields);
         $used = $context->getUsed();
 
-        $this->setWatchChangesOnFields($formValues, $used, $fields);
-
-        return $fields;
+        return $this->setWatchChangesOnFields($formValues, $used, $fields);
     }
 
-    private function setWatchChangesOnFields($formValues, $used, &$fields)
+    private function setWatchChangesOnFields($formValues, $used, $fields): array
     {
         foreach ($fields as &$field) {
             if ($field->getType() !== 'Layout') {
@@ -80,11 +78,14 @@ class ActionCollection extends CollectionDecorator
                 // fields that were accessed through the context.formValues.X getter should be watched.
                 $field->setWatchChanges(isset($used[$field->getLabel()]));
             } elseif ($field->getComponent() === 'Row') {
-                $this->setWatchChangesOnFields($formValues, $used, $field->getFields());
+                $subFields = $this->setWatchChangesOnFields($formValues, $used, $field->getFields());
+                $field->setFields($subFields);
             } elseif ($field->getComponent() === 'Page') {
                 $this->setWatchChangesOnFields($formValues, $used, $field->getElements());
             }
         }
+
+        return $fields;
     }
 
     private function getContext(?Caller $caller, BaseAction $action, array $formValues = [], ?Filter $filter = null, array &$used = [], ?string $changeField = null): ActionContext
@@ -146,7 +147,7 @@ class ActionCollection extends CollectionDecorator
             foreach ($field->keys() as $key) {
                 $field->__set($key, $this->evaluate($context, $field->__get($key)));
             }
-            $newFields[] = ActionFieldFactory::build($field->toArray());
+            $newFields[] = ActionFieldFactory::build($field);
         }
 
         return $newFields;

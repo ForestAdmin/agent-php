@@ -2,44 +2,43 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\FormLayoutElement;
 
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseFormElement;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
-/**
- * @codeCoverageIgnore
- */
-class RowElement extends BaseFormElement
+class RowElement extends LayoutElement
 {
     public function __construct(
         protected array $fields,
-        array $extraArguments = []
+        protected ?\Closure $if = null
     ) {
-        parent::__construct('Row', $extraArguments);
-        $this->validateFieldsPresence($extraArguments);
-        $this->validateNoLayoutSubfields($extraArguments['fields'] ?? []);
-        $this->fields = $this->instantiateSubfields($extraArguments['fields'] ?? []);
+        parent::__construct('Row', $if);
+        $this->validateFieldsPresence();
+        $this->validateSubfields();
     }
 
-    private function validateFieldsPresence(array $options): void
+    private function validateFieldsPresence(): void
     {
-        if (! array_key_exists('fields', $options)) {
+        if (empty($this->fields)) {
             throw new ForestException("Using 'fields' in a 'Row' configuration is mandatory");
         }
     }
 
-    private function validateNoLayoutSubfields(array $fields): void
+    private function validateSubfields(): void
     {
-        foreach ($fields as $field) {
-            if (($field instanceof DynamicField && $field->getType() === 'Layout') ||
-                (is_array($field) && ($field['type'] ?? '') === 'Layout')) {
-                throw new ForestException("A 'Row' form element doesn't allow layout elements as subfields");
+        foreach ($this->fields as $field) {
+            if (! $field instanceof DynamicField) {
+                throw new ForestException("A field must be an instance of DynamicField");
             }
         }
     }
 
-    private function instantiateSubfields(array $fields): array
+    public function getFields(): array
     {
-        return array_map(fn ($field) => new DynamicField(...$field), $fields);
+        return $this->fields;
+    }
+
+    public function setFields(array $fields): void
+    {
+        $this->fields = $fields;
     }
 }
