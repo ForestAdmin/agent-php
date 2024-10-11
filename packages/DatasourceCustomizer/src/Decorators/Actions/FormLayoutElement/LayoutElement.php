@@ -9,9 +9,8 @@ class LayoutElement extends BaseFormElement
     public function __construct(
         protected string $component,
         protected ?\Closure $if = null,
-        array $extraArguments = []
     ) {
-        parent::__construct('Layout', $extraArguments);
+        parent::__construct('Layout');
     }
 
     public function getComponent(): string
