@@ -9,10 +9,6 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType
 /**
  * @codeCoverageIgnore
  */
-
-/**
- * @codeCoverageIgnore
- */
 class PercentageInputField extends DynamicField
 {
     use Widget;
