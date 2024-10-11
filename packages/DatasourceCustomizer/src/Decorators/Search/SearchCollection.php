@@ -37,7 +37,7 @@ class SearchCollection extends CollectionDecorator
         return true;
     }
 
-    public function refineFilter(Caller $caller, PaginatedFilter|Filter|null $filter): PaginatedFilter|Filter|null
+    public function refineFilter(?Caller $caller, PaginatedFilter|Filter|null $filter): PaginatedFilter|Filter|null
     {
         if ($filter->getSearch() === null || trim($filter->getSearch()) === '') {
             return $filter->override(search: null);

@@ -89,7 +89,7 @@ class RelationCollection extends CollectionDecorator
         );
     }
 
-    public function refineFilter(Caller $caller, PaginatedFilter|Filter|null $filter): PaginatedFilter|Filter|null
+    public function refineFilter(?Caller $caller, PaginatedFilter|Filter|null $filter): PaginatedFilter|Filter|null
     {
         if (! method_exists($filter, 'getSort')) {
             return $filter->override(

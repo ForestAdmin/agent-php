@@ -86,8 +86,14 @@ class Actions extends AbstractAuthenticatedRoute
         $data = $forestFields !== null ? ForestActionValueConverter::makeFormDataFromFields(AgentFactory::get('datasource'), $forestFields) : null;
         $filter = $this->getRecordSelection();
         $fields = $this->collection->getForm($this->caller, $this->actionName, $data, $filter, $this->request->input('data.attributes.changed_field'));
+        $formElements = GeneratorAction::extractFieldsAndLayout($fields);
 
-        return ['content' => ['fields' => collect($fields)->map(fn ($field) => GeneratorAction::buildFieldSchema(AgentFactory::get('datasource'), $field))]];
+        return [
+            'content' => [
+                'fields' => GeneratorAction::buildFields($formElements['fields']),
+                'layout' => GeneratorAction::buildLayout($formElements['layout']),
+            ],
+        ];
     }
 
     private function getRecordSelection(bool $includeUserScope = true): Filter

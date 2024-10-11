@@ -6,7 +6,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Context\ActionC
 
 class BaseAction
 {
-    public function __construct(protected string $scope, protected \Closure $execute, protected bool $isGenerateFile = false, protected array $form = [])
+    public function __construct(protected string $scope, protected $execute, protected bool $isGenerateFile = false, protected array $form = [])
     {
     }
 
