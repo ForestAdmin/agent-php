@@ -4,6 +4,8 @@ use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\GeneratorAction;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\ActionCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseAction;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\FormLayoutElement\HtmlBlockElement;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\FormLayoutElement\RowElement;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\FormLayoutElement\SeparatorElement;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\ActionScope;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
@@ -108,7 +110,7 @@ describe('with no hooks', function () {
 });
 
 describe('with layout elements', function () {
-    test('buildSchema() should generate schema correctly', function () {
+    test('buildSchema() should generate schema correctly with separator element', function () {
         $actionDatasource = new DatasourceDecorator($this->bucket['datasource'], ActionCollection::class);
         $actionDatasource->getCollection('Book')->addAction(
             'Send email',
@@ -153,6 +155,128 @@ describe('with layout elements', function () {
                 'layout' => [
                     ['component' => 'input', 'fieldId' => 'label'],
                     ['component' => 'separator'],
+                ],
+                'hooks'      => [ 'load' => false, 'change' => ['changeHook'] ],
+            ]
+        );
+    });
+
+    test('buildSchema() should generate schema correctly with html block element', function () {
+        $actionDatasource = new DatasourceDecorator($this->bucket['datasource'], ActionCollection::class);
+        $actionDatasource->getCollection('Book')->addAction(
+            'Send email',
+            new BaseAction(
+                scope: ActionScope::SINGLE,
+                execute: fn () => true,
+                form: [
+                    new DynamicField(
+                        type: FieldType::STRING,
+                        label: 'label',
+                    ),
+                    new HtmlBlockElement('<p>test</p>'),
+                ]
+            )
+        );
+
+        $schema = GeneratorAction::buildSchema(
+            $actionDatasource->getCollection('Book'),
+            'Send email'
+        );
+
+        expect($schema)->toEqual(
+            [
+                'id'         => 'Book-0-send-email',
+                'name'       => 'Send email',
+                'type'       => 'single',
+                'baseUrl'    => null,
+                'endpoint'   => '/forest/_actions/Book/0/send-email',
+                'httpMethod' => 'POST',
+                'redirect'   => null,
+                'download'   => false,
+                'fields'     => [
+                    [
+                        'description'   => null,
+                        'isRequired'    => false,
+                        'isReadOnly'    => false,
+                        'field'         => 'label',
+                        'type'          => 'String',
+                        'defaultValue'  => null,
+                    ],
+                ],
+                'layout' => [
+                    ['component' => 'input', 'fieldId' => 'label'],
+                    ['component' => 'htmlBlock', 'content' => '<p>test</p>'],
+                ],
+                'hooks'      => [ 'load' => false, 'change' => ['changeHook'] ],
+            ]
+        );
+    });
+
+    test('buildSchema() should generate schema correctly with row element', function () {
+        $actionDatasource = new DatasourceDecorator($this->bucket['datasource'], ActionCollection::class);
+        $actionDatasource->getCollection('Book')->addAction(
+            'Send email',
+            new BaseAction(
+                scope: ActionScope::SINGLE,
+                execute: fn () => true,
+                form: [
+                    new RowElement(
+                        fields: [
+                            new DynamicField(
+                                type: FieldType::STRING,
+                                label: 'sub field 1',
+                            ),
+                            new DynamicField(
+                                type: FieldType::STRING,
+                                label: 'sub field 2',
+                            ),
+                        ]
+                    ),
+                ]
+            )
+        );
+
+        $schema = GeneratorAction::buildSchema(
+            $actionDatasource->getCollection('Book'),
+            'Send email'
+        );
+
+        expect($schema)->toEqual(
+            [
+                'id'         => 'Book-0-send-email',
+                'name'       => 'Send email',
+                'type'       => 'single',
+                'baseUrl'    => null,
+                'endpoint'   => '/forest/_actions/Book/0/send-email',
+                'httpMethod' => 'POST',
+                'redirect'   => null,
+                'download'   => false,
+                'fields'     => [
+                    [
+                        'description'   => null,
+                        'isRequired'    => false,
+                        'isReadOnly'    => false,
+                        'field'         => 'sub field 1',
+                        'type'          => 'String',
+                        'defaultValue'  => null,
+                    ],
+                    [
+                        'description'   => null,
+                        'isRequired'    => false,
+                        'isReadOnly'    => false,
+                        'field'         => 'sub field 2',
+                        'type'          => 'String',
+                        'defaultValue'  => null,
+                    ],
+                ],
+                'layout' => [
+                    [
+                        'component' => 'row',
+                        'fields'    => [
+                            ['component' => 'input', 'fieldId' => 'sub field 1'],
+                            ['component' => 'input', 'fieldId' => 'sub field 2'],
+                        ],
+                    ],
                 ],
                 'hooks'      => [ 'load' => false, 'change' => ['changeHook'] ],
             ]

@@ -3,6 +3,7 @@
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\HtmlBlockElement;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\InputElement;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\RowElement;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\SeparatorElement;
@@ -37,6 +38,8 @@ class ActionFieldFactory
         switch ($element->getComponent()) {
             case 'Separator':
                 return new SeparatorElement();
+            case 'HtmlBlock':
+                return new HtmlBlockElement(content: $element->getContent());
             case 'Input':
                 return new InputElement(fieldId: $element->getFieldId());
             case 'Row':

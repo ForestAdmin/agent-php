@@ -2,6 +2,7 @@
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\ActionFieldFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\HtmlBlockElement;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\InputElement;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\RowElement;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\SeparatorElement;
@@ -40,6 +41,20 @@ it('builds a SeparatorElement for a layout component of type Separator', functio
 
     expect($separatorElement)->toBeInstanceOf(SeparatorElement::class);
 });
+
+it('builds a HtmlBlockElement for a layout component of type HtmlBlock', function () {
+    $element = \Mockery::mock(DynamicField::class)
+        ->shouldReceive('getType')->andReturn('Layout')
+        ->shouldReceive('getComponent')->andReturn('HtmlBlock')
+        ->shouldReceive('getContent')->andReturn('<p>foo</p>')
+        ->getMock();
+
+    $htmlBlockElement = ActionFieldFactory::build($element);
+
+    expect($htmlBlockElement)->toBeInstanceOf(HtmlBlockElement::class)
+        ->and($htmlBlockElement->getContent())->toEqual('<p>foo</p>');
+});
+
 
 it('builds an InputElement for a layout component of type Input', function () {
     $element = \Mockery::mock(DynamicField::class)
