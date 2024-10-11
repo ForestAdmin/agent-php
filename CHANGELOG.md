@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/ForestAdmin/agent-php/compare/v1.12.0...v1.13.0) (2024-10-11)
+
+
+### Features
+
+* **action_form:** add row layout customization ([#126](https://github.com/ForestAdmin/agent-php/issues/126)) ([cf49ccc](https://github.com/ForestAdmin/agent-php/commit/cf49ccc53fc2559b4ad3b61c1d79a68f94b73e1c))
+
 # [1.12.0](https://github.com/ForestAdmin/agent-php/compare/v1.11.8...v1.12.0) (2024-10-11)
 
 
