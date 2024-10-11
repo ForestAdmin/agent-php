@@ -92,6 +92,20 @@ describe('Base Action', function () {
         expect($baseAction->getScope())->toEqual(ActionScope::SINGLE);
     });
 
+    test('getDescription() should be null if not set', function () use ($before) {
+        $before($this);
+        [$datasourceDecorator, $datasource, $baseAction] = $this->bucket;
+
+        expect($baseAction->getDescription())->toBeNull();
+    });
+
+    test('getSubmitButtonLabel() should be null if not set', function () use ($before) {
+        $before($this);
+        [$datasourceDecorator, $datasource, $baseAction] = $this->bucket;
+
+        expect($baseAction->getSubmitButtonLabel())->toBeNull();
+    });
+
     test('isGenerateFile() should return false when isGenerateFile is false', function () use ($before) {
         $before($this);
         [$datasourceDecorator, $datasource, $baseAction] = $this->bucket;
@@ -119,5 +133,4 @@ describe('Base Action', function () {
 
         expect($baseAction->isStaticForm())->toBeTrue();
     })->with('caller');
-
 });
