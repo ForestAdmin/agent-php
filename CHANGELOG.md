@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/ForestAdmin/agent-php/compare/v1.11.8...v1.12.0) (2024-10-11)
+
+
+### Features
+
+* **form:** add separator element ([#124](https://github.com/ForestAdmin/agent-php/issues/124)) ([4450a0f](https://github.com/ForestAdmin/agent-php/commit/4450a0fa5d69d18b7fed1506bff9d7a300bc806b))
+
 ## [1.11.8](https://github.com/ForestAdmin/agent-php/compare/v1.11.7...v1.11.8) (2024-09-24)
 
 
