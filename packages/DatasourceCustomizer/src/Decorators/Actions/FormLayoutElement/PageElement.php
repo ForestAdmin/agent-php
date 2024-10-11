@@ -10,8 +10,9 @@ class PageElement extends LayoutElement
         protected array $elements,
         protected ?string $nextButtonLabel = null,
         protected ?string $previousButtonLabel = null,
-        ?\Closure $if = null,
+        $if = null,
     ) {
+        dump('JE SUIS PAGE');
         parent::__construct('Page', $if);
 
         $this->validateElementsPresence();
@@ -25,9 +26,9 @@ class PageElement extends LayoutElement
         }
     }
 
-    private function validateNoPageElements(array $elements): void
+    private function validateNoPageElements(): void
     {
-        foreach ($elements as $element) {
+        foreach ($this->elements as $element) {
             if ($element->getComponent() === 'Page') {
                 throw new ForestException("'Page' component cannot be used within 'elements'");
             }
