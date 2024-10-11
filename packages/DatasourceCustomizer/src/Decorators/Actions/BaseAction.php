@@ -3,7 +3,6 @@
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Context\ActionContext;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 class BaseAction
 {
@@ -15,9 +14,6 @@ class BaseAction
         protected ?string $description = null,
         protected ?string $submitButtonLabel = null
     ) {
-        if($this->submitButtonLabel && strlen($this->submitButtonLabel) > 50) {
-            throw new ForestException('Submit button label must have less than 50 characters');
-        }
     }
 
     public function callExecute(ActionContext $context, ResultBuilder $resultBuilder)

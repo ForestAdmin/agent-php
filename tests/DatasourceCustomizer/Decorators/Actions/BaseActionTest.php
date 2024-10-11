@@ -12,7 +12,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 
 describe('Base Action', function () {
@@ -134,17 +133,4 @@ describe('Base Action', function () {
 
         expect($baseAction->isStaticForm())->toBeTrue();
     })->with('caller');
-
-
-    test('create action with submit button label too long should throw error', function () {
-        expect(static fn () => new BaseAction(
-            scope: ActionScope::SINGLE,
-            execute: fn () => true,
-            submitButtonLabel: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit'
-        ))
-            ->toThrow(
-                ForestException::class,
-                'Submit button label must have less than 50 characters'
-            );
-    });
 });
