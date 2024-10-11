@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/ForestAdmin/agent-php/compare/v1.14.0...v1.15.0) (2024-10-11)
+
+
+### Features
+
+* **form:** add support of description and submit button customization  ([#128](https://github.com/ForestAdmin/agent-php/issues/128)) ([e9b7f50](https://github.com/ForestAdmin/agent-php/commit/e9b7f5024ad40d3ad2c2db54d12ffcf2f3f9f37a))
+
 # [1.14.0](https://github.com/ForestAdmin/agent-php/compare/v1.13.0...v1.14.0) (2024-10-11)
 
 
