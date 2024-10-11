@@ -1,3 +1,10 @@
+## [1.15.1](https://github.com/ForestAdmin/agent-php/compare/v1.15.0...v1.15.1) (2024-10-11)
+
+
+### Bug Fixes
+
+* **permissions:** properly check permissions when dissociating or deleting related resources ([#125](https://github.com/ForestAdmin/agent-php/issues/125)) ([740c6f4](https://github.com/ForestAdmin/agent-php/commit/740c6f429a1fb0d7978ac65ec765769698530d38))
+
 # [1.15.0](https://github.com/ForestAdmin/agent-php/compare/v1.14.0...v1.15.0) (2024-10-11)
 
 
