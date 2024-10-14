@@ -38,14 +38,13 @@ class GeneratorAction
         $index = $collection->getActions()->keys()->search($name);
         $slug = Str::slug($name);
 
-        $formElements = self::extractFieldsAndLayout($collection->getForm(null, $name));
-
         if($action->isStaticForm()) {
+            $formElements = self::extractFieldsAndLayout($collection->getForm(null, $name));
             $fields = self::buildFields($formElements['fields']);
             $layout = $formElements['layout'];
         } else {
             $fields = self::$defaultFields;
-            $layout = null;
+            $layout = [];
         }
 
         return [
