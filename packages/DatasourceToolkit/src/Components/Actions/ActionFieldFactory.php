@@ -54,7 +54,11 @@ class ActionFieldFactory
                     return null;
                 }
 
-                return new PageElement(elements: array_map(fn ($element) => self::build($element), $element->getElements()));
+                return new PageElement(
+                    elements: array_map(fn ($element) => self::build($element), $element->getElements()),
+                    nextButtonLabel: $element->getNextButtonLabel(),
+                    previousButtonLabel: $element->getPreviousButtonLabel()
+                );
         }
     }
 }
