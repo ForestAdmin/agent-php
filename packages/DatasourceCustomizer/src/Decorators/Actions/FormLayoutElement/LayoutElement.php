@@ -8,7 +8,7 @@ class LayoutElement extends BaseFormElement
 {
     public function __construct(
         protected string $component,
-        protected ?\Closure $if = null,
+        protected $if = null,
     ) {
         parent::__construct('Layout');
     }
@@ -18,12 +18,12 @@ class LayoutElement extends BaseFormElement
         return $this->component;
     }
 
-    public function getIf(): ?\Closure
+    public function getIf()
     {
         return $this->if;
     }
 
-    public function setIf(?string $if): void
+    public function setIf(?\Closure $if): void
     {
         $this->if = $if;
     }

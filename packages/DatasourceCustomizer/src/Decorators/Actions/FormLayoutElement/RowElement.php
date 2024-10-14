@@ -9,7 +9,7 @@ class RowElement extends LayoutElement
 {
     public function __construct(
         protected array $fields,
-        protected ?\Closure $if = null
+        $if = null
     ) {
         parent::__construct('Row', $if);
         $this->validateFieldsPresence();

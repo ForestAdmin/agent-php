@@ -12,7 +12,6 @@ class PageElement extends LayoutElement
         protected ?string $previousButtonLabel = null,
         $if = null,
     ) {
-        dump('JE SUIS PAGE');
         parent::__construct('Page', $if);
 
         $this->validateElementsPresence();
