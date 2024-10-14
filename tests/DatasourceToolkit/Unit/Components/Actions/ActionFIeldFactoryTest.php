@@ -4,6 +4,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\ActionFieldFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\HtmlBlockElement;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\InputElement;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\PageElement;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\RowElement;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions\Layout\SeparatorElement;
 
@@ -114,4 +115,66 @@ it('builds a RowElement with fields', function () {
 
     expect($rowElement)->toBeInstanceOf(RowElement::class)
         ->and(count($rowElement->getFields()))->toBe(2);
+});
+
+it('builds a PageElement with elements, nextButtonLabel, and previousButtonLabel', function () {
+    $htmlBlockElement = \Mockery::mock(DynamicField::class)
+        ->shouldReceive('getType')->andReturn('Layout')
+        ->shouldReceive('getComponent')->andReturn('HtmlBlock')
+        ->shouldReceive('getContent')->andReturn('<h1>Charge the credit card of the customer</h1>')
+        ->getMock();
+
+    $field1 = \Mockery::mock(DynamicField::class)
+        ->shouldReceive('getType')->andReturn('text')
+        ->shouldReceive('getLabel')->andReturn('Label 1')
+        ->shouldReceive('getDescription')->andReturn('Description 1')
+        ->shouldReceive('isRequired')->andReturn(true)
+        ->shouldReceive('isReadOnly')->andReturn(false)
+        ->shouldReceive('getValue')->andReturn('Value 1')
+        ->shouldReceive('getEnumValues')->andReturn([])
+        ->shouldReceive('getCollectionName')->andReturn('Collection 1')
+        ->getMock();
+
+    $field2 = \Mockery::mock(DynamicField::class)
+        ->shouldReceive('getType')->andReturn('text')
+        ->shouldReceive('getLabel')->andReturn('Label 2')
+        ->shouldReceive('getDescription')->andReturn('Description 2')
+        ->shouldReceive('isRequired')->andReturn(true)
+        ->shouldReceive('isReadOnly')->andReturn(false)
+        ->shouldReceive('getValue')->andReturn('Value 2')
+        ->shouldReceive('getEnumValues')->andReturn([])
+        ->shouldReceive('getCollectionName')->andReturn('Collection 2')
+        ->getMock();
+
+    $rowElement = \Mockery::mock(DynamicField::class)
+        ->shouldReceive('getType')->andReturn('Layout')
+        ->shouldReceive('getComponent')->andReturn('Row')
+        ->shouldReceive('getFields')->andReturn([$field1, $field2])
+        ->getMock();
+
+    $element = \Mockery::mock(DynamicField::class)
+        ->shouldReceive('getType')->andReturn('Layout')
+        ->shouldReceive('getComponent')->andReturn('Page')
+        ->shouldReceive('getElements')->andReturn([$htmlBlockElement, $rowElement])
+        ->shouldReceive('getNextButtonLabel')->andReturn('my next button')
+        ->shouldReceive('getPreviousButtonLabel')->andReturn('my previous button')
+        ->getMock();
+
+    $pageElement = ActionFieldFactory::build($element);
+
+    expect($pageElement)->toBeInstanceOf(PageElement::class)
+        ->and(count($pageElement->getElements()))->toBe(2)
+        ->and($pageElement->getNextButtonLabel())->toBe('my next button')
+        ->and($pageElement->getPreviousButtonLabel())->toBe('my previous button');
+});
+
+it('returns null if PageElement has no elements', function () {
+    $mockElement = \Mockery::mock('Element')
+        ->shouldReceive('getComponent')->andReturn('Page')
+        ->shouldReceive('getElements')->andReturn([])
+        ->getMock();
+
+    $result = ActionFieldFactory::buildLayoutElement($mockElement);
+
+    expect($result)->toBeNull();
 });
