@@ -29,7 +29,7 @@ class PageElement extends LayoutElement
     private function validateNoPageElements(): void
     {
         foreach ($this->elements as $element) {
-            if ($element instanceof PageElementCustomizer && $element->getComponent() === 'Page') {
+            if ($element instanceof PageElementCustomizer) {
                 throw new ForestException("'Page' component cannot be used within 'elements'");
             }
         }
