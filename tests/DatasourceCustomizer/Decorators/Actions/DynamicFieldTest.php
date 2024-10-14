@@ -2,6 +2,7 @@
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\FieldType;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 describe('getInverseRelation() when inverse relations is missing', function () {
     beforeEach(function () {
@@ -191,5 +192,38 @@ describe('getInverseRelation() when inverse relations is missing', function () {
             'collectionName',
             'enumValues',
         ]);
+    });
+
+    it('should use label value if id is not provided', function () {
+        $dynamicField = new DynamicField(type: FieldType::STRING, label: 'test');
+        $dynamicField = $dynamicField->toArray();
+
+        expect($dynamicField['id'])->toEqual('test');
+    });
+
+    it('should use id value if label is not provided', function () {
+        $dynamicField = new DynamicField(type: FieldType::STRING, id: 'test');
+        $dynamicField = $dynamicField->toArray();
+
+        expect($dynamicField['label'])->toEqual('test');
+    });
+
+    it('use id value and label value when both are provided', function () {
+        $dynamicField = new DynamicField(type: FieldType::STRING, label: 'test', id: 'test_id');
+        $dynamicField = $dynamicField->toArray();
+
+        expect($dynamicField['label'])->toEqual('test')
+            ->and($dynamicField['id'])->toEqual('test_id');
+    });
+
+
+    it('throw an error if id and label are not provided', function () {
+        expect(static fn () => new DynamicField(type: FieldType::STRING))
+            ->toThrow(ForestException::class, "🌳🌳🌳 A field must have an 'id' or a 'label' defined.");
+    });
+
+    it('throw an error if id and label are nil', function () {
+        expect(static fn () => new DynamicField(type: FieldType::STRING, label: null, id: null))
+            ->toThrow(ForestException::class, "🌳🌳🌳 A field must have an 'id' or a 'label' defined.");
     });
 });
