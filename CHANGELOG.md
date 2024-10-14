@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/ForestAdmin/agent-php/compare/v1.15.1...v1.16.0) (2024-10-14)
+
+
+### Features
+
+* **form:** add support of page layout element ([#130](https://github.com/ForestAdmin/agent-php/issues/130)) ([1554088](https://github.com/ForestAdmin/agent-php/commit/15540884a77b3cf562c7108c865f7e35259a7247))
+
 ## [1.15.1](https://github.com/ForestAdmin/agent-php/compare/v1.15.0...v1.15.1) (2024-10-11)
 
 
