@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/ForestAdmin/agent-php/compare/v1.16.0...v1.17.0) (2024-10-14)
+
+
+### Features
+
+* **form:** add id in form fields ([#129](https://github.com/ForestAdmin/agent-php/issues/129)) ([99f2196](https://github.com/ForestAdmin/agent-php/commit/99f2196441b15f6564c07544f6941abe42b14e89))
+
 # [1.16.0](https://github.com/ForestAdmin/agent-php/compare/v1.15.1...v1.16.0) (2024-10-14)
 
 
