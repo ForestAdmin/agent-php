@@ -25,7 +25,7 @@ it('throws an exception when no elements are provided', function () {
 });
 
 it('throws an exception when a Page element is used within elements', function () {
-    $element = mock(LayoutElement::class)->makePartial();
+    $element = mock(PageElement::class)->makePartial();
     $element->shouldReceive('getComponent')->andReturn('Page');
 
     $this->expectException(ForestException::class);
