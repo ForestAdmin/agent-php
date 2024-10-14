@@ -2,6 +2,7 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\FormLayoutElement;
 
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\FormLayoutElement\PageElement as PageElementCustomizer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 class PageElement extends LayoutElement
@@ -28,7 +29,7 @@ class PageElement extends LayoutElement
     private function validateNoPageElements(): void
     {
         foreach ($this->elements as $element) {
-            if ($element->getComponent() === 'Page') {
+            if ($element instanceof PageElementCustomizer && $element->getComponent() === 'Page') {
                 throw new ForestException("'Page' component cannot be used within 'elements'");
             }
         }
