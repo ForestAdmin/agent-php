@@ -181,6 +181,7 @@ describe('getInverseRelation() when inverse relations is missing', function () {
         expect($dynamicField->keys())->toEqual([
             'type',
             'label',
+            'id',
             'description',
             'isRequired',
             'isReadOnly',

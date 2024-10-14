@@ -101,6 +101,7 @@ describe('with no hooks', function () {
                         'isRequired'    => true,
                         'isReadOnly'    => false,
                         'field'         => 'label',
+                        'label'         => 'label',
                         'type'          => 'String',
                         'defaultValue'  => '',
                     ],
@@ -153,6 +154,7 @@ describe('with layout elements', function () {
                         'isRequired'    => false,
                         'isReadOnly'    => false,
                         'field'         => 'label',
+                        'label'         => 'label',
                         'type'          => 'String',
                         'defaultValue'  => null,
                     ],
@@ -206,6 +208,7 @@ describe('with layout elements', function () {
                         'isRequired'    => false,
                         'isReadOnly'    => false,
                         'field'         => 'label',
+                        'label'         => 'label',
                         'type'          => 'String',
                         'defaultValue'  => null,
                     ],
@@ -268,6 +271,7 @@ describe('with layout elements', function () {
                         'isRequired'    => false,
                         'isReadOnly'    => false,
                         'field'         => 'sub field 1',
+                        'label'         => 'sub field 1',
                         'type'          => 'String',
                         'defaultValue'  => null,
                     ],
@@ -276,6 +280,7 @@ describe('with layout elements', function () {
                         'isRequired'    => false,
                         'isReadOnly'    => false,
                         'field'         => 'sub field 2',
+                        'label'         => 'sub field 2',
                         'type'          => 'String',
                         'defaultValue'  => null,
                     ],
@@ -405,7 +410,7 @@ describe('with layout elements', function () {
 
         expect($extract)->toEqual(
             [
-                'fields'     => [new ActionField(type: 'String', label: 'label')],
+                'fields'     => [new ActionField(type: 'String', label: 'label', id: 'label')],
                 'layout'     => [
                     new InputElement(fieldId: 'label'),
                     new ActionSeparatorElement(),

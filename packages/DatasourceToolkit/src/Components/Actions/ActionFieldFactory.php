@@ -16,6 +16,7 @@ class ActionFieldFactory
         return new ActionField(
             type: $field->getType(),
             label: $field->getLabel(),
+            id: $field->getId(),
             description: $field->getDescription(),
             isRequired: $field->isRequired(),
             isReadOnly: $field->isReadOnly(),
