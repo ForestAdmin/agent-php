@@ -38,14 +38,13 @@ class GeneratorAction
         $index = $collection->getActions()->keys()->search($name);
         $slug = Str::slug($name);
 
-        $formElements = self::extractFieldsAndLayout($collection->getForm(null, $name));
-
         if($action->isStaticForm()) {
+            $formElements = self::extractFieldsAndLayout($collection->getForm(null, $name));
             $fields = self::buildFields($formElements['fields']);
             $layout = $formElements['layout'];
         } else {
             $fields = self::$defaultFields;
-            $layout = null;
+            $layout = [];
         }
 
         return [
@@ -77,15 +76,13 @@ class GeneratorAction
                 'component' => Str::camel($element->getComponent()),
                 'fields'    => array_map(fn ($f) => self::buildLayoutSchema($f), $element->getFields()),
             ];
+        } elseif ($element->getComponent() === 'Page') {
+            return [
+                ...$element->toArray(),
+                'component' => Str::camel($element->getComponent()),
+                'elements'  => array_map(fn ($f) => self::buildLayoutSchema($f), $element->getElements()),
+            ];
         }
-        // TODO PAGE
-        //        } elseif ($element->getComponent() === 'Page') {
-        //            return [
-        //                ...$element->toArray(),
-        //                'component' => Str::camel($element->getComponent()),
-        //                'elements'  => array_map(fn ($f) => self::buildLayoutSchema($f), $element->getElements()),
-        //            ];
-        //        }
 
         $result = [...$element->toArray(), 'component' => Str::camel($element->getComponent())];
         unset($result['type']);

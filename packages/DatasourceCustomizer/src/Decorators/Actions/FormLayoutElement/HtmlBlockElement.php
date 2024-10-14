@@ -6,7 +6,7 @@ class HtmlBlockElement extends LayoutElement
 {
     public function __construct(
         protected string $content,
-        ?\Closure $if = null
+        $if = null
     ) {
         parent::__construct('HtmlBlock', if: $if);
     }

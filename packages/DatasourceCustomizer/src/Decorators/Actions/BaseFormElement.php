@@ -6,11 +6,7 @@ class BaseFormElement
 {
     public function __construct(
         protected string $type,
-        array $extraArguments = [] // workaround like kwargs in other languages
     ) {
-        foreach ($extraArguments as $key => $value) {
-            $this->$key = $value;
-        }
     }
 
     public function __set($key, $value)
