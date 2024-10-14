@@ -72,11 +72,11 @@ class ActionCollection extends CollectionDecorator
             if ($field->getType() !== 'Layout') {
                 if ($field->getValue() === null) {
                     // customer did not define a handler to rewrite the previous value => reuse current one.
-                    $field->setValue($formValues[$field->getLabel()] ?? null);
+                    $field->setValue($formValues[$field->getId()] ?? null);
                 }
 
                 // fields that were accessed through the context.formValues.X getter should be watched.
-                $field->setWatchChanges(isset($used[$field->getLabel()]));
+                $field->setWatchChanges(isset($used[$field->getId()]));
             } elseif ($field->getComponent() === 'Row') {
                 $subFields = $this->setWatchChangesOnFields($formValues, $used, $field->getFields());
                 $field->setFields($subFields);
@@ -111,8 +111,8 @@ class ActionCollection extends CollectionDecorator
 
     private function dropDefault(ActionContext $context, $field, &$data)
     {
-        if (! array_key_exists($field->getLabel(), $data)) {
-            $data[$field->getLabel()] = $this->evaluate($context, $field->getDefaultValue());
+        if (! array_key_exists($field->getId(), $data)) {
+            $data[$field->getId()] = $this->evaluate($context, $field->getDefaultValue());
         }
 
         $field->setDefaultValue(null);
