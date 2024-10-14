@@ -2,13 +2,12 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceToolkit\Components\Actions;
 
-use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\DynamicField;
-
 class ActionField
 {
     public function __construct(
         protected string $type,
         protected string $label,
+        protected string $id,
         protected bool $watchChanges = false,
         protected ?string $description = null,
         protected bool $isRequired = false,
@@ -19,18 +18,12 @@ class ActionField
     ) {
     }
 
-    public static function buildFromDynamicField(DynamicField $field)
+    /**
+     * @return string
+     */
+    public function getId(): string
     {
-        return new static(
-            type: $field->getType(),
-            label: $field->getLabel(),
-            description: $field->getDescription(),
-            isRequired: $field->isRequired(),
-            isReadOnly: $field->isReadOnly(),
-            value: $field->getValue(),
-            enumValues: $field->getEnumValues(),
-            collectionName: $field->getCollectionName(),
-        );
+        return $this->id;
     }
 
     /**

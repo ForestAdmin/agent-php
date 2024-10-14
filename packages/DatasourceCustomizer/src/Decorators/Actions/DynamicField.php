@@ -2,13 +2,14 @@
 
 namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions;
 
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
+
 class DynamicField extends BaseFormElement
 {
     public function __construct(
-        //        TODO
-        //        protected string $id,
         protected string $type,
-        protected string $label,
+        protected ?string $label = null,
+        protected ?string $id = null,
         protected ?string $description = null,
         protected \Closure|bool $isRequired = false,
         protected \Closure|bool $isReadOnly = false,
@@ -19,16 +20,23 @@ class DynamicField extends BaseFormElement
         protected \Closure|array|null $enumValues = null,
         // TODO
         // protected ?string $placeholder = null,
-        array $extraArguments = [] // workaround like kwargs in other languages
     ) {
         parent::__construct($type);
-        //        TODO
-        //        $this->id = $id ?? $label;
-        //        $this->label = $label ?? $id;
 
-        foreach ($extraArguments as $argumentKey => $argumentValue) {
-            $this->$argumentKey = $argumentValue;
+        if($this->id === null && $this->label === null) {
+            throw new ForestException("A field must have an 'id' or a 'label' defined.");
         }
+
+        $this->id = $id ?? $label;
+        $this->label = $label ?? $id;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getId(): ?string
+    {
+        return $this->id;
     }
 
     /**

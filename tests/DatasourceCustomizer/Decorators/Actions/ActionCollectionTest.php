@@ -149,6 +149,7 @@ describe('getInverseRelation() when inverse relations is missing', function () {
             new ActionField(
                 type: 'Number',
                 label: 'amount',
+                id: 'amount',
             ),
         ]);
     })->with('caller');
@@ -163,6 +164,7 @@ describe('getInverseRelation() when inverse relations is missing', function () {
             new ActionField(
                 type: 'Number',
                 label: 'amount',
+                id: 'amount',
             ),
         ]);
     })->with('caller');
@@ -186,12 +188,14 @@ describe('getInverseRelation() when inverse relations is missing', function () {
             new ActionField(
                 type: 'String',
                 label: 'firstname',
+                id: 'firstname',
                 watchChanges: true,
                 value: 'DynamicDefault'
             ),
             new ActionField(
                 type: 'String',
                 label: 'lastname',
+                id: 'lastname',
                 watchChanges: false
             ),
         ]);
@@ -216,12 +220,14 @@ describe('getInverseRelation() when inverse relations is missing', function () {
             new ActionField(
                 type: 'String',
                 label: 'firstname',
+                id: 'firstname',
                 watchChanges: true,
                 value: 'DynamicDefault'
             ),
             new ActionField(
                 type: 'String',
                 label: 'lastname',
+                id: 'lastname',
                 watchChanges: false,
                 value: 'value'
             ),
@@ -247,12 +253,14 @@ describe('getInverseRelation() when inverse relations is missing', function () {
             new ActionField(
                 type: 'String',
                 label: 'firstname',
+                id: 'firstname',
                 watchChanges: true,
                 value: null
             ),
             new ActionField(
                 type: 'String',
                 label: 'lastname',
+                id: 'lastname',
                 watchChanges: false
             ),
         ]);
@@ -277,12 +285,14 @@ describe('getInverseRelation() when inverse relations is missing', function () {
             new ActionField(
                 type: 'String',
                 label: 'firstname',
+                id: 'firstname',
                 watchChanges: true,
                 value: 'John',
             ),
             new ActionField(
                 type: 'String',
                 label: 'lastname',
+                id: 'lastname',
                 watchChanges: false,
                 isReadOnly: true
             ),
@@ -312,6 +322,7 @@ describe('getInverseRelation() when inverse relations is missing', function () {
             new ActionField(
                 type: 'Enum',
                 label: 'Rating',
+                id: 'Rating',
                 watchChanges: true,
                 enumValues: [1,2,3,4,5]
             ),

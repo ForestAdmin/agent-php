@@ -17,6 +17,7 @@ class GeneratorAction
     public static array $defaultFields = [
         [
             'field'        => 'Loading...',
+            'label'        => 'Loading...',
             'type'         => 'String',
             'isReadOnly'   => true,
             'defaultValue' => 'Form is loading',
@@ -121,8 +122,7 @@ class GeneratorAction
                 }
             } else {
                 $fields[] = $element;
-                // TODO: replace $element->label by  $element->id when id will be add
-                $layout[] = new InputElement(fieldId: $element->getLabel());
+                $layout[] = new InputElement(fieldId: $element->getId());
             }
         }
 
@@ -145,7 +145,8 @@ class GeneratorAction
             'description' => $field->getDescription(),
             'isRequired'  => $field->isRequired(),
             'isReadOnly'  => $field->isReadOnly(),
-            'field'       => $field->getLabel(),
+            'field'       => $field->getId(),
+            'label'       => $field->getLabel(),
             'value'       => ForestActionValueConverter::valueToForest($field), // to check
         ];
 
