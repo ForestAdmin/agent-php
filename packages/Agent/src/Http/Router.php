@@ -4,6 +4,7 @@ namespace ForestAdmin\AgentPHP\Agent\Http;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Routes\Actions\Actions;
+use ForestAdmin\AgentPHP\Agent\Routes\Capabilities\Collections;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\ApiChartCollection;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\ApiChartDatasource;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
@@ -31,6 +32,7 @@ class Router
             self::getApiChartsRoutes(),
             HealthCheck::make()->getRoutes(),
             Authentication::make()->getRoutes(),
+            Collections::make()->getRoutes(),
             Charts::make()->getRoutes(),
             ScopeInvalidation::make()->getRoutes(),
             Listing::make()->getRoutes(),
