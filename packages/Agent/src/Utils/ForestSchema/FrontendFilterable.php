@@ -61,4 +61,24 @@ final class FrontendFilterable
     {
         return $operator && ! empty($operator);
     }
+
+    /**
+     * @param PrimitiveType|PrimitiveType[] $type
+     * @return mixed|string[]|null
+     */
+    public static function getRequiredOperators(string|array $type)
+    {
+        if (is_string($type) && in_array($type, array_keys(self::OPERATOR_BY_TYPE), true)) {
+            return self::OPERATOR_BY_TYPE[$type];
+        }
+
+        // It sound highly unlikely that this operator can work with dates, or nested objects
+        // and they should be more restricted, however the frontend code does not seems to check the
+        // array's content so I'm replicating the same test here
+        if (is_array($type)) {
+            return ['Includes_All'];
+        }
+
+        return null;
+    }
 }
