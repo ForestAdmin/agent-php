@@ -5,8 +5,9 @@ use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Capabilities\Collections;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToOneSchema;
@@ -14,15 +15,16 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 
 use function ForestAdmin\config;
 
-$before = static function (TestCase $testCase, $args = []) {
+$before = static function (TestCase $testCase) {
     $datasource = new Datasource();
     $collectionCar = new Collection($datasource, 'Car');
     $collectionCar->addFields(
         [
-            'id'       => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'model'    => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'brand'    => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'owner_id' => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+            'id'       => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::IN, Operators::EQUAL], isPrimaryKey: true),
+            'model'    => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::IN, Operators::EQUAL]),
+            'brand'    => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::IN, Operators::EQUAL]),
+            'price'    => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL, Operators::GREATER_THAN, Operators::LESS_THAN]),
+            'owner_id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::IN, Operators::EQUAL]),
             'owner'    => new ManyToOneSchema(
                 foreignKey: 'owner_id',
                 foreignKeyTarget: 'id',
@@ -34,26 +36,17 @@ $before = static function (TestCase $testCase, $args = []) {
     $collectionOwner = new Collection($datasource, 'Owner');
     $collectionOwner->addFields(
         [
-            'id'         => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
-            'first_name' => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'last_name'  => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'id'         => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::IN, Operators::EQUAL], isPrimaryKey: true),
+            'first_name' => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::IN, Operators::EQUAL]),
+            'last_name'  => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::IN, Operators::EQUAL]),
         ]
     );
-
-    //    if (isset($args['store'])) {
-    //        $collectionCar = \Mockery::mock($collectionCar)
-    //            ->shouldReceive('create')
-    //            ->with(\Mockery::type(Caller::class), \Mockery::type('array'))
-    //            ->andReturn(($args['store']))
-    //            ->getMock();
-    //    }
 
     $datasource->addCollection($collectionCar);
     $datasource->addCollection($collectionOwner);
     $testCase->buildAgent($datasource);
 
     SchemaEmitter::getSerializedSchema($datasource);
-
     $request = Request::createFromGlobals();
 
     Cache::put(
@@ -73,32 +66,6 @@ $before = static function (TestCase $testCase, $args = []) {
         config('permissionExpiration')
     );
 
-    //    Cache::put(
-    //        'forest.collections',
-    //        [
-    //            'Car' => [
-    //                'add'  => [
-    //                    0 => 1,
-    //                ],
-    //            ],
-    //        ],
-    //        config('permissionExpiration')
-    //    );
-    //
-    //    Cache::put(
-    //        'forest.scopes',
-    //        collect(
-    //            [
-    //                'scopes' => collect([]),
-    //                'team'   => [
-    //                    'id'   => 44,
-    //                    'name' => 'Operations',
-    //                ],
-    //            ]
-    //        ),
-    //        config('permissionExpiration')
-    //    );
-
     $collections = \Mockery::mock(Collections::class)
         ->makePartial()
         ->shouldReceive('checkIp')
@@ -116,41 +83,148 @@ test('make() should return a new instance of Collections with routes', function 
         ->and($collections->getRoutes())->toHaveKey('forest.capabilities.collections');
 });
 
-test('handleRequest() should return a response 200', function () use ($before) {
-    $data = [
-        'id'    => 2,
-        'model' => 'Aventador',
-        'brand' => 'Lamborghini',
-    ];
-    $_GET['data'] = [
-        'attributes'    => $data,
-        'type'          => 'Car',
-        'relationships' => [
-            'owner' => [
-                'data' => [
-                    'type' => 'Owner',
-                    'id'   => 1,
-                ],
-            ],
-        ],
-    ];
-    $store = $before($this, ['store' => $data]);
-
-    expect($store->handleRequest(['collectionName' => 'Car']))
+test('when there is no collectionNames in params return all the collections', function () use ($before) {
+    $call = $before($this);
+    expect($call->handleRequest())
         ->toBeArray()
         ->toEqual(
             [
-                'name'    => 'Car',
                 'content' => [
-                    'data' => [
-                        'type'       => 'Car',
-                        'id'         => '2',
-                        'attributes' => [
-                            'model' => 'Aventador',
-                            'brand' => 'Lamborghini',
+                    'collections' => [
+                        [
+                            'name'   => 'Car',
+                            'fields' => [
+                                [
+                                    'name'      => 'id',
+                                    'type'      => 'Number',
+                                    'operators' => [
+                                        'In',
+                                        'Equal',
+                                    ],
+                                ],
+                                [
+                                    'name'      => 'model',
+                                    'type'      => 'String',
+                                    'operators' => [
+                                        'In',
+                                        'Equal',
+                                    ],
+                                ],
+                                [
+                                    'name'      => 'brand',
+                                    'type'      => 'String',
+                                    'operators' => [
+                                        'In',
+                                        'Equal',
+                                    ],
+                                ],
+                                [
+                                    'name'      => 'price',
+                                    'type'      => 'Number',
+                                    'operators' => [
+                                        'Equal',
+                                        'GreaterThan',
+                                        'LessThan',
+                                    ],
+                                ],
+                                [
+                                    'name'      => 'owner_id',
+                                    'type'      => 'Number',
+                                    'operators' => [
+                                        'In',
+                                        'Equal',
+                                    ],
+                                ],
+                            ],
+                        ],
+                        [
+                            'name'   => 'Owner',
+                            'fields' => [
+                                [
+                                    'name'      => 'id',
+                                    'type'      => 'Number',
+                                    'operators' => [
+                                        'In',
+                                        'Equal',
+                                    ],
+                                ],
+                                [
+                                    'name'      => 'first_name',
+                                    'type'      => 'String',
+                                    'operators' => [
+                                        'In',
+                                        'Equal',
+                                    ],
+                                ],
+                                [
+                                    'name'      => 'last_name',
+                                    'type'      => 'String',
+                                    'operators' => [
+                                        'In',
+                                        'Equal',
+                                    ],
+                                ],
+                            ],
                         ],
                     ],
                 ],
+                'status' => 200,
             ]
         );
+});
+
+test('when there is collectionNames in params return the collections provided', function () use ($before) {
+    $_POST = [
+        'collectionNames' => ['Owner'],
+    ];
+    $call = $before($this);
+    expect($call->handleRequest())
+        ->toBeArray()
+        ->toEqual(
+            [
+                'content' => [
+                    'collections' => [
+                        [
+                            'name'   => 'Owner',
+                            'fields' => [
+                                [
+                                    'name'      => 'id',
+                                    'type'      => 'Number',
+                                    'operators' => [
+                                        'In',
+                                        'Equal',
+                                    ],
+                                ],
+                                [
+                                    'name'      => 'first_name',
+                                    'type'      => 'String',
+                                    'operators' => [
+                                        'In',
+                                        'Equal',
+                                    ],
+                                ],
+                                [
+                                    'name'      => 'last_name',
+                                    'type'      => 'String',
+                                    'operators' => [
+                                        'In',
+                                        'Equal',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'status' => 200,
+            ]
+        );
+});
+
+test('when there is collectionNames in params and the collection does not exist it throws an exception', function () use ($before) {
+    $_POST = [
+        'collectionNames' => ['Foo'],
+    ];
+    $call = $before($this);
+    expect(fn () => $call->handleRequest())
+        ->toThrow(ForestException::class, '🌳🌳🌳 Collection Foo not found.');
 });
