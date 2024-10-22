@@ -15,7 +15,7 @@ class Collections extends AbstractCollectionRoute
         $this->addRoute(
             'forest.capabilities.collections',
             'post',
-            '/capabilities/collections',
+            '/_internal/capabilities',
             fn ($args) => $this->handleRequest($args)
         );
 
@@ -29,7 +29,7 @@ class Collections extends AbstractCollectionRoute
 
         $result = array_map(function ($collectionName) use ($datasource) {
             $collection = $datasource->getCollection($collectionName);
-            $fields = $collection->getSchema()->filter(function ($field) {
+            $fields = $collection->getFields()->filter(function ($field) {
                 return $field instanceof ColumnSchema;
             })->map(function ($field, $name) {
                 return [
