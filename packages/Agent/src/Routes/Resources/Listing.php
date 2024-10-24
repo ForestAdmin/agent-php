@@ -8,7 +8,6 @@ use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Csv;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ConditionTreeValidator;
 use Illuminate\Support\Str;
 
 class Listing extends AbstractCollectionRoute
@@ -64,10 +63,6 @@ class Listing extends AbstractCollectionRoute
             $this->filter,
             $projection
         );
-
-        if ($this->filter->getConditionTree()) {
-            ConditionTreeValidator::validate($this->filter->getConditionTree(), $this->collection);
-        }
 
         $relations = $projection->relations()->keys()->toArray();
         foreach ($rows as &$row) {
