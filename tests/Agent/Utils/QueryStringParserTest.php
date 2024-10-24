@@ -175,7 +175,7 @@ test('parseConditionTree() throw when the collection does not supports the reque
     ], JSON_THROW_ON_ERROR);
 
     expect(fn () => QueryStringParser::parseConditionTree($collectionCategory, Request::createFromGlobals()))
-        ->toThrow(ForestException::class, '🌳🌳🌳 The allowed operators are: Equal');
+        ->toThrow(ForestException::class, "🌳🌳🌳 The given operator 'Greater_Than' is not supported by the column: id. The allowed operators are: [Equal]");
 });
 
 test('parseProjection() on a flat collection on a well formed request should convert the request to a valid projection', function () {

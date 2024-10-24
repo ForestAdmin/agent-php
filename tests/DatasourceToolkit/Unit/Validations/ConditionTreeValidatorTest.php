@@ -140,7 +140,7 @@ test('validate() should throw an error when the field has an operator incompatib
     expect(ConditionTreeValidator::validate($conditionTree, $collection));
 })->throws(
     ForestException::class,
-    '🌳🌳🌳 The given operator Contains is not allowed with the columnType schema: Number. The allowed types are: Equal,Not_Equal,Present,Blank,Missing,In,Not_In,Includes_All,Greater_Than,Less_Than'
+    "🌳🌳🌳 The given operator 'Contains' is not allowed with the columnType schema: Number. The allowed operators are: [Equal, Not_Equal, Present, Blank, Missing, In, Not_In, Includes_All, Greater_Than, Less_Than]"
 );
 
 test('validate() should throw an error when the operator is incompatible with the given value', function () use ($before) {

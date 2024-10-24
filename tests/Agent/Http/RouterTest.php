@@ -2,6 +2,7 @@
 
 use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Http\Router;
+use ForestAdmin\AgentPHP\Agent\Routes\Capabilities\Collections;
 use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Count;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Destroy;
@@ -72,6 +73,7 @@ test('getRoutes() should work', function () {
                 AssociateRelated::make()->getRoutes(),
                 DissociateRelated::make()->getRoutes(),
                 CountRelated::make()->getRoutes(),
+                Collections::class::make()->getRoutes()
             )
         );
 });

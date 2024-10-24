@@ -7,9 +7,11 @@ use ForestAdmin\AgentPHP\Agent\Routes\Resources\Listing;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToOneSchema;
@@ -29,7 +31,7 @@ $before = static function (TestCase $testCase, $args = []) {
     $collectionUser->setSearchable(true);
     $collectionUser->addFields(
         [
-            'id'             => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'id'             => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::EQUAL], isPrimaryKey: true),
             'first_name'     => new ColumnSchema(columnType: PrimitiveType::STRING),
             'last_name'      => new ColumnSchema(columnType: PrimitiveType::STRING),
             'birthday'       => new ColumnSchema(columnType: PrimitiveType::DATE),
@@ -367,4 +369,14 @@ test('handleRequest() with search should return a response 200 with an attribute
 
     expect($listing->handleRequest(['collectionName' => 'User'])['content'])
         ->toHaveKey('meta');
+});
+
+test('handleRequest() should return a response 200 with an attribute meta', function () use ($before) {
+    $_GET['filters'] = json_encode(['field' => 'id', 'operator' => Operators::SHORTER_THAN, 'value' => 7]);
+
+    $listing = $before($this, []);
+
+    expect(fn () => $listing->handleRequest(['collectionName' => 'User']))
+        ->toThrow(ForestException::class, "🌳🌳🌳 The given operator 'Shorter_Than' is not supported by the column: id. The allowed operators are: [Equal]");
+
 });
