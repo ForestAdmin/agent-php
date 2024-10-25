@@ -3,12 +3,12 @@
 namespace ForestAdmin\AgentPHP\Agent\Routes\Capabilities;
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
-use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
+use ForestAdmin\AgentPHP\Agent\Routes\AbstractAuthenticatedRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use Illuminate\Support\Str;
 
-class Collections extends AbstractCollectionRoute
+class Collections extends AbstractAuthenticatedRoute
 {
     public function setupRoutes(): AbstractRoute
     {
@@ -16,16 +16,16 @@ class Collections extends AbstractCollectionRoute
             'forest.capabilities.collections',
             'post',
             '/_internal/capabilities',
-            fn ($args) => $this->handleRequest($args)
+            fn () => $this->handleRequest()
         );
 
         return $this;
     }
 
-    public function handleRequest(array $args = []): array
+    public function handleRequest(): array
     {
         $datasource = AgentFactory::get('datasource');
-        $collections = $this->request->get('collectionNames') ?? $datasource->getCollections()->keys()->toArray();
+        $collections = $this->request->get('collectionNames') ?? [];
 
         $result = array_map(function ($collectionName) use ($datasource) {
             $collection = $datasource->getCollection($collectionName);

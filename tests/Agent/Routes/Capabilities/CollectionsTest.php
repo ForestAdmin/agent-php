@@ -83,90 +83,14 @@ test('make() should return a new instance of Collections with routes', function 
         ->and($collections->getRoutes())->toHaveKey('forest.capabilities.collections');
 });
 
-test('when there is no collectionNames in params return all the collections', function () use ($before) {
+test('when there is no collectionNames in params return no collections', function () use ($before) {
     $call = $before($this);
     expect($call->handleRequest())
         ->toBeArray()
         ->toEqual(
             [
                 'content' => [
-                    'collections' => [
-                        [
-                            'name'   => 'Car',
-                            'fields' => [
-                                [
-                                    'name'      => 'id',
-                                    'type'      => 'Number',
-                                    'operators' => [
-                                        'In',
-                                        'Equal',
-                                    ],
-                                ],
-                                [
-                                    'name'      => 'model',
-                                    'type'      => 'String',
-                                    'operators' => [
-                                        'In',
-                                        'Equal',
-                                    ],
-                                ],
-                                [
-                                    'name'      => 'brand',
-                                    'type'      => 'String',
-                                    'operators' => [
-                                        'In',
-                                        'Equal',
-                                    ],
-                                ],
-                                [
-                                    'name'      => 'price',
-                                    'type'      => 'Number',
-                                    'operators' => [
-                                        'Equal',
-                                        'GreaterThan',
-                                        'LessThan',
-                                    ],
-                                ],
-                                [
-                                    'name'      => 'owner_id',
-                                    'type'      => 'Number',
-                                    'operators' => [
-                                        'In',
-                                        'Equal',
-                                    ],
-                                ],
-                            ],
-                        ],
-                        [
-                            'name'   => 'Owner',
-                            'fields' => [
-                                [
-                                    'name'      => 'id',
-                                    'type'      => 'Number',
-                                    'operators' => [
-                                        'In',
-                                        'Equal',
-                                    ],
-                                ],
-                                [
-                                    'name'      => 'first_name',
-                                    'type'      => 'String',
-                                    'operators' => [
-                                        'In',
-                                        'Equal',
-                                    ],
-                                ],
-                                [
-                                    'name'      => 'last_name',
-                                    'type'      => 'String',
-                                    'operators' => [
-                                        'In',
-                                        'Equal',
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
+                    'collections' => [],
                 ],
                 'status' => 200,
             ]
