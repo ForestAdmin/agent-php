@@ -17,10 +17,11 @@ class Caller
         protected string $timezone,
         protected string $permissionLevel,
         protected ?string $role = null,
+        protected array $request = [],
     ) {
     }
 
-    public static function makeFromRequestData(object $requestObjectData, $timezone): self
+    public static function makeFromRequestData(object $requestObjectData, array $params): self
     {
         // cast object to array recursively
         $toArray = function ($x) use (&$toArray) {
@@ -30,7 +31,8 @@ class Caller
         };
         $data = $toArray($requestObjectData);
 
-        $data['timezone'] = $timezone;
+        $data['timezone'] = $params['timezone'];
+        $data['request'] = $params['request'];
         unset($data['exp']);
 
         $attributes = [];
