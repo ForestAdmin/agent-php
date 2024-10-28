@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/ForestAdmin/agent-php/compare/v1.18.0...v1.19.0) (2024-10-28)
+
+
+### Features
+
+* add request ip to user context ([#132](https://github.com/ForestAdmin/agent-php/issues/132)) ([34517e3](https://github.com/ForestAdmin/agent-php/commit/34517e30f422dafc051c5db48db274758f05fabf))
+
 # [1.18.0](https://github.com/ForestAdmin/agent-php/compare/v1.17.0...v1.18.0) (2024-10-28)
 
 
