@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/ForestAdmin/agent-php/compare/v1.17.0...v1.18.0) (2024-10-28)
+
+
+### Features
+
+* **capabilities:** add new collections route ([#131](https://github.com/ForestAdmin/agent-php/issues/131)) ([e7d07dc](https://github.com/ForestAdmin/agent-php/commit/e7d07dcbb984e4179b2dff4d849239f589b8ad0a))
+
 # [1.17.0](https://github.com/ForestAdmin/agent-php/compare/v1.16.0...v1.17.0) (2024-10-14)
 
 
