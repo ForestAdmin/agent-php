@@ -4,7 +4,6 @@ namespace ForestAdmin\AgentPHP\Agent\Utils\ForestSchema;
 
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Concerns\PrimitiveType;
-use Illuminate\Support\Collection as IlluminateCollection;
 
 final class FrontendFilterable
 {
@@ -58,12 +57,9 @@ final class FrontendFilterable
         'Json'     => [],
     ];
 
-    public static function isFilterable(string|array $type, array $operators = []): bool
+    public static function isFilterable(array $operator): bool
     {
-        $neededOperators = new IlluminateCollection(self::getRequiredOperators($type));
-        $supportedOperators = new IlluminateCollection($operators);
-
-        return $neededOperators->isNotEmpty() && $neededOperators->every(fn ($operator) => $supportedOperators->contains($operator));
+        return $operator && ! empty($operator);
     }
 
     /**

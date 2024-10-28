@@ -54,7 +54,7 @@ class GeneratorField
             'field'        => $name,
             'integration'  => null,
             'inverseOf'    => null,
-            'isFilterable' => FrontendFilterable::isFilterable($column->getColumnType(), $column->getFilterOperators()),
+            'isFilterable' => FrontendFilterable::isFilterable($column->getFilterOperators()),
             'isPrimaryKey' => $column->isPrimaryKey(),
             'isReadOnly'   => $column->isReadOnly(),
             'isRequired'   => in_array('Present', $column->getValidation(), true),
@@ -203,7 +203,7 @@ class GeneratorField
     public static function isForeignCollectionFilterable(CollectionContract $foreignCollection): bool
     {
         return $foreignCollection->getFields()->some(
-            fn ($column) => $column->getType() === 'Column' && FrontendFilterable::isFilterable($column->getColumnType(), $column->getFilterOperators())
+            fn ($column) => $column->getType() === 'Column' && FrontendFilterable::isFilterable($column->getFilterOperators())
         );
     }
 }

@@ -63,11 +63,16 @@ class ConditionTreeValidator
         $operators = $columnSchema->getFilterOperators();
 
         if (! in_array($leaf->getOperator(), $operators, true)) {
-            throw new ForestException(
-                'The given operator ' . $leaf->getOperator() .
-                ' is not supported by the column: ' . $leaf->getField() . '. ' .
-                count($operators) === 0 ? 'The column is not filterable.' : 'The allowed operators are: ' . implode(',', $operators)
-            );
+            $errorMessage = "The given operator '" . $leaf->getOperator() .
+                "' is not supported by the column: " . $leaf->getField() . ". ";
+
+            if (count($operators) === 0) {
+                $errorMessage .= 'The column is not filterable.';
+            } else {
+                $errorMessage .= 'The allowed operators are: [' . implode(', ', $operators) . ']';
+            }
+
+            throw new ForestException($errorMessage);
         }
     }
 
@@ -92,11 +97,16 @@ class ConditionTreeValidator
         $allowedOperators = Rules::getAllowedOperatorsForColumnType($columnSchema->getColumnType());
 
         if (! in_array($leaf->getOperator(), $allowedOperators, true)) {
-            throw new ForestException(
-                'The given operator ' . $leaf->getOperator() .
-                ' is not allowed with the columnType schema: ' . $columnSchema->getColumnType() . '. ' .
-                'The allowed types are: ' . implode(',', $allowedOperators)
-            );
+            $errorMessage = "The given operator '" . $leaf->getOperator() .
+                "' is not allowed with the columnType schema: " . $columnSchema->getColumnType() . ". ";
+
+            if (count($allowedOperators) === 0) {
+                $errorMessage .= 'There are no allowed operators for this column type.';
+            } else {
+                $errorMessage .= 'The allowed operators are: [' . implode(', ', $allowedOperators) . ']';
+            }
+
+            throw new ForestException($errorMessage);
         }
     }
 
