@@ -143,6 +143,12 @@ class QueryStringParser
         }
 
         $timezone = $request->get('timezone');
+        $params = [
+            'timezone' => $timezone,
+            'request'  => [
+                'ip' => $request->getClientIp(),
+            ],
+        ];
 
         if (! $timezone) {
             throw new ForestException('Missing timezone');
@@ -154,7 +160,7 @@ class QueryStringParser
 
         $tokenData = JWT::decode($request->bearerToken(), new Key(config('authSecret'), 'HS256'));
 
-        return Caller::makeFromRequestData($tokenData, $timezone);
+        return Caller::makeFromRequestData($tokenData, $params);
     }
 
     /**
