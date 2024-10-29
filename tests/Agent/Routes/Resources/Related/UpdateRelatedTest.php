@@ -84,12 +84,17 @@ $before = static function (TestCase $testCase, $args = []) {
                 ],
             ),]
     );
+    $collectionComment = \Mockery::mock($collectionComment)->shouldReceive('aggregate')
+        ->andReturn([])
+        ->getMock();
 
     if (isset($args['Car']['listing'])) {
         $collectionCar = \Mockery::mock($collectionCar)
             ->shouldReceive('list')
             ->with(\Mockery::type(Caller::class), \Mockery::type(PaginatedFilter::class), \Mockery::type(Projection::class))
             ->andReturn($args['Car']['listing'])
+            ->shouldReceive('aggregate')
+            ->andReturn([])
             ->getMock();
     }
 

@@ -29,7 +29,7 @@ $before = static function (TestCase $testCase, $args = []) {
     if (isset($args['count'])) {
         $collectionUser = \Mockery::mock($collectionUser)
             ->shouldReceive('aggregate')
-            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class))
+            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null)
             ->andReturn($args['count'])
             ->getMock();
     }
