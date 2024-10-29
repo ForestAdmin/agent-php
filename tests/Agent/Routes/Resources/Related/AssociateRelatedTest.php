@@ -87,6 +87,10 @@ $before = static function (TestCase $testCase, $args = []) {
             ),
         ]
     );
+    $collectionHouseUser = \Mockery::mock($collectionHouseUser)
+        ->shouldReceive('create')
+        ->andReturn([])
+        ->getMock();
 
     $collectionCar = new Collection($datasource, 'Car');
     $collectionCar->addFields(
