@@ -31,7 +31,7 @@ class AgentFactory
 
     public static ?array $fileCacheOptions;
 
-    protected ?DatasourceContract $datasource = null;
+    protected bool $isBuild = false;
 
     public function __construct(protected array $config)
     {
@@ -84,11 +84,10 @@ class AgentFactory
 
     public function build(): void
     {
-        if ($this->datasource === null) {
-            $this->datasource = $this->customizer->getDatasource();
+        if (! $this->isBuild) {
             Cache::put('forestAgent', new SerializableClosure(fn () => $this), self::TTL);
-
             self::sendSchema();
+            $this->isBuild = true;
         }
     }
 
@@ -133,9 +132,8 @@ class AgentFactory
     {
         /** @var self $instance */
         $forestAgentClosure = Cache::get('forestAgent');
-        $instance = $forestAgentClosure();
 
-        return $instance->getDatasourceInstance();
+        return $forestAgentClosure()->getDatasourceInstance();
     }
 
     /**
@@ -188,6 +186,6 @@ class AgentFactory
 
     public function getDatasourceInstance(): ?DatasourceContract
     {
-        return $this->datasource;
+        return $this->customizer->getDatasource();
     }
 }
