@@ -21,7 +21,7 @@ class TestCase extends BaseTestCase
         'database' => __DIR__ . '/Datasets/database.sqlite',
     ];
 
-    public ?AgentFactory $agent = null;
+    public $agent;
     private Connection $connection;
 
     public array $bucket = [];
@@ -45,7 +45,7 @@ class TestCase extends BaseTestCase
 
         $this->agent = new AgentFactory($options);
         $datasource = clone $datasource;
-        $this->invokeProperty($this->agent, 'datasource', $datasource);
+        $this->agent->addDatasource($datasource);
 
         Cache::put('forestAgent', new SerializableClosure(fn () => $this->agent));
         Cache::put('forest.has_permission', true, 10);

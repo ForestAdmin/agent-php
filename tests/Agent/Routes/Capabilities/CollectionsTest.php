@@ -117,6 +117,7 @@ test('when there is collectionNames in params return the collections provided', 
                                     'operators' => [
                                         'In',
                                         'Equal',
+                                        'Blank',
                                     ],
                                 ],
                                 [
@@ -125,6 +126,7 @@ test('when there is collectionNames in params return the collections provided', 
                                     'operators' => [
                                         'In',
                                         'Equal',
+                                        'Blank',
                                     ],
                                 ],
                                 [
@@ -133,6 +135,7 @@ test('when there is collectionNames in params return the collections provided', 
                                     'operators' => [
                                         'In',
                                         'Equal',
+                                        'Blank',
                                     ],
                                 ],
                             ],

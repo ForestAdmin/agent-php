@@ -34,11 +34,6 @@ $before = function (TestCase $testCase): Collection {
         [
             'id'      => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: Rules::BASE_OPERATORS, isPrimaryKey: true),
             'name'    => new ColumnSchema(columnType: PrimitiveType::STRING),
-            'address' => new OneToOneSchema(
-                originKey: 'id',
-                originKeyTarget: 'id',
-                foreignCollection: 'address',
-            ),
         ]
     );
 
