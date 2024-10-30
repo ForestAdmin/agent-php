@@ -33,6 +33,8 @@ class AgentFactory
 
     protected bool $isBuild = false;
 
+    protected ?DatasourceContract $computedDatasource = null;
+
     public function __construct(protected array $config)
     {
         $this->hasEnvSecret = isset($config['envSecret']);
@@ -85,6 +87,7 @@ class AgentFactory
     public function build(): void
     {
         if (! $this->isBuild) {
+            $this->computedDatasource = $this->customizer->getDatasource();
             Cache::put('forestAgent', new SerializableClosure(fn () => $this), self::TTL);
             self::sendSchema();
             $this->isBuild = true;
@@ -186,6 +189,22 @@ class AgentFactory
 
     public function getDatasourceInstance(): ?DatasourceContract
     {
-        return $this->customizer->getDatasource();
+        return $this->computedDatasource;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function __sleep(): array
+    {
+        return [ 'hasEnvSecret', 'isBuild' , 'computedDatasource' ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function __wakeup(): void
+    {
+        $this->customizer = new DatasourceCustomizer();
     }
 }
