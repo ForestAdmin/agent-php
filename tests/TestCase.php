@@ -44,8 +44,9 @@ class TestCase extends BaseTestCase
         );
 
         $this->agent = new AgentFactory($options);
-        $datasource = clone $datasource;
         $this->agent->addDatasource($datasource);
+        $datasourceCustomizer = $this->invokeProperty($this->agent, 'customizer');
+        $this->invokeProperty($this->agent, 'computedDatasource', $datasourceCustomizer->getDatasource());
 
         Cache::put('forestAgent', new SerializableClosure(fn () => $this->agent));
         Cache::put('forest.has_permission', true, 10);
