@@ -2,8 +2,6 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Utils;
 
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
@@ -18,11 +16,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ConditionTreeValidator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ProjectionValidator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\SortValidator;
 
-use function ForestAdmin\config;
 
 use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class QueryStringParser
 {
@@ -134,29 +129,7 @@ class QueryStringParser
      */
     public static function parseCaller(Request $request): Caller
     {
-        if (! $request->bearerToken()) {
-            throw new HttpException(Response::HTTP_UNAUTHORIZED, 'You must be logged in to access at this resource.');
-        }
-
-        $timezone = $request->get('timezone');
-        $params = [
-            'timezone' => $timezone,
-            'request'  => [
-                'ip' => $request->getClientIp(),
-            ],
-        ];
-
-        if (! $timezone) {
-            throw new ForestException('Missing timezone');
-        }
-
-        if (! in_array($timezone, \DateTimeZone::listIdentifiers(), true)) {
-            throw new ForestException("Invalid timezone: $timezone");
-        }
-
-        $tokenData = JWT::decode($request->bearerToken(), new Key(config('authSecret'), 'HS256'));
-
-        return Caller::makeFromRequestData($tokenData, $params);
+        return (new CallerParser($request))->parse();
     }
 
     /**
