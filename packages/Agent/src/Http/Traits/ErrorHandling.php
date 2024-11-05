@@ -22,17 +22,17 @@ trait ErrorHandling
 
     public function getErrorMessage(Throwable $error): string
     {
-        if ($error instanceof HttpException ||
-            is_subclass_of($error, HttpException::class) ||
-            $error instanceof ForestException) {
-            return $error->getMessage();
-        }
-
         if ($customizer = AgentFactory::get('customizeErrorMessage')) {
             $message = $customizer($error);
             if ($message) {
                 return $message;
             }
+        }
+
+        if ($error instanceof HttpException ||
+            is_subclass_of($error, HttpException::class) ||
+            $error instanceof ForestException) {
+            return $error->getMessage();
         }
 
         return 'Unexpected error';
