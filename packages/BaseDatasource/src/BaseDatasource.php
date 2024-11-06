@@ -51,7 +51,6 @@ class BaseDatasource extends ForestDatasource implements BaseDatasourceContract
     {
         $this->orm = new Manager();
         $this->orm->addConnection($databaseConfig);
-        $this->orm->bootEloquent();
     }
 
     private function makeDoctrineConnection(array $databaseConfig): void
