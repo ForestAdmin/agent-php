@@ -338,4 +338,33 @@ class EloquentCollection extends BaseCollection
             // Do nothing
         }
     }
+
+    public function __serialize(): array
+    {
+        return [
+            'fields'     => $this->fields,
+            'actions'    => $this->actions,
+            'segments'   => $this->segments,
+            'charts'     => $this->charts,
+            'schema'     => $this->schema,
+            'dataSource' => $this->dataSource,
+            'name'       => $this->name,
+            'tableName'  => $this->tableName,
+            'model'      => $this->model::class,
+        ];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->fields = $data['fields'];
+        $this->actions = $data['actions'];
+        $this->segments = $data['segments'];
+        $this->charts = $data['charts'];
+        $this->schema = $data['schema'];
+        $this->dataSource = $data['dataSource'];
+        $this->name = $data['name'];
+        $this->tableName = $data['tableName'];
+        $this->model = new $data['model']();
+        $this->nativeDriver = null;
+    }
 }
