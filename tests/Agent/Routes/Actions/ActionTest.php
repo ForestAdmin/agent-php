@@ -95,6 +95,7 @@ function factoryAction(TestCase $testCase, $smartAction): Actions
                 'actions' => [
                     'my action' => [
                         "triggerEnabled"             => [1],
+                        'triggerConditions'          => [],
                         "approvalRequired"           => [],
                         "approvalRequiredConditions" => [],
                         "userApprovalEnabled"        => [],
@@ -149,6 +150,7 @@ function factoryAction(TestCase $testCase, $smartAction): Actions
                     'actions' => [
                         'my action' => [
                             'triggerEnabled'             => [1],
+                            'triggerConditions'          => [],
                             'approvalRequired'           => [],
                             'approvalRequiredConditions' => [],
                             'userApprovalEnabled'        => [],

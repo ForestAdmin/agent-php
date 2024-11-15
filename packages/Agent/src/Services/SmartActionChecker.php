@@ -96,8 +96,14 @@ class SmartActionChecker
         }
     }
 
-    private function getConditionByRoleId(array $conditions): ?array
+    private function getConditionByRoleId(?array $conditions): ?array
     {
-        return array_find($conditions, fn ($condition) => $condition['roleId'] === $this->roleId);
+        if($conditions) {
+            $condition = array_values(array_filter($conditions, fn ($condition) => $condition['roleId'] === $this->roleId));
+
+            return $condition[0] ?? null;
+        }
+
+        return null;
     }
 }
