@@ -41,7 +41,7 @@ class SmartActionChecker
     {
         if (
             in_array($this->roleId, $this->smartAction['userApprovalEnabled'], true)
-            && (empty($this->smartAction['userApprovalConditions']) || $this->matchConditions('userApprovalConditions'))
+            && (empty($this->getConditionByRoleId($this->smartAction['userApprovalConditions'])) || $this->matchConditions('userApprovalConditions'))
             && ($this->request->input('data.attributes.requester_id') !== $this->caller->getId() ||
                 in_array($this->roleId, $this->smartAction['selfApprovalEnabled'], true))
         ) {
@@ -55,18 +55,16 @@ class SmartActionChecker
     {
         if (in_array($this->roleId, $this->smartAction['triggerEnabled'], true) &&
             ! in_array($this->roleId, $this->smartAction['approvalRequired'], true)) {
-            if (empty($this->smartAction['triggerConditions']) || $this->matchConditions('triggerConditions')) {
+            if (empty($this->getConditionByRoleId($this->smartAction['triggerConditions'])) || $this->matchConditions('triggerConditions')) {
                 return true;
             }
         } elseif (in_array($this->roleId, $this->smartAction['approvalRequired'], true)
             && in_array($this->roleId, $this->smartAction['triggerEnabled'], true)
         ) {
-            if (empty($this->smartAction['approvalRequiredConditions']) || $this->matchConditions('approvalRequiredConditions')) {
+            if (empty($this->getConditionByRoleId($this->smartAction['approvalRequiredConditions'])) || $this->matchConditions('approvalRequiredConditions')) {
                 throw new RequireApproval('This action requires to be approved.', [], 'CustomActionRequiresApprovalError', $this->smartAction['userApprovalEnabled']);
-            } else {
-                if (empty($this->smartAction['triggerConditions']) || $this->matchConditions('triggerConditions')) {
-                    return true;
-                }
+            } elseif (empty($this->getConditionByRoleId($this->smartAction['triggerConditions'])) || $this->matchConditions('triggerConditions')) {
+                return true;
             }
         }
 
@@ -83,7 +81,7 @@ class SmartActionChecker
                 $conditionRecordFilter = new ConditionTreeLeaf($pk, Operators::IN, $this->request->input('data.attributes.ids'));
             }
 
-            $condition = $this->smartAction[$conditionName][0]['filter'];
+            $condition = $this->getConditionByRoleId($this->smartAction[$conditionName])['filter'];
             $conditionalFilter = $this->filter->override(conditionTree: ConditionTreeFactory::intersect([
                 ConditionTreeParser::fromPLainObject($this->collection, $condition),
                 $this->filter->getConditionTree(),
@@ -96,5 +94,16 @@ class SmartActionChecker
         } catch (\Exception $e) {
             throw new ConflictError('The conditions to trigger this action cannot be verified. Please contact an administrator.', [], 'InvalidActionConditionError');
         }
+    }
+
+    private function getConditionByRoleId(?array $conditions): ?array
+    {
+        if($conditions) {
+            $condition = array_values(array_filter($conditions, fn ($condition) => $condition['roleId'] === $this->roleId));
+
+            return $condition[0] ?? null;
+        }
+
+        return null;
     }
 }
