@@ -1,3 +1,10 @@
+## [1.19.1](https://github.com/ForestAdmin/agent-php/compare/v1.19.0...v1.19.1) (2024-11-18)
+
+
+### Bug Fixes
+
+* **permission:** get approval conditions by role id ([#134](https://github.com/ForestAdmin/agent-php/issues/134)) ([dcc0442](https://github.com/ForestAdmin/agent-php/commit/dcc04428d73840655bf824d6fa55bad5e4bf57af))
+
 # [1.19.0](https://github.com/ForestAdmin/agent-php/compare/v1.18.0...v1.19.0) (2024-10-28)
 
 
