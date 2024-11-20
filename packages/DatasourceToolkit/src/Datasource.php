@@ -15,6 +15,8 @@ class Datasource implements DatasourceContract
 
     protected IlluminateCollection $charts;
 
+    protected ?string $name = null;
+
     public function __construct()
     {
         $this->charts = new IlluminateCollection();
@@ -53,5 +55,15 @@ class Datasource implements DatasourceContract
     public function renderChart(Caller $caller, string $name): Chart|array
     {
         throw new ForestException("No chart named '$name' exists on this datasource.");
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
     }
 }

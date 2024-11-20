@@ -15,6 +15,8 @@ class DatasourceCustomizer
 
     protected DecoratorsStack $stack;
 
+    protected array $datasources = [];
+
     public function __construct()
     {
         $this->compositeDatasource = new Datasource();
@@ -36,6 +38,15 @@ class DatasourceCustomizer
         $datasource->getCollections()->each(
             fn ($collection) => $this->compositeDatasource->addCollection($collection)
         );
+
+        $datasourceName = $datasource->getName();
+        $counter = 1;
+
+        while (in_array($datasourceName . '_' . $counter, $this->datasources, true)) {
+            $counter++;
+        }
+
+        $datasource->setName($datasourceName . '_' . $counter);
 
         return $this;
     }
