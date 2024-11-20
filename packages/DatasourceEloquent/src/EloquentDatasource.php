@@ -18,12 +18,15 @@ class EloquentDatasource extends BaseDatasource
 {
     private array $models = [];
 
+    private array $dbConnections = [];
+
     /**
      * @throws \ReflectionException
      */
-    public function __construct(array $databaseConfig, protected $supportPolymorphicRelations = false)
+    public function __construct(array $databaseConfig, $name = 'eloquent_collection', protected $supportPolymorphicRelations = false)
     {
         parent::__construct($databaseConfig);
+        $this->name = $name;
         $this->generate();
     }
 
@@ -35,14 +38,21 @@ class EloquentDatasource extends BaseDatasource
     {
         $finder = new ClassFinder(config('projectDir'));
         $this->models = $finder->getModelsInNamespace('App');
+        $dbConnections = [];
 
         foreach ($this->models as $model) {
+            $modelInstance = new $model();
+            $dbConnections[] = $modelInstance->getConnection()->getName();
+
             try {
-                $this->addCollection(new EloquentCollection($this, new $model(), $this->supportPolymorphicRelations));
+                $this->addCollection(new EloquentCollection($this, $modelInstance, $this->supportPolymorphicRelations));
             } catch (\Exception $e) {
+                dd($e);
                 // do nothing
             }
         }
+
+        $this->dbConnections = array_unique($dbConnections);
     }
 
     public function addCollection(CollectionContract $collection): void
@@ -68,6 +78,11 @@ class EloquentDatasource extends BaseDatasource
     public function getModels(): array
     {
         return $this->models;
+    }
+
+    public function getDbConnections(): array
+    {
+        return $this->dbConnections;
     }
 
     /**
