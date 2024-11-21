@@ -66,4 +66,9 @@ class Datasource implements DatasourceContract
     {
         $this->name = $name;
     }
+
+    public function executeNativeQuery(string $connectionName, string $query): void
+    {
+        throw new ForestException('this datasource do not support native query.');
+    }
 }

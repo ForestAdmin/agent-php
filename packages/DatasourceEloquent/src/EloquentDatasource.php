@@ -23,10 +23,21 @@ class EloquentDatasource extends BaseDatasource
     /**
      * @throws \ReflectionException
      */
-    public function __construct(array $databaseConfig, $name = 'eloquent_collection', protected $supportPolymorphicRelations = false)
-    {
+    public function __construct(
+        array $databaseConfig,
+        $name = 'eloquent_collection',
+        protected bool $supportPolymorphicRelations = false,
+        protected ?array $liveQueryConnections = null
+    ) {
         parent::__construct($databaseConfig);
         $this->name = $name;
+
+        if (is_string($liveQueryConnections)) {
+            $this->liveQueryConnections = [$liveQueryConnections => 'primary'];
+        } elseif (! is_array($liveQueryConnections)) {
+            $this->liveQueryConnections = null;
+        }
+
         $this->generate();
     }
 
