@@ -1,3 +1,11 @@
+## [1.19.2](https://github.com/ForestAdmin/agent-php/compare/v1.19.1...v1.19.2) (2024-11-22)
+
+
+### Bug Fixes
+
+* **security:** patch cross-spawn dependency vulnerabilities ([#136](https://github.com/ForestAdmin/agent-php/issues/136)) ([66ce9a4](https://github.com/ForestAdmin/agent-php/commit/66ce9a44098fe305fac989b97182fbc640709db6))
+* **security:** patch micromatch dependency vulnerabilities ([#135](https://github.com/ForestAdmin/agent-php/issues/135)) ([d9fcbf0](https://github.com/ForestAdmin/agent-php/commit/d9fcbf08eaf0ba1e5f2b6dfa2fbb4c26413b0cd1))
+
 ## [1.19.1](https://github.com/ForestAdmin/agent-php/compare/v1.19.0...v1.19.1) (2024-11-18)
 
 
