@@ -28,5 +28,8 @@
     "husky": "^8.0.2",
     "semantic-release": "19.0.5",
     "semantic-release-slack-bot": "3.5.3"
+  },
+  "resolutions": {
+    "semantic-release-slack-bot/**/micromatch": "^4.0.8"
   }
 }
