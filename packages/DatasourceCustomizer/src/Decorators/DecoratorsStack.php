@@ -104,4 +104,22 @@ class DecoratorsStack
             $this->applyQueuedCustomizations();
         }
     }
+
+    public function __serialize(): array
+    {
+        return [
+            'dataSource' => $this->dataSource,
+        ];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->dataSource = $data['dataSource'];
+        $this->validation = $this->dataSource
+            ->getChildDataSource()
+            ->getChildDataSource()
+            ->getChildDataSource()
+            ->getChildDataSource();
+        $this->customizations = collect();
+    }
 }
