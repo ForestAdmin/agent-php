@@ -112,7 +112,9 @@ class DatasourceCustomizer
     public function getRootDatasourceByConnection(string $name): DatasourceContract
     {
         $rootDatasource = collect($this->datasources)->first(
-            fn ($datasource) => $datasource->getLiveQueryConnections()->has($name)
+            function ($datasource) use ($name) {
+                return collect($datasource->getLiveQueryConnections())->has($name);
+            }
         );
 
         if (! $rootDatasource) {
