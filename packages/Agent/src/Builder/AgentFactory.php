@@ -19,11 +19,11 @@ use Laravel\SerializableClosure\SerializableClosure;
 
 class AgentFactory
 {
-    protected const TTL_CONFIG = 3600;
+    public const TTL_CONFIG = 3600;
 
-    public const TTL = 3600;
+    public const TTL = 60;
 
-    protected const TTL_SCHEMA = 7200;
+    public const TTL_SCHEMA = 60;
 
     protected DatasourceCustomizer $customizer;
 
@@ -136,6 +136,13 @@ class AgentFactory
         return $forestAgentClosure()->getDatasourceInstance();
     }
 
+    public static function getInstance()
+    {
+        $forestAgentClosure = Cache::get('forestAgent');
+
+        return $forestAgentClosure();
+    }
+
     /**
      * @throws \JsonException
      * @codeCoverageIgnore
@@ -206,6 +213,7 @@ class AgentFactory
             'hasEnvSecret'       => $this->hasEnvSecret,
             'isBuild'            => $this->isBuild,
             'computedDatasource' => $this->computedDatasource,
+            'customizer'         => $this->customizer,
         ];
     }
 
@@ -217,7 +225,12 @@ class AgentFactory
         $this->hasEnvSecret = $data['hasEnvSecret'];
         $this->isBuild = $data['isBuild'];
         $this->computedDatasource = $data['computedDatasource'];
+        $this->config = Cache::get('config');
+        $this->customizer = $data['customizer'];
+    }
 
-        $this->customizer = new DatasourceCustomizer();
+    public function getCustomizer(): DatasourceCustomizer
+    {
+        return $this->customizer;
     }
 }

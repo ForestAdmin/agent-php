@@ -8,6 +8,8 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContra
 
 use function ForestAdmin\config;
 
+use Illuminate\Database\Capsule\Manager;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -20,6 +22,8 @@ class EloquentDatasource extends BaseDatasource
 
     private array $dbConnections = [];
 
+    private ?array $liveQueryConnections = null;
+
     /**
      * @throws \ReflectionException
      */
@@ -27,13 +31,13 @@ class EloquentDatasource extends BaseDatasource
         array $databaseConfig,
         $name = 'eloquent_collection',
         protected bool $supportPolymorphicRelations = false,
-        protected ?array $liveQueryConnections = null
+        $liveQueryConnections = null
     ) {
         parent::__construct($databaseConfig);
         $this->name = $name;
 
         if (is_string($liveQueryConnections)) {
-            $this->liveQueryConnections = [$liveQueryConnections => 'primary'];
+            $this->liveQueryConnections = [$liveQueryConnections => \config('database.default')];
         } elseif (! is_array($liveQueryConnections)) {
             $this->liveQueryConnections = null;
         }
@@ -50,7 +54,6 @@ class EloquentDatasource extends BaseDatasource
         $finder = new ClassFinder(config('projectDir'));
         $this->models = $finder->getModelsInNamespace('App');
         $dbConnections = [];
-
         foreach ($this->models as $model) {
             $modelInstance = new $model();
             $dbConnections[] = $modelInstance->getConnection()->getName();
@@ -96,6 +99,21 @@ class EloquentDatasource extends BaseDatasource
         return $this->dbConnections;
     }
 
+    public function getLiveQueryConnections(): ?array
+    {
+        return $this->liveQueryConnections;
+    }
+
+    public function executeNativeQuery(string $connectionName, string $query, array $bind = []): array
+    {
+        $connection = \config('database.connections.' . $this->liveQueryConnections[$connectionName]);
+
+        $orm = new Manager();
+        $orm->addConnection($connection);
+
+        return $orm->getDatabaseManager()->select($query, $bind);
+    }
+
     /**
      * @codeCoverageIgnore
      */
@@ -103,7 +121,10 @@ class EloquentDatasource extends BaseDatasource
     {
         return array_merge(
             parent::__serialize(),
-            ['supportPolymorphicRelations' => $this->supportPolymorphicRelations]
+            [
+                'supportPolymorphicRelations'   => $this->supportPolymorphicRelations,
+                'liveQueryConnections'          => $this->liveQueryConnections,
+            ]
         );
     }
 
@@ -116,5 +137,7 @@ class EloquentDatasource extends BaseDatasource
 
         $finder = new ClassFinder(config('projectDir'));
         $this->models = $finder->getModelsInNamespace('App');
+        $this->supportPolymorphicRelations = $data['supportPolymorphicRelations'];
+        $this->liveQueryConnections = $data['liveQueryConnections'];
     }
 }

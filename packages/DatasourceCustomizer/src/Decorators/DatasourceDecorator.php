@@ -54,4 +54,9 @@ class DatasourceDecorator extends Datasource
     {
         return $this->childDataSource->renderChart($caller, $name);
     }
+
+    public function getChildDataSource(): DatasourceContract|DatasourceDecorator
+    {
+        return $this->childDataSource;
+    }
 }
