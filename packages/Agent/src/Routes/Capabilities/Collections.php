@@ -36,7 +36,7 @@ class Collections extends AbstractAuthenticatedRoute
                     'name'      => $name,
                     'type'      => $field->getColumnType(),
                     'operators' => collect($field->getFilterOperators())->map(function ($operator) {
-                        return Str::studly($operator);
+                        return Str::lower($operator);
                     })->toArray(),
                 ];
             })->values()->toArray();
