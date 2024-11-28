@@ -55,16 +55,29 @@ class RenameFieldCollection extends CollectionDecorator
         # we forbid to rename foreign key and type fields on polymorphic many to one
         foreach ($childSchema as $oldName => $schema) {
             if ($schema instanceof ManyToOneSchema) {
+                $relation = $this->dataSource->getCollection($schema->getForeignCollection());
                 $schema->setForeignKey($this->fromChildCollection[$schema->getForeignKey()] ?? $schema->getForeignKey());
+                $schema->setForeignKeyTarget(
+                    $relation->fromChildCollection[$schema->getForeignKeyTarget()] ?? $schema->getForeignKeyTarget()
+                );
             } elseif ($schema instanceof OneToManySchema || $schema instanceof OneToOneSchema) {
                 /** @var self $relation */
                 $relation = $this->dataSource->getCollection($schema->getForeignCollection());
                 $schema->setOriginKey($relation->fromChildCollection[$schema->getOriginKey()] ?? $schema->getOriginKey());
+                $schema->setOriginKeyTarget(
+                    $this->fromChildCollection[$schema->getOriginKeyTarget()] ?? $schema->getOriginKeyTarget()
+                );
             } elseif ($schema instanceof ManyToManySchema) {
                 /** @var self $through */
                 $through = $this->dataSource->getCollection($schema->getThroughCollection());
                 $schema->setForeignKey($through->fromChildCollection[$schema->getForeignKey()] ?? $schema->getForeignKey());
                 $schema->setOriginKey($through->fromChildCollection[$schema->getOriginKey()] ?? $schema->getOriginKey());
+                $schema->setOriginKeyTarget(
+                    $this->fromChildCollection[$schema->getOriginKeyTarget()] ?? $schema->getOriginKeyTarget()
+                );
+                $schema->setForeignKeyTarget(
+                    $this->fromChildCollection[$schema->getForeignKeyTarget()] ?? $schema->getForeignKeyTarget()
+                );
             }
 
             $fields->put($this->fromChildCollection[$oldName] ?? $oldName, $schema);

@@ -20,14 +20,19 @@ abstract class ManyRelationSchema extends RelationSchema
         return $this->foreignKey;
     }
 
+    public function setForeignKey(string $foreignKey): void
+    {
+        $this->foreignKey = $foreignKey;
+    }
+
     public function getForeignKeyTarget(): string
     {
         return $this->foreignKeyTarget;
     }
 
-    public function setForeignKey(string $foreignKey): void
+    public function setForeignKeyTarget(string $foreignKeyTarget): void
     {
-        $this->foreignKey = $foreignKey;
+        $this->foreignKeyTarget = $foreignKeyTarget;
     }
 
     public function getForeignCollection(): string

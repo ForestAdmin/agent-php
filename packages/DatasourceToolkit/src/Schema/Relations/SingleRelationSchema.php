@@ -15,19 +15,24 @@ abstract class SingleRelationSchema extends RelationSchema
         parent::__construct($type);
     }
 
-    public function setOriginKey(string $originKey): void
-    {
-        $this->originKey = $originKey;
-    }
-
     public function getOriginKey(): string
     {
         return $this->originKey;
     }
 
+    public function setOriginKey(string $originKey): void
+    {
+        $this->originKey = $originKey;
+    }
+
     public function getOriginKeyTarget(): string
     {
         return $this->originKeyTarget;
+    }
+
+    public function setOriginKeyTarget(string $originKeyTarget): void
+    {
+        $this->originKeyTarget = $originKeyTarget;
     }
 
     public function getForeignCollection(): string
