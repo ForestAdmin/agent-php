@@ -208,31 +208,20 @@ describe('RenameFieldCollection', function () {
                 'title'            => 'Foo',
             ]);
     })->with('caller');
-    // newPersons.renameField('id', 'primaryKey');
-    // newPersons.renameField('myBookPerson', 'myNovelAuthor');
-    // newBookPersons.renameField('date', 'createdAt');
 
-    // test('list should rewrite the filter, projection and record', async () => {
-    //      const projection = new Projection('primaryKey', 'myNovelAuthor:createdAt');
-    //      const expectedProjection = new Projection('id', 'myBookPerson:date');
-    //      personsList.mockResolvedValue([{ id: '1', myBookPerson: { date: 'something' } }]);
-    //      const records = await newPersons.list(caller, newPersonsPaginatedFilter, projection);
-    //      expect(personsList).toHaveBeenCalledWith(caller, personsPaginatedFilter, expectedProjection);
-    //      expect(records).toStrictEqual([
-    //        { primaryKey: '1', myNovelAuthor: { createdAt: 'something' } },
-    //      ]);
-    //    });
     test('list() should rewrite the filter, projection and record when renaming columns and relations', closure: function (Caller $caller) {
         /** @var Mock $collectionPerson */
         $datasourceDecorator = $this->bucket['datasourceDecorator'];
         $collectionPerson = $this->bucket['collectionPerson'];
-        $collectionBookPerson = $this->bucket['collectionBookPerson'];
+
         /** @var RenameFieldCollection $personCollection */
         $renameFieldCollectionPerson = $datasourceDecorator->getCollection('Person');
         $renameFieldCollectionPerson->renameField('id', 'primaryKey');
         $renameFieldCollectionPerson->renameField('bookPerson', 'myNovelAuthor');
+
         $bookPersonCollectionBookPerson = $datasourceDecorator->getCollection('BookPerson');
         $bookPersonCollectionBookPerson->renameField('date', 'createdAt');
+
         $projection = new Projection(['primaryKey', 'myNovelAuthor:createdAt']);
         $filter = new PaginatedFilter(
             conditionTree: new ConditionTreeBranch(
@@ -249,20 +238,24 @@ describe('RenameFieldCollection', function () {
                 ]
             ),
         );
+        $collectionPerson->shouldReceive('list')
+            ->once()
+            ->withArgs(function (Caller $caller, PaginatedFilter $receivedFilter, Projection $receivedProjection) {
+                $expectedSort = [
+                    ['field' => 'id', 'ascending' => false],
+                    ['field' => 'bookPerson:date', 'ascending' => true],
+                ];
+                $expectedProjection = ['id', 'bookPerson:date'];
+                expect($receivedFilter->getSort()->toArray())->toEqual($expectedSort)
+                    ->and($receivedProjection->toArray())->toEqual($expectedProjection);
 
-        $collectionPerson->expects('list')->withArgs(function (Caller $caller, PaginatedFilter $filter, Projection $projection) {
-            $expectedSort = [
-                ['field' => 'id', 'ascending' => false],
-                ['field' => 'myNovelAuthor:date', 'ascending' => true],
-            ];
-            $expectedProjection = ['id', 'myBookPerson:date'];
+                return true;
+            })
+            ->andReturn([['id' => 1, 'bookPerson' => ['date' => 'something']]]);
 
-            return $filter->getSort()->toArray() === $expectedSort && $projection->toArray() === $expectedProjection;
-        })->andReturn([['id' => 1, 'bookPerson' => ['date' => 'something']]]);
-        //        $collectionPerson->shouldReceive('list')->andReturn([['id' => 1, 'bookPerson' => ['date' => 'something']]]);
-
-        expect($renameFieldCollectionPerson->list($caller, $filter, $projection))
-            ->toEqual([['myNovelAuthor' => ['createdAt' => 'something'], 'primaryKey' => 1]]);
+        expect($renameFieldCollectionPerson->list($caller, $filter, $projection))->toEqual([
+            ['myNovelAuthor' => ['createdAt' => 'something'], 'primaryKey' => 1],
+        ]);
     })->with('caller');
 
     test('list() should rewrite the record with null relation when renaming columns and relations', closure: function (Caller $caller) {
@@ -323,28 +316,33 @@ describe('RenameFieldCollection', function () {
         $renameFieldCollection->delete($caller, $filter);
     })->with('caller');
 
-    ////
     test('aggregate() should rewrite the filter and the result when renaming columns and relations', closure: function (Caller $caller) {
-        /** @var Mock $collectionBook */
+        /** @var Mock $collectionPerson */
         $datasourceDecorator = $this->bucket['datasourceDecorator'];
-        //        $collectionBook = $this->bucket['collectionBook'];
         $collectionPerson = $this->bucket['collectionPerson'];
-        /** @var RenameFieldCollection $renameFieldCollection */
-        //        $renameFieldCollection = $datasourceDecorator->getCollection('Book');
-        //        $renameFieldCollection->renameField('author', 'myNovelAuthor');
+
+        /** @var RenameFieldCollection $renameFieldCollectionPerson */
         $renameFieldCollectionPerson = $datasourceDecorator->getCollection('Person');
         $renameFieldCollectionPerson->renameField('id', 'primaryKey');
         $renameFieldCollectionPerson->renameField('bookPerson', 'myNovelAuthor');
         $renameFieldCollectionBookPerson = $datasourceDecorator->getCollection('BookPerson');
         $renameFieldCollectionBookPerson->renameField('date', 'createdAt');
         $filter = new Filter(
-            conditionTree: new ConditionTreeLeaf('bookPerson:date', Operators::NOT_EQUAL, 'abc'),
+            conditionTree: new ConditionTreeLeaf('myNovelAuthor:createdAt', Operators::NOT_EQUAL, 'abc'),
         );
         $aggregation = new Aggregation('Count', 'id', [['field' => 'myNovelAuthor:createdAt']]);
 
         $collectionPerson->expects('aggregate')->withArgs(function (Caller $caller, Filter $filter, Aggregation $aggregation) {
-            return $filter->getConditionTree()->getField() === 'bookPerson:date' && $aggregation->getGroups()[0]['field'] === 'bookPerson:date';
-        })->andReturn([['value' => 34, 'group' => ['bookPerson:date' => 'foo']]]);
+            $expectedConditionTree = new ConditionTreeLeaf('bookPerson:date', Operators::NOT_EQUAL, 'abc');
+            $expectedAggregation = new Aggregation('Count', 'id', [['field' => 'bookPerson:date', 'operation' => null]]);
+
+            expect($filter->getConditionTree()->toArray())->toEqual($expectedConditionTree->toArray())
+                ->and($aggregation->toArray())->toEqual($expectedAggregation->toArray());
+
+            return true;
+
+        })->andReturn([['value' => 34, 'group' => ['bookPerson:createdAt' => 'foo']]]);
+
         expect($renameFieldCollectionPerson->aggregate($caller, $filter, $aggregation))
             ->toEqual([['value' => 34, 'group' => ['myNovelAuthor:createdAt' => 'foo']]]);
     })->with('caller');
@@ -362,7 +360,6 @@ describe('RenameFieldCollection', function () {
             ->and($fields)->not()->toHaveKeys(['bookId', 'personId']);
     });
 
-    ///
     test('the relations should be updated in all collections when renaming foreign keys', closure: function () {
         $datasourceDecorator = $this->bucket['datasourceDecorator'];
         /** @var RenameFieldCollection $renameFieldCollection */
