@@ -20,6 +20,8 @@ class NativeQuery extends AbstractAuthenticatedRoute
 {
     protected string $type;
 
+    protected Datasource $rootDatasource;
+
     /**
      * @return $this
      */
@@ -44,11 +46,11 @@ class NativeQuery extends AbstractAuthenticatedRoute
         $this->setType($this->request->get('type'));
         [$query, $contextVariables] = $this->injectContextVariables();
         $query = str_replace('?', $this->request->get('record_id'), $query);
+        $customizer = AgentFactory::getInstance()->getCustomizer();
+        $this->rootDatasource = $customizer->getRootDatasourceByConnection($this->request->get('connectionName'));
 
-        /** @var Datasource $rootDatasource */
-        $rootDatasource = AgentFactory::getInstance()->getCustomizer()->getRootDatasourceByConnection($this->request->get('connectionName'));
         $result = $this->convertStdClassToArray(
-            $rootDatasource->executeNativeQuery($this->request->get('connectionName'), $query, $contextVariables)
+            $this->rootDatasource->executeNativeQuery($this->request->get('connectionName'), $query, $contextVariables)
         );
 
         return ['content' => JsonApi::renderChart($this->{'make' . $this->type}($result))];
