@@ -9,7 +9,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContra
 use function ForestAdmin\config;
 
 use Illuminate\Database\Capsule\Manager;
-
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -21,8 +20,6 @@ class EloquentDatasource extends BaseDatasource
     private array $models = [];
 
     private array $dbConnections = [];
-
-    private ?array $liveQueryConnections = null;
 
     /**
      * @throws \ReflectionException
