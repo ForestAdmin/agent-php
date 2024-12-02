@@ -17,6 +17,8 @@ class Datasource implements DatasourceContract
 
     protected ?string $name = null;
 
+    protected ?array $liveQueryConnections = null;
+
     public function __construct()
     {
         $this->charts = new IlluminateCollection();
@@ -70,5 +72,10 @@ class Datasource implements DatasourceContract
     public function executeNativeQuery(string $connectionName, string $query, array $binds = []): array
     {
         throw new ForestException('this datasource do not support native query.');
+    }
+
+    public function getLiveQueryConnections(): ?array
+    {
+        return $this->liveQueryConnections;
     }
 }

@@ -7,6 +7,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\P
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\RenameCollection\RenameCollectionDatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class DatasourceCustomizer
