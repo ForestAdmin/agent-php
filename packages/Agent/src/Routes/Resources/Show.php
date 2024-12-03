@@ -5,10 +5,10 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 
 class Show extends AbstractCollectionRoute
 {
@@ -29,15 +29,13 @@ class Show extends AbstractCollectionRoute
         $this->build($args);
         $this->permissions->can('read', $this->collection);
         $id = Id::unpackId($this->collection, $args['id']);
-        $filter = ContextFilterFactory::buildPaginated(
-            $this->collection,
-            $this->request,
-            ConditionTreeFactory::intersect(
+        $filter = new PaginatedFilter(
+            conditionTree: ConditionTreeFactory::intersect(
                 [
                     $this->permissions->getScope($this->collection),
                     ConditionTreeFactory::matchIds($this->collection, [$id]),
                 ]
-            )
+            ),
         );
 
         $result = $this->collection->list(

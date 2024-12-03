@@ -93,6 +93,14 @@ $before = static function (TestCase $testCase, $args = []) {
                     0 => 1,
                 ],
             ],
+            'User' => [
+                'browse'  => [
+                    0 => 1,
+                ],
+                'export'  => [
+                    0 => 1,
+                ],
+            ],
         ],
         config('permissionExpiration')
     );

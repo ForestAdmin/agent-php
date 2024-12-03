@@ -5,9 +5,9 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\ProjectionFactory;
 
@@ -31,17 +31,14 @@ class Update extends AbstractCollectionRoute
         $this->permissions->can('edit', $this->collection);
 
         $id = Id::unpackId($this->collection, $args['id']);
-        $filter = ContextFilterFactory::build(
-            $this->collection,
-            $this->request,
-            ConditionTreeFactory::intersect(
+        $filter = new Filter(
+            conditionTree: ConditionTreeFactory::intersect(
                 [
                     $this->permissions->getScope($this->collection),
                     ConditionTreeFactory::matchIds($this->collection, [$id]),
                 ]
             )
         );
-
 
         $data = $this->formatAttributes($this->request->get('data'));
         $data['id'] = $this->request->input('data.id');
