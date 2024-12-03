@@ -4,9 +4,9 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources\Related;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRelationRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 
 class CountRelated extends AbstractRelationRoute
@@ -27,11 +27,9 @@ class CountRelated extends AbstractRelationRoute
     {
         $this->build($args);
         $this->permissions->can('browse', $this->collection);
-        $scope = $this->permissions->getScope($this->childCollection);
 
         if ($this->childCollection->isCountable()) {
-            $this->filter = ContextFilterFactory::build($this->childCollection, $this->request, $scope);
-
+            $this->filter = new Filter(conditionTree: $this->permissions->getScope($this->childCollection));
             $id = Id::unpackId($this->collection, $args['id']);
 
             $count = CollectionUtils::aggregateRelation(

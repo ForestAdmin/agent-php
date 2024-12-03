@@ -4,7 +4,6 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Charts;
 
 use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextVariablesInjector;
 use ForestAdmin\AgentPHP\Agent\Utils\ContextVariablesInstantiator;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
@@ -16,6 +15,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\PieChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ValueChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeBranch;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\FilterFactory;
@@ -52,9 +52,15 @@ class Charts extends AbstractCollectionRoute
     {
         $this->build($args);
         $this->permissions->canChart($this->request);
-        $scope = $this->permissions->getScope($this->collection);
         $this->injectContextVariables();
-        $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
+        $this->filter = new Filter(
+            conditionTree: ConditionTreeFactory::intersect(
+                [
+                    QueryStringParser::parseConditionTree($this->collection, $this->request),
+                    $this->permissions->getScope($this->collection),
+                ]
+            )
+        );
         $this->setType($this->request->get('type'));
         $this->setCaller(QueryStringParser::parseCaller($this->request));
 

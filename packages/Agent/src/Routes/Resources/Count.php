@@ -4,8 +4,8 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 
 class Count extends AbstractCollectionRoute
 {
@@ -27,8 +27,7 @@ class Count extends AbstractCollectionRoute
         $this->permissions->can('browse', $this->collection);
 
         if ($this->collection->isCountable()) {
-            $scope = $this->permissions->getScope($this->collection);
-            $this->filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
+            $this->filter = new Filter(conditionTree: $this->permissions->getScope($this->collection));
             $aggregation = new Aggregation(operation: 'Count');
 
             return [

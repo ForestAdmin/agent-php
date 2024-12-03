@@ -5,10 +5,11 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources\Related;
 use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRelationRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Csv;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection as CollectionUtils;
 use Illuminate\Support\Str;
 
@@ -35,9 +36,16 @@ class ListingRelated extends AbstractRelationRoute
         }
 
         $this->build($args);
-        $this->permissions->can('browse', $this->childCollection);
-        $scope = $this->permissions->getScope($this->childCollection);
-        $filter = ContextFilterFactory::buildPaginated($this->childCollection, $this->request, $scope);
+        $this->permissions->can('browse', $this->collection);
+        $filter = new PaginatedFilter(
+            conditionTree: ConditionTreeFactory::intersect(
+                [
+                    QueryStringParser::parseConditionTree($this->childCollection, $this->request),
+                    $this->permissions->getScope($this->collection),
+                ]
+            ),
+            page: QueryStringParser::parsePagination($this->request)
+        );
 
         $id = Id::unpackId($this->collection, $args['id']);
 
@@ -59,14 +67,19 @@ class ListingRelated extends AbstractRelationRoute
     public function handleRequestCsv(array $args = []): array
     {
         $this->build($args);
-        $this->permissions->can('browse', $this->childCollection);
-        $this->permissions->can('export', $this->childCollection);
+        $this->permissions->can('browse', $this->collection);
+        $this->permissions->can('export', $this->collection);
 
-        $scope = $this->permissions->getScope($this->childCollection);
-        $filter = ContextFilterFactory::buildPaginated($this->childCollection, $this->request, $scope);
-
+        $scope = $this->permissions->getScope($this->collection);
+        $filter = new PaginatedFilter(
+            conditionTree: ConditionTreeFactory::intersect(
+                [
+                    QueryStringParser::parseConditionTree($this->childCollection, $this->request),
+                    $scope,
+                ]
+            ),
+        );
         $id = Id::unpackId($this->collection, $args['id']);
-
         $rows = CollectionUtils::listRelation(
             $this->collection,
             $id,

@@ -4,9 +4,9 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 
 class Destroy extends AbstractCollectionRoute
 {
@@ -35,10 +35,8 @@ class Destroy extends AbstractCollectionRoute
         $this->permissions->can('delete', $this->collection);
 
         $id = Id::unpackId($this->collection, $args['id']);
-        $filter = ContextFilterFactory::build(
-            $this->collection,
-            $this->request,
-            ConditionTreeFactory::intersect(
+        $filter = new Filter(
+            conditionTree: ConditionTreeFactory::intersect(
                 [
                     $this->permissions->getScope($this->collection),
                     ConditionTreeFactory::matchIds($this->collection, [$id]),
@@ -64,10 +62,8 @@ class Destroy extends AbstractCollectionRoute
             $conditionTreeIds = $conditionTreeIds->inverse();
         }
 
-        $filter = ContextFilterFactory::build(
-            $this->collection,
-            $this->request,
-            ConditionTreeFactory::intersect(
+        $filter = new Filter(
+            conditionTree: ConditionTreeFactory::intersect(
                 [
                     $this->permissions->getScope($this->collection),
                     $conditionTreeIds,
