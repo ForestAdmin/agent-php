@@ -118,13 +118,13 @@ class NativeQuery extends AbstractAuthenticatedRoute
         $result = empty($result) ? [] : $result;
 
         $lines = array_map(function ($resultLine) {
-            if (! array_key_exists('key', $resultLine) || ! array_key_exists('value', $resultLine)) {
-                throw new ForestException("The keys 'key' and 'value' are not present in the result");
+            if (! array_key_exists('label', $resultLine) || ! array_key_exists('values', $resultLine)) {
+                throw new ForestException("The keys 'label' and 'values' are not present in the result");
             }
 
             return [
-                'label'  => $resultLine['key'],
-                'values' => ['value' => $resultLine['value']],
+                'label'  => $resultLine['label'],
+                'values' => $resultLine['values'],
             ];
         }, $result);
 
