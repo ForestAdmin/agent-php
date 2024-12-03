@@ -5,12 +5,12 @@ use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\NativeQuery;
 use ForestAdmin\AgentPHP\Agent\Utils\ArrayHelper;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LeaderboardChart;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LineChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ObjectiveChart;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\PieChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ValueChart;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
@@ -94,21 +94,6 @@ function factoryNativeQuery(TestCase $testCase, $args = []): NativeQuery
         ]
     );
 
-    if (isset($args['books']['results'])) {
-        //        $collectionBooks = \Mockery::mock($collectionBooks)
-        //            ->shouldReceive('aggregate')
-        //            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null);
-        //
-        //
-        //        if (isset($args['books']['previous'])) {
-        //            $collectionBooks = $collectionBooks->andReturn($args['books']['results'][0], $args['books']['results'][1])
-        //                ->getMock();
-        //        } else {
-        //            $collectionBooks = $collectionBooks->andReturn($args['books']['results'])
-        //                ->getMock();
-        //        }
-    }
-
     $datasource->addCollection($collectionBooks);
     $datasource->addCollection($collectionReviews);
     $datasource->addCollection($collectionBookReview);
@@ -118,7 +103,6 @@ function factoryNativeQuery(TestCase $testCase, $args = []): NativeQuery
     $_GET = ['timezone' => 'Europe/Paris'];
 
     $attributes = $_POST;
-    // unset($attributes['timezone'], $attributes['collection'], $attributes['contextVariables']);
     $attributes = array_filter($attributes, static fn ($value) => ! is_null($value) && $value !== '');
     ArrayHelper::ksortRecursive($attributes);
 
@@ -127,7 +111,7 @@ function factoryNativeQuery(TestCase $testCase, $args = []): NativeQuery
     Cache::put(
         'forest.stats',
         [
-            0 => $_GET['type'] . ':' . sha1(json_encode($attributes, JSON_THROW_ON_ERROR)),
+            0 => $_POST['type'] . ':' . sha1(json_encode($attributes, JSON_THROW_ON_ERROR)),
         ],
         config('permissionExpiration')
     );
@@ -208,8 +192,6 @@ test('setType() should throw a ForestException when the type does not exist in t
     expect(fn () => $chart->setType('Maps'))->toThrow(ForestException::class, '🌳🌳🌳 Invalid Chart type Maps');
 });
 
-// TODO injectContextVariables
-
 test('makeValue() should return a ValueChart', function () {
     $chart = factoryNativeQuery(
         $this,
@@ -237,6 +219,30 @@ test('makeValue() should return a ValueChart', function () {
     ]);
 });
 
+test('makeValue() throw an exception when the key value is not present in the result', function () {
+    $chart = factoryNativeQuery(
+        $this,
+        [
+            'books'   => [
+                'results' => [
+                    [
+                        'key' => 10,
+                    ],
+                ],
+            ],
+            'payload' => [
+                'type'             => 'Value',
+                'query'            => 'SELECT count(*) as value FROM books WHERE id > 1',
+                'contextVariables' => [],
+                'connectionName'   => 'EloquentDatasource',
+            ],
+        ]
+    );
+
+    expect(fn () => $chart->handleRequest(['collectionName' => 'Book']))
+        ->toThrow(ForestException::class, "🌳🌳🌳 The key 'value' is not present in the result");
+});
+
 test('makeObjective() should return a ObjectiveChart', function () {
     $chart = factoryNativeQuery(
         $this,
@@ -259,16 +265,223 @@ test('makeObjective() should return a ObjectiveChart', function () {
     );
     $result = $chart->handleRequest(['collectionName' => 'Book']);
 
-    expect($result)
-        ->toBeArray()
-        ->toHaveKey('content')
-        ->and($result['content'])
-        ->toBeArray()
-        ->toHaveKey('data')
-        ->and($result['content']['data'])
-        ->toHaveKey('id')
-        ->toHaveKey('attributes')
-        ->and($result['content']['data']['attributes'])
+    expect($result['content']['data']['attributes'])
         ->toHaveKey('value', (new ObjectiveChart(10, 20))->serialize())
         ->and($result['content']['data']['id']);
+});
+
+test('makeObjective throw an exception when the keys value and objective are not present in the result', function () {
+    $chart = factoryNativeQuery(
+        $this,
+        [
+            'books'   => [
+                'results' => [
+                    [
+                        'value' => 10,
+                    ],
+                ],
+            ],
+            'payload' => [
+                'type'             => 'Objective',
+                'query'            => 'SELECT COUNT(*) AS value FROM books',
+                'contextVariables' => [],
+                'connectionName'   => 'EloquentDatasource',
+            ],
+        ],
+    );
+
+    expect(fn () => $chart->handleRequest(['collectionName' => 'Book']))
+        ->toThrow(ForestException::class, "🌳🌳🌳 The keys 'value' and 'objective' are not present in the result");
+});
+
+test('makePie() should return a PieChart', function () {
+    $chart = factoryNativeQuery(
+        $this,
+        [
+            'books'   => [
+                'results' => [
+                    [
+                        'key'   => 1,
+                        'value' => 100,
+                    ],
+                    [
+                        'key'   => 2,
+                        'value' => 150,
+                    ],
+                ],
+            ],
+            'payload' => [
+                'type'             => 'Pie',
+                'query'            => 'SELECT posts.user_id AS key, COUNT(*) AS value FROM books GROUP BY user_id',
+                'contextVariables' => [],
+                'connectionName'   => 'EloquentDatasource',
+            ],
+        ],
+    );
+    $result = $chart->handleRequest(['collectionName' => 'Book']);
+
+    expect($result['content']['data']['attributes'])
+        ->toHaveKey('value', (new PieChart([
+            [
+                'key'   => 1,
+                'value' => 100,
+            ],
+            [
+                'key'   => 2,
+                'value' => 150,
+            ],
+        ]))->serialize())
+        ->and($result['content']['data']['id']);
+});
+
+test('makePie() throw an exception when the keys key and value are not present in the result', function () {
+    $chart = factoryNativeQuery(
+        $this,
+        [
+            'books'   => [
+                'results' => [
+                    [
+                        'key' => 1,
+                    ],
+                ],
+            ],
+            'payload' => [
+                'type'             => 'Pie',
+                'query'            => 'SELECT posts.user_id AS key FROM books GROUP BY user_id',
+                'contextVariables' => [],
+                'connectionName'   => 'EloquentDatasource',
+            ],
+        ],
+    );
+
+    expect(fn () => $chart->handleRequest(['collectionName' => 'Book']))
+        ->toThrow(ForestException::class, "🌳🌳🌳 The keys 'key' and 'value' are not present in the result");
+});
+
+test('makeLine() with should return a LineChart', function () {
+    $chart = factoryNativeQuery(
+        $this,
+        [
+            'books'   => [
+                'results' => [
+                    [
+                        'label'  => '2024-01-01',
+                        'values' => ['value' => 10],
+                    ],
+                    [
+                        'label'  => '2024-02-01',
+                        'values' => ['value' => 20],
+                    ],
+                ],
+            ],
+            'payload' => [
+                'type'             => 'Line',
+                'query'            => 'SELECT DATE_TRUNC(\'month\', published_at) AS key, COUNT(*) as value FROM books GROUP BY key ORDER BY key;',
+                'contextVariables' => [],
+                'connectionName'   => 'EloquentDatasource',
+            ],
+        ]
+    );
+    $result = $chart->handleRequest(['collectionName' => 'Book']);
+
+    expect($result['content']['data']['attributes'])
+        ->toHaveKey('value', (new LineChart([
+            [
+                'label'  => '2024-01-01',
+                'values' => ['value' => 10],
+            ],
+            [
+                'label'  => '2024-02-01',
+                'values' => ['value' => 20],
+            ],
+        ]))->serialize())
+        ->and($result['content']['data']['id']);
+});
+
+test('makeLine() should throw an exception when the keys label and values are not present in the result', function () {
+    $chart = factoryNativeQuery(
+        $this,
+        [
+            'books'   => [
+                'results' => [
+                    [
+                        'label' => '2024-01-01',
+                    ],
+                ],
+            ],
+            'payload' => [
+                'type'             => 'Line',
+                'query'            => 'SELECT DATE_TRUNC(\'month\', published_at) AS key FROM books GROUP BY key ORDER BY key;',
+                'contextVariables' => [],
+                'connectionName'   => 'EloquentDatasource',
+            ],
+        ]
+    );
+
+    expect(fn () => $chart->handleRequest(['collectionName' => 'Book']))
+        ->toThrow(ForestException::class, "🌳🌳🌳 The keys 'label' and 'values' are not present in the result");
+});
+
+test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation', function () {
+    $chart = factoryNativeQuery(
+        $this,
+        [
+            'books'   => [
+                'results' => [
+                    [
+                        'key'   => 1,
+                        'value' => 10,
+                    ],
+                    [
+                        'key'   => 2,
+                        'value' => 11,
+                    ],
+                ],
+            ],
+            'payload' => [
+                'type'             => 'Leaderboard',
+                'query'            => 'SELECT tags.id AS key, SUM(posts.id) AS value FROM books JOIN tags ON posts.tag_id = tags.id GROUP BY key ORDER BY value DESC LIMIT 10;',
+                'contextVariables' => [],
+                'connectionName'   => 'EloquentDatasource',
+            ],
+        ],
+    );
+    $result = $chart->handleRequest(['collectionName' => 'Book']);
+
+    expect($result['content']['data']['attributes'])
+        ->toHaveKey('value', (new LeaderboardChart([
+            [
+                'key'   => 1,
+                'value' => 10,
+            ],
+            [
+                'key'   => 2,
+                'value' => 11,
+            ],
+        ]))->serialize())
+        ->and($result['content']['data']['id']);
+});
+
+test('makeLeaderboard() should throw an exception when the keys key and value are not present in the result', function () {
+    $chart = factoryNativeQuery(
+        $this,
+        [
+            'books'   => [
+                'results' => [
+                    [
+                        'key' => 1,
+                    ],
+                ],
+            ],
+            'payload' => [
+                'type'             => 'Leaderboard',
+                'query'            => 'SELECT tags.id AS key FROM books JOIN tags ON posts.tag_id = tags.id GROUP BY key ORDER BY value DESC LIMIT 10;',
+                'contextVariables' => [],
+                'connectionName'   => 'EloquentDatasource',
+            ],
+        ],
+    );
+
+    expect(fn () => $chart->handleRequest(['collectionName' => 'Book']))
+        ->toThrow(ForestException::class, "🌳🌳🌳 The keys 'key' and 'value' are not present in the result");
 });
