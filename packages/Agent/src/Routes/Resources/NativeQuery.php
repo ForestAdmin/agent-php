@@ -2,25 +2,22 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
-use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractAuthenticatedRoute;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextVariablesInjector;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextVariablesInstantiator;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryValidator;
+use ForestAdmin\AgentPHP\Agent\Utils\Traits\QueryHandler;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LeaderboardChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\LineChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ObjectiveChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\PieChart;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Charts\ValueChart;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 class NativeQuery extends AbstractAuthenticatedRoute
 {
-    protected string $type;
+    use QueryHandler;
 
-    protected Datasource $rootDatasource;
+    protected string $type;
 
     /**
      * @return $this
@@ -41,16 +38,18 @@ class NativeQuery extends AbstractAuthenticatedRoute
     {
         $this->build($args);
         QueryValidator::valid($this->request->get('query'));
-        //        $this->permissions->canChart($this->request);
 
         $this->setType($this->request->get('type'));
-        [$query, $contextVariables] = $this->injectContextVariables();
-        $query = str_replace('?', $this->request->get('record_id'), $query);
-        $customizer = AgentFactory::getInstance()->getCustomizer();
-        $this->rootDatasource = $customizer->getRootDatasourceByConnection($this->request->get('connectionName'));
+        $query = str_replace('?', $this->request->get('record_id'), $this->request->get('query'));
 
         $result = $this->convertStdClassToArray(
-            $this->rootDatasource->executeNativeQuery($this->request->get('connectionName'), $query, $contextVariables)
+            $this->executeQuery(
+                $query,
+                $this->request->get('connectionName'),
+                $this->permissions,
+                $this->caller,
+                $this->request->get('contextVariables')
+            )
         );
 
         return ['content' => JsonApi::renderChart($this->{'make' . $this->type}($result))];
@@ -69,13 +68,6 @@ class NativeQuery extends AbstractAuthenticatedRoute
         }
 
         $this->type = $type;
-    }
-
-    private function injectContextVariables(): array
-    {
-        $contextVariables = ContextVariablesInstantiator::buildContextVariables($this->caller, $this->request->get('contextVariables') ?? []);
-
-        return ContextVariablesInjector::injectContextInNativeQuery($this->request->get('query'), $contextVariables);
     }
 
     private function makeValue(array $result): ValueChart
@@ -142,10 +134,5 @@ class NativeQuery extends AbstractAuthenticatedRoute
         }
 
         return new LeaderboardChart($result);
-    }
-
-    private function convertStdClassToArray(array $input): array
-    {
-        return array_map(fn ($item) => (array) $item, $input);
     }
 }
