@@ -4,7 +4,9 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
+use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 
 class Count extends AbstractCollectionRoute
@@ -27,7 +29,18 @@ class Count extends AbstractCollectionRoute
         $this->permissions->can('browse', $this->collection);
 
         if ($this->collection->isCountable()) {
-            $this->filter = new Filter(conditionTree: $this->permissions->getScope($this->collection));
+            $this->filter = new Filter(
+                conditionTree: ConditionTreeFactory::intersect(
+                    [
+                        $this->permissions->getScope($this->collection),
+                        QueryStringParser::parseConditionTree($this->collection, $this->request),
+                        // todo parse query segment
+                    ]
+                ),
+                search: QueryStringParser::parseSearch($this->collection, $this->request),
+                searchExtended: QueryStringParser::parseSearchExtended($this->request),
+                segment: QueryStringParser::parseSegment($this->collection, $this->request),
+            );
             $aggregation = new Aggregation(operation: 'Count');
 
             return [
