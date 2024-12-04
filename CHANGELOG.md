@@ -1,3 +1,10 @@
+## [1.19.3](https://github.com/ForestAdmin/agent-php/compare/v1.19.2...v1.19.3) (2024-12-04)
+
+
+### Bug Fixes
+
+* **rename decorator:** properly map relation when renaming pk field ([#137](https://github.com/ForestAdmin/agent-php/issues/137)) ([6c92156](https://github.com/ForestAdmin/agent-php/commit/6c921569251236dceb4caabcb381df8fbe03b0db))
+
 ## [1.19.2](https://github.com/ForestAdmin/agent-php/compare/v1.19.1...v1.19.2) (2024-11-22)
 
 
