@@ -365,12 +365,12 @@ test('makeLine() with should return a LineChart', function () {
             'books'   => [
                 'results' => [
                     [
-                        'label'  => '2024-01-01',
-                        'values' => ['value' => 10],
+                        'key'    => '2024-01-01',
+                        'value'  => 10,
                     ],
                     [
-                        'label'  => '2024-02-01',
-                        'values' => ['value' => 20],
+                        'key'    => '2024-02-01',
+                        'value'  => 20,
                     ],
                 ],
             ],
@@ -419,7 +419,7 @@ test('makeLine() should throw an exception when the keys label and values are no
     );
 
     expect(fn () => $chart->handleRequest(['collectionName' => 'Book']))
-        ->toThrow(ForestException::class, "🌳🌳🌳 The keys 'label' and 'values' are not present in the result");
+        ->toThrow(ForestException::class, "🌳🌳🌳 The keys 'key' and 'value' are not present in the result");
 });
 
 test('makeLeaderboard() should return a LeaderboardChart on a OneToMany Relation', function () {
