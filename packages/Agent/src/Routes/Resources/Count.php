@@ -5,12 +5,15 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
+use ForestAdmin\AgentPHP\Agent\Utils\Traits\QueryHandler;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 
 class Count extends AbstractCollectionRoute
 {
+    use QueryHandler;
+
     public function setupRoutes(): AbstractRoute
     {
         $this->addRoute(
@@ -34,7 +37,7 @@ class Count extends AbstractCollectionRoute
                     [
                         $this->permissions->getScope($this->collection),
                         QueryStringParser::parseConditionTree($this->collection, $this->request),
-                        // todo parse query segment
+                        $this->parseQuerySegment($this->collection, $this->permissions, $this->caller),
                     ]
                 ),
                 search: QueryStringParser::parseSearch($this->collection, $this->request),

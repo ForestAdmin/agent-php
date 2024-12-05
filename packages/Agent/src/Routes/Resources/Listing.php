@@ -7,12 +7,15 @@ use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
 use ForestAdmin\AgentPHP\Agent\Utils\Csv;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
+use ForestAdmin\AgentPHP\Agent\Utils\Traits\QueryHandler;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use Illuminate\Support\Str;
 
 class Listing extends AbstractCollectionRoute
 {
+    use QueryHandler;
+
     public function setupRoutes(): AbstractRoute
     {
         $this->addRoute(
@@ -35,15 +38,13 @@ class Listing extends AbstractCollectionRoute
 
         $this->build($args);
         $this->permissions->can('browse', $this->collection);
-        //        $user = $this->permissions->getUserData($this->caller->getId());
-        //        $team = $this->permissions->getTeam($this->caller->getRenderingId());
 
         $this->filter = new PaginatedFilter(
             conditionTree: ConditionTreeFactory::intersect(
                 [
                     $this->permissions->getScope($this->collection),
                     QueryStringParser::parseConditionTree($this->collection, $this->request),
-                    // todo parse query segment
+                    $this->parseQuerySegment($this->collection, $this->permissions, $this->caller),
                 ]
             ),
             search: QueryStringParser::parseSearch($this->collection, $this->request),
@@ -70,15 +71,13 @@ class Listing extends AbstractCollectionRoute
         $this->build($args);
         $this->permissions->can('browse', $this->collection);
         $this->permissions->can('export', $this->collection);
-        //        $user = $this->permissions->getUserData($this->caller->getId());
-        //        $team = $this->permissions->getTeam($this->caller->getRenderingId());
 
         $this->filter = new PaginatedFilter(
             conditionTree: ConditionTreeFactory::intersect(
                 [
                     $this->permissions->getScope($this->collection),
                     QueryStringParser::parseConditionTree($this->collection, $this->request),
-                    // todo parse query segment
+                    $this->parseQuerySegment($this->collection, $this->permissions, $this->caller),
                 ]
             ),
             search: QueryStringParser::parseSearch($this->collection, $this->request),
