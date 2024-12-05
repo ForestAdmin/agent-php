@@ -17,6 +17,7 @@ use function ForestAdmin\config;
 
 $before = static function (TestCase $testCase) {
     $datasource = new Datasource();
+    $datasource->setLiveQueryConnections(['EloquentDatasource' => 'sqlite']);
     $collectionCar = new Collection($datasource, 'Car');
     $collectionCar->addFields(
         [
@@ -90,7 +91,10 @@ test('when there is no collectionNames in params return no collections', functio
         ->toEqual(
             [
                 'content' => [
-                    'collections' => [],
+                    'collections'            => [],
+                    'nativeQueryConnections' => [
+                        ['name' => 'EloquentDatasource'],
+                    ],
                 ],
                 'status' => 200,
             ]
@@ -115,31 +119,34 @@ test('when there is collectionNames in params return the collections provided', 
                                     'name'      => 'id',
                                     'type'      => 'Number',
                                     'operators' => [
-                                        'In',
-                                        'Equal',
-                                        'Blank',
+                                        'in',
+                                        'equal',
+                                        'blank',
                                     ],
                                 ],
                                 [
                                     'name'      => 'first_name',
                                     'type'      => 'String',
                                     'operators' => [
-                                        'In',
-                                        'Equal',
-                                        'Blank',
+                                        'in',
+                                        'equal',
+                                        'blank',
                                     ],
                                 ],
                                 [
                                     'name'      => 'last_name',
                                     'type'      => 'String',
                                     'operators' => [
-                                        'In',
-                                        'Equal',
-                                        'Blank',
+                                        'in',
+                                        'equal',
+                                        'blank',
                                     ],
                                 ],
                             ],
                         ],
+                    ],
+                    'nativeQueryConnections' => [
+                        ['name' => 'EloquentDatasource'],
                     ],
                 ],
                 'status' => 200,
