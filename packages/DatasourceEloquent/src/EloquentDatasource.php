@@ -35,8 +35,8 @@ class EloquentDatasource extends BaseDatasource
 
         if (is_string($liveQueryConnections)) {
             $this->liveQueryConnections = [$liveQueryConnections => \config('database.default')];
-        } elseif (! is_array($liveQueryConnections)) {
-            $this->liveQueryConnections = null;
+        } elseif (is_array($liveQueryConnections)) {
+            $this->liveQueryConnections = $liveQueryConnections;
         }
 
         $this->generate();

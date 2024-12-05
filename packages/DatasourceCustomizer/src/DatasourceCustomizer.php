@@ -124,4 +124,9 @@ class DatasourceCustomizer
 
         return $rootDatasource;
     }
+
+    public function getDataSources(): array
+    {
+        return $this->datasources;
+    }
 }
