@@ -19,7 +19,8 @@ trait QueryHandler
 {
     private function executeQuery(string $query, string $connectionName, Permissions $permissions, Caller $caller, ?array $requestContextVariables = []): array
     {
-        [$query, $contextVariables] = $this->injectContextVariables(trim($query), $caller, $permissions, $requestContextVariables);
+        $query = preg_replace('/\s+/', ' ', trim($query));
+        [$query, $contextVariables] = $this->injectContextVariables($query, $caller, $permissions, $requestContextVariables);
 
         /** @var DatasourceCustomizer $customizer */
         $customizer = AgentFactory::getInstance()->getCustomizer();
@@ -46,16 +47,15 @@ trait QueryHandler
             return null;
         }
 
-        //        if (! $this->request->get('connectionName')) {
-        //            throw new ForestException("'connectionName' parameter is mandatory");
-        //        }
+        if (! $this->request->get('connectionName')) {
+            throw new ForestException("'connectionName' parameter is mandatory");
+        }
 
         QueryValidator::valid($this->request->get('segmentQuery'));
-
         $result = $this->convertStdClassToArray(
             $this->executeQuery(
                 $this->request->get('segmentQuery'),
-                'EloquentDatasource', //$this->request->get('connectionName'),
+                $this->request->get('connectionName'),
                 $permissions,
                 $caller,
                 $this->request->get('contextVariables')
@@ -63,7 +63,6 @@ trait QueryHandler
         );
         $ids = array_map(fn ($row) => array_values($row), $result);
         $conditionTreeSegment = ConditionTreeFactory::matchIds($collection, $ids);
-        //        dd($conditionTreeSegment);
         ConditionTreeValidator::validate($conditionTreeSegment, $collection);
 
         return $conditionTreeSegment;
