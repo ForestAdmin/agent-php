@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Capabilities;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractAuthenticatedRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\ColumnSchema;
 use Illuminate\Support\Str;
 
@@ -26,6 +27,22 @@ class Collections extends AbstractAuthenticatedRoute
     {
         $datasource = AgentFactory::get('datasource');
         $collections = $this->request->get('collectionNames') ?? [];
+        $connections = [];
+        /** @var DatasourceCustomizer $customizer */
+        $customizer = AgentFactory::getInstance()->getCustomizer();
+
+        foreach ($customizer->getDataSources() as $rootDatasource) {
+            $connections = array_unique(
+                array_merge(
+                    $connections,
+                    array_map(
+                        fn ($connectionName) => ['name' => $connectionName],
+                        array_keys($rootDatasource->getLiveQueryConnections())
+                    )
+                ),
+                SORT_REGULAR
+            );
+        }
 
         $result = array_map(function ($collectionName) use ($datasource) {
             $collection = $datasource->getCollection($collectionName);
@@ -49,7 +66,8 @@ class Collections extends AbstractAuthenticatedRoute
 
         return [
             'content' => [
-                'collections' => $result,
+                'collections'            => $result,
+                'nativeQueryConnections' => $connections,
             ],
             'status'  => 200,
         ];

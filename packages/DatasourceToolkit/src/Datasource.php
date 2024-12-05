@@ -74,6 +74,11 @@ class Datasource implements DatasourceContract
         throw new ForestException('this datasource do not support native query.');
     }
 
+    public function setLiveQueryConnections(?array $liveQueryConnections): void
+    {
+        $this->liveQueryConnections = $liveQueryConnections;
+    }
+
     public function getLiveQueryConnections(): ?array
     {
         return $this->liveQueryConnections;

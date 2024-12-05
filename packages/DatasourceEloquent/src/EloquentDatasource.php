@@ -26,9 +26,9 @@ class EloquentDatasource extends BaseDatasource
      */
     public function __construct(
         array $databaseConfig,
-        $name = 'eloquent_collection',
+        string $name = 'eloquent_collection',
         protected bool $supportPolymorphicRelations = false,
-        $liveQueryConnections = null
+        ?array $liveQueryConnections = null
     ) {
         parent::__construct($databaseConfig);
         $this->name = $name;
