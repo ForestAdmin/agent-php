@@ -69,4 +69,26 @@ class EloquentDatasource extends BaseDatasource
     {
         return $this->models;
     }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function __serialize(): array
+    {
+        return array_merge(
+            parent::__serialize(),
+            ['supportPolymorphicRelations' => $this->supportPolymorphicRelations]
+        );
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function __unserialize(array $data): void
+    {
+        parent::__unserialize($data);
+
+        $finder = new ClassFinder(config('projectDir'));
+        $this->models = $finder->getModelsInNamespace('App');
+    }
 }

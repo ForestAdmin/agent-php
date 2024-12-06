@@ -51,7 +51,6 @@ class BaseDatasource extends ForestDatasource implements BaseDatasourceContract
     {
         $this->orm = new Manager();
         $this->orm->addConnection($databaseConfig);
-        $this->orm->bootEloquent();
     }
 
     private function makeDoctrineConnection(array $databaseConfig): void
@@ -84,16 +83,24 @@ class BaseDatasource extends ForestDatasource implements BaseDatasourceContract
     /**
      * @codeCoverageIgnore
      */
-    public function __sleep(): array
+    public function __serialize(): array
     {
-        return ['collections', 'charts', 'databaseConfig'];
+        return [
+            'collections'    => $this->collections,
+            'charts'         => $this->charts,
+            'databaseConfig' => $this->databaseConfig,
+        ];
     }
 
     /**
      * @codeCoverageIgnore
      */
-    public function __wakeup(): void
+    public function __unserialize(array $data): void
     {
+        $this->collections = $data['collections'];
+        $this->charts = $data['charts'];
+        $this->databaseConfig = $data['databaseConfig'];
+
         $this->makeOrm($this->databaseConfig);
         $this->makeDoctrineConnection($this->databaseConfig);
     }

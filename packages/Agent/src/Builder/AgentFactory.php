@@ -31,7 +31,9 @@ class AgentFactory
 
     public static ?array $fileCacheOptions;
 
-    protected ?DatasourceContract $datasource = null;
+    protected bool $isBuild = false;
+
+    protected ?DatasourceContract $computedDatasource = null;
 
     public function __construct(protected array $config)
     {
@@ -46,14 +48,11 @@ class AgentFactory
         $this->config = array_merge($this->config, $config);
         $this->buildLogger();
         if ($this->hasEnvSecret) {
-            $serializableConfig = $this->config;
-
             if (isset($this->config['customizeErrorMessage']) && is_callable($this->config['customizeErrorMessage']) && ! is_string($this->config['customizeErrorMessage'])) {
                 Cache::put('customizeErrorMessage', new SerializableClosure($this->config['customizeErrorMessage']));
             }
 
-            unset($serializableConfig['logger'], $serializableConfig['customizeErrorMessage']);
-            Cache::put('config', $serializableConfig, self::TTL_CONFIG);
+            Cache::put('config', $this->serializeConfig(), self::TTL_CONFIG);
         }
 
         Cache::put('forestAgent', new SerializableClosure(fn () => $this), self::TTL);
@@ -84,11 +83,11 @@ class AgentFactory
 
     public function build(): void
     {
-        if ($this->datasource === null) {
-            $this->datasource = $this->customizer->getDatasource();
+        if (! $this->isBuild) {
+            $this->computedDatasource = $this->customizer->getDatasource();
             Cache::put('forestAgent', new SerializableClosure(fn () => $this), self::TTL);
-
             self::sendSchema();
+            $this->isBuild = true;
         }
     }
 
@@ -133,9 +132,8 @@ class AgentFactory
     {
         /** @var self $instance */
         $forestAgentClosure = Cache::get('forestAgent');
-        $instance = $forestAgentClosure();
 
-        return $instance->getDatasourceInstance();
+        return $forestAgentClosure()->getDatasourceInstance();
     }
 
     /**
@@ -162,6 +160,14 @@ class AgentFactory
         }
     }
 
+    private function serializeConfig(): array
+    {
+        $serializableConfig = $this->config;
+        unset($serializableConfig['logger'], $serializableConfig['customizeErrorMessage']);
+
+        return $serializableConfig;
+    }
+
     private function buildCache(): void
     {
         if ($this->hasEnvSecret) {
@@ -172,7 +178,7 @@ class AgentFactory
                 self::$fileCacheOptions = compact('filesystem', 'directory', 'disabledApcuCache');
             }
 
-            Cache::add('config', $this->config, self::TTL_CONFIG);
+            Cache::add('config', $this->serializeConfig(), self::TTL_CONFIG);
         }
     }
 
@@ -188,6 +194,30 @@ class AgentFactory
 
     public function getDatasourceInstance(): ?DatasourceContract
     {
-        return $this->datasource;
+        return $this->computedDatasource;
+    }
+
+    /**
+     * @codeCoverageIgnore
+    */
+    public function __serialize(): array
+    {
+        return [
+            'hasEnvSecret'       => $this->hasEnvSecret,
+            'isBuild'            => $this->isBuild,
+            'computedDatasource' => $this->computedDatasource,
+        ];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function __unserialize(array $data): void
+    {
+        $this->hasEnvSecret = $data['hasEnvSecret'];
+        $this->isBuild = $data['isBuild'];
+        $this->computedDatasource = $data['computedDatasource'];
+
+        $this->customizer = new DatasourceCustomizer();
     }
 }

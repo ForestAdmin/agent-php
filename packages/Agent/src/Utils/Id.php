@@ -18,6 +18,10 @@ class Id
             throw new ForestException('This collection has no primary key');
         }
 
+        if (empty($record)) {
+            throw new ForestException('This record does not exist');
+        }
+
         return collect($primaryKeyNames)->map(fn ($pk) => $record[$pk])->join('|');
     }
 
