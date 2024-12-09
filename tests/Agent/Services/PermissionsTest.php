@@ -176,8 +176,9 @@ function permissionsFactory(TestCase $testCase, array $post = [], $scope = null,
             new Response(200, [], json_encode([
                 'collections' => [
                     'Booking' => [
-                        'scope'    => $scope,
-                        'segments' => [],
+                        'scope'             => $scope,
+                        'segments'          => [],
+                        'liveQuerySegments' => [],
                     ],
                 ],
                 'stats'       => [
@@ -423,9 +424,23 @@ test('canChart() should call twice and return true on allowed chart', function (
         ->shouldReceive('fetch')
         ->andReturn(
             [
+                'collections' => [
+                    'Booking' => [
+                        'scope'             => null,
+                        'segments'          => [],
+                        'liveQuerySegments' => [],
+                    ],
+                ],
                 'stats' => [],
             ],
             [
+                'collections' => [
+                    'Booking' => [
+                        'scope'             => null,
+                        'segments'          => [],
+                        'liveQuerySegments' => [],
+                    ],
+                ],
                 'stats' => [
                     [
                         'type'                 => 'Pie',
@@ -693,7 +708,7 @@ test('canSmartAction() should throw when the forest schema doesn\'t have any act
             'type'       => 'custom-action-requests',
         ],
     ];
-    permissionsFactory($this, $post, null, false);
+    permissionsFactory($this, $post, null, true);
     $permissions = $this->bucket['permissions'];
     $collection = $this->bucket['collection'];
 
