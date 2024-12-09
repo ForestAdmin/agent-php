@@ -37,7 +37,7 @@ class Permissions
     {
         Cache::forget($idCache);
 
-        Logger::log('Debug', "Invalidating $idCache cache..");
+        Logger::log('Debug', "Invalidating $idCache cache.");
     }
 
     public function can(string $action, CollectionContract $collection, $allowFetch = false): bool
@@ -68,7 +68,7 @@ class Permissions
     public function canChart(Request $request): bool
     {
         $attributes = $request->all();
-        unset($attributes['timezone'], $attributes['collection'], $attributes['contextVariables']);
+        unset($attributes['timezone'], $attributes['collection'], $attributes['contextVariables'], $attributes['record_id']);
         $attributes = array_filter($attributes, static fn ($value) => ! is_null($value) && $value !== '');
         $hashRequest = $attributes['type'] . ':' . $this->arrayHash($attributes);
         $isAllowed = in_array($hashRequest, $this->getChartData($this->caller->getRenderingId()), true);
@@ -119,18 +119,53 @@ class Permissions
         return $isAllowed;
     }
 
+    public function canExecuteQuerySegment(CollectionContract $collection, string $query, string $connectionName): bool
+    {
+        $hashRequest = $this->arrayHash(['query' => $query, 'connectionName' => $connectionName]);
+        $isAllowed = in_array($hashRequest, $this->getSegments($collection), true);
+
+        // Refetch
+        if (! $isAllowed) {
+            $isAllowed = $this->getSegments($collection, true)->contains($hashRequest);
+        }
+
+        // Still not allowed - throw forbidden message
+        if (! $isAllowed) {
+            Logger::log(
+                'Debug',
+                sprintf(
+                    "User %s cannot retrieve query segment on rendering %s",
+                    $this->caller->getId(),
+                    $this->caller->getRenderingId()
+                )
+            );
+
+            throw new ForbiddenError("You don't have permission to use this query segment.");
+        }
+
+        Logger::log(
+            'Debug',
+            sprintf(
+                "User %s can retrieve query segment on rendering %s",
+                $this->caller->getId(),
+                $this->caller->getRenderingId()
+            )
+        );
+
+        return $isAllowed;
+    }
+
     public function getScope(CollectionContract $collection): ?ConditionTree
     {
-        $permissions = $this->getScopeAndTeamData($this->caller->getRenderingId());
+        $permissions = $this->getRenderingData($this->caller->getRenderingId());
 
-        $scope = $permissions->get('scopes')->get($collection->getName());
-        $team = $permissions->get('team');
-        $user = $this->getUserData($this->caller->getId());
-
-        if (! $scope) {
+        if (! in_array($collection->getName(), array_keys($permissions->get('scopes')), true)) {
             return null;
         }
 
+        $scope = $permissions->get('scopes')[$collection->getName()];
+        $team = $permissions->get('team');
+        $user = $this->getUserData($this->caller->getId());
         $contextVariables = new ContextVariables(team: $team, user: $user);
 
         return ContextVariablesInjector::injectContextInFilter($scope, $contextVariables);
@@ -157,9 +192,16 @@ class Permissions
         return $cache[$userId];
     }
 
+    public function getSegments(CollectionContract $collection, bool $forceFetch = false): array
+    {
+        $permissions = $this->getRenderingData($this->caller->getRenderingId(), $forceFetch);
+
+        return $permissions->get('segments')[$collection->getName()];
+    }
+
     public function getTeam(int $renderingId): array
     {
-        $permissions = $this->getScopeAndTeamData($renderingId);
+        $permissions = $this->getRenderingData($renderingId);
 
         return $permissions->get('team');
     }
@@ -189,26 +231,9 @@ class Permissions
 
     protected function getChartData(int $renderingId, $forceFetch = false): array
     {
-        if ($forceFetch) {
-            $this->invalidateCache('forest.stats');
-        }
+        $renderingData = $this->getRenderingData($renderingId, $forceFetch);
 
-        return Cache::remember(
-            'forest.stats',
-            function () use ($renderingId) {
-                $response = $this->fetch('/liana/v4/permissions/renderings/' . $renderingId);
-                $statHash = [];
-                foreach ($response['stats'] as $stat) {
-                    $stat = array_filter($stat, static fn ($value) => ! is_null($value) && $value !== '');
-                    $statHash[] = $stat['type'] . ':' . $this->arrayHash($stat);
-                }
-
-                Logger::log('Debug', "Loading rendering permissions for rendering $renderingId");
-
-                return $statHash;
-            },
-            config('permissionExpiration')
-        );
+        return $renderingData->get('charts');
     }
 
     protected function arrayHash(array $data): string
@@ -218,17 +243,24 @@ class Permissions
         return sha1(json_encode($data, JSON_THROW_ON_ERROR));
     }
 
-    protected function getScopeAndTeamData(int $renderingId): IlluminateCollection
+    protected function getRenderingData(int $renderingId, bool $forceFetch = false): IlluminateCollection
     {
+        if ($forceFetch) {
+            $this->invalidateCache('forest.rendering');
+        }
+
         return Cache::remember(
-            'forest.scopes',
+            'forest.rendering',
             function () use ($renderingId) {
                 $data = collect();
                 $response = $this->fetch('/liana/v4/permissions/renderings/' . $renderingId);
-
+                //dd($response);
                 $data->put('scopes', $this->decodeScopePermissions($response['collections']));
                 $data->put('team', $response['team']);
+                $data->put('segments', $this->decodeSegmentPermissions($response['collections']));
+                $data->put('charts', $this->decodeChartPermissions($response['stats']));
 
+                //dd($data);
                 return $data;
             },
             config('permissionExpiration')
@@ -294,7 +326,7 @@ class Permissions
         return $actions;
     }
 
-    protected function decodeScopePermissions(array $rawPermissions): IlluminateCollection
+    protected function decodeScopePermissions(array $rawPermissions): array
     {
         $scopes = [];
         foreach ($rawPermissions as $collectionName => $value) {
@@ -303,7 +335,28 @@ class Permissions
             }
         }
 
-        return collect($scopes);
+        return $scopes;
+    }
+
+    protected function decodeChartPermissions(array $rawPermissions): array
+    {
+        $charts = [];
+        foreach ($rawPermissions as $chart) {
+            $chart = array_filter($chart, static fn ($value) => ! is_null($value) && $value !== '');
+            $charts[] = $chart['type'] . ':' . $this->arrayHash($chart);
+        }
+
+        return $charts;
+    }
+
+    protected function decodeSegmentPermissions(array $rawPermissions): array
+    {
+        $segments = [];
+        foreach ($rawPermissions as $collectionName => $value) {
+            $segments[$collectionName] = array_map(fn ($segment) => $this->arrayHash($segment), $value['liveQuerySegments']);
+        }
+
+        return $segments;
     }
 
     protected function fetch(string $url)
