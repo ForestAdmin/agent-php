@@ -24,7 +24,7 @@ class ScopeInvalidation extends AbstractAuthenticatedRoute
     public function handleRequest()
     {
         $this->build();
-        $this->permissions->invalidateCache('forest.scopes');
+        $this->permissions->invalidateCache('forest.rendering');
 
         return [
             'content' => null,

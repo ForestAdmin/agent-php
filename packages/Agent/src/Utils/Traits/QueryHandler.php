@@ -52,6 +52,8 @@ trait QueryHandler
         }
 
         QueryValidator::valid($this->request->get('segmentQuery'));
+        $permissions->canExecuteQuerySegment($collection, $this->request->get('segmentQuery'), $this->request->get('connectionName'));
+
         $result = $this->convertStdClassToArray(
             $this->executeQuery(
                 $this->request->get('segmentQuery'),
