@@ -126,7 +126,7 @@ class Permissions
 
         // Refetch
         if (! $isAllowed) {
-            $isAllowed = $this->getSegments($collection, true)->contains($hashRequest);
+            $isAllowed = in_array($hashRequest, $this->getSegments($collection, true), true);
         }
 
         // Still not allowed - throw forbidden message
@@ -254,13 +254,12 @@ class Permissions
             function () use ($renderingId) {
                 $data = collect();
                 $response = $this->fetch('/liana/v4/permissions/renderings/' . $renderingId);
-                //dd($response);
+
                 $data->put('scopes', $this->decodeScopePermissions($response['collections']));
                 $data->put('team', $response['team']);
                 $data->put('segments', $this->decodeSegmentPermissions($response['collections']));
                 $data->put('charts', $this->decodeChartPermissions($response['stats']));
 
-                //dd($data);
                 return $data;
             },
             config('permissionExpiration')
