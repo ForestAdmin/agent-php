@@ -62,7 +62,7 @@ class Permissions
             throw new ForbiddenError('You don\'t have permission to ' . $action . ' this collection.');
         }
 
-        return $isAllowed;
+        return true;
     }
 
     public function canChart(Request $request): bool
@@ -87,7 +87,7 @@ class Permissions
 
         Logger::log('Debug', 'User ' . $this->caller->getId() .' can retrieve chart on rendering ' . $this->caller->getRenderingId());
 
-        return $isAllowed;
+        return true;
     }
 
     public function canSmartAction(Request $request, CollectionContract $collection, Filter $filter, $allowFetch = true): bool
@@ -152,7 +152,7 @@ class Permissions
             )
         );
 
-        return $isAllowed;
+        return true;
     }
 
     public function getScope(CollectionContract $collection): ?ConditionTree
@@ -233,7 +233,7 @@ class Permissions
     {
         $renderingData = $this->getRenderingData($renderingId, $forceFetch);
 
-        return $renderingData->get('charts');
+        return $renderingData->get('charts') ?? [];
     }
 
     protected function arrayHash(array $data): string

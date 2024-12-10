@@ -123,7 +123,7 @@ function factoryChart(TestCase $testCase, $args = []): Charts
     Cache::put(
         'forest.stats',
         [
-            0 => $_GET['type'] . ':' . sha1(json_encode($attributes, JSON_THROW_ON_ERROR)),
+            $_GET['type'] . ':' . sha1(json_encode($attributes, JSON_THROW_ON_ERROR)),
         ],
         config('permissionExpiration')
     );
@@ -161,18 +161,22 @@ function factoryChart(TestCase $testCase, $args = []): Charts
     );
 
     Cache::put(
-        'forest.scopes',
+        'forest.rendering',
         collect(
             [
-                'scopes' => collect([]),
+                'scopes' => [],
                 'team'   => [
                     'id'   => 44,
                     'name' => 'Operations',
+                ],
+                'charts' => [
+                    $_GET['type'] . ':' . sha1(json_encode($attributes, JSON_THROW_ON_ERROR)),
                 ],
             ]
         ),
         config('permissionExpiration')
     );
+
     $chart = \Mockery::mock(Charts::class)
         ->makePartial()
         ->shouldReceive('checkIp')
@@ -226,6 +230,7 @@ test('injectContextVariables() should update the request', function () {
             ],
         ]
     );
+
     $chart->handleRequest(['collectionName' => 'Book']);
     /** @var Filter $filter */
     $filter = $this->invokeProperty($chart, 'filter');
