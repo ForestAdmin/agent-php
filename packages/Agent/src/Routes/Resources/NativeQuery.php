@@ -37,8 +37,11 @@ class NativeQuery extends AbstractAuthenticatedRoute
     public function handleRequest(array $args = []): array
     {
         $this->build($args);
-        QueryValidator::valid($this->request->get('query'));
+        if (null === $this->request->get('connectionName')) {
+            throw new ForestException('Missing native query connection attribute', 422);
+        }
 
+        QueryValidator::valid($this->request->get('query'));
         $this->setType($this->request->get('type'));
         $query = str_replace('?', $this->request->get('record_id'), $this->request->get('query'));
 

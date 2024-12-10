@@ -149,7 +149,7 @@ function factoryNativeQuery(TestCase $testCase, $args = []): NativeQuery
     );
 
     Cache::put(
-        'forest.scopes',
+        'forest.rendering',
         collect(
             [
                 'scopes' => collect([]),
@@ -190,6 +190,41 @@ test('setType() should throw a ForestException when the type does not exist in t
     $chart = new NativeQuery();
 
     expect(fn () => $chart->setType('Maps'))->toThrow(ForestException::class, '🌳🌳🌳 Invalid Chart type Maps');
+});
+
+test('handleRequest() should throw a ForestException when the connection attribute is missing', function () {
+    $chart = factoryNativeQuery(
+        $this,
+        [
+            'books'   => [],
+            'payload' => [
+                'type'             => 'Value',
+                'query'            => 'SELECT count(*) as value FROM books WHERE id > 1;',
+                'contextVariables' => [],
+            ],
+        ]
+    );
+
+    expect(fn () => $chart->handleRequest(['collectionName' => 'Book']))
+        ->toThrow(ForestException::class, '🌳🌳🌳 Missing native query connection attribute');
+});
+
+test('handleRequest() should throw a ForestException when the connectionName is unknown', function () {
+    $chart = factoryNativeQuery(
+        $this,
+        [
+            'books'   => [],
+            'payload' => [
+                'type'             => 'Value',
+                'query'            => 'SELECT count(*) as value FROM books WHERE id > 1;',
+                'contextVariables' => [],
+                'connectionName'   => 'FOO',
+            ],
+        ]
+    );
+
+    expect(fn () => $chart->handleRequest(['collectionName' => 'Book']))
+        ->toThrow(ForestException::class, "🌳🌳🌳 No datasource found for connection: FOO");
 });
 
 test('makeValue() should return a ValueChart', function () {

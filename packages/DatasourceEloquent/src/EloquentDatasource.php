@@ -5,6 +5,7 @@ namespace ForestAdmin\AgentPHP\DatasourceEloquent;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseDatasource;
 use ForestAdmin\AgentPHP\DatasourceEloquent\Utils\ClassFinder;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 
 use function ForestAdmin\config;
 
@@ -58,7 +59,6 @@ class EloquentDatasource extends BaseDatasource
             try {
                 $this->addCollection(new EloquentCollection($this, $modelInstance, $this->supportPolymorphicRelations));
             } catch (\Exception $e) {
-                dd($e);
                 // do nothing
             }
         }
@@ -103,8 +103,11 @@ class EloquentDatasource extends BaseDatasource
 
     public function executeNativeQuery(string $connectionName, string $query, array $bind = []): array
     {
-        $connection = \config('database.connections.' . $this->liveQueryConnections[$connectionName]);
+        if (! isset($this->liveQueryConnections[$connectionName])) {
+            throw new ForestException("Native query connection '{$connectionName}' is unknown.", 422);
+        }
 
+        $connection = \config('database.connections.' . $this->liveQueryConnections[$connectionName]);
         $orm = new Manager();
         $orm->addConnection($connection);
 
