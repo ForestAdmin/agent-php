@@ -60,6 +60,10 @@ trait CollectionMethods
      */
     public function addField(string $name, ColumnSchema|RelationSchema $field): void
     {
+        if ($this->fields->has($name)) {
+            throw new ForestException('Field ' . $name . ' already defined in collection');
+        }
+
         $this->fields->put($name, $field);
     }
 
