@@ -48,3 +48,9 @@ it('should throw when call renderChart', function ($caller) {
     $datasource = new Datasource();
     expect(fn () => $datasource->renderChart($caller, 'myChart'))->toThrow(ForestException::class);
 })->with('caller');
+
+it('throw an exception by default on executeNativeQuery', function () {
+    $datasource = new Datasource();
+    expect(fn () => $datasource->executeNativeQuery('eloquent_collection', 'SELECT * FROM table'))
+        ->toThrow(ForestException::class);
+});

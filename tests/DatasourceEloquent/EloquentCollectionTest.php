@@ -262,3 +262,41 @@ describe('addRelationships() without support polymorphic Relations', function ()
         expect($collection->getFields())->not()->toHaveKey('commentable');
     });
 });
+
+test('serialize should return an array of records', function () {
+    /** @var EloquentDatasource $eloquentDatasource */
+    global $eloquentDatasource;
+    $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book');
+
+    $serialize = $collection->__serialize();
+    expect($serialize)->toBeArray()
+        ->and($serialize['fields'])->toEqual($collection->getFields())
+        ->and($serialize['actions'])->toEqual($collection->getActions())
+        ->and($serialize['segments'])->toEqual($collection->getSegments())
+        ->and($serialize['charts'])->toEqual($collection->getCharts())
+        ->and($serialize['schema'])->toEqual($collection->getSchema())
+        ->and($serialize['dataSource'])->toEqual($collection->getDataSource())
+        ->and($serialize['name'])->toEqual($collection->getName())
+        ->and($serialize['tableName'])->toEqual($collection->getTableName())
+        ->and($serialize['model'])->toEqual('ForestAdmin\AgentPHP\Tests\DatasourceEloquent\Models\Book');
+});
+
+test('unserialize should return an EloquentCollection', function () {
+    /** @var EloquentDatasource $eloquentDatasource */
+    global $eloquentDatasource;
+    $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book');
+
+    $serialize = $collection->__serialize();
+    $collection->__unserialize($serialize);
+
+    expect($collection)->toBeInstanceOf(EloquentCollection::class)
+        ->and($collection->getName())->toEqual('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book')
+        ->and($collection->getFields())->toEqual($serialize['fields'])
+        ->and($collection->getActions())->toEqual($serialize['actions'])
+        ->and($collection->getSegments())->toEqual($serialize['segments'])
+        ->and($collection->getCharts())->toEqual($serialize['charts'])
+        ->and($collection->getSchema())->toEqual($serialize['schema'])
+        ->and($collection->getDataSource())->toEqual($serialize['dataSource'])
+        ->and($collection->getTableName())->toEqual($serialize['tableName'])
+        ->and($collection->getModel())->toBeInstanceOf('ForestAdmin\AgentPHP\Tests\DatasourceEloquent\Models\Book');
+});

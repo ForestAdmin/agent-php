@@ -44,6 +44,12 @@ test('packId() should return the id value', function () {
     expect($packId)->toEqual(1);
 });
 
+test('packId() should throw an exception when record is empty', function () {
+    $collectionUser = $this->bucket['collectionUser'];
+
+    expect(fn () => Id::packId($collectionUser, []))->toThrow(ForestException::class, '🌳🌳🌳 This record does not exist');
+});
+
 test('packId() throw when collection doesn\'t have any primary keys', function () {
     $collectionFoo = $this->bucket['collectionFoo'];
 
