@@ -152,7 +152,7 @@ function factoryNativeQuery(TestCase $testCase, $args = []): NativeQuery
         'forest.rendering',
         collect(
             [
-                'scopes' => collect([]),
+                'scopes' => [],
                 'team'   => [
                     'id'   => 44,
                     'name' => 'Operations',

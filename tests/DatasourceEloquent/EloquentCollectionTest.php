@@ -1,15 +1,16 @@
 <?php
 
 use ForestAdmin\AgentPHP\Agent\Http\Request;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceEloquent\EloquentCollection;
 use ForestAdmin\AgentPHP\DatasourceEloquent\EloquentDatasource;
 use ForestAdmin\AgentPHP\DatasourceEloquent\ThroughCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
@@ -25,7 +26,7 @@ beforeEach(closure: function () {
     global $eloquentDatasource;
     $this->buildAgent(new Datasource(), ['projectDir' => __DIR__]);
     $this->initDatabase();
-    $eloquentDatasource = new EloquentDatasource(TestCase::DB_CONFIG, true);
+    $eloquentDatasource = new EloquentDatasource(TestCase::DB_CONFIG, 'eloquent_collection', true);
 });
 
 describe('addRelationships()', function () {
@@ -126,9 +127,16 @@ test('list() should return an array of records', function () {
     $collection = $eloquentDatasource->getCollection('ForestAdmin_AgentPHP_Tests_DatasourceEloquent_Models_Book');
     $request = Request::createFromGlobals();
     $caller = QueryStringParser::parseCaller($request);
-    $filter = ContextFilterFactory::buildPaginated($collection, $request, null);
-    $projection = QueryStringParser::parseProjection($collection, $request);
+    $filter = new PaginatedFilter(
+        conditionTree: ConditionTreeFactory::intersect([QueryStringParser::parseConditionTree($collection, $request)]),
+        search: QueryStringParser::parseSearch($collection, $request),
+        searchExtended: QueryStringParser::parseSearchExtended($request),
+        segment: QueryStringParser::parseSegment($collection, $request),
+        sort: QueryStringParser::parseSort($collection, $request),
+        page: QueryStringParser::parsePagination($request)
+    );
 
+    $projection = QueryStringParser::parseProjection($collection, $request);
     $records = $collection->list($caller, $filter, $projection);
 
     expect($records)->toBeArray()
