@@ -7,6 +7,7 @@ use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Count;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Destroy;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Listing;
+use ForestAdmin\AgentPHP\Agent\Routes\Resources\NativeQuery;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\AssociateRelated;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\CountRelated;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\DissociateRelated;
@@ -73,7 +74,8 @@ test('getRoutes() should work', function () {
                 AssociateRelated::make()->getRoutes(),
                 DissociateRelated::make()->getRoutes(),
                 CountRelated::make()->getRoutes(),
-                Collections::class::make()->getRoutes()
+                Collections::class::make()->getRoutes(),
+                NativeQuery::make()->getRoutes()
             )
         );
 });
