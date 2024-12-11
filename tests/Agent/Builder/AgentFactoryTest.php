@@ -1,6 +1,7 @@
 <?php
 
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
+use ForestAdmin\AgentPHP\Agent\Facades\Cache;
 use ForestAdmin\AgentPHP\Agent\Services\LoggerServices;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\DatasourceCustomizer;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DecoratorsStack;
@@ -137,4 +138,26 @@ test('use() should work', function () {
     $spy = $this->invokeProperty($agent, 'customizer');
 
     $spy->shouldHaveReceived('use');
+});
+
+test('getInstance() should return the agent instance', function () {
+    $datasource = new Datasource();
+    $agentFactory = new AgentFactory(AGENT_OPTIONS);
+    $collectionUser = new Collection($datasource, 'User');
+    $collectionUser->addFields(
+        [
+            'id'         => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
+            'first_name' => new ColumnSchema(columnType: PrimitiveType::STRING),
+            'last_name'  => new ColumnSchema(columnType: PrimitiveType::STRING),
+        ]
+    );
+    $datasource->addCollection($collectionUser);
+    $agentFactory->addDatasource($datasource);
+
+    Cache::put('forestAgent', new SerializableClosure(fn () => $agentFactory), AgentFactory::TTL);
+
+    expect($agentFactory::getInstance())
+        ->toBeInstanceOf(AgentFactory::class)
+        ->and($agentFactory::getInstance()->getCustomizer()->getDatasource()->getCollections()->first()->getName())
+        ->toEqual('User');
 });
