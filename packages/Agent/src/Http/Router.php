@@ -11,6 +11,7 @@ use ForestAdmin\AgentPHP\Agent\Routes\Charts\Charts;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Count;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Destroy;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Listing;
+use ForestAdmin\AgentPHP\Agent\Routes\Resources\NativeQuery;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\AssociateRelated;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\CountRelated;
 use ForestAdmin\AgentPHP\Agent\Routes\Resources\Related\DissociateRelated;
@@ -34,6 +35,7 @@ class Router
             Authentication::make()->getRoutes(),
             Collections::make()->getRoutes(),
             Charts::make()->getRoutes(),
+            NativeQuery::make()->getRoutes(),
             ScopeInvalidation::make()->getRoutes(),
             Listing::make()->getRoutes(),
             Store::make()->getRoutes(),

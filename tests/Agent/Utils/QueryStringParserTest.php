@@ -235,7 +235,7 @@ test('parseProjection() on a flat collection on a request with an unknown field 
     $_GET['fields'] = ['Category' => 'foo'];
 
     expect(fn () => QueryStringParser::parseProjection($collectionCategory, Request::createFromGlobals()))
-        ->toThrow(ForestException::class, '🌳🌳🌳 Invalid projection');
+        ->toThrow(ForestException::class, '🌳🌳🌳 Relation not found: Category.foo');
 });
 
 test('parseProjectionWithPks() when the request is about a PolymorphicOneToMany association', function () {

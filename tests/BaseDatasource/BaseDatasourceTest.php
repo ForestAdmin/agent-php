@@ -6,6 +6,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\Tests\TestCase;
 use Illuminate\Database\Capsule\Manager;
+use Illuminate\Support\Collection;
 
 beforeEach(closure: function () {
     global $baseDatasource;
@@ -56,4 +57,26 @@ test('makeDoctrineConnection() should sent the correct configuration to doctrine
         'driver'    => 'pdo_pgsql',
         'url'       => null,
     ]);
+});
+
+test('serialize() should return the correct serialized object', function () {
+    global $baseDatasource;
+    $serialized = $baseDatasource->__serialize();
+
+    expect($serialized)
+        ->toHaveKey('collections')
+        ->toHaveKey('charts')
+        ->toHaveKey('databaseConfig')
+        ->and($serialized['databaseConfig'])->toBe(TestCase::DB_CONFIG);
+});
+
+test('unserialize() should return the correct object', function () {
+    global $baseDatasource;
+    $serialized = $baseDatasource->__serialize();
+    $baseDatasource->__unserialize($serialized);
+
+    expect($baseDatasource->getCollections())->toBeInstanceOf(Collection::class)
+        ->and($baseDatasource->getCharts())->toBeInstanceOf(Collection::class)
+        ->and($this->invokeProperty($baseDatasource, 'databaseConfig'))
+        ->toBe(TestCase::DB_CONFIG);
 });

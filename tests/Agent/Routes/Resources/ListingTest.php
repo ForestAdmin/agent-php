@@ -101,10 +101,10 @@ $before = static function (TestCase $testCase, $args = []) {
     );
 
     Cache::put(
-        'forest.scopes',
+        'forest.rendering',
         collect(
             [
-                'scopes' => collect([]),
+                'scopes' => [],
                 'team'   => [
                     'id'   => 44,
                     'name' => 'Operations',
@@ -377,6 +377,6 @@ test('handleRequest() should return a response 200 with an attribute meta', func
     $listing = $before($this, []);
 
     expect(fn () => $listing->handleRequest(['collectionName' => 'User']))
-        ->toThrow(ForestException::class, "🌳🌳🌳 The given operator 'Shorter_Than' is not supported by the column: id. The allowed operators are: [Equal]");
+        ->toThrow(ForestException::class, "🌳🌳🌳 The given operator 'Shorter_Than' is not supported by the column: id. The allowed operators are: [Equal, Blank, In]");
 
 });

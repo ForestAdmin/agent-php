@@ -57,33 +57,29 @@ class QueryStringParser
      */
     public static function parseProjection(CollectionContract $collection, Request $request): Projection
     {
-        try {
-            $fields = $request->input('fields.' . $collection->getName());
+        $fields = $request->input('fields.' . $collection->getName());
 
-            if ($fields === null || $fields === '') {
-                return ProjectionFactory::all($collection);
-            }
-            $rootFields = collect(explode(',', $fields));
-            $explicitRequest = $rootFields->map(
-                static function ($field) use ($collection, $request) {
-                    $field = trim($field);
-                    $column = $collection->getFields()->get($field);
-
-                    if (null !== $column && $column->getType() === 'PolymorphicManyToOne') {
-                        return $field . ':*';
-                    }
-
-                    return null !== $column && $column->getType() === 'Column' ?
-                        $field : $field . ':' . $request->input("fields.$field");
-                }
-            );
-
-            ProjectionValidator::validate($collection, new Projection($explicitRequest->toArray()));
-
-            return new Projection($explicitRequest->all());
-        } catch (\Exception $e) {
-            throw new ForestException('Invalid projection');
+        if ($fields === null || $fields === '') {
+            return ProjectionFactory::all($collection);
         }
+        $rootFields = collect(explode(',', $fields));
+        $explicitRequest = $rootFields->map(
+            static function ($field) use ($collection, $request) {
+                $field = trim($field);
+                $column = $collection->getFields()->get($field);
+
+                if (null !== $column && $column->getType() === 'PolymorphicManyToOne') {
+                    return $field . ':*';
+                }
+
+                return null !== $column && $column->getType() === 'Column' ?
+                    $field : $field . ':' . $request->input("fields.$field");
+            }
+        );
+
+        ProjectionValidator::validate($collection, new Projection($explicitRequest->toArray()));
+
+        return new Projection($explicitRequest->all());
     }
 
     public static function parseProjectionWithPks(CollectionContract $collection, Request $request): Projection

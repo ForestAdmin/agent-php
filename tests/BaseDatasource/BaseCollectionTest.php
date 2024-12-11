@@ -1,14 +1,15 @@
 <?php
 
 use ForestAdmin\AgentPHP\Agent\Http\Request;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseCollection;
 use ForestAdmin\AgentPHP\BaseDatasource\BaseDatasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
@@ -38,7 +39,6 @@ test('makeColumns() should add a columnSchema for each field fetch in the table'
     /** @var BaseCollection $baseCollection */
     global $baseCollection;
     $fields = $this->invokeMethod($baseCollection, 'fetchFieldsFromTable');
-    //makeColumns() is call in construct()
 
     expect($baseCollection->getFields())->toHaveCount(count($fields['columns']))
         ->and($baseCollection->getFields())->each(fn ($column) => get_class($column) === ColumnSchema::class);
@@ -49,7 +49,15 @@ test('list() should return an array of records', function () {
     global $baseCollection;
     $request = Request::createFromGlobals();
     $caller = QueryStringParser::parseCaller($request);
-    $filter = ContextFilterFactory::buildPaginated($baseCollection, $request, null);
+    $filter = new PaginatedFilter(
+        conditionTree: ConditionTreeFactory::intersect([QueryStringParser::parseConditionTree($baseCollection, $request)]),
+        search: QueryStringParser::parseSearch($baseCollection, $request),
+        searchExtended: QueryStringParser::parseSearchExtended($request),
+        segment: QueryStringParser::parseSegment($baseCollection, $request),
+        sort: QueryStringParser::parseSort($baseCollection, $request),
+        page: QueryStringParser::parsePagination($request)
+    );
+
     $projection = QueryStringParser::parseProjection($baseCollection, $request);
 
     $records = $baseCollection->list($caller, $filter, $projection);
