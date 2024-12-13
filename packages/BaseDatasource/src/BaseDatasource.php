@@ -16,11 +16,12 @@ class BaseDatasource extends ForestDatasource implements BaseDatasourceContract
     protected Connection $doctrineConnection;
 
     public const DRIVERS = [
-        'pgsql'   => 'pdo_pgsql',
-        'mariadb' => 'pdo_mysql',
-        'mysql'   => 'pdo_mysql',
-        'sqlite'  => 'pdo_sqlite',
-        'sqlsrv'  => 'pdo_sqlsrv',
+        'pgsql'        => 'pdo_pgsql',
+        'postgresql'   => 'pdo_pgsql',
+        'mariadb'      => 'pdo_mysql',
+        'mysql'        => 'pdo_mysql',
+        'sqlite'       => 'pdo_sqlite',
+        'sqlsrv'       => 'pdo_sqlsrv',
     ];
 
     public function __construct(protected array $databaseConfig)
@@ -55,6 +56,24 @@ class BaseDatasource extends ForestDatasource implements BaseDatasourceContract
 
     private function makeDoctrineConnection(array $databaseConfig): void
     {
+        if (! isset($databaseConfig['driver']) && isset($databaseConfig['url'])) {
+            $parsedUrl = parse_url($databaseConfig['url']);
+            if ($parsedUrl === false) {
+                throw new ForestException('Invalid database DSN URL provided.');
+            }
+
+            parse_str($parsedUrl['query'] ?? '', $queryParams);
+
+            $databaseConfig = array_merge([
+                'driver'   => $parsedUrl['scheme'] ?? null,
+                'username' => $parsedUrl['user'] ?? null,
+                'password' => $parsedUrl['pass'] ?? null,
+                'host'     => $parsedUrl['host'] ?? null,
+                'port'     => $parsedUrl['port'] ?? null,
+                'database' => ltrim($parsedUrl['path'] ?? '', '/'),
+            ], $queryParams, $databaseConfig);
+        }
+
         if (! isset(self::DRIVERS[$databaseConfig['driver']])) {
             throw new ForestException("The given driver '{$databaseConfig['driver']}' is unknown, " .
                 'only the following drivers are supported: ' . implode(', ', array_keys(self::DRIVERS)));
