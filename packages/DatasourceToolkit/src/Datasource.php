@@ -15,9 +15,7 @@ class Datasource implements DatasourceContract
 
     protected IlluminateCollection $charts;
 
-    protected ?string $name = null;
-
-    protected ?array $liveQueryConnections = null;
+    protected array $liveQueryConnections = [];
 
     public function __construct()
     {

@@ -20,24 +20,21 @@ class EloquentDatasource extends BaseDatasource
 {
     private array $models = [];
 
-    private array $dbConnections = [];
-
     /**
      * @throws \ReflectionException
      */
     public function __construct(
         array $databaseConfig,
-        string $name = 'eloquent_collection',
         protected bool $supportPolymorphicRelations = false,
-        ?array $liveQueryConnections = null
+        null|array|string $liveQueryConnections = null
     ) {
         parent::__construct($databaseConfig);
-        $this->name = $name;
-
         if (is_string($liveQueryConnections)) {
             $this->liveQueryConnections = [$liveQueryConnections => \config('database.default')];
         } elseif (is_array($liveQueryConnections)) {
             $this->liveQueryConnections = $liveQueryConnections;
+        } else {
+            $this->liveQueryConnections = [];
         }
 
         $this->generate();
@@ -63,7 +60,7 @@ class EloquentDatasource extends BaseDatasource
             }
         }
 
-        $this->dbConnections = array_unique($dbConnections);
+        array_unique($dbConnections);
     }
 
     public function addCollection(CollectionContract $collection): void
@@ -89,11 +86,6 @@ class EloquentDatasource extends BaseDatasource
     public function getModels(): array
     {
         return $this->models;
-    }
-
-    public function getDbConnections(): array
-    {
-        return $this->dbConnections;
     }
 
     public function getLiveQueryConnections(): ?array
