@@ -85,7 +85,12 @@ class AgentFactory
     {
         if (! $this->isBuild) {
             $this->computedDatasource = $this->customizer->getDatasource();
-            Cache::put('forestAgent', new SerializableClosure(fn () => $this), self::TTL);
+            if (class_exists('Illuminate\Foundation\Application')) {
+                Cache::put('forestAgent', new SerializableClosure(fn () => $this), self::TTL);
+            } elseif (class_exists('Symfony\Component\HttpKernel\Kernel')) {
+                Cache::put('forestAgent', $this, self::TTL);
+            }
+
             self::sendSchema();
             $this->isBuild = true;
         }
@@ -130,17 +135,18 @@ class AgentFactory
 
     public static function getDatasource()
     {
-        /** @var self $instance */
-        $forestAgentClosure = Cache::get('forestAgent');
-
-        return $forestAgentClosure()->getDatasourceInstance();
+        return self::getInstance()->getDatasourceInstance();
     }
 
     public static function getInstance()
     {
-        $forestAgentClosure = Cache::get('forestAgent');
+        $forestAgent = Cache::get('forestAgent');
 
-        return $forestAgentClosure();
+        if ($forestAgent instanceof SerializableClosure) {
+            return $forestAgent();
+        }
+
+        return $forestAgent;
     }
 
     /**
