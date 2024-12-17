@@ -32,7 +32,7 @@ test('makeDoctrineConnection() should return a Connection object', function () {
 test('makeDoctrineConnection() should throw an exception if the driver is unknown', function () {
     expect(
         static fn () => new BaseDatasource(['driver' => 'fake-driver', 'database' => 'database.sqlite'])
-    )->toThrow(ForestException::class, "🌳🌳🌳 The given driver 'fake-driver' is unknown, only the following drivers are supported: pgsql, mariadb, mysql, sqlite, sqlsrv");
+    )->toThrow(ForestException::class, "🌳🌳🌳 The given driver 'fake-driver' is unknown, only the following drivers are supported: pgsql, postgresql, mariadb, mysql, sqlite, sqlsrv");
 });
 
 test('makeDoctrineConnection() should sent the correct configuration to doctrineConnection', function () {
