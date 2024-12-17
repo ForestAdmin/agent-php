@@ -48,10 +48,8 @@ class EloquentDatasource extends BaseDatasource
     {
         $finder = new ClassFinder(config('projectDir'));
         $this->models = $finder->getModelsInNamespace('App');
-        $dbConnections = [];
         foreach ($this->models as $model) {
             $modelInstance = new $model();
-            $dbConnections[] = $modelInstance->getConnection()->getName();
 
             try {
                 $this->addCollection(new EloquentCollection($this, $modelInstance, $this->supportPolymorphicRelations));
@@ -59,8 +57,6 @@ class EloquentDatasource extends BaseDatasource
                 // do nothing
             }
         }
-
-        array_unique($dbConnections);
     }
 
     public function addCollection(CollectionContract $collection): void
