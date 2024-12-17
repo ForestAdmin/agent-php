@@ -26,7 +26,7 @@ class DoctrineDatasource extends BaseDatasource
     public function __construct(
         $manager,
         array $databaseConfig,
-        ?string $liveQueryConnections = null
+        null|string|array $liveQueryConnections = null
     ) {
         // replace var %kernel.project_dir% by real path for Sqlite DB
         if (isset($databaseConfig['url'])
@@ -42,7 +42,9 @@ class DoctrineDatasource extends BaseDatasource
             $this->doctrine = $manager;
             $this->entityManager = $this->doctrine->getManager();
             if (is_string($liveQueryConnections)) {
-                $this->liveQueryConnections = [$liveQueryConnections => $this->doctrine->getConnection('default')];
+                $this->liveQueryConnections = [$liveQueryConnections => $this->doctrine->getDefaultConnectionName()];
+            } elseif (is_array($liveQueryConnections)) {
+                $this->liveQueryConnections = $liveQueryConnections;
             } else {
                 $this->liveQueryConnections = [];
             }
@@ -85,15 +87,29 @@ class DoctrineDatasource extends BaseDatasource
             throw new ForestException("Native query connection '{$connectionName}' is unknown.", 422);
         }
 
-        //        $connection = \config('database.connections.' . $this->liveQueryConnections[$connectionName]);
-        //        $orm = new Manager();
-        //        $orm->addConnection($connection);
-        //
-        //        return $orm->getDatabaseManager()->select($query, $bind);
+        return $this->orm->getDatabaseManager()->select($query, $bind);
     }
 
-    public function setManagerRegistry(ManagerRegistry $managerRegistry): void
+    /**
+     * @codeCoverageIgnore
+     */
+    public function __serialize(): array
     {
-        $this->managerRegistry = $managerRegistry;
+        return array_merge(
+            parent::__serialize(),
+            [
+                'liveQueryConnections' => $this->liveQueryConnections,
+            ]
+        );
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function __unserialize(array $data): void
+    {
+        parent::__unserialize($data);
+
+        $this->liveQueryConnections = $data['liveQueryConnections'];
     }
 }
