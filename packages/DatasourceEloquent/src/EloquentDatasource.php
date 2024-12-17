@@ -30,7 +30,7 @@ class EloquentDatasource extends BaseDatasource
     ) {
         parent::__construct($databaseConfig);
         if (is_string($liveQueryConnections)) {
-            $this->liveQueryConnections = [$liveQueryConnections => \config('database.default')];
+            $this->liveQueryConnections = [$liveQueryConnections => config('database.default')];
         } elseif (is_array($liveQueryConnections)) {
             $this->liveQueryConnections = $liveQueryConnections;
         } else {
@@ -95,7 +95,7 @@ class EloquentDatasource extends BaseDatasource
             throw new ForestException("Native query connection '{$connectionName}' is unknown.", 422);
         }
 
-        $connection = \config('database.connections.' . $this->liveQueryConnections[$connectionName]);
+        $connection = config('database.connections.' . $this->liveQueryConnections[$connectionName]);
         $orm = new Manager();
         $orm->addConnection($connection);
 
