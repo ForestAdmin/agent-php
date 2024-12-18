@@ -11,6 +11,7 @@ use function ForestAdmin\config;
 
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Config as IlluminateConfig;
 use Illuminate\Support\Str;
 
 /**
@@ -30,7 +31,7 @@ class EloquentDatasource extends BaseDatasource
     ) {
         parent::__construct($databaseConfig);
         if (is_string($liveQueryConnections)) {
-            $this->liveQueryConnections = [$liveQueryConnections => \config('database.default')];
+            $this->liveQueryConnections = [$liveQueryConnections => IlluminateConfig::get('database.default')];
         } elseif (is_array($liveQueryConnections)) {
             $this->liveQueryConnections = $liveQueryConnections;
         } else {
@@ -95,7 +96,7 @@ class EloquentDatasource extends BaseDatasource
             throw new ForestException("Native query connection '{$connectionName}' is unknown.", 422);
         }
 
-        $connection = \config('database.connections.' . $this->liveQueryConnections[$connectionName]);
+        $connection = IlluminateConfig::get('database.connections.' . $this->liveQueryConnections[$connectionName]);
         $orm = new Manager();
         $orm->addConnection($connection);
 

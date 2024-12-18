@@ -10,6 +10,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Config;
 use Laravel\SerializableClosure\SerializableClosure;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use SQLite3;
@@ -29,6 +30,7 @@ class TestCase extends BaseTestCase
     public function __construct(string $name)
     {
         @class_alias(CacheMocked::class, FileCacheServices::class);
+        @class_alias(LaravelConfigMocked::class, Config::class);
 
         parent::__construct($name);
     }
