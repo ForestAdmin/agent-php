@@ -87,6 +87,10 @@ $before = static function (TestCase $testCase, $args = []) {
             ),
         ]
     );
+    $collectionHouseUser = \Mockery::mock($collectionHouseUser)
+        ->shouldReceive('create')
+        ->andReturn([])
+        ->getMock();
 
     $collectionCar = new Collection($datasource, 'Car');
     $collectionCar->addFields(
@@ -171,10 +175,10 @@ $before = static function (TestCase $testCase, $args = []) {
     );
 
     Cache::put(
-        'forest.scopes',
+        'forest.rendering',
         collect(
             [
-                'scopes' => collect([]),
+                'scopes' => [],
                 'team'   => [
                     'id'   => 44,
                     'name' => 'Operations',

@@ -7,6 +7,7 @@ use ForestAdmin\AgentPHP\Agent\Routes\Resources\Listing;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\SchemaEmitter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
@@ -20,7 +21,6 @@ use ForestAdmin\AgentPHP\Tests\TestCase;
 use function ForestAdmin\config;
 
 use GuzzleHttp\Psr7\Response;
-
 use Prophecy\Argument;
 use Prophecy\Prophet;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -101,13 +101,18 @@ $before = static function (TestCase $testCase, $args = []) {
     );
 
     Cache::put(
-        'forest.scopes',
+        'forest.rendering',
         collect(
             [
-                'scopes' => collect([]),
+                'scopes' => [],
                 'team'   => [
                     'id'   => 44,
                     'name' => 'Operations',
+                ],
+                'segments' => [
+                    'User' => [
+                        '34dbebc45335faf1d984967d9a4fc672dbd7fc7d',
+                    ],
                 ],
             ]
         ),
@@ -116,6 +121,7 @@ $before = static function (TestCase $testCase, $args = []) {
 
     $listing = \Mockery::mock(Listing::class)
         ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
         ->shouldReceive('checkIp')
         ->getMock();
 
@@ -377,6 +383,62 @@ test('handleRequest() should return a response 200 with an attribute meta', func
     $listing = $before($this, []);
 
     expect(fn () => $listing->handleRequest(['collectionName' => 'User']))
-        ->toThrow(ForestException::class, "🌳🌳🌳 The given operator 'Shorter_Than' is not supported by the column: id. The allowed operators are: [Equal]");
+        ->toThrow(ForestException::class, "🌳🌳🌳 The given operator 'Shorter_Than' is not supported by the column: id. The allowed operators are: [Equal, Blank, In]");
 
+});
+
+test('when request has segment - should throw if there is no connectionName', function () use ($before) {
+    $_GET['filename'] = 'export-users';
+    $_GET['header'] = 'id,first_name,last_name,birthday,active';
+    $_POST['segmentName'] = 'User segment';
+    $_POST['segmentQuery'] = 'SELECT id FROM users WHERE id = 1;';
+    $data = [];
+
+    $listing = $before($this, ['listing' => $data]);
+
+    expect(fn () => $listing->handleRequest(['collectionName' => 'User']))
+        ->toThrow(ForestException::class, "🌳🌳🌳 'connectionName' parameter is mandatory");
+});
+
+test('when request has segment - return a response 200', function () use ($before) {
+    $_GET['filename'] = 'export-users';
+    $_GET['header'] = 'id,first_name,last_name,birthday,active';
+    $_POST['connectionName'] = 'EloquentDatasource';
+    $_POST['segmentName'] = 'User segment';
+    $_POST['segmentQuery'] = 'SELECT id FROM users WHERE id = 1;';
+    $data = [
+        [
+            'id'         => 1,
+            'first_name' => 'John',
+            'last_name'  => 'Doe',
+            'birthday'   => '1980-01-01',
+            'active'     => true,
+        ],
+    ];
+
+    $listing = $before($this, ['listing' => $data]);
+    $listing->shouldReceive('parseQuerySegment')
+        ->andReturn(new ConditionTreeLeaf('id', Operators::IN, [1]));
+
+    expect($listing->handleRequest(['collectionName' => 'User']))
+        ->toBeArray()
+        ->toEqual(
+            [
+                'name'    => 'User',
+                'content' => [
+                    'data'     => [
+                        [
+                            'type'          => 'User',
+                            'id'            => '1',
+                            'attributes'    => [
+                                'first_name' => 'John',
+                                'last_name'  => 'Doe',
+                                'birthday'   => '1980-01-01',
+                                'active'     => true,
+                            ],
+                        ],
+                    ],
+                ],
+            ]
+        );
 });

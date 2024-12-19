@@ -4,11 +4,11 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources\Related;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRelationRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
@@ -55,10 +55,8 @@ class AssociateRelated extends AbstractRelationRoute
     {
         $id = SchemaUtils::getPrimaryKeys($this->childCollection)[0];
         $value = CollectionUtils::getValue($this->childCollection, $this->caller, $targetedRelationId, $id);
-        $filter = ContextFilterFactory::build(
-            $this->collection,
-            $this->request,
-            ConditionTreeFactory::intersect(
+        $filter = new Filter(
+            conditionTree: ConditionTreeFactory::intersect(
                 [
                     new ConditionTreeLeaf($relation->getOriginKeyTarget(), Operators::EQUAL, $value),
                     $this->permissions->getScope($this->collection),

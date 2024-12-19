@@ -32,4 +32,32 @@ class ContextVariablesInjector
             $value
         );
     }
+
+    public static function injectContextInNativeQuery(string $query, ContextVariables $contextVariables): array
+    {
+        if (! is_string($query)) {
+            return $query;
+        }
+
+        $queryWithContextVariablesInjected = $query;
+        $encounteredVariables = [];
+
+        while(preg_match('/{{([^}]+)}}/', $queryWithContextVariablesInjected, $match)) {
+            $contextVariableKey = $match[1];
+
+            if (in_array($contextVariableKey, $encounteredVariables, true)) {
+                continue;
+            }
+
+            $queryWithContextVariablesInjected = preg_replace(
+                '/{{' . $contextVariableKey . '}}/',
+                '?',
+                $queryWithContextVariablesInjected
+            );
+
+            $encounteredVariables[] = $contextVariables->getValue($contextVariableKey);
+        }
+
+        return [$queryWithContextVariablesInjected, $encounteredVariables];
+    }
 }

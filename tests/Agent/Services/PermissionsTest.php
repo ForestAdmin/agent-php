@@ -176,8 +176,16 @@ function permissionsFactory(TestCase $testCase, array $post = [], $scope = null,
             new Response(200, [], json_encode([
                 'collections' => [
                     'Booking' => [
-                        'scope'    => $scope,
-                        'segments' => [],
+                        'scope'             => $scope,
+                        'segments'          => [
+                            'SELECT id FROM bookings WHERE title IS NOT NULL;',
+                        ],
+                        'liveQuerySegments' => [
+                            [
+                                'query'          => 'SELECT id FROM bookings WHERE title IS NOT NULL;',
+                                'connectionName' => 'EloquentDatasource',
+                            ],
+                        ],
                     ],
                 ],
                 'stats'       => [
@@ -423,9 +431,23 @@ test('canChart() should call twice and return true on allowed chart', function (
         ->shouldReceive('fetch')
         ->andReturn(
             [
+                'collections' => [
+                    'Booking' => [
+                        'scope'             => null,
+                        'segments'          => [],
+                        'liveQuerySegments' => [],
+                    ],
+                ],
                 'stats' => [],
             ],
             [
+                'collections' => [
+                    'Booking' => [
+                        'scope'             => null,
+                        'segments'          => [],
+                        'liveQuerySegments' => [],
+                    ],
+                ],
                 'stats' => [
                     [
                         'type'                 => 'Pie',
@@ -438,11 +460,6 @@ test('canChart() should call twice and return true on allowed chart', function (
                 ],
             ]
         )
-        /*->shouldReceive('getChartData')
-        ->andReturn(
-            [],
-            [$post['type'] . ':' . sha1(json_encode($post, JSON_THROW_ON_ERROR))]
-        )*/
         ->getMock();
 
     $caller = QueryStringParser::parseCaller($request);
@@ -536,6 +553,74 @@ test('getScope() should work with substitutions', function () {
             ],
         ],
     ]));
+});
+
+test('canExecuteQuerySegment() should return true on allowed segment', function () {
+    permissionsFactory($this);
+    $permissions = $this->bucket['permissions'];
+    $collection = $this->bucket['collection'];
+    $query = 'SELECT id FROM bookings WHERE title IS NOT NULL;';
+    $connectionName = 'EloquentDatasource';
+
+    expect($permissions->canExecuteQuerySegment($collection, $query, $connectionName))->toBeTrue();
+});
+
+test('canExecuteQuerySegment() should throw on forbidden segment', function () {
+    permissionsFactory($this);
+    $permissions = $this->bucket['permissions'];
+    $collection = $this->bucket['collection'];
+    $query = 'SELECT id FROM bookings;';
+    $connectionName = 'EloquentDatasource';
+
+    expect(static fn () => $permissions->canExecuteQuerySegment($collection, $query, $connectionName))
+        ->toThrow(ForbiddenError::class, 'You don\'t have permission to use this query segment.');
+});
+
+test('canExecuteQuerySegment() should call twice and return true on allowed segment', function () {
+    $post = [];
+    permissionsFactory($this, $post);
+    $request = Request::createFromGlobals();
+    $collection = $this->bucket['collection'];
+    $query = 'SELECT id FROM bookings WHERE title IS NOT NULL;';
+    $connectionName = 'EloquentDatasource';
+
+    $mockPermissions = \Mockery::mock(Permissions::class)
+        ->makePartial()
+        ->shouldAllowMockingProtectedMethods()
+        ->shouldReceive('fetch')
+        ->andReturn(
+            [
+                'collections' => [
+                    'Booking' => [
+                        'scope'             => null,
+                        'segments'          => [],
+                        'liveQuerySegments' => [],
+                    ],
+                ],
+                'stats' => [],
+            ],
+            [
+                'collections' => [
+                    'Booking' => [
+                        'scope'             => null,
+                        'segments'          => [],
+                        'liveQuerySegments' => [
+                            [
+                                'query'          => $query,
+                                'connectionName' => 'EloquentDatasource',
+                            ],
+                        ],
+                    ],
+                ],
+                'stats' => [],
+            ]
+        )
+        ->getMock();
+
+    $caller = QueryStringParser::parseCaller($request);
+    $this->invokeProperty($mockPermissions, 'caller', $caller);
+
+    expect($mockPermissions->canExecuteQuerySegment($collection, $query, $connectionName))->toBeTrue();
 });
 
 test('canSmartAction() should return true when user can execute the action', function () {
@@ -693,7 +778,7 @@ test('canSmartAction() should throw when the forest schema doesn\'t have any act
             'type'       => 'custom-action-requests',
         ],
     ];
-    permissionsFactory($this, $post, null, false);
+    permissionsFactory($this, $post, null, true);
     $permissions = $this->bucket['permissions'];
     $collection = $this->bucket['collection'];
 

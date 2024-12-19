@@ -93,13 +93,9 @@ function factoryChart(TestCase $testCase, $args = []): Charts
 
     if (isset($args['books']['results'])) {
         $collectionBooks = \Mockery::mock($collectionBooks)
-            ->shouldReceive('aggregate');
+            ->shouldReceive('aggregate')
+            ->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null);
 
-        if (isset($args['type']) && $args['type'] === 'leaderboard') {
-            $collectionBooks->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class), null);
-        } else {
-            $collectionBooks->with(\Mockery::type(Caller::class), \Mockery::type(Filter::class), \Mockery::type(Aggregation::class));
-        }
 
         if (isset($args['books']['previous'])) {
             $collectionBooks = $collectionBooks->andReturn($args['books']['results'][0], $args['books']['results'][1])
@@ -127,7 +123,7 @@ function factoryChart(TestCase $testCase, $args = []): Charts
     Cache::put(
         'forest.stats',
         [
-            0 => $_GET['type'] . ':' . sha1(json_encode($attributes, JSON_THROW_ON_ERROR)),
+            $_GET['type'] . ':' . sha1(json_encode($attributes, JSON_THROW_ON_ERROR)),
         ],
         config('permissionExpiration')
     );
@@ -165,18 +161,22 @@ function factoryChart(TestCase $testCase, $args = []): Charts
     );
 
     Cache::put(
-        'forest.scopes',
+        'forest.rendering',
         collect(
             [
-                'scopes' => collect([]),
+                'scopes' => [],
                 'team'   => [
                     'id'   => 44,
                     'name' => 'Operations',
+                ],
+                'charts' => [
+                    $_GET['type'] . ':' . sha1(json_encode($attributes, JSON_THROW_ON_ERROR)),
                 ],
             ]
         ),
         config('permissionExpiration')
     );
+
     $chart = \Mockery::mock(Charts::class)
         ->makePartial()
         ->shouldReceive('checkIp')
@@ -207,7 +207,6 @@ test('setType() should throw a ForestException when the type does not exist in t
     expect(fn () => $chart->setType('Maps'))->toThrow(ForestException::class, '🌳🌳🌳 Invalid Chart type Maps');
 });
 
-
 test('injectContextVariables() should update the request', function () {
     $chart = factoryChart(
         $this,
@@ -216,6 +215,7 @@ test('injectContextVariables() should update the request', function () {
                 'results' => [
                     [
                         'value' => 10,
+                        'group' => [],
                     ],
                 ],
             ],
@@ -230,6 +230,7 @@ test('injectContextVariables() should update the request', function () {
             ],
         ]
     );
+
     $chart->handleRequest(['collectionName' => 'Book']);
     /** @var Filter $filter */
     $filter = $this->invokeProperty($chart, 'filter');
@@ -248,6 +249,7 @@ test('makeValue() should return a ValueChart', function () {
                 'results' => [
                     [
                         'value' => 10,
+                        'group' => [],
                     ],
                 ],
             ],
@@ -282,8 +284,8 @@ test('makeValue() with previous filter should return a ValueChart', function () 
         [
             'books'   => [
                 'results'  => [
-                    [['value' => 10]],
-                    [['value' => 5]],
+                    [['value' => 10, 'group' => []]],
+                    [['value' => 5, 'group' => []]],
                 ],
                 'previous' => true,
             ],
@@ -322,6 +324,7 @@ test('makeObjective() should return a ObjectiveChart', function () {
                 'results' => [
                     [
                         'value' => 10,
+                        'group' => [],
                     ],
                 ],
             ],
