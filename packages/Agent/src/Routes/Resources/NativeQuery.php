@@ -43,11 +43,10 @@ class NativeQuery extends AbstractAuthenticatedRoute
 
         QueryValidator::valid($this->request->get('query'));
         $this->setType($this->request->get('type'));
-        $query = str_replace('?', $this->request->get('record_id'), $this->request->get('query'));
 
         $result = $this->convertStdClassToArray(
             $this->executeQuery(
-                $query,
+                $this->request->get('query'),
                 $this->request->get('connectionName'),
                 $this->permissions,
                 $this->caller,
