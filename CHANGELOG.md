@@ -1,3 +1,10 @@
+# [1.20.0](https://github.com/ForestAdmin/agent-php/compare/v1.19.3...v1.20.0) (2024-12-19)
+
+
+### Features
+
+* **capabilities:** add native query support ([#138](https://github.com/ForestAdmin/agent-php/issues/138)) ([1fab939](https://github.com/ForestAdmin/agent-php/commit/1fab939f3fbec575b6238a86bc7f8c03ba86e915))
+
 ## [1.19.3](https://github.com/ForestAdmin/agent-php/compare/v1.19.2...v1.19.3) (2024-12-04)
 
 
