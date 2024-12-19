@@ -17,7 +17,7 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Validations\ConditionTreeValidator;
 
 trait QueryHandler
 {
-    private function executeQuery(string $query, string $connectionName, Permissions $permissions, Caller $caller, ?array $requestContextVariables = []): array
+    protected function executeQuery(string $query, string $connectionName, Permissions $permissions, Caller $caller, ?array $requestContextVariables = []): array
     {
         $query = preg_replace('/\s+/', ' ', trim($query));
         [$query, $contextVariables] = $this->injectContextVariables($query, $caller, $permissions, $requestContextVariables);
@@ -29,7 +29,7 @@ trait QueryHandler
         return $rootDatasource->executeNativeQuery($connectionName, $query, $contextVariables);
     }
 
-    private function injectContextVariables(string $query, Caller $caller, Permissions $permissions, ?array $requestContextVariables = []): array
+    protected function injectContextVariables(string $query, Caller $caller, Permissions $permissions, ?array $requestContextVariables = []): array
     {
         $user = $permissions->getUserData($caller->getId());
         $team = $permissions->getTeam($caller->getRenderingId());
@@ -41,7 +41,7 @@ trait QueryHandler
         );
     }
 
-    private function parseQuerySegment(CollectionContract $collection, Permissions $permissions, Caller $caller): ?ConditionTree
+    protected function parseQuerySegment(CollectionContract $collection, Permissions $permissions, Caller $caller): ?ConditionTree
     {
         if (! $this->request->get('segmentQuery')) {
             return null;
