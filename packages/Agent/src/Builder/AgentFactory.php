@@ -21,9 +21,9 @@ class AgentFactory
 {
     public const TTL_CONFIG = 3600;
 
-    public const TTL = 60;
+    public const TTL = 3600;
 
-    public const TTL_SCHEMA = 60;
+    public const TTL_SCHEMA = 3600;
 
     protected DatasourceCustomizer $customizer;
 
