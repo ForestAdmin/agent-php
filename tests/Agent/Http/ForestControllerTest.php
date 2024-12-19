@@ -6,7 +6,6 @@ use ForestAdmin\AgentPHP\Agent\Http\Exceptions\UnprocessableError;
 use ForestAdmin\AgentPHP\Agent\Http\ForestController;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -59,7 +58,7 @@ describe('invoke()', function () {
             ->getMock();
         $forestControllerMock->expects($this->once())
             ->method('getClosure')
-            ->willReturn(fn () => throw new ForestException());
+            ->willReturn(fn () => throw new \Exception());
 
         $result = $forestControllerMock->__invoke($request);
 
@@ -72,7 +71,7 @@ describe('invoke()', function () {
                 [
                     'errors' => [
                         [
-                            'name'   => 'ForestException',
+                            'name'   => 'Exception',
                             'detail' => 'Unexpected error',
                             'status' => 500,
                         ],

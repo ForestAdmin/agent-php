@@ -80,7 +80,7 @@ class BaseTransformer extends TransformerAbstract
             $includedData[$include] = [
                 'data' => [
                     'type'          => $item->getResourceKey(),
-                    'id'            => Id::packId(AgentFactory::get('datasource')->getCollection($this->name), $data),
+                    'id'            => Id::packId(AgentFactory::get('datasource')->getCollection($item->getResourceKey()), $item->getData()),
                     'attributes'    => $item->getData(),
                 ],
             ];

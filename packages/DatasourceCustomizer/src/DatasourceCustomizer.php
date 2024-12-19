@@ -7,6 +7,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\P
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\RenameCollection\RenameCollectionDatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\DatasourceContract;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use Illuminate\Support\Collection as IlluminateCollection;
 
 class DatasourceCustomizer
@@ -14,6 +15,8 @@ class DatasourceCustomizer
     protected Datasource $compositeDatasource;
 
     protected DecoratorsStack $stack;
+
+    protected array $datasources = [];
 
     public function __construct()
     {
@@ -36,6 +39,8 @@ class DatasourceCustomizer
         $datasource->getCollections()->each(
             fn ($collection) => $this->compositeDatasource->addCollection($collection)
         );
+
+        $this->datasources[] = $datasource;
 
         return $this;
     }
@@ -103,5 +108,25 @@ class DatasourceCustomizer
         $this->stack->applyQueuedCustomizations();
 
         return $this->stack->dataSource;
+    }
+
+    public function getRootDatasourceByConnection(string $name): DatasourceContract
+    {
+        $rootDatasource = collect($this->datasources)->first(
+            function ($datasource) use ($name) {
+                return collect($datasource->getLiveQueryConnections())->has($name);
+            }
+        );
+
+        if (! $rootDatasource) {
+            throw new ForestException("No datasource found for connection: {$name}");
+        }
+
+        return $rootDatasource;
+    }
+
+    public function getDataSources(): array
+    {
+        return $this->datasources;
     }
 }

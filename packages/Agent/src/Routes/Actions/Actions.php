@@ -7,10 +7,10 @@ use Firebase\JWT\Key;
 use ForestAdmin\AgentPHP\Agent\Builder\AgentFactory;
 use ForestAdmin\AgentPHP\Agent\Http\Request;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractAuthenticatedRoute;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\ForestActionValueConverter;
 use ForestAdmin\AgentPHP\Agent\Utils\ForestSchema\GeneratorAction;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
+use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\BaseAction;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Actions\Types\ActionScope;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Contracts\CollectionContract;
@@ -100,7 +100,14 @@ class Actions extends AbstractAuthenticatedRoute
     {
         // Match user filter + search + scope? + segment.
         $scope = $includeUserScope ? $this->permissions->getScope($this->collection) : null;
-        $filter = ContextFilterFactory::build($this->collection, $this->request, $scope);
+        $filter = new Filter(
+            conditionTree: ConditionTreeFactory::intersect(
+                [
+                    QueryStringParser::parseConditionTree($this->collection, $this->request),
+                    $scope,
+                ]
+            )
+        );
 
         // Restrict the filter to the selected records for single or bulk actions.
         if ($this->action->getScope() === ActionScope::GLOBAL) {

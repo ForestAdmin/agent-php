@@ -5,13 +5,17 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources;
 use ForestAdmin\AgentPHP\Agent\Facades\JsonApi;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractCollectionRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Csv;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
+use ForestAdmin\AgentPHP\Agent\Utils\Traits\QueryHandler;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use Illuminate\Support\Str;
 
 class Listing extends AbstractCollectionRoute
 {
+    use QueryHandler;
+
     public function setupRoutes(): AbstractRoute
     {
         $this->addRoute(
@@ -34,8 +38,21 @@ class Listing extends AbstractCollectionRoute
 
         $this->build($args);
         $this->permissions->can('browse', $this->collection);
-        $scope = $this->permissions->getScope($this->collection);
-        $this->filter = ContextFilterFactory::buildPaginated($this->collection, $this->request, $scope);
+
+        $this->filter = new PaginatedFilter(
+            conditionTree: ConditionTreeFactory::intersect(
+                [
+                    $this->permissions->getScope($this->collection),
+                    QueryStringParser::parseConditionTree($this->collection, $this->request),
+                    $this->parseQuerySegment($this->collection, $this->permissions, $this->caller),
+                ]
+            ),
+            search: QueryStringParser::parseSearch($this->collection, $this->request),
+            searchExtended: QueryStringParser::parseSearchExtended($this->request),
+            segment: QueryStringParser::parseSegment($this->collection, $this->request),
+            sort: QueryStringParser::parseSort($this->collection, $this->request),
+            page: QueryStringParser::parsePagination($this->request)
+        );
 
         $results = $this->collection->list(
             $this->caller,
@@ -55,8 +72,18 @@ class Listing extends AbstractCollectionRoute
         $this->permissions->can('browse', $this->collection);
         $this->permissions->can('export', $this->collection);
 
-        $scope = $this->permissions->getScope($this->collection);
-        $this->filter = ContextFilterFactory::buildPaginated($this->collection, $this->request, $scope);
+        $this->filter = new PaginatedFilter(
+            conditionTree: ConditionTreeFactory::intersect(
+                [
+                    $this->permissions->getScope($this->collection),
+                    QueryStringParser::parseConditionTree($this->collection, $this->request),
+                    $this->parseQuerySegment($this->collection, $this->permissions, $this->caller),
+                ]
+            ),
+            search: QueryStringParser::parseSearch($this->collection, $this->request),
+            searchExtended: QueryStringParser::parseSearchExtended($this->request),
+        );
+
         $projection = QueryStringParser::parseProjection($this->collection, $this->request);
         $rows = $this->collection->list(
             $this->caller,

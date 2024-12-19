@@ -45,9 +45,6 @@ test('getErrorHeaders() should return the headers config if defined', function (
 
 test('getErrorMessage() should return the original message when error is subclass of HttpException', function () {
     $this->buildAgent(new Datasource());
-    $this->agent->createAgent([
-        'customizeErrorMessage' => fn ($error) => 'my custom message error',
-    ]);
     $trait = $this->getObjectForTrait(ErrorHandling::class);
 
     expect($trait->getErrorMessage(new ForbiddenError('test')))->toEqual('test');
@@ -67,5 +64,5 @@ test('getErrorMessage() should return "Unexpected error" by default', function (
     $this->buildAgent(new Datasource());
     $trait = $this->getObjectForTrait(ErrorHandling::class);
 
-    expect($trait->getErrorMessage(new ForestException('test')))->toEqual('Unexpected error');
+    expect($trait->getErrorMessage(new \Exception('test')))->toEqual('Unexpected error');
 });

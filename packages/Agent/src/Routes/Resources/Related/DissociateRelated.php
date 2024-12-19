@@ -4,7 +4,6 @@ namespace ForestAdmin\AgentPHP\Agent\Routes\Resources\Related;
 
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRelationRoute;
 use ForestAdmin\AgentPHP\Agent\Routes\AbstractRoute;
-use ForestAdmin\AgentPHP\Agent\Utils\ContextFilterFactory;
 use ForestAdmin\AgentPHP\Agent\Utils\Id;
 use ForestAdmin\AgentPHP\Agent\Utils\QueryStringParser;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\ConditionTreeFactory;
@@ -14,7 +13,6 @@ use ForestAdmin\AgentPHP\DatasourceToolkit\Exceptions\ForestException;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\ManyToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\OneToManySchema;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Schema\Relations\PolymorphicOneToManySchema;
-use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Utils\Schema;
 
 class DissociateRelated extends AbstractRelationRoute
@@ -123,14 +121,14 @@ class DissociateRelated extends AbstractRelationRoute
             $conditionTreeIds->inverse();
         }
 
-        $conditionTree = ConditionTreeFactory::intersect(
-            [
-                $this->permissions->getScope($this->childCollection),
-                QueryStringParser::parseConditionTree($this->childCollection, $this->request),
-                $conditionTreeIds,
-            ]
+        return new Filter(
+            conditionTree: ConditionTreeFactory::intersect(
+                [
+                    $this->permissions->getScope($this->collection),
+                    QueryStringParser::parseConditionTree($this->childCollection, $this->request),
+                    $conditionTreeIds,
+                ]
+            ),
         );
-
-        return ContextFilterFactory::build($this->childCollection, $this->request, $conditionTree);
     }
 }
