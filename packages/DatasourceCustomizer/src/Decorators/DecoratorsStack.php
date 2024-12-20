@@ -8,6 +8,7 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Chart\ChartDataSourceDe
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Computed\ComputedCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Empty\EmptyCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\Hook\HookCollection;
+use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\LazyJoin\LazyJoinCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsEmulate\OperatorsEmulateCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\OperatorsReplace\OperatorsReplaceCollection;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\PublicationCollection\PublicationCollectionDatasourceDecorator;
@@ -45,6 +46,7 @@ class DecoratorsStack
     public DatasourceDecorator $binary;
     public DatasourceDecorator $publication;
     public DatasourceDecorator $renameField;
+    public DatasourceDecorator $lazyJoin;
 
     private Collection $customizations;
 
@@ -64,6 +66,8 @@ class DecoratorsStack
         $last = $this->earlyOpEmulate = new DatasourceDecorator($last, OperatorsEmulateCollection::class);
         $last = $this->earlyOpReplace = new DatasourceDecorator($last, OperatorsReplaceCollection::class);
         $last = $this->relation = new DatasourceDecorator($last, RelationCollection::class);
+        # lazy join is just before relation, to avoid relations to do useless stuff
+        $last = $this->lazyJoin = new DatasourceDecorator($last, LazyJoinCollection::class);
         $last = $this->lateComputed = new DatasourceDecorator($last, ComputedCollection::class);
         $last = $this->lateOpEmulate = new DatasourceDecorator($last, OperatorsEmulateCollection::class);
         $last = $this->lateOpReplace = new DatasourceDecorator($last, OperatorsReplaceCollection::class);
