@@ -4,8 +4,10 @@ use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\DatasourceDecorator;
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\LazyJoin\LazyJoinCollection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Collection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Operators;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Projection\Projection;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Datasource;
@@ -23,6 +25,7 @@ beforeEach(
                 'id'           => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
                 'title'        => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::EQUAL, Operators::IN]),
                 'author_id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+                'price'        => new ColumnSchema(columnType: PrimitiveType::NUMBER),
                 'author'       => new ManyToOneSchema(
                     foreignKey: 'author_id',
                     foreignKeyTarget: 'id',
@@ -320,6 +323,184 @@ describe('LazyJoin collection', function () {
 
             expect($records)->toEqual(
                 [[ 'id' => 1, 'author' => [ 'id' => 2 ]], [ 'id' => 2, 'author' => null]]
+            );
+        })->with('caller');
+    });
+
+    describe('when call aggregate', function () {
+        it('not join on aggregate when group by foreign key', closure: function (Caller $caller) {
+            [$datasourceDecorator] = $this->bucket;
+
+            /** @var LazyJoinCollection $decoratedCollectionBook */
+            $decoratedCollectionBook = $datasourceDecorator->getCollection('Book');
+            $childCollection = $this->invokeProperty($decoratedCollectionBook, 'childCollection');
+            $mock = \Mockery::mock($childCollection)
+                ->makePartial()
+                ->expects('aggregate')
+                ->once()
+                ->withArgs(function ($caller, $filter, $aggregation) {
+                    expect($aggregation)->toEqual(
+                        new Aggregation('Sum', 'price', [['field' => 'author_id', 'operation' => null]])
+                    );
+
+                    return true;
+                })
+                ->andReturn([
+                    ['value' => 1824.11, 'group' => ['author_id' => 2]],
+                    ['value' => 824.11, 'group' => [ 'author_id' => 3 ]],
+                ])
+                ->getMock();
+            $this->invokeProperty($decoratedCollectionBook, 'childCollection', $mock);
+
+            $records = $decoratedCollectionBook->aggregate(
+                $caller,
+                new Filter(),
+                new Aggregation('Sum', 'price', [['field' => 'author:id']])
+            );
+
+            expect($records)->toEqual(
+                [
+                    ['value' => 1824.11, 'group' => ['author:id' => 2]],
+                    ['value' => 824.11, 'group' => [ 'author:id' => 3 ]],
+                ]
+            );
+        })->with('caller');
+
+        it('join on aggregate when group by foreign field', closure: function (Caller $caller) {
+            [$datasourceDecorator] = $this->bucket;
+
+            /** @var LazyJoinCollection $decoratedCollectionBook */
+            $decoratedCollectionBook = $datasourceDecorator->getCollection('Book');
+            $childCollection = $this->invokeProperty($decoratedCollectionBook, 'childCollection');
+            $mock = \Mockery::mock($childCollection)
+                ->makePartial()
+                ->expects('aggregate')
+                ->once()
+                ->withArgs(function ($caller, $filter, $aggregation) {
+                    expect($aggregation)->toEqual(
+                        new Aggregation(
+                            'Sum',
+                            'price',
+                            [['field' => 'author:first_name', 'operation' => null]]
+                        )
+                    );
+
+                    return true;
+                })
+                ->andReturn([
+                    ['value' => 1824.11, 'group' => ['author:first_name' => 'Isaac']],
+                    ['value' => 824.11, 'group' => ['author:first_name' => 'JK']],
+                ])
+                ->getMock();
+            $this->invokeProperty($decoratedCollectionBook, 'childCollection', $mock);
+
+            $records = $decoratedCollectionBook->aggregate(
+                $caller,
+                new Filter(),
+                new Aggregation('Sum', 'price', [['field' => 'author:first_name']])
+            );
+
+            expect($records)->toEqual(
+                [
+                    ['value' => 1824.11, 'group' => ['author:first_name' => 'Isaac']],
+                    ['value' => 824.11, 'group' => ['author:first_name' => 'JK']],
+                ]
+            );
+        })->with('caller');
+
+        it('not join on aggregate when group by foreign pk and filter on foreign pk', closure: function (Caller $caller) {
+            [$datasourceDecorator] = $this->bucket;
+
+            /** @var LazyJoinCollection $decoratedCollectionBook */
+            $decoratedCollectionBook = $datasourceDecorator->getCollection('Book');
+            $childCollection = $this->invokeProperty($decoratedCollectionBook, 'childCollection');
+            $mock = \Mockery::mock($childCollection)
+                ->makePartial()
+                ->expects('aggregate')
+                ->once()
+                ->withArgs(function ($caller, $filter, $aggregation) {
+                    expect($filter->getConditionTree())->toEqual(
+                        new ConditionTreeLeaf('author_id', Operators::NOT_EQUAL, 50)
+                    )
+                        ->and($aggregation)->toEqual(
+                            new Aggregation(
+                                'Sum',
+                                'price',
+                                [['field' => 'author_id', 'operation' => null]]
+                            )
+                        );
+
+                    return true;
+                })
+                ->andReturn([
+                    ['value' => 1824.11, 'group' => ['author_id' => 2]],
+                    ['value' => 824.11, 'group' => ['author_id' => 3]],
+                ])
+                ->getMock();
+            $this->invokeProperty($decoratedCollectionBook, 'childCollection', $mock);
+
+            $records = $decoratedCollectionBook->aggregate(
+                $caller,
+                new Filter(conditionTree: new ConditionTreeLeaf('author:id', Operators::NOT_EQUAL, 50)),
+                new Aggregation('Sum', 'price', [['field' => 'author:id']])
+            );
+
+            expect($records)->toEqual(
+                [
+                    ['value' => 1824.11, 'group' => ['author:id' => 2]],
+                    ['value' => 824.11, 'group' => ['author:id' => 3]],
+                ]
+            );
+        })->with('caller');
+
+        it('join on aggregate when group by foreign pk and filter on foreign field', closure: function (Caller $caller) {
+            [$datasourceDecorator] = $this->bucket;
+
+            /** @var LazyJoinCollection $decoratedCollectionBook */
+            $decoratedCollectionBook = $datasourceDecorator->getCollection('Book');
+            $childCollection = $this->invokeProperty($decoratedCollectionBook, 'childCollection');
+            $mock = \Mockery::mock($childCollection)
+                ->makePartial()
+                ->expects('aggregate')
+                ->once()
+                ->withArgs(function ($caller, $filter, $aggregation) {
+                    expect($filter->getConditionTree())->toEqual(
+                        new ConditionTreeLeaf('author:first_name', Operators::NOT_EQUAL, 'foo')
+                    )
+                        ->and($aggregation)->toEqual(
+                            new Aggregation(
+                                'Sum',
+                                'price',
+                                [['field' => 'author_id', 'operation' => null]]
+                            )
+                        );
+
+                    return true;
+                })
+                ->andReturn([
+                    ['value' => 1824.11, 'group' => ['author_id' => 2]],
+                    ['value' => 824.11, 'group' => ['author_id' => 3]],
+                ])
+                ->getMock();
+            $this->invokeProperty($decoratedCollectionBook, 'childCollection', $mock);
+
+            $records = $decoratedCollectionBook->aggregate(
+                $caller,
+                new Filter(
+                    conditionTree: new ConditionTreeLeaf(
+                        'author:first_name',
+                        Operators::NOT_EQUAL,
+                        'foo'
+                    )
+                ),
+                new Aggregation('Sum', 'price', [['field' => 'author:id']])
+            );
+
+            expect($records)->toEqual(
+                [
+                    ['value' => 1824.11, 'group' => ['author:id' => 2]],
+                    ['value' => 824.11, 'group' => ['author:id' => 3]],
+                ]
             );
         })->with('caller');
     });
