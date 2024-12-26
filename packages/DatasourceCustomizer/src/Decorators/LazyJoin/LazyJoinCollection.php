@@ -4,6 +4,7 @@ namespace ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\LazyJoin;
 
 use ForestAdmin\AgentPHP\DatasourceCustomizer\Decorators\CollectionDecorator;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Caller;
+use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Aggregation;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\ConditionTree\Nodes\ConditionTreeLeaf;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\Filter;
 use ForestAdmin\AgentPHP\DatasourceToolkit\Components\Query\Filters\PaginatedFilter;
@@ -20,6 +21,28 @@ class LazyJoinCollection extends CollectionDecorator
         $records = $this->childCollection->list($caller, $refinedFilter, $simplifiedProjection);
 
         return $this->applyJoinsOnRecords($projection, $simplifiedProjection, $records);
+    }
+
+    public function aggregate(Caller $caller, Filter $filter, Aggregation $aggregation, ?int $limit = null)
+    {
+        $refinedFilter = $this->refineFilter($caller, $filter);
+        $replaced = [];
+        $refinedAggregation = $aggregation->replaceFields(
+            function ($fieldName) use ($aggregation, &$replaced) {
+                if ($this->isUselessJoin(explode(':', $fieldName)[0], $aggregation->getProjection())) {
+                    $newFieldName = $this->getForeignKeyForProjection($fieldName);
+                    $replaced[$newFieldName] = $fieldName;
+
+                    return $newFieldName;
+                }
+
+                return $fieldName;
+            }
+        );
+
+        $results = $this->childCollection->aggregate($caller, $refinedFilter, $refinedAggregation, $limit);
+
+        return $this->applyJoinsOnAggregateResult($aggregation, $refinedAggregation, $results, $replaced);
     }
 
     protected function refineFilter(?Caller $caller, Filter|PaginatedFilter|null $filter): Filter|PaginatedFilter|null
@@ -53,7 +76,7 @@ class LazyJoinCollection extends CollectionDecorator
     private function isUselessJoin(String $relationName, Projection $projection): bool
     {
         $relationSchema = $this->getSchema()->get($relationName);
-        $subProjection = $projection->relations()[$relationName];
+        $subProjection = $projection->relations()[$relationName] ?? null;
 
         return $relationSchema instanceof ManyToOneSchema
             && count($subProjection) === 1
@@ -107,5 +130,25 @@ class LazyJoinCollection extends CollectionDecorator
         }
 
         return $records;
+    }
+
+    private function applyJoinsOnAggregateResult(
+        Aggregation $initialAggregation,
+        Aggregation $requestedAggregation,
+        array $results,
+        array $fieldsToReplace
+    ) {
+        if ($initialAggregation !== $requestedAggregation) {
+            foreach ($results as &$result) {
+                foreach ($result['group'] as $field => $value) {
+                    if(isset($fieldsToReplace[$field])) {
+                        $result['group'][$fieldsToReplace[$field]] = $value;
+                        unset($result['group'][$field]);
+                    }
+                }
+            }
+        }
+
+        return $results;
     }
 }
