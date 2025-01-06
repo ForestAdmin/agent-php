@@ -223,6 +223,7 @@ describe('SearchCollection', function () {
                 conditionTree: new ConditionTreeBranch(
                     'Or',
                     [
+                        new ConditionTreeLeaf(field: 'id', operator: Operators::EQUAL, value: 1584),
                         new ConditionTreeLeaf(field: 'label', operator: Operators::ICONTAINS, value: '1584'),
                         new ConditionTreeLeaf(field: 'number', operator: Operators::EQUAL, value: 1584),
                     ]
@@ -265,6 +266,7 @@ describe('SearchCollection', function () {
                 conditionTree: new ConditionTreeBranch(
                     'Or',
                     [
+                        new ConditionTreeLeaf(field: 'id', operator: Operators::EQUAL, value: 1584),
                         new ConditionTreeLeaf(field: 'field1', operator: Operators::EQUAL, value: 1584),
                         new ConditionTreeLeaf(field: 'field2', operator: Operators::EQUAL, value: 1584),
                     ]
