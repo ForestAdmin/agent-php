@@ -23,6 +23,9 @@ describe('SearchCollection', function () {
     beforeEach(function () {
         $datasource = new Datasource();
         $collectionPerson = new Collection($datasource, 'Person');
+        $collectionPerson->addFields(
+            ['id' => new ColumnSchema(columnType: PrimitiveType::NUMBER, filterOperators: [Operators::IN, Operators::EQUAL], isPrimaryKey: true)]
+        );
         $datasource->addCollection($collectionPerson);
         $this->buildAgent($datasource);
 
@@ -42,6 +45,16 @@ describe('SearchCollection', function () {
 
         expect($this->invokeProperty($searchCollection, 'replacer'))->toEqual($replace);
     });
+
+    test('disableSearchable() should set false the disabledSearch attribute', function () {
+        [$datasource, $collection] = $this->bucket;
+        $searchCollection = new SearchCollection($collection, $datasource);
+
+        expect($searchCollection->isSearchable())->toBeTrue();
+        $searchCollection->disableSearch();
+        expect($searchCollection->isSearchable())->toBeFalse();
+    });
+
 
     test('isSearchable() should return true', function () {
         [$datasource, $collection] = $this->bucket;
