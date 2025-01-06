@@ -406,6 +406,33 @@ describe('CollectionCustomizer', function () {
         expect($this->invokeProperty($searchCollection, 'replacer'))->toEqual($condition);
     });
 
+    test('disableSearch() should call the search decorator and disable the search', function () use ($before) {
+        $before($this);
+        [$customizer, $datasourceCustomizer] = $this->bucket;
+
+        $stack = $datasourceCustomizer->getStack();
+        $search = $stack->search;
+        $search = \Mockery::mock($search)
+            ->shouldReceive('getCollection')
+            ->once()
+            ->andReturn($datasourceCustomizer->getStack()->search->getCollection('Book'))
+            ->getMock();
+
+        $this->invokeProperty($stack, 'search', $search);
+        $this->invokeProperty($datasourceCustomizer, 'stack', $stack);
+        $this->invokeProperty($customizer, 'stack', $stack);
+
+        $customizer->disableSearch();
+        $datasourceCustomizer->getDatasource();
+
+        \Mockery::close();
+
+        /** @var $searchCollection $searchCollection */
+        $searchCollection = $datasourceCustomizer->getStack()->search->getCollection('Book');
+
+        expect($searchCollection->isSearchable())->toEqual(false);
+    });
+
     test('disableCount() should disable count on the collection', function () use ($before) {
         $before($this);
         [$customizer, $datasourceCustomizer] = $this->bucket;
