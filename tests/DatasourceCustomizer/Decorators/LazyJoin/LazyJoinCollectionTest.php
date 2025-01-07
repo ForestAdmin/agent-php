@@ -25,9 +25,15 @@ beforeEach(
                 'id'           => new ColumnSchema(columnType: PrimitiveType::NUMBER, isPrimaryKey: true),
                 'title'        => new ColumnSchema(columnType: PrimitiveType::STRING, filterOperators: [Operators::EQUAL, Operators::IN]),
                 'author_id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER),
+                'editor_id'    => new ColumnSchema(columnType: PrimitiveType::NUMBER),
                 'price'        => new ColumnSchema(columnType: PrimitiveType::NUMBER),
                 'author'       => new ManyToOneSchema(
                     foreignKey: 'author_id',
+                    foreignKeyTarget: 'id',
+                    foreignCollection: 'Person',
+                ),
+                'editor'       => new ManyToOneSchema(
+                    foreignKey: 'editor_id',
                     foreignKeyTarget: 'id',
                     foreignCollection: 'Person',
                 ),
@@ -87,6 +93,42 @@ describe('LazyJoin collection', function () {
 
             expect($records)->toEqual(
                 [[ 'id' => 1, 'author' => [ 'id' => 2 ]], [ 'id' => 2, 'author' => [ 'id' => 5 ]]]
+            );
+        })->with('caller');
+
+        it('not join when projection ask for target field only with multiple relations', closure: function (Caller $caller) {
+            [$datasourceDecorator] = $this->bucket;
+
+            /** @var LazyJoinCollection $decoratedCollectionBook */
+            $decoratedCollectionBook = $datasourceDecorator->getCollection('Book');
+            $childCollection = $this->invokeProperty($decoratedCollectionBook, 'childCollection');
+            $mock = \Mockery::mock($childCollection)
+                ->makePartial()
+                ->expects('list')
+                ->once()
+                ->withArgs(function ($caller, $filter, $projection) {
+                    expect($projection)->toEqual(new Projection(['id', 'author_id', 'editor_id']));
+
+                    return true;
+                })
+                ->andReturn([
+                    [ 'id' => 1, 'author_id' => 2, 'editor_id' => 3 ],
+                    [ 'id' => 2, 'author_id' => 5, 'editor_id' => 6 ],
+                ])
+                ->getMock();
+            $this->invokeProperty($decoratedCollectionBook, 'childCollection', $mock);
+
+            $records = $decoratedCollectionBook->list(
+                $caller,
+                new PaginatedFilter(),
+                new Projection(['id', 'author:id', 'editor:id'])
+            );
+
+            expect($records)->toEqual(
+                [
+                    [ 'id' => 1, 'author' => [ 'id' => 2 ], 'editor' => [ 'id' => 3 ]],
+                    [ 'id' => 2, 'author' => [ 'id' => 5 ], 'editor' => [ 'id' => 6 ]],
+                ]
             );
         })->with('caller');
 

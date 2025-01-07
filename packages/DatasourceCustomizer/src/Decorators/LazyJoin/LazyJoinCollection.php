@@ -85,21 +85,23 @@ class LazyJoinCollection extends CollectionDecorator
 
     private function getProjectionWithoutUselessJoins(Projection $projection): Projection
     {
-        $newProjection = clone $projection;
+        $newProjectionArray = $projection->all();
 
         foreach ($projection->relations() as $relationName => $relationProjection) {
             if ($this->isUselessJoin($relationName, $projection)) {
                 // remove foreign key target from projection
-                $newProjection = $newProjection
-                    ->reject(fn ($value, $key) => $value === "$relationName:$relationProjection[0]")
-                    ->all();
+                $newProjectionArray = array_values(array_filter(
+                    $newProjectionArray,
+                    static fn ($value, $key) => $value !== "$relationName:$relationProjection[0]",
+                    ARRAY_FILTER_USE_BOTH
+                ));
 
                 // add foreign keys to projection
-                $newProjection[] = $this->getForeignKeyForProjection("$relationName:$relationProjection[0]");
+                $newProjectionArray[] = $this->getForeignKeyForProjection("$relationName:$relationProjection[0]");
             }
         }
 
-        return new Projection($newProjection);
+        return new Projection($newProjectionArray);
     }
 
     private function applyJoinsOnRecords(Projection $initialProjection, Projection $requestedProjection, array $records)
@@ -120,11 +122,11 @@ class LazyJoinCollection extends CollectionDecorator
                         $fkValue = $record[$this->getForeignKeyForProjection("$relationName:$relationProjection[0]")];
                         $record[$relationName] = isset($fkValue) ? [$relationProjection[0] => $fkValue] : null;
                     }
+                }
 
-                    // remove foreign keys
-                    foreach ($projectionToRemove as $fieldName) {
-                        unset($record[$fieldName]);
-                    }
+                // remove foreign keys
+                foreach ($projectionToRemove as $fieldName) {
+                    unset($record[$fieldName]);
                 }
             }
         }
