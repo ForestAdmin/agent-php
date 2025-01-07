@@ -39,6 +39,7 @@ class SearchCollection extends CollectionDecorator
     public function replaceSearch(Closure $replacer): void
     {
         $this->replacer = $replacer;
+        $this->disabledSearch = false;
     }
 
     public function disableSearch(): void
