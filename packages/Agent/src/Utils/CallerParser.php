@@ -45,6 +45,10 @@ class CallerParser
         $decoded = (array) JWT::decode($this->request->bearerToken(), new Key(config('authSecret'), 'HS256'));
         unset($decoded['exp']);
 
+        if (isset($decoded['tags']) && $decoded['tags'] instanceof \stdClass) {
+            $decoded['tags'] = (array) $decoded['tags'];
+        }
+
         return $decoded;
     }
 
