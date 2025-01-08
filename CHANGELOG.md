@@ -1,3 +1,10 @@
+# [1.21.0](https://github.com/ForestAdmin/agent-php/compare/v1.20.0...v1.21.0) (2025-01-08)
+
+
+### Features
+
+* add project et environment to caller ([#142](https://github.com/ForestAdmin/agent-php/issues/142)) ([bbbd582](https://github.com/ForestAdmin/agent-php/commit/bbbd582ce6f4622276ce5047c20150e314a6a7cb))
+
 # [1.20.0](https://github.com/ForestAdmin/agent-php/compare/v1.19.3...v1.20.0) (2024-12-19)
 
 
