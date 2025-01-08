@@ -18,25 +18,15 @@ class Caller
         protected string $permissionLevel,
         protected ?string $role = null,
         protected array $request = [],
+        protected ?string $project = null,
+        protected ?string $environment = null,
     ) {
     }
 
-    public static function makeFromRequestData(object $requestObjectData, array $params): self
+    public static function makeFromRequestData(array $params): self
     {
-        // cast object to array recursively
-        $toArray = function ($x) use (&$toArray) {
-            return is_scalar($x)
-                ? $x
-                : array_map($toArray, (array) $x);
-        };
-        $data = $toArray($requestObjectData);
-
-        $data['timezone'] = $params['timezone'];
-        $data['request'] = $params['request'];
-        unset($data['exp']);
-
         $attributes = [];
-        foreach ($data as $key => $value) {
+        foreach ($params as $key => $value) {
             $attributes[Str::camel($key)] = $value;
         }
 
