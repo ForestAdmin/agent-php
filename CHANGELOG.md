@@ -1,3 +1,10 @@
+# [1.22.0](https://github.com/ForestAdmin/agent-php/compare/v1.21.0...v1.22.0) (2025-01-08)
+
+
+### Features
+
+* add lazy join decorator to improve performance ([#139](https://github.com/ForestAdmin/agent-php/issues/139)) ([c4ccf7e](https://github.com/ForestAdmin/agent-php/commit/c4ccf7ede2bc8ecb483c23a4898fa6aafc8d1aff))
+
 # [1.21.0](https://github.com/ForestAdmin/agent-php/compare/v1.20.0...v1.21.0) (2025-01-08)
 
 

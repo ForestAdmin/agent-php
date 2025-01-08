@@ -3,11 +3,11 @@
     "description": "Subtree split of the PHP Base Datasource component",
     "type": "library",
     "license": "GPL-3.0-or-later",
-    "version": "1.21.0",
+    "version": "1.22.0",
     "require": {
         "php": "^8.0",
-        "forestadmin/php-agent-toolkit": "1.21.0",
-        "forestadmin/php-datasource-toolkit": "1.21.0",
+        "forestadmin/php-agent-toolkit": "1.22.0",
+        "forestadmin/php-datasource-toolkit": "1.22.0",
         "illuminate/database": "^v8.83|^9.0|^10.0|^11.0",
         "illuminate/support": "^8.0|^9.0|^10.0|^11.0"
     },
