@@ -3,11 +3,11 @@
     "description": "Subtree split of the PHP Datasource Dummy component",
     "type": "library",
     "license": "GPL-3.0-or-later",
-    "version": "1.22.0",
+    "version": "1.22.1",
     "require": {
         "php": "^8.0",
-        "forestadmin/php-agent-toolkit": "1.22.0",
-        "forestadmin/php-datasource-toolkit": "1.22.0"
+        "forestadmin/php-agent-toolkit": "1.22.1",
+        "forestadmin/php-datasource-toolkit": "1.22.1"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.0",

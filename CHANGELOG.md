@@ -1,3 +1,10 @@
+## [1.22.1](https://github.com/ForestAdmin/agent-php/compare/v1.22.0...v1.22.1) (2025-02-13)
+
+
+### Bug Fixes
+
+* **charts:** properly format week of year ([#143](https://github.com/ForestAdmin/agent-php/issues/143)) ([0a523f7](https://github.com/ForestAdmin/agent-php/commit/0a523f783260a4c6ff5031117ac2303ec22470d3))
+
 # [1.22.0](https://github.com/ForestAdmin/agent-php/compare/v1.21.0...v1.22.0) (2025-01-08)
 
 
