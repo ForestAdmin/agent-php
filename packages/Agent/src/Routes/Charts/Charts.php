@@ -226,7 +226,7 @@ class Charts extends AbstractCollectionRoute
 
         return match (Str::lower($this->request->get('timeRange'))) {
             'day'   => 'd/m/Y',
-            'week'  => '\WW-Y',
+            'week'  => '\WW-o',
             'month' => 'M Y',
             'year'  => 'Y',
             default => '',

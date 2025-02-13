@@ -64,6 +64,23 @@ test('timeBased() could return the expected format (Week)', function () {
         ->toEqual(new LineChart($result));
 });
 
+test('timeBased() could return the expected format (Week) - should return iso date', function () {
+    $resultBuilder = new ResultBuilder();
+    $data = [
+        '2024-12-23' => 1,
+        '2024-12-30' => 0,
+        '2025-01-06' => 7,
+    ];
+    $result = [
+        ['label' => 'W52-2024', 'values' => ['value' => 1]],
+        ['label' => 'W01-2025', 'values' => ['value' => 0]],
+        ['label' => 'W02-2025', 'values' => ['value' => 7]],
+    ];
+
+    expect($resultBuilder->timeBased('Week', $data))
+        ->toEqual(new LineChart($result));
+});
+
 test('timeBased() could return the expected format (Month)', function () {
     $resultBuilder = new ResultBuilder();
     $data = [

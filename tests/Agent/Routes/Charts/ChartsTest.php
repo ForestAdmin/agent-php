@@ -506,6 +506,65 @@ test('makeLine() with week filter should return a LineChart', function () {
         ->and($result['content']['data']['id']);
 });
 
+test('makeLine() with week filter should return a LineChart - should return iso date', function () {
+    $chart = factoryChart(
+        $this,
+        [
+            'books'   => [
+                'results' => [
+                    [
+                        'value' => 10,
+                        'group' => ['date' => '2024-12-23 00:00:00'],
+                    ],
+                    [
+                        'value' => 15,
+                        'group' => ['date' => '2024-12-30 00:00:00'],
+                    ],
+                    [
+                        'value' => 20,
+                        'group' => ['date' => '2025-01-06 00:00:00'],
+                    ],
+                ],
+            ],
+            'payload' => [
+                'type'                 => 'Line',
+                'sourceCollectionName' => 'Book',
+                'groupByFieldName'     => 'date',
+                'aggregator'           => 'Count',
+                'timeRange'            => 'Week',
+                'timezone'             => 'Europe/Paris',
+            ],
+        ]
+    );
+    $result = $chart->handleRequest(['collectionName' => 'Book']);
+
+    expect($result)
+        ->toBeArray()
+        ->toHaveKey('content')
+        ->and($result['content'])
+        ->toBeArray()
+        ->toHaveKey('data')
+        ->and($result['content']['data'])
+        ->toHaveKey('id')
+        ->toHaveKey('attributes')
+        ->and($result['content']['data']['attributes'])
+        ->toHaveKey('value', (new LineChart([
+            [
+                'label'  => 'W52-2024',
+                'values' => ['value' => 10],
+            ],
+            [
+                'label'  => 'W01-2025',
+                'values' => ['value' => 15],
+            ],
+            [
+                'label'  => 'W02-2025',
+                'values' => ['value' => 20],
+            ],
+        ]))->serialize())
+        ->and($result['content']['data']['id']);
+});
+
 test('makeLine() with month filter should return a LineChart', function () {
     $chart = factoryChart(
         $this,

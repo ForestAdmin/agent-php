@@ -79,7 +79,7 @@ class ResultBuilder
     {
         return match (Str::lower($timeRange)) {
             'day'   => 'd/m/Y',
-            'week'  => '\WW-Y',
+            'week'  => '\WW-o',
             'month' => 'M Y',
             'year'  => 'Y',
         };
