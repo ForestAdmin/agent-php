@@ -158,7 +158,7 @@ describe('invoke()', function () {
             ->getMock();
         $forestControllerMock->expects($this->once())
             ->method('getClosure')
-            ->willReturn(fn () => throw new AuthenticationOpenIdClient('TrialBlockedError', 'Your free trial has ended. We hope you enjoyed your experience with Forest Admin.', '{"renderingId":1}'));
+            ->willReturn(fn () => throw new AuthenticationOpenIdClient(401, 'TrialBlockedError', 'Your free trial has ended. We hope you enjoyed your experience with Forest Admin.'));
 
         $result = $forestControllerMock->__invoke($request);
 
@@ -171,7 +171,7 @@ describe('invoke()', function () {
                 [
                     'error'             => 'TrialBlockedError',
                     'error_description' => 'Your free trial has ended. We hope you enjoyed your experience with Forest Admin.',
-                    'state'             => '{"renderingId":1}',
+                    'state'             => 401,
                 ]
             );
     });
