@@ -74,9 +74,9 @@ class ForestController
     {
         if ($exception instanceof AuthenticationOpenIdClient) {
             $data = [
-                'error'             => $exception->getError(),
-                'error_description' => $exception->getErrorDescription(),
-                'state'             => $exception->getState(),
+                'error'             => $exception->getMessage(),
+                'error_description' => $exception->getDescription(),
+                'state'             => $exception->getStatusCode(),
             ];
 
             return new JsonResponse($data, $exception->getStatusCode(), $exception->getHeaders());

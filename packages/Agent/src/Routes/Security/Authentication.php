@@ -133,7 +133,7 @@ class Authentication extends AbstractRoute
     protected function parseOpenIdClientResponse(array $params)
     {
         if (array_key_exists('error', $params)) {
-            throw new AuthenticationOpenIdClient($params['error'], $params['error_description'], $params['state']);
+            throw new AuthenticationOpenIdClient($params['state'], $params['error'], $params['error_description']);
         }
     }
 }

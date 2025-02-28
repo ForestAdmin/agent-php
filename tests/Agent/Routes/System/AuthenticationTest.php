@@ -99,12 +99,12 @@ test('handleAuthenticationCallback() should throw an exception when the query co
     $_GET = [
         'error'             => 'TrialBlockedError',
         'error_description' => 'Your free trial has ended. We hope you enjoyed your experience with Forest Admin.',
-        'state'             => '{"renderingId":1}',
+        'state'             => '401',
     ];
 
     $authentication = new Authentication();
     expect(fn () => $authentication->handleAuthenticationCallback())
-        ->toThrow(AuthenticationOpenIdClient::class, 'Your free trial has ended. We hope you enjoyed your experience with Forest Admin.');
+        ->toThrow(AuthenticationOpenIdClient::class, 'TrialBlockedError');
 });
 
 test('handleAuthenticationLogout() should return a 204 response', function () {

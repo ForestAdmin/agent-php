@@ -2,12 +2,13 @@
 
 namespace ForestAdmin\AgentPHP\Agent\Auth\OAuth2;
 
-use ErrorException;
+use ForestAdmin\AgentPHP\Agent\Http\Exceptions\AuthenticationOpenIdClient;
 use ForestAdmin\AgentPHP\Agent\Utils\ErrorMessages;
 use ForestAdmin\AgentPHP\Agent\Utils\Traits\FormatGuzzle;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Token\AccessToken;
 use Psr\Http\Message\ResponseInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
   * @codeCoverageIgnore
@@ -96,16 +97,16 @@ class ForestProvider extends AbstractProvider
     protected function checkResponse(ResponseInterface $response, $data)
     {
         if (404 === $response->getStatusCode()) {
-            throw new ErrorException(ErrorMessages::SECRET_NOT_FOUND);
-        } elseif (422 === $response->getStatusCode()) {
-            throw new ErrorException(ErrorMessages::SECRET_AND_RENDERINGID_INCONSISTENT);
-        } elseif (200 !== $response->getStatusCode()) {
-            $serverError = (array_key_exists('errors', $data) && count($data['errors']) > 0) ? $data['errors'][0] : null;
-            if (null !== $serverError && array_key_exists('name', $serverError) && $serverError['name'] === ErrorMessages::TWO_FACTOR_AUTHENTICATION_REQUIRED) {
-                throw new ErrorException(ErrorMessages::TWO_FACTOR_AUTHENTICATION_REQUIRED);
-            }
+            throw new AuthenticationOpenIdClient(Response::HTTP_NOT_FOUND, ErrorMessages::SECRET_NOT_FOUND);
+        } elseif (403 === $response->getStatusCode()) {
+            $error = json_decode($response->getBody(), true, 512, JSON_THROW_ON_ERROR)['errors'][0];
+            $message = $error['name'] === ErrorMessages::TWO_FACTOR_AUTHENTICATION_REQUIRED ? ErrorMessages::TWO_FACTOR_AUTHENTICATION_REQUIRED : ErrorMessages::AUTHORIZATION_FAILED;
 
-            throw new \ErrorException(ErrorMessages::AUTHORIZATION_FAILED);
+            throw new AuthenticationOpenIdClient(Response::HTTP_FORBIDDEN, $message, $error['detail']);
+        } elseif (422 === $response->getStatusCode()) {
+            throw new AuthenticationOpenIdClient(Response::HTTP_UNPROCESSABLE_ENTITY, ErrorMessages::SECRET_AND_RENDERINGID_INCONSISTENT);
+        } elseif (200 !== $response->getStatusCode()) {
+            throw new AuthenticationOpenIdClient($response->getStatusCode(), ErrorMessages::AUTHORIZATION_FAILED);
         }
     }
 
