@@ -10,23 +10,17 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  */
 class AuthenticationOpenIdClient extends HttpException
 {
-    public function __construct(protected string $error, protected string $errorDescription, protected string $state, array $headers = [])
+    private string $description;
+
+    public function __construct(int $status = Response::HTTP_UNAUTHORIZED, string $message = 'Authentication failed with OpenID Client', string $description = '', array $headers = [], ?\Throwable $previous = null)
     {
-        parent::__construct(Response::HTTP_UNAUTHORIZED, $this->errorDescription, null, $headers);
+        $this->description = $description;
+
+        parent::__construct($status, $message, $previous, $headers);
     }
 
-    public function getError(): string
+    public function getDescription(): string
     {
-        return $this->error;
-    }
-
-    public function getErrorDescription(): string
-    {
-        return $this->errorDescription;
-    }
-
-    public function getState(): string
-    {
-        return $this->state;
+        return $this->description;
     }
 }
