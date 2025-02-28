@@ -1,3 +1,10 @@
+## [1.22.2](https://github.com/ForestAdmin/agent-php/compare/v1.22.1...v1.22.2) (2025-02-28)
+
+
+### Bug Fixes
+
+* proper raise of OpenIDConnect Exceptions ([#144](https://github.com/ForestAdmin/agent-php/issues/144)) ([8484e25](https://github.com/ForestAdmin/agent-php/commit/8484e2594d46bfcf95b0ef58bdf303b2ec82f6ab))
+
 ## [1.22.1](https://github.com/ForestAdmin/agent-php/compare/v1.22.0...v1.22.1) (2025-02-13)
 
 
