@@ -278,6 +278,17 @@ class CollectionCustomizer
         );
     }
 
+    /**
+     * Disable the search bar
+     * @example $collection->disableSearch()
+     */
+    public function disableSearch(): self
+    {
+        return $this->pushCustomization(
+            fn () => $this->stack->search->getCollection($this->name)->disableSearch()
+        );
+    }
+
     public function addHook(string $position, string $type, Closure $handler)
     {
         return $this->pushCustomization(
